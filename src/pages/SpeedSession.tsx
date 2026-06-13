@@ -17,6 +17,9 @@ import { APP_URL } from "@/lib/constants";
 import { trackDeckEvent } from "@/lib/deckMetrics";
 import { SpeedSessionCreateDialog } from "@/components/circle/SpeedSessionCreateDialog";
 import { SpeedLobby } from "@/components/circle/SpeedLobby";
+import { SpeedRoundTimer } from "@/components/circle/SpeedRoundTimer";
+import { SpeedHostCockpit } from "@/components/circle/SpeedHostCockpit";
+import { SpeedActionRail, type RailPeer } from "@/components/circle/SpeedActionRail";
 import { SkipForward } from "lucide-react";
 
 type Session = {
@@ -68,6 +71,10 @@ export default function SpeedSession() {
   const [icePrompts, setIcePrompts] = useState<string[]>([]);
   const [iceIdx, setIceIdx] = useState(0);
   const [editOpen, setEditOpen] = useState(false);
+  const [stagePresence, setStagePresence] = useState<Set<string>>(new Set());
+  const [groupPeers, setGroupPeers] = useState<RailPeer[]>([]);
+  const [connectedIds, setConnectedIds] = useState<Set<string>>(new Set());
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   const myName = useMemo(
     () => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest",
@@ -165,7 +172,19 @@ export default function SpeedSession() {
       .channel(`speed-session-${id}`)
       .on("postgres_changes",
         { event: "*", schema: "public", table: "speed_session_pairings", filter: `session_id=eq.${id}` },
-        () => { refresh().catch(() => {}); },
+        (payload: any) => {
+          // Detect a peer skipping me → soft toast so it doesn't feel broken.
+          if (payload.eventType === "UPDATE" && user?.id) {
+            const row = payload.new as Pairing & { ended_reason?: string };
+            const reason = row?.ended_reason ?? "";
+            const involvesMe = row?.user_a === user.id || row?.user_b === user.id;
+            const skippedByOther = reason.startsWith("skipped_by_") && reason !== `skipped_by_${user.id}`;
+            if (involvesMe && skippedByOther) {
+              toast({ title: "Your match moved on", description: "Hold tight — finding you a fresh face." });
+            }
+          }
+          refresh().catch(() => {});
+        },
       )
       .on("postgres_changes",
         { event: "*", schema: "public", table: "speed_sessions", filter: `id=eq.${id}` },
@@ -177,7 +196,40 @@ export default function SpeedSession() {
       )
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
-  }, [id, refresh]);
+  }, [id, refresh, user?.id, toast]);
+
+  // Track who's actually present on the stage (Daily room) via Supabase presence.
+  useEffect(() => {
+    if (!callRoom?.name || !user) return;
+    const ch = supabase.channel(`speed-stage:${callRoom.name}`, {
+      config: { presence: { key: user.id } },
+    });
+    ch.on("presence", { event: "sync" }, () => {
+      const state = ch.presenceState();
+      setStagePresence(new Set(Object.keys(state)));
+    }).subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await ch.track({ user_id: user.id, name: myName, at: new Date().toISOString() });
+      }
+    });
+    return () => { void supabase.removeChannel(ch); setStagePresence(new Set()); };
+  }, [callRoom?.name, user?.id, myName, user]);
+
+  // Load profile data for everyone present (group-mode action rail).
+  useEffect(() => {
+    if (!user) { setGroupPeers([]); return; }
+    const otherIds = Array.from(stagePresence).filter((uid) => uid !== user.id);
+    if (!otherIds.length) { setGroupPeers([]); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, avatar_url")
+        .in("user_id", otherIds);
+      setGroupPeers((data ?? []).map((p: any) => ({
+        id: p.user_id, full_name: p.full_name, avatar_url: p.avatar_url,
+      })));
+    })().catch(() => {});
+  }, [stagePresence, user]);
 
   // Auto-open the room when a new pairing arrives
   useEffect(() => {
@@ -303,6 +355,12 @@ export default function SpeedSession() {
   // into). Safe to call multiple times; create-speed-group-room is idempotent.
   const openHostStage = async () => {
     if (!user || !id) return;
+    // Race fix: if we're already standing on a speed-room (sp-*), don't
+    // mint another Daily frame — would race with the group-mode auto-open.
+    if (callRoom?.name?.startsWith("sp-")) {
+      setCallOpen(true);
+      return;
+    }
     try {
       const { data, error } = await supabase.functions.invoke("create-speed-group-room", {
         body: { session_id: id, user_name: myName },
@@ -526,62 +584,97 @@ export default function SpeedSession() {
   const minsSinceStart = Math.round((Date.now() - startsAt.getTime()) / 60_000);
   const lateJoinOpen = isLive && minsSinceStart <= LATE_JOIN_CUTOFF_MIN;
 
-  const overlayActions = peer ? (
-    <div className="flex flex-col items-center gap-2 w-full max-w-[360px]">
-      {icePrompts.length > 0 && (
-        <div className="w-full px-3 py-2 rounded-2xl bg-black/70 backdrop-blur-sm border border-white/15 shadow-lg text-white">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-[10px] uppercase tracking-wide text-white/60 font-bold">Try this</span>
-            <button
-              onClick={() => setIceIdx((i) => (i + 1) % icePrompts.length)}
-              className="text-[10px] text-white/70 hover:text-white"
-              aria-label="Next prompt"
-            >
-              Next →
-            </button>
-          </div>
-          <p className="text-[13px] leading-snug">{icePrompts[iceIdx]}</p>
+  // Group-mode connect/save handlers (per-peer in shared rooms)
+  const connectGroupPeer = async (p: RailPeer) => {
+    if (!user) return;
+    try {
+      await supabase
+        .from("connections")
+        .upsert(
+          { user_id: user.id, connected_user_id: p.id, status: "pending", context: "speed_session" } as any,
+          { onConflict: "user_id,connected_user_id" } as any,
+        );
+      setConnectedIds((prev) => new Set([...prev, p.id]));
+      trackDeckEvent("speed_connect_sent", "speed", { session_id: id, peer_id: p.id, mode: "group" });
+      toast({ title: "Connection sent", description: p.full_name ?? "We let them know." });
+    } catch (e: any) {
+      toast({ title: "Couldn't send connect", description: e?.message, variant: "destructive" });
+    }
+  };
+  const saveGroupPeer = async (p: RailPeer) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from("saved_sparks")
+        .insert({ user_id: user.id, item_type: "creator", item_id: p.id });
+      if (error && error.code !== "23505") throw error;
+      setSavedIds((prev) => new Set([...prev, p.id]));
+      trackDeckEvent("speed_save_for_later", "speed", { session_id: id, peer_id: p.id, mode: "group" });
+      toast({ title: "Saved for later", description: "Find them in your Clipped list." });
+    } catch (e: any) {
+      toast({ title: "Couldn't save", description: e?.message, variant: "destructive" });
+    }
+  };
+
+  const showHostCockpit = canControl && stagePresence.size <= 2;
+
+  const overlayActions = (
+    <>
+      {/* Top-right: round timer (pair mode) */}
+      {myPair && (
+        <div className="absolute top-3 right-3">
+          <SpeedRoundTimer startedAt={myPair.started_at} slotSeconds={session.slot_seconds} />
         </div>
       )}
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm border border-white/15 shadow-lg">
-        <div className="flex items-center gap-1.5 text-white text-xs font-medium pr-1">
-          {peer.avatar_url && (
-            <img src={peer.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover" />
-          )}
-          <span className="truncate max-w-[120px]">{peer.full_name ?? "Your match"}</span>
+      {/* Top-left: host cockpit */}
+      {showHostCockpit && (
+        <div className="absolute top-3 left-3 max-w-[calc(100vw-24px)]">
+          <SpeedHostCockpit
+            sessionId={session.id}
+            isLive={isLive}
+            startsAt={session.starts_at}
+            rsvpCount={rsvps}
+            joinedCount={joinedCount}
+            inRoomCount={stagePresence.size}
+            onShare={copyShare}
+            onStartMatching={() => {
+              supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } })
+                .then(() => toast({ title: "Matching…", description: "Pairings will pop in seconds." }))
+                .catch(() => {});
+            }}
+          />
         </div>
-        <Button
-          size="sm"
-          variant="lime"
-          className="rounded-full h-7 px-2.5 text-[11px] gap-1"
-          onClick={connectPeer}
-          disabled={connectingPeer || connectedPeer}
-        >
-          {connectedPeer ? <Check className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
-          {connectedPeer ? "Sent" : "Connect"}
-        </Button>
-        <Button
-          size="sm"
-          variant="secondary"
-          className="rounded-full h-7 px-2.5 text-[11px] gap-1"
-          onClick={saveForLater}
-          disabled={savedPeer}
-        >
-          {savedPeer ? <Check className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
-          {savedPeer ? "Saved" : "Save"}
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="rounded-full h-7 px-2.5 text-[11px] gap-1 text-white hover:bg-white/10"
-          onClick={skipPair}
-          aria-label="Skip to next match"
-        >
-          <SkipForward className="h-3 w-3" /> Skip
-        </Button>
+      )}
+      {/* Bottom-center: action rail (pair OR group) */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex justify-center px-2">
+        {peer && myPair ? (
+          <SpeedActionRail
+            mode="pair"
+            peer={{ id: peer.id, full_name: peer.full_name, avatar_url: peer.avatar_url }}
+            icePrompts={icePrompts}
+            iceIdx={iceIdx}
+            onCycleIce={() => setIceIdx((i) => (i + 1) % icePrompts.length)}
+            connecting={connectingPeer}
+            connected={connectedPeer}
+            saved={savedPeer}
+            onConnect={connectPeer}
+            onSave={saveForLater}
+            onSkip={skipPair}
+          />
+        ) : groupPeers.length > 0 ? (
+          <SpeedActionRail
+            mode="group"
+            peers={groupPeers}
+            connectedIds={connectedIds}
+            savedIds={savedIds}
+            onConnect={connectGroupPeer}
+            onSave={saveGroupPeer}
+          />
+        ) : null}
       </div>
-    </div>
-  ) : null;
+    </>
+  );
+
 
   return (
     <div className="min-h-screen pb-28 bg-background">
@@ -718,12 +811,34 @@ export default function SpeedSession() {
             <CardContent className="p-5 space-y-3">
               <p className="font-bold">Session wrapped</p>
               {pastPairs.length > 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  You met {pastPairs.length} {pastPairs.length === 1 ? "person" : "people"}. Find anyone you saved in your Clipped list.
-                </p>
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    You met {pastPairs.length} {pastPairs.length === 1 ? "person" : "people"}. Reconnect with anyone you clicked with:
+                  </p>
+                  <div className="space-y-1.5">
+                    {pastPairs.map((p) => {
+                      const peerId = p.user_a === user?.id ? p.user_b : p.user_a;
+                      return (
+                        <Link
+                          key={p.id}
+                          to={`/profile/${peerId}`}
+                          className="flex items-center gap-2 p-2 rounded-xl border hover:bg-muted/50 transition-colors text-sm"
+                        >
+                          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+                            R{p.round}
+                          </div>
+                          <span className="flex-1 truncate">View their Creative Passport →</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
               ) : (
                 <p className="text-xs text-muted-foreground">You didn't get paired this round.</p>
               )}
+              <Button asChild variant="lime" className="w-full rounded-full mt-2">
+                <Link to="/circle?tab=live">See the next session</Link>
+              </Button>
             </CardContent>
           </Card>
         ) : isLive ? (

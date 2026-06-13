@@ -28,8 +28,9 @@ serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { stage_id, user_name, invite_token } = await req.json().catch(() => ({}));
+    const { stage_id, user_name, invite_token, backstage } = await req.json().catch(() => ({}));
     if (!stage_id) throw new Error("stage_id required");
+    const isBackstage = backstage === true;
 
     const { data: stage } = await admin.from("curated_stages").select("*").eq("id", stage_id).single();
     if (!stage) throw new Error("Stage not found");

@@ -27,6 +27,9 @@ export default function SpeedIndex() {
   const [loading, setLoading] = useState(true);
   const [vertical, setVertical] = useState<SpeedVertical | "all">("all");
 
+  useEffect(() => { trackDeckEvent("speed_index_viewed", "speed", {}); }, []);
+
+
   useEffect(() => {
     let cancelled = false;
     (async () => {

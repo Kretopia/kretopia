@@ -106,6 +106,7 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
             <p className="text-[11px] text-muted-foreground mt-1">
               Shown on the public Speed Networking page so the right creators find your night.
             </p>
+          </div>
           <div>
             <Label htmlFor="ss-theme">Theme / who's it for (optional)</Label>
             <Textarea id="ss-theme" value={theme} onChange={(e) => setTheme(e.target.value)} rows={2} maxLength={240} />

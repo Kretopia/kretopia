@@ -397,7 +397,10 @@ const CuratedStage = () => {
           callId={null}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
-          lobbyCta={isHost ? "Start stage" : "Walk in"}
+          lobbyCta={isHost ? (backstageMode ? "Enter backstage" : "Start stage") : "Walk in"}
+          isHost={isHost}
+          autoStartRecording={isHost && !backstageMode && room.recordingEnabled}
+          backstage={backstageMode}
         />
       )}
 

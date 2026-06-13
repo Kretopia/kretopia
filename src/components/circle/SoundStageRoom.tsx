@@ -699,6 +699,29 @@ export function SoundStageRoom({
     return map;
   })();
 
+  // Active screen share — works for both audio and video stages. We pick the
+  // most recent screen track and render it as a hero tile above the stage.
+  // Referencing screenTick keeps this fresh when Daily fires participant-updated.
+  void screenTick;
+  const activeScreenShare: { name: string; track: MediaStreamTrack; isLocal: boolean } | null = (() => {
+    const call = callRef.current;
+    if (!call) return null;
+    const parts = call.participants();
+    for (const p of Object.values(parts) as DailyParticipant[]) {
+      const t =
+        p.tracks?.screenVideo?.persistentTrack || p.tracks?.screenVideo?.track;
+      const state = p.tracks?.screenVideo?.state;
+      if (t && state && state !== "off" && state !== "blocked") {
+        return {
+          name: (p.user_name as string) || "Speaker",
+          track: t,
+          isLocal: !!p.local,
+        };
+      }
+    }
+    return null;
+  })();
+
   const stage = list.filter((m) => m.role === "host" || m.role === "speaker");
   const audience = list.filter((m) => m.role === "audience");
   const raisedHands = audience.filter((m) => m.handRaised);

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Video, Mic } from "lucide-react";
+import { SPEED_VERTICALS, type SpeedVertical } from "@/lib/speedVerticals";
 
 interface Props {
   open: boolean;

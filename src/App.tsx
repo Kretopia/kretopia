@@ -308,6 +308,10 @@ const AppContent = () => {
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
             <Route path="/circle/:circleId/chat" element={<ProtectedRoute><CircleChatView /></ProtectedRoute>} />
             <Route path="/circles" element={<Circles />} />
+            {/* Crews — canonical aliases for the rebranded Circles surfaces (private, invite-only). */}
+            <Route path="/crews" element={<Circles />} />
+            <Route path="/crew/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
+            <Route path="/crew/:circleId/chat" element={<ProtectedRoute><CircleChatView /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             

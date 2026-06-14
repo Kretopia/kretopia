@@ -200,6 +200,11 @@ export default function Onboarding() {
       toast({ title: "Enter your full name", description: "We need at least 3 characters to search", variant: "destructive" });
       return;
     }
+    if (!isHandleValid(username) || usernameStatus === "taken") {
+      toast({ title: "Pick your @handle first", description: "Your unique creative handle is needed before we search.", variant: "destructive" });
+      return;
+    }
+    await saveUsernameIfReady();
     setSearching(true);
     setSearchAttempted(true);
     setNotFound(false);

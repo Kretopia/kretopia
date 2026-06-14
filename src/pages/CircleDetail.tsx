@@ -209,7 +209,7 @@ const CircleDetail = () => {
         onManage={() => setShowAdmin(true)}
       />
 
-      <Tabs value={tab} onValueChange={(v) => v === "chat" ? goToChat() : setTab(v)} className="mt-4">
+      <Tabs value={tab} onValueChange={(v) => v === "rooms" ? goToChat() : setTab(v)} className="mt-4">
         <div className="sticky top-14 z-30 bg-background border-b border-border/50">
           <TabsList className="w-full h-auto p-0 bg-transparent justify-start overflow-x-auto scrollbar-hide rounded-none">
             {TABS.map(t => (
@@ -225,15 +225,17 @@ const CircleDetail = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="overview" className="mt-4">
-          <CircleOverviewTab
-            circle={circle}
-            members={members}
-            events={events}
+        <TabsContent value="feed" className="mt-4">
+          <CircleFeedTab
+            circleId={circleId!}
             isMember={isMember}
-            onSwitchTab={setTab}
-            onCreateEvent={() => setShowCreateEvent(true)}
+            isAdmin={isAdmin}
+            onOpenChat={goToChat}
           />
+        </TabsContent>
+
+        <TabsContent value="library" className="mt-4">
+          <CircleLibraryTab circleId={circleId!} />
         </TabsContent>
 
         <TabsContent value="members" className="mt-4 px-4">
@@ -251,11 +253,7 @@ const CircleDetail = () => {
           />
         </TabsContent>
 
-        <TabsContent value="projects" className="mt-4">
-          <CircleProjectsTab circleId={circleId!} isMember={isMember} />
-        </TabsContent>
-
-        <TabsContent value="media" className="mt-4">
+        <TabsContent value="spotlight" className="mt-4">
           <CircleMediaTab circleId={circleId!} members={members} />
         </TabsContent>
 
@@ -263,6 +261,7 @@ const CircleDetail = () => {
           <CircleAboutTab circle={circle} leaderProfile={leader} memberCount={members.length} />
         </TabsContent>
       </Tabs>
+
 
       {showAdmin && circle && (
         <CircleAdminPanel circle={circle} onClose={() => { setShowAdmin(false); fetchAll(); }} />

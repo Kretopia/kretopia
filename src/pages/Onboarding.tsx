@@ -321,11 +321,56 @@ export default function Onboarding() {
     }
   };
 
-  const handleSkipToManual = () => {
+  const handleSkipToManual = async () => {
+    await saveUsernameIfReady();
     setPhase("review");
     import("@/lib/analytics").then(({ analytics }) =>
       analytics.onboardingStep(3, "review_phase_entered_via_skip")
     ).catch(() => {});
+  };
+
+  // ─── USERNAME / @HANDLE ───
+  const normalizeHandle = (raw: string) =>
+    raw.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 24);
+
+  const isHandleValid = (h: string) => /^[a-z0-9_]{3,24}$/.test(h);
+
+  // Suggest a handle from the full name once, when name is set and user hasn't typed one
+  useEffect(() => {
+    if (usernameTouched || username || !fullName?.trim()) return;
+    const suggestion = normalizeHandle(fullName.trim().replace(/\s+/g, ""));
+    if (suggestion.length >= 3) setUsername(suggestion);
+  }, [fullName, username, usernameTouched]);
+
+  // Debounced availability check
+  useEffect(() => {
+    if (!username) { setUsernameStatus("idle"); return; }
+    if (!isHandleValid(username)) { setUsernameStatus("invalid"); return; }
+    setUsernameStatus("checking");
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("username", username)
+        .maybeSingle();
+      if (error) { setUsernameStatus("idle"); return; }
+      if (!data) setUsernameStatus("available");
+      else if (data.user_id === user?.id) setUsernameStatus("yours");
+      else setUsernameStatus("taken");
+    }, 400);
+    return () => clearTimeout(t);
+  }, [username, user?.id]);
+
+  const saveUsernameIfReady = async () => {
+    if (!user) return;
+    if (!isHandleValid(username)) return;
+    if (usernameStatus === "taken" || usernameStatus === "invalid") return;
+    if (usernameStatus === "yours") return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ username })
+      .eq("user_id", user.id);
+    if (!error) setUsernameStatus("yours");
   };
 
   // ─── AVATAR ───

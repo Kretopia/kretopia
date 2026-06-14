@@ -308,9 +308,29 @@ const ICDBProjectPage = () => {
                           Claim
                         </Button>
                       )}
+                      {!role.is_claimed && !currentUserId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-[11px] gap-1 shrink-0"
+                          onClick={() => navigate(`/auth?redirect=/credits/project/${projectId}`)}
+                        >
+                          <UserPlus className="h-3 w-3" /> Claim
+                        </Button>
+                      )}
                     </div>
                   ))}
           </div>
+
+          {!currentUserId && roles.some(r => !r.is_claimed) && (
+            <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+              <p className="text-sm font-semibold mb-1">Is your name on this project?</p>
+              <p className="text-xs text-muted-foreground mb-3">Sign up free, claim your role, and add it to your Creative Passport in 30 seconds.</p>
+              <Button size="sm" onClick={() => navigate(`/auth?redirect=/credits/project/${projectId}`)}>
+                Create your Passport
+              </Button>
+            </div>
+          )}
 
           {/* Share / Copy link */}
           <div className="mt-8 text-center">
@@ -319,7 +339,7 @@ const ICDBProjectPage = () => {
               size="sm"
               className="gap-2"
               onClick={() => {
-                navigator.clipboard.writeText(getShareUrl());
+                navigator.clipboard.writeText(window.location.href);
                 toast.success("Link copied!");
               }}
             >

@@ -1,72 +1,122 @@
+## Crews — community rebrand of Circles
 
-## Audit — what's broken in today's Speed Session
+A Skool / Mighty Networks / Circle.so-style community surface. **Private and invite-only** while we grow numbers — no directory, no SEO, no public landing. Name placeholder = **Crews** (Greenrooms still on the table; locked at the end).
 
-I went through the live screenshot, `SpeedSession.tsx`, `SpeedLobby.tsx`, the matcher edge fn, and the room sheet. Here's the real picture:
-
-### Loops & gaps in the current experience
-
-1. **Host alone on stage = dead screen.** "Waiting for others…" with no countdown, no RSVP roster, no nudge to share, no way to ping the pool. Host has no reason to keep the tab open.
-2. **No peer action surface in group mode.** Connect/Save/Skip overlay only renders when `myPair` is set (1:1 pair mode). In group rooms, multiple people are present but you can't Connect/Save/Block anyone.
-3. **No Block / Report anywhere.** Only Connect, Save, Skip on the pair overlay. Safety gap — required for a stranger-matching product.
-4. **Skip is silent for the other person.** Their room just closes with no toast. Feels broken.
-5. **No round timer / "next match in 30s" countdown** inside the room. `slot_seconds` exists in DB and is never surfaced.
-6. **Audio mode** still renders the full Daily video iframe — no avatar/visualizer treatment, no "audio-only" affordance.
-7. **Duplicate room mounts.** `goLive` calls `openHostStage()` AND the group-mode auto-open effect can fire on the same tick → relies on the Daily destroy guard. Race-prone.
-8. **Mobile crowding.** The pill with Avatar + Connect + Save + Skip overflows at 360px (especially with long names). Desktop has zero layout difference — wastes the side rails.
-9. **Late-join is gated to RSVPs**, but a curious passer-by has no way to peek at who's in the room before committing.
-10. **Recap is text-only** — "You met 3 people" with no avatars, no "Connect again" buttons, no path back to the people you talked to. Dead end.
-11. **No Host → Guest controls** (mute-all, bring-on-stage, remove). Host is just another attendee with a control panel above.
-12. **Empty-deck guidance for guests is weak.** When pool is closed: just a "see next session" button — no captured intent, no waitlist.
+Builds on the existing Circles infrastructure (tables, RLS, edge functions, Sound Stages, calls) — this is a scope refresh + terminology rebrand, not a rewrite.
 
 ---
 
-## The plan — 5 shippable improvements
+### 1. Lexicon (one-pass swap)
 
-### 1. **In-call Action Rail (works in pair AND group mode)**
-Replace the single-pill overlay with a proper roster strip at the bottom of the call (above the Daily controls).
+| Old | New |
+|---|---|
+| Circle | Crew |
+| Circles | Crews |
+| My Circles | My Crews |
+| Channel | Room (inside a Crew) |
+| Community | Crew (anywhere user-facing) |
+| Members | Crew |
+| Sound Stage | (kept — it's a Crew Stage now) |
 
-- **Pair mode**: shows the one peer card → Connect · Save · Skip · ⋯ (Block/Report).
-- **Group mode**: shows a horizontal scroll of all participants. Tap a face → action sheet (Connect · Save · Block · Report · View profile).
-- Mobile: bottom-sheet on tap. Desktop: right-side rail that's always visible.
-- Adds the missing **Block + Report** path via the existing `UserActionMenu` / `ReportBlockDialog`.
-
-### 2. **Host Stage Cockpit (empty-state that earns its keep)**
-When the host enters the stage alone, show an overlay panel inside the call with:
-- Live countdown to start (or "Live since 0:42")
-- RSVP roster (avatars + "12 saved spot, 3 here")
-- Big **Share** button (WhatsApp / IG / copy) — same `buildShareText`
-- **Ping waiting guests** button → sends push to all RSVPs who haven't joined
-- **Start matching now** (only if ≥2 in pool) — kicks the matcher manually
-
-Auto-collapses to a small chip when ≥2 guests join.
-
-### 3. **Round Timer + "Next match in…" loop**
-- Live `mm:ss` countdown badge in the corner of the call sheet, based on `pairing.started_at + slot_seconds`.
-- At T-10s: subtle pulse + "Wrap it up — next match in 10s".
-- At T-0: matcher rotates; show "Finding next match…" shimmer.
-- Skip → other person gets toast: **"Your match moved on. Hold tight — finding you a fresh face."**
-
-### 4. **Recap with re-connect loop**
-Replace the wrapped-text card with a list of everyone you met (avatar, name, role).
-Each row: **Connect** (or ✓ Connected) · **Save** · **Message**. Top CTA: "Next session is Saturday — save my spot."
-
-### 5. **Safety + Polish**
-- Add `UserActionMenu` to every peer surface (in-call rail, recap rows, lobby roster).
-- Block hides them from your future pairings (matcher already respects `user_blocks` — verify).
-- Mobile composer respects safe-area (the screenshot shows the keyboard bar overlap on Xiaomi).
-- Desktop: 2-column layout when ≥768px — call on left, roster/chat/host cockpit on right.
-- Race fix: gate `openHostStage()` behind `if (callRoom?.name?.startsWith("sp-")) return;` to stop double-mount.
+Centralize in `src/lib/brandLexicon.ts` so future rename to Greenrooms is one string change.
 
 ---
 
-## Technical notes
+### 2. Access model — private + invite-only
 
-- New file: `src/components/circle/SpeedActionRail.tsx` — handles pair + group roster + action sheet.
-- New file: `src/components/circle/SpeedHostCockpit.tsx` — empty-state overlay with share/ping/start.
-- New file: `src/components/circle/SpeedRoundTimer.tsx` — `mm:ss` based on `pairing.started_at`.
-- Refactor: `SpeedSession.tsx` overlay block → render `<SpeedActionRail>` + `<SpeedHostCockpit>` inside `VideoCallSheet`.
-- Edge fn `notify-speed-pool-ping/index.ts` — new, host-only, fires push to non-joined RSVPs.
-- Existing `speed-session-matcher` already filters by `user_blocks` — confirm and document.
-- DB: no new tables. `skip` already writes `ended_reason`; we'll surface that on the other client via realtime to fire the toast.
+- Default `visibility = 'private'`.
+- Remove every public discovery entry point: `/circles` directory page, search results, suggestions on Home, Discover map cards, SEO sitemap entries for circle pages.
+- Join only by:
+  - Invite link (existing `circle_guest_rsvps` / invite token flow, re-skinned)
+  - Direct add by an owner/admin (Members tab → Add)
+- `/crew/:id` (alias of `/circle/:id`) returns a friendly "This Crew is private — ask the host for an invite" wall when not a member.
+- Sitemap + robots: exclude `/crew/*` and `/circle/*`.
 
-Want me to ship all 5, or pick the top items? I'd recommend shipping **1 + 2 + 3** in this pass (the in-call experience), then **4 + 5** as a follow-up.
+Keep old `/circle/*` routes alive as redirects to `/crew/*` so existing links/notifications don't break.
+
+---
+
+### 3. Community-style Hub (Skool / Mighty / Circle.so feel)
+
+Refactor the current 7-tab Hub into a tighter, feed-first layout:
+
+```text
+┌─────────────────────────────┐
+│  Crew header (cover, name)  │
+│  Members pile · Live dot    │
+├─────────────────────────────┤
+│  [Feed] [Rooms] [Live]      │
+│  [Library] [Events] [Crew]  │
+└─────────────────────────────┘
+```
+
+- **Feed** (new default) — posts + reactions + comments, scroll-native. Reuse `studio_pulse_posts` pattern scoped by `circle_id`. Pinned post at top.
+- **Rooms** — existing channels (renamed). Group chat threads.
+- **Live** — Sound Stages + scheduled calls (unchanged engine, re-skinned).
+- **Library** — lightweight: pinned files + links from any Room. Reuses `project-files` bucket pattern, scoped by crew.
+- **Events** — crew-only events list (filtered `creative_jams` where `circle_id` matches and visibility=crew).
+- **Crew** (members tab) — roster, roles (owner/admin/member), invite button, leave.
+
+Drop standalone tabs that don't fit a private community feel: public leaderboard, browseable directory widgets.
+
+---
+
+### 4. Entry point — hamburger only
+
+- Remove any bottom-nav, Today/Home rail, or top-nav surfacing of Circles.
+- Hamburger drawer gets a single **"Crews"** item under the Workspace group with a count badge for unread activity across all your crews.
+- Hamburger "Create a Crew" stays (owner action).
+- `/crews` index = "My Crews" list (private to you — list of crews you're a member of). No public discovery.
+
+---
+
+### 5. Notifications + activity
+
+- Repoint all existing circle_* notification copy to "Crew" lexicon (DB triggers' message templates).
+- Unread-per-crew counter feeds the hamburger badge via a single `get_my_crew_unread()` RPC (sum feed posts + room messages + live stages since `last_seen_at`).
+- Push notifications: "New post in {Crew name}", "{Name} started a Stage in {Crew}".
+
+---
+
+### 6. What stays as-is (no work this round)
+
+- Sound Stages engine, Speed Sessions, video calls, transcripts.
+- All existing DB tables — only **add** `circles.visibility` default flip + a `crew_feed_posts` view alias if needed.
+- Existing invite-token + guest RSVP flow.
+
+---
+
+### 7. Out of scope (revisit when traction grows)
+
+- Public discovery / directory
+- Paid / gated crews (Skool-style monetization)
+- Classroom / courses module
+- Crew SEO + sharable public landing pages
+- Leaderboard / gamification
+
+---
+
+### Technical notes
+
+- **Files touched (rebrand pass):** `src/lib/brandLexicon.ts`, all `src/pages/Circle*` → re-exported as `Crew*` (route alias, no file rename to keep git history), `BottomNav`, `HamburgerMenu`, `BrandLogo` adjacent strings, notification templates (DB function `format_notification_text` or equivalent).
+- **New components:** `CrewFeedTab`, `CrewLibraryTab`, `CrewPrivateWall`. Reuse existing `SoundStagesLot`, `CircleChannelsList` (renamed `CrewRoomsList` in re-export).
+- **New routes:** `/crews` (My Crews), `/crew/:id` (Hub), `/crew/:id/room/:roomId` (chat). Old `/circle/*` paths 301-redirect via `<Navigate>` in router.
+- **New DB:** `crew_feed_posts` table (id, crew_id, author_id, body, media jsonb, pinned, created_at) + GRANTs + RLS (members can read+write, owners can pin/delete). Reactions + comments via existing `feed_reactions` / `feed_comments` with `target_type='crew_post'`.
+- **New RPC:** `get_my_crew_unread()` returning `[{ crew_id, unread_count, last_activity_at }]`.
+- **Memory updates:** retire `circle-hub-architecture` memory in favor of new `crews-private-community` memory; add to Core: "Crews are private, invite-only. No public discovery."
+
+---
+
+### Phasing (so we ship something in each step)
+
+1. **Lexicon + nav** — swap copy, hamburger entry, remove public entry points, redirect old routes. (~½ day)
+2. **Feed tab + Library tab** — new DB table, RPCs, RLS, mobile-first feed UI. (~1 day)
+3. **Visibility hardening + notification copy + unread badge.** (~½ day)
+4. **Name lock** — decide Crews vs Greenrooms, flip the one constant.
+
+---
+
+### Decisions still needed (I'll ask before step 1)
+
+- Should existing public/joinable Circles be force-flipped to `private` on migration, or left as-is and only **new** crews default to private?
+- The crew creator role: keep current Circle owner/admin/member ladder, or simplify to owner + member only for invite-only mode?

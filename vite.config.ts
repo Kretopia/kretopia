@@ -9,6 +9,7 @@ import { profileSharePagesPlugin } from "./plugins/profile-share-pages";
 import { gigSharePagesPlugin } from "./plugins/gig-share-pages";
 import { eventSharePagesPlugin } from "./plugins/event-share-pages";
 import { campaignSharePagesPlugin } from "./plugins/campaign-share-pages";
+import { seoPagesPlugin } from "./plugins/seo-pages";
 
 const { hash: buildHash, plugin: versionJsonPlugin } = versionPlugin();
 

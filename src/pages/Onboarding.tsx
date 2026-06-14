@@ -689,6 +689,40 @@ export default function Onboarding() {
                 />
               </div>
 
+              {/* Username / @handle — claim your Passport URL */}
+              <div className="space-y-1.5">
+                <Label htmlFor="discover-handle" className="text-sm font-medium flex items-center gap-2">
+                  <IdCard className="h-3.5 w-3.5 text-muted-foreground" />
+                  Claim your @handle
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base font-mono pointer-events-none">@</span>
+                  <Input
+                    id="discover-handle"
+                    value={username}
+                    onChange={e => { setUsername(normalizeHandle(e.target.value)); setUsernameTouched(true); }}
+                    placeholder="your-handle"
+                    className="h-12 text-base pl-7 font-mono"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                  />
+                  {username && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold">
+                      {usernameStatus === "checking" && <span className="text-muted-foreground">checking…</span>}
+                      {usernameStatus === "available" && <span className="text-[hsl(var(--signal-teal))]">✓ available</span>}
+                      {usernameStatus === "yours" && <span className="text-[hsl(var(--signal-teal))]">✓ yours</span>}
+                      {usernameStatus === "taken" && <span className="text-destructive">taken</span>}
+                      {usernameStatus === "invalid" && <span className="text-destructive">3–24 chars · a–z · 0–9 · _</span>}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Your permanent Passport URL: <span className="font-mono text-foreground">thrivein.io/{username || "your-handle"}</span>
+                </p>
+              </div>
+
+
               {/* Professional URL (optional) */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">

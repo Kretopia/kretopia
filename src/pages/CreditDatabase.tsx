@@ -609,7 +609,6 @@ const CreditDatabase = () => {
           )}
         </div>
         </>
-        )}
       </div>
 
       {/* Claim Dialog */}

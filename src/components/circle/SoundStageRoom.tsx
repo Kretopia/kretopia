@@ -1606,6 +1606,7 @@ function MicCheckScreen({
   camStream,
   onJoin,
   onCancel,
+  backstage = false,
 }: {
   level: number;
   userName: string;
@@ -1615,6 +1616,7 @@ function MicCheckScreen({
   camStream: MediaStream | null;
   onJoin: () => void;
   onCancel: () => void;
+  backstage?: boolean;
 }) {
   const detected = level > 0.04;
   const bars = 12;

@@ -82,7 +82,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       let profiles: ProfileRow[] = [];
       try {
         const r = await fetch(
-          `${projectUrl}/rest/v1/profiles?select=user_id,username,full_name,role,bio,avatar_url,location,updated_at&onboarding_completed=eq.true&avatar_url=not.is.null&bio=not.is.null&order=updated_at.desc&limit=2000`,
+          `${projectUrl}/rest/v1/public_profiles_safe?select=user_id,username,full_name,role,bio,avatar_url,location,updated_at&onboarding_completed=eq.true&full_name=not.is.null&order=updated_at.desc&limit=2000`,
           { headers },
         );
         if (r.ok) profiles = (await r.json()) as ProfileRow[];
@@ -95,7 +95,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       let credits: CreditRow[] = [];
       try {
         const r = await fetch(
-          `${projectUrl}/rest/v1/credits?select=id,project_title,role,year,category,description,thumbnail_url,updated_at&verification_status=eq.verified&order=updated_at.desc&limit=2000`,
+          `${projectUrl}/rest/v1/credits?select=id,project_name,role,year,credit_category,description,thumbnail_url,updated_at&verification_status=eq.verified&order=updated_at.desc&limit=2000`,
           { headers },
         );
         if (r.ok) credits = (await r.json()) as CreditRow[];
@@ -103,6 +103,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       } catch (e) {
         console.warn("[seo-pages] credits fetch error:", e);
       }
+
 
       // ---- Emit per-profile pages (/profile/:id + /epk/:id) -----------------
       let profilePages = 0;

@@ -80,16 +80,23 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
 
       // ---- Fetch public, crawl-worthy profiles -------------------------------
       let profiles: ProfileRow[] = [];
+      // ---- Fetch public, crawl-worthy profiles via SECURITY DEFINER RPC -----
+      // (RLS on profiles + public_profiles_safe restricts anon to 1 row, so we
+      // call a dedicated sitemap RPC that returns the public slice for all
+      // onboarding-complete profiles.)
+      let profiles: ProfileRow[] = [];
       try {
-        const r = await fetch(
-          `${projectUrl}/rest/v1/public_profiles_safe?select=user_id,username,full_name,role,bio,avatar_url,location,updated_at&onboarding_completed=eq.true&full_name=not.is.null&order=updated_at.desc&limit=2000`,
-          { headers },
-        );
+        const r = await fetch(`${projectUrl}/rest/v1/rpc/get_sitemap_profiles`, {
+          method: "POST",
+          headers: { ...headers, "Content-Type": "application/json" },
+          body: "{}",
+        });
         if (r.ok) profiles = (await r.json()) as ProfileRow[];
-        else console.warn(`[seo-pages] profiles fetch failed: ${r.status}`);
+        else console.warn(`[seo-pages] profiles RPC failed: ${r.status}`);
       } catch (e) {
-        console.warn("[seo-pages] profiles fetch error:", e);
+        console.warn("[seo-pages] profiles RPC error:", e);
       }
+
 
       // ---- Fetch verified credits -------------------------------------------
       let credits: CreditRow[] = [];

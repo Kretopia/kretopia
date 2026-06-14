@@ -1100,7 +1100,8 @@ export function SoundStageRoom({
                 className="rounded-full text-xs h-10 px-3 gap-1.5"
                 onClick={toggleCaptions}
                 disabled={captionsStarting}
-                aria-label={captionsOn ? "Stop captions" : "Start captions"}
+                aria-label={captionsOn ? "Stop live captions" : "Start live captions"}
+                title={captionsOn ? "Live captions on — tap to stop" : "Turn on live captions"}
               >
                 {captionsStarting ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -1109,9 +1110,7 @@ export function SoundStageRoom({
                 ) : (
                   <CaptionsOff className="h-3.5 w-3.5" />
                 )}
-                <span className="hidden sm:inline">
-                  {captionsOn ? "Captions on" : "Captions"}
-                </span>
+                <span>{captionsOn ? "Captions on" : "Captions"}</span>
               </Button>
             )}
             <div className="flex items-center gap-2">

@@ -19390,6 +19390,19 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_sitemap_profiles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          bio: string
+          full_name: string
+          location: string
+          role: string
+          updated_at: string
+          user_id: string
+          username: string
+        }[]
+      }
       get_tier_storage_limit: { Args: { tier: string }; Returns: number }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       guest_drop_post: {

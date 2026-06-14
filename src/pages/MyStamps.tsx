@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, ArrowLeft, Search } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,16 @@ const MyStamps = () => {
 
       <div className="min-h-screen bg-background pb-24">
         <div className="container mx-auto px-4 pt-3">
-          <PassportAnchorStrip />
+          <button
+            type="button"
+            onClick={() => navigate("/credits")}
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Credits
+          </button>
+
+          <PassportAnchorStrip className="mt-2" />
 
           <div className="flex items-center justify-between mt-4 mb-2 gap-3">
             <div className="min-w-0">
@@ -62,6 +71,7 @@ const MyStamps = () => {
             </Button>
           </div>
         </div>
+
 
         <div className="container mx-auto px-4 py-4 max-w-3xl">
           <UnifiedWorkHistory userId={userId} isOwnProfile={true} onRefresh={() => {}} />

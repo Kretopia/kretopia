@@ -118,6 +118,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   // Guest navigation items
   const guestNavItems = [
+    { path: "/credits", label: "Verified Credits" },
     { path: "/spotlight", label: "Spotlight" },
     { path: "/about", label: "About Us" },
   ];

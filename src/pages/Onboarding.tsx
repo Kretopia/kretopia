@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, Search, Globe, Link2, Edit3, AlertCircle } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, Search, Globe, Link2, Edit3, AlertCircle, IdCard } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
@@ -84,6 +84,11 @@ export default function Onboarding() {
   // First-Stamp reveal moment (shown between discover → review when ≥1 credit found)
   const [showFirstStamp, setShowFirstStamp] = useState(false);
 
+  // Username / @handle — claimed before discovery
+  const [username, setUsername] = useState("");
+  const [usernameTouched, setUsernameTouched] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid" | "yours">("idle");
+
   useEffect(() => {
     if (user) checkOnboardingStatus();
   }, [user]);
@@ -98,9 +103,14 @@ export default function Onboarding() {
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("full_name, role, location, avatar_url, bio, onboarding_completed, onboarding_started_at")
+      .select("full_name, role, location, avatar_url, bio, username, onboarding_completed, onboarding_started_at")
       .eq("user_id", user.id)
       .single();
+
+    if (profileData?.username) {
+      setUsername(profileData.username);
+      setUsernameStatus("yours");
+    }
 
     if (profileData?.onboarding_completed) { navigate("/circle"); return; }
 
@@ -190,6 +200,11 @@ export default function Onboarding() {
       toast({ title: "Enter your full name", description: "We need at least 3 characters to search", variant: "destructive" });
       return;
     }
+    if (!isHandleValid(username) || usernameStatus === "taken") {
+      toast({ title: "Pick your @handle first", description: "Your unique creative handle is needed before we search.", variant: "destructive" });
+      return;
+    }
+    await saveUsernameIfReady();
     setSearching(true);
     setSearchAttempted(true);
     setNotFound(false);
@@ -311,11 +326,56 @@ export default function Onboarding() {
     }
   };
 
-  const handleSkipToManual = () => {
+  const handleSkipToManual = async () => {
+    await saveUsernameIfReady();
     setPhase("review");
     import("@/lib/analytics").then(({ analytics }) =>
       analytics.onboardingStep(3, "review_phase_entered_via_skip")
     ).catch(() => {});
+  };
+
+  // ─── USERNAME / @HANDLE ───
+  const normalizeHandle = (raw: string) =>
+    raw.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 24);
+
+  const isHandleValid = (h: string) => /^[a-z0-9_]{3,24}$/.test(h);
+
+  // Suggest a handle from the full name once, when name is set and user hasn't typed one
+  useEffect(() => {
+    if (usernameTouched || username || !fullName?.trim()) return;
+    const suggestion = normalizeHandle(fullName.trim().replace(/\s+/g, ""));
+    if (suggestion.length >= 3) setUsername(suggestion);
+  }, [fullName, username, usernameTouched]);
+
+  // Debounced availability check
+  useEffect(() => {
+    if (!username) { setUsernameStatus("idle"); return; }
+    if (!isHandleValid(username)) { setUsernameStatus("invalid"); return; }
+    setUsernameStatus("checking");
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("username", username)
+        .maybeSingle();
+      if (error) { setUsernameStatus("idle"); return; }
+      if (!data) setUsernameStatus("available");
+      else if (data.user_id === user?.id) setUsernameStatus("yours");
+      else setUsernameStatus("taken");
+    }, 400);
+    return () => clearTimeout(t);
+  }, [username, user?.id]);
+
+  const saveUsernameIfReady = async () => {
+    if (!user) return;
+    if (!isHandleValid(username)) return;
+    if (usernameStatus === "taken" || usernameStatus === "invalid") return;
+    if (usernameStatus === "yours") return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ username })
+      .eq("user_id", user.id);
+    if (!error) setUsernameStatus("yours");
   };
 
   // ─── AVATAR ───
@@ -628,6 +688,40 @@ export default function Onboarding() {
                   onKeyDown={e => { if (e.key === "Enter" && fullName.trim().length >= 3) handleDiscoverProfile(); }}
                 />
               </div>
+
+              {/* Username / @handle — claim your Passport URL */}
+              <div className="space-y-1.5">
+                <Label htmlFor="discover-handle" className="text-sm font-medium flex items-center gap-2">
+                  <IdCard className="h-3.5 w-3.5 text-muted-foreground" />
+                  Claim your @handle
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base font-mono pointer-events-none">@</span>
+                  <Input
+                    id="discover-handle"
+                    value={username}
+                    onChange={e => { setUsername(normalizeHandle(e.target.value)); setUsernameTouched(true); }}
+                    placeholder="your-handle"
+                    className="h-12 text-base pl-7 font-mono"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                  />
+                  {username && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold">
+                      {usernameStatus === "checking" && <span className="text-muted-foreground">checking…</span>}
+                      {usernameStatus === "available" && <span className="text-[hsl(var(--signal-teal))]">✓ available</span>}
+                      {usernameStatus === "yours" && <span className="text-[hsl(var(--signal-teal))]">✓ yours</span>}
+                      {usernameStatus === "taken" && <span className="text-destructive">taken</span>}
+                      {usernameStatus === "invalid" && <span className="text-destructive">3–24 chars · a–z · 0–9 · _</span>}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Your permanent Passport URL: <span className="font-mono text-foreground">thrivein.io/{username || "your-handle"}</span>
+                </p>
+              </div>
+
 
               {/* Professional URL (optional) */}
               <div className="space-y-2">

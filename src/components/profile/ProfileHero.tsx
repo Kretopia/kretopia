@@ -234,8 +234,14 @@ export const ProfileHero = ({
               )}
               <CreativeCircleBadge userId={profile.user_id} />
             </div>
-            {displayRole && (
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-tight mt-0.5">{displayRole}</p>
+            {(displayRole || profile.username) && (
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-tight mt-0.5 flex items-center gap-1.5 flex-wrap">
+                {profile.username && (
+                  <span className="font-mono text-foreground/80">@{profile.username}</span>
+                )}
+                {profile.username && displayRole && <span aria-hidden className="opacity-40">·</span>}
+                {displayRole && <span>{displayRole}</span>}
+              </p>
             )}
           </div>
           {/* (Edit moved to the action bar below to reduce header clutter) */}

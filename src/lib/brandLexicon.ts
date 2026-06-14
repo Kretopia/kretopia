@@ -72,6 +72,20 @@ export const BRAND = {
     setLeader: "Set Leader",
     houseProducer: "House Producer",
   },
+
+  // ── Crews (private invite-only communities) ─────────────────────────────
+  // Replaces the "Circles" / "Communities" language. Crews are private and
+  // invite-only while we build traction. Future rename to "Greenrooms" is a
+  // single string change here — do NOT inline "Crew(s)" anywhere else.
+  // Route stays /circles + /circle/:id for legacy, with /crews + /crew/:id
+  // as the canonical aliases.
+  crew: "Crew",
+  crews: "Crews",
+  crewSingular: "Crew",
+  myCrews: "My Crews",
+  crewRoom: "Room",        // a channel inside a crew
+  crewRooms: "Rooms",
+  crewPrivateWall: "This Crew is private. Ask the host for an invite.",
 } as const;
 
 /**

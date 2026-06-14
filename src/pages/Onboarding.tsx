@@ -84,6 +84,11 @@ export default function Onboarding() {
   // First-Stamp reveal moment (shown between discover → review when ≥1 credit found)
   const [showFirstStamp, setShowFirstStamp] = useState(false);
 
+  // Username / @handle — claimed before discovery
+  const [username, setUsername] = useState("");
+  const [usernameTouched, setUsernameTouched] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid" | "yours">("idle");
+
   useEffect(() => {
     if (user) checkOnboardingStatus();
   }, [user]);

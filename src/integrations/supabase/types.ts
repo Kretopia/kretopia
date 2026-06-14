@@ -19097,6 +19097,14 @@ export type Database = {
         }[]
       }
       get_my_check_in_token: { Args: { _jam_id: string }; Returns: string }
+      get_my_crew_unread: {
+        Args: never
+        Returns: {
+          crew_id: string
+          last_activity_at: string
+          unread_count: number
+        }[]
+      }
       get_my_group_rooms: {
         Args: never
         Returns: {

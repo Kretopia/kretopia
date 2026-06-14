@@ -7,27 +7,29 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, MessageSquare, Home, Users, Calendar, FolderKanban, Hash, Info, Sparkles } from "lucide-react";
+import { Loader2, MessageSquare, Home, Users, Calendar, Hash, Info, Sparkles, Newspaper, FolderOpen } from "lucide-react";
 import { CircleHubHeader } from "@/components/circle/hub/CircleHubHeader";
 import { CircleOverviewTab } from "@/components/circle/hub/CircleOverviewTab";
 import { CircleAboutTab } from "@/components/circle/hub/CircleAboutTab";
 import { CircleEventsTab } from "@/components/circle/hub/CircleEventsTab";
-import { CircleProjectsTab } from "@/components/circle/hub/CircleProjectsTab";
 import { CircleMediaTab } from "@/components/circle/hub/CircleMediaTab";
+import { CircleFeedTab } from "@/components/circle/hub/CircleFeedTab";
+import { CircleLibraryTab } from "@/components/circle/hub/CircleLibraryTab";
 import { CircleWelcomeModal } from "@/components/circle/hub/CircleWelcomeModal";
 import { CircleMemberDirectory } from "@/components/circle/CircleMemberDirectory";
 import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 
 const TABS = [
-  { value: "overview", label: "Overview", icon: Home },
-  { value: "members", label: "Members", icon: Users },
+  { value: "feed", label: "Feed", icon: Newspaper },
+  { value: "rooms", label: "Rooms", icon: Hash },
+  { value: "library", label: "Library", icon: FolderOpen },
   { value: "events", label: "Events", icon: Calendar },
-  { value: "projects", label: "Projects", icon: FolderKanban },
-  { value: "media", label: "Spotlight", icon: Sparkles },
-  { value: "chat", label: "Chat", icon: Hash },
+  { value: "members", label: "Crew", icon: Users },
+  { value: "spotlight", label: "Spotlight", icon: Sparkles },
   { value: "about", label: "About", icon: Info },
 ];
+
 
 const CircleDetail = () => {
   const { circleId } = useParams();

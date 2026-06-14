@@ -39,14 +39,15 @@ interface ProfileRow {
 
 interface CreditRow {
   id: string;
-  project_title: string | null;
+  project_name: string | null;
   role: string | null;
   year: number | null;
-  category: string | null;
+  credit_category: string | null;
   description: string | null;
   thumbnail_url: string | null;
   updated_at: string | null;
 }
+
 
 const PROJECT_REF = "kwmcocsitwssrtzkdojh";
 const FALLBACK_OG = "https://www.thrivein.io/og-image.png";
@@ -81,7 +82,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       let profiles: ProfileRow[] = [];
       try {
         const r = await fetch(
-          `${projectUrl}/rest/v1/profiles?select=user_id,username,full_name,role,bio,avatar_url,location,updated_at&onboarding_completed=eq.true&avatar_url=not.is.null&bio=not.is.null&order=updated_at.desc&limit=2000`,
+          `${projectUrl}/rest/v1/public_profiles_safe?select=user_id,username,full_name,role,bio,avatar_url,location,updated_at&onboarding_completed=eq.true&full_name=not.is.null&order=updated_at.desc&limit=2000`,
           { headers },
         );
         if (r.ok) profiles = (await r.json()) as ProfileRow[];
@@ -94,7 +95,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       let credits: CreditRow[] = [];
       try {
         const r = await fetch(
-          `${projectUrl}/rest/v1/credits?select=id,project_title,role,year,category,description,thumbnail_url,updated_at&verification_status=eq.verified&order=updated_at.desc&limit=2000`,
+          `${projectUrl}/rest/v1/credits?select=id,project_name,role,year,credit_category,description,thumbnail_url,updated_at&verification_status=eq.verified&order=updated_at.desc&limit=2000`,
           { headers },
         );
         if (r.ok) credits = (await r.json()) as CreditRow[];
@@ -102,6 +103,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       } catch (e) {
         console.warn("[seo-pages] credits fetch error:", e);
       }
+
 
       // ---- Emit per-profile pages (/profile/:id + /epk/:id) -----------------
       let profilePages = 0;
@@ -167,12 +169,12 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       // ---- Emit per-credit pages (/credits/project/:id) ---------------------
       let creditPages = 0;
       for (const c of credits) {
-        if (!c.project_title) continue;
+        if (!c.project_name) continue;
         const url = `${siteUrl}/credits/project/${c.id}`;
-        const title = `${c.project_title}${c.year ? ` (${c.year})` : ""} | ThriveIN Credits`;
+        const title = `${c.project_name}${c.year ? ` (${c.year})` : ""} | ThriveIN Credits`;
         const desc = truncate(
           c.description ||
-            `${c.project_title}${c.role ? ` — ${c.role}` : ""}${c.category ? ` · ${c.category}` : ""}. Verified credit on ThriveIN — the creative industry's collaboration database.`,
+            `${c.project_name}${c.role ? ` — ${c.role}` : ""}${c.credit_category ? ` · ${c.credit_category}` : ""}. Verified credit on ThriveIN — the creative industry's collaboration database.`,
           155,
         );
         const html = patchHead(baseHtml, {
@@ -181,11 +183,11 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
           canonical: url,
           ogType: "article",
           ogImage: c.thumbnail_url || FALLBACK_OG,
-          ogImageAlt: c.project_title,
+          ogImageAlt: c.project_name,
           jsonLd: {
             "@context": "https://schema.org",
             "@type": "CreativeWork",
-            name: c.project_title,
+            name: c.project_name,
             ...(c.description && { description: truncate(c.description, 300) }),
             ...(c.thumbnail_url && { image: c.thumbnail_url }),
             ...(c.year && { datePublished: String(c.year) }),
@@ -223,7 +225,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
         urls.push(urlBlock(`${siteUrl}/epk/${p.user_id}`, lm, "weekly", "0.7"));
       }
       for (const c of credits) {
-        if (!c.project_title) continue;
+        if (!c.project_name) continue;
         const lm = (c.updated_at || "").split("T")[0] || today;
         urls.push(urlBlock(`${siteUrl}/credits/project/${c.id}`, lm, "weekly", "0.7"));
       }

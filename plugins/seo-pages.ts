@@ -39,14 +39,15 @@ interface ProfileRow {
 
 interface CreditRow {
   id: string;
-  project_title: string | null;
+  project_name: string | null;
   role: string | null;
   year: number | null;
-  category: string | null;
+  credit_category: string | null;
   description: string | null;
   thumbnail_url: string | null;
   updated_at: string | null;
 }
+
 
 const PROJECT_REF = "kwmcocsitwssrtzkdojh";
 const FALLBACK_OG = "https://www.thrivein.io/og-image.png";

@@ -78,8 +78,6 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
         Authorization: `Bearer ${options.publishableKey}`,
       };
 
-      // ---- Fetch public, crawl-worthy profiles -------------------------------
-      let profiles: ProfileRow[] = [];
       // ---- Fetch public, crawl-worthy profiles via SECURITY DEFINER RPC -----
       // (RLS on profiles + public_profiles_safe restricts anon to 1 row, so we
       // call a dedicated sitemap RPC that returns the public slice for all

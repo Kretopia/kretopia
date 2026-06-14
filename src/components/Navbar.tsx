@@ -273,6 +273,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
                       <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
                       <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
+                      <MenuButton icon={Users} label="Crews" onClick={() => handleNavigation("/crews")} path="/crews" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}

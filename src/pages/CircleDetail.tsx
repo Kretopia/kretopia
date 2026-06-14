@@ -181,11 +181,12 @@ const CircleDetail = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-background">
         <MessageSquare className="h-12 w-12 text-muted-foreground/30" />
-        <p className="text-muted-foreground">Circle not found</p>
-        <Button onClick={() => navigate("/circles")}>Browse circles</Button>
+        <p className="text-muted-foreground">Crew not found</p>
+        <Button onClick={() => navigate("/crews")}>Back to My Crews</Button>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-background pb-24">

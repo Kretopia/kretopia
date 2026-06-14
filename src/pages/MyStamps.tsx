@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, ArrowLeft, Search } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";

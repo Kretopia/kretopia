@@ -137,6 +137,7 @@ const Magazine = lazy(() => import("./pages/Magazine"));
 const Spotlight = lazy(() => import("./pages/Spotlight"));
 const MagazineArticlePage = lazy(() => import("./pages/MagazineArticlePage"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
+const MyStamps = lazy(() => import("./pages/MyStamps"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
@@ -452,6 +453,7 @@ const AppContent = () => {
             
             {/* Credit Database & Discover - Public browsable */}
             <Route path="/credits" element={<CreditDatabase />} />
+            <Route path="/credits/mine" element={<MyStamps />} />
             <Route path="/credits/hub" element={<Navigate to="/credits" replace />} />
             <Route path="/credits/project/:projectId" element={<ICDBProjectPage />} />
             <Route path="/credits/discover" element={<Navigate to="/credits" replace />} />

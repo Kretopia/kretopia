@@ -62,6 +62,7 @@ export const VoiceFirstCreateModal = ({
   const [brief, setBrief] = useState<ExtractedBrief | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [paymentsInvolved, setPaymentsInvolved] = useState<boolean | null>(null);
+  const [trackAsCredit, setTrackAsCredit] = useState<boolean>(false);
   const [workspaceType, setWorkspaceType] = useState<WorkspaceType>("general");
   const [rawInput, setRawInput] = useState<string>("");
 
@@ -84,6 +85,7 @@ export const VoiceFirstCreateModal = ({
       setSelected(new Set());
       setCreating(false);
       setPaymentsInvolved(null);
+      setTrackAsCredit(false);
       setWorkspaceType("general");
       setRawInput("");
     }
@@ -221,6 +223,7 @@ export const VoiceFirstCreateModal = ({
           status: "active",
           workspace_type: workspaceType,
           deal_type: paymentsInvolved ? "paid" : "personal",
+          track_as_credit: trackAsCredit,
           setup_completed: false,
         })
         .select()

@@ -169,12 +169,12 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       // ---- Emit per-credit pages (/credits/project/:id) ---------------------
       let creditPages = 0;
       for (const c of credits) {
-        if (!c.project_title) continue;
+        if (!c.project_name) continue;
         const url = `${siteUrl}/credits/project/${c.id}`;
-        const title = `${c.project_title}${c.year ? ` (${c.year})` : ""} | ThriveIN Credits`;
+        const title = `${c.project_name}${c.year ? ` (${c.year})` : ""} | ThriveIN Credits`;
         const desc = truncate(
           c.description ||
-            `${c.project_title}${c.role ? ` — ${c.role}` : ""}${c.category ? ` · ${c.category}` : ""}. Verified credit on ThriveIN — the creative industry's collaboration database.`,
+            `${c.project_name}${c.role ? ` — ${c.role}` : ""}${c.credit_category ? ` · ${c.credit_category}` : ""}. Verified credit on ThriveIN — the creative industry's collaboration database.`,
           155,
         );
         const html = patchHead(baseHtml, {
@@ -183,11 +183,11 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
           canonical: url,
           ogType: "article",
           ogImage: c.thumbnail_url || FALLBACK_OG,
-          ogImageAlt: c.project_title,
+          ogImageAlt: c.project_name,
           jsonLd: {
             "@context": "https://schema.org",
             "@type": "CreativeWork",
-            name: c.project_title,
+            name: c.project_name,
             ...(c.description && { description: truncate(c.description, 300) }),
             ...(c.thumbnail_url && { image: c.thumbnail_url }),
             ...(c.year && { datePublished: String(c.year) }),
@@ -225,7 +225,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
         urls.push(urlBlock(`${siteUrl}/epk/${p.user_id}`, lm, "weekly", "0.7"));
       }
       for (const c of credits) {
-        if (!c.project_title) continue;
+        if (!c.project_name) continue;
         const lm = (c.updated_at || "").split("T")[0] || today;
         urls.push(urlBlock(`${siteUrl}/credits/project/${c.id}`, lm, "weekly", "0.7"));
       }

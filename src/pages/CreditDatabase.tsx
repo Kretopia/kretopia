@@ -334,21 +334,18 @@ const CreditDatabase = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">
-        <div className="container mx-auto px-4 pt-3">
-          <PassportAnchorStrip />
+        {currentUserId && (
+          <div className="container mx-auto px-4 pt-3 flex justify-end">
+            <button
+              onClick={() => navigate("/credits/mine")}
+              className="inline-flex items-center gap-1.5 px-4 h-8 rounded-full text-[12px] font-semibold bg-[hsl(var(--signal-teal))]/10 text-[hsl(var(--signal-teal))] border border-[hsl(var(--signal-teal))]/30 hover:bg-[hsl(var(--signal-teal))]/15 transition-colors"
+            >
+              <Star className="h-3.5 w-3.5" />
+              My Stamps
+            </button>
+          </div>
+        )}
 
-          {currentUserId && (
-            <div className="flex justify-center mt-3">
-              <button
-                onClick={() => navigate("/credits/mine")}
-                className="inline-flex items-center gap-1.5 px-4 h-8 rounded-full text-[12px] font-semibold bg-[hsl(var(--signal-teal))]/10 text-[hsl(var(--signal-teal))] border border-[hsl(var(--signal-teal))]/30 hover:bg-[hsl(var(--signal-teal))]/15 transition-colors"
-              >
-                <Star className="h-3.5 w-3.5" />
-                My Stamps
-              </button>
-            </div>
-          )}
-        </div>
 
         <>
 

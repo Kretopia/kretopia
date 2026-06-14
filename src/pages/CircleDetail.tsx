@@ -51,8 +51,9 @@ const CircleDetail = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const justJoined = useRef(false);
 
-  const tab = search.get("tab") || "overview";
+  const tab = search.get("tab") || "feed";
   const setTab = (v: string) => setSearch((p) => { p.set("tab", v); return p; }, { replace: true });
+
 
   const isAdmin = userRole === "admin" || circle?.created_by === user?.id;
 

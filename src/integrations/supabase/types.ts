@@ -13833,6 +13833,7 @@ export type Database = {
           spark_room_id: string | null
           status: string | null
           title: string
+          track_as_credit: boolean
           updated_at: string | null
           video_room_started_at: string | null
           video_room_started_by: string | null
@@ -13870,6 +13871,7 @@ export type Database = {
           spark_room_id?: string | null
           status?: string | null
           title: string
+          track_as_credit?: boolean
           updated_at?: string | null
           video_room_started_at?: string | null
           video_room_started_by?: string | null
@@ -13907,6 +13909,7 @@ export type Database = {
           spark_room_id?: string | null
           status?: string | null
           title?: string
+          track_as_credit?: boolean
           updated_at?: string | null
           video_room_started_at?: string | null
           video_room_started_by?: string | null

@@ -153,7 +153,7 @@ const CirclesPage = () => {
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search circles..."
+              placeholder="Search your Crews..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-10 bg-muted/50"
@@ -179,16 +179,16 @@ const CirclesPage = () => {
             ))}
           </div>
 
-          {/* Tabs: Explore / My Circles */}
+          {/* Tabs: Explore / My Crews */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-3 h-9">
               <TabsTrigger value="explore" className="gap-1.5 text-xs">
                 <Sparkles className="h-3.5 w-3.5" />
-                Explore
+                Discover
               </TabsTrigger>
               <TabsTrigger value="mine" className="gap-1.5 text-xs">
                 <Users className="h-3.5 w-3.5" />
-                My Circles
+                My Crews
                 {myCircles.length > 0 && (
                   <span className="ml-1 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
                     {myCircles.length}
@@ -205,10 +205,10 @@ const CirclesPage = () => {
               {!loading && myCircles.length === 0 ? (
                 <Card className="p-8 text-center">
                   <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-                  <p className="font-semibold mb-1">No circles yet</p>
-                  <p className="text-sm text-muted-foreground mb-4">Join circles to connect with other creatives</p>
-                  <Button variant="gradient" size="sm" onClick={() => setActiveTab("explore")}>
-                    <Sparkles className="h-4 w-4 mr-2" /> Explore Circles
+                  <p className="font-semibold mb-1">No Crews yet</p>
+                  <p className="text-sm text-muted-foreground mb-4">Crews are invite-only. Start your own or wait for a host to add you.</p>
+                  <Button variant="gradient" size="sm" onClick={() => setShowCreate(true)}>
+                    <Plus className="h-4 w-4 mr-2" /> Start a Crew
                   </Button>
                 </Card>
               ) : (

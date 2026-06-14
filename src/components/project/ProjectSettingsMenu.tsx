@@ -52,6 +52,7 @@ interface ProjectSettingsMenuProps {
     status: string | null;
     created_by: string;
     workspace_type?: string | null;
+    track_as_credit?: boolean | null;
   };
   collaborators?: Array<{ id: string; full_name: string; avatar_url: string | null }>;
   currentUserId: string;
@@ -80,6 +81,7 @@ export function ProjectSettingsMenu({
   const [title, setTitle] = useState(project.title);
   const [description, setDescription] = useState(project.description || "");
   const [status, setStatus] = useState(project.status || "planning");
+  const [trackAsCredit, setTrackAsCredit] = useState<boolean>(!!project.track_as_credit);
 
   const isOwner = currentUserId === project.created_by;
 
@@ -88,15 +90,16 @@ export function ProjectSettingsMenu({
     try {
       const { error } = await supabase
         .from("projects")
-        .update({ title, description: description || null, status })
+        .update({ title, description: description || null, status, track_as_credit: trackAsCredit })
         .eq("id", project.id);
       if (error) throw error;
       toast({ title: "Project updated" });
       setSettingsOpen(false);
       onProjectUpdated();
-      
+
       // Trigger credits + review prompt when project is marked as completed
-      if (status === "completed" && project.status !== "completed") {
+      // AND the owner has opted-in to tracking this as a credit.
+      if (trackAsCredit && status === "completed" && project.status !== "completed") {
         setTimeout(() => setCreditsDialogOpen(true), 500);
       }
     } catch (error: any) {
@@ -301,6 +304,24 @@ export function ProjectSettingsMenu({
                   <SelectItem value="completed">Completed</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2 rounded-md border border-border p-3">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={trackAsCredit}
+                  onChange={(e) => setTrackAsCredit(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-primary"
+                />
+                <span className="text-sm">
+                  <span className="font-medium">Track this as a credit</span>
+                  <span className="block text-[11px] text-muted-foreground mt-0.5">
+                    Turn on if this is shareable work — collaborators can be
+                    tagged and it flows into Stamps. Leave off for private
+                    planning.
+                  </span>
+                </span>
+              </label>
             </div>
           </div>
           <DialogFooter>

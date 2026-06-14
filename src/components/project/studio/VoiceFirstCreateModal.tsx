@@ -600,6 +600,29 @@ export const VoiceFirstCreateModal = ({
                 </button>
               </div>
             </div>
+
+            {/* Track as credit — opt-in */}
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Track as a credit?
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Turn on if this work is shareable — collaborators can be tagged
+                and the project flows into your Stamps when finished. Leave off
+                for private planning or personal notes.
+              </p>
+              <label className="flex items-center gap-2 cursor-pointer pt-1">
+                <input
+                  type="checkbox"
+                  checked={trackAsCredit}
+                  onChange={(e) => setTrackAsCredit(e.target.checked)}
+                  className="h-4 w-4 accent-primary"
+                />
+                <span className="text-sm font-medium">
+                  Yes — this is shareable work
+                </span>
+              </label>
+            </div>
           </div>
         )}
       </div>

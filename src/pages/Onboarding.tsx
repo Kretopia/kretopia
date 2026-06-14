@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, Search, Globe, Link2, Edit3, AlertCircle } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, Search, Globe, Link2, Edit3, AlertCircle, IdCard } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";

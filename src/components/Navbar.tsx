@@ -20,6 +20,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { getTierDisplayName } from "@/lib/subscriptionConfig";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { StorageMeter } from "@/components/storage/StorageMeter";
+import { useCrewUnread } from "@/hooks/useCrewUnread";
 // useNavMode removed — single unified nav
 import {
   Sheet,
@@ -49,6 +50,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
   const { unreadCount } = useNotifications();
   const inboxBadge = unreadCount > 0 ? (unreadCount > 99 ? "99+" : String(unreadCount)) : undefined;
+  const { badge: crewBadge } = useCrewUnread();
 
   useEffect(() => {
     if (!user) return;
@@ -273,7 +275,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
                       <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
                       <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
-                      <MenuButton icon={Users} label="Crews" onClick={() => handleNavigation("/crews")} path="/crews" />
+                      <MenuButton icon={Users} label="Crews" onClick={() => handleNavigation("/crews")} path="/crews" badge={crewBadge} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}

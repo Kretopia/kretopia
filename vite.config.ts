@@ -156,6 +156,11 @@ export default defineConfig(({ mode }) => {
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",
       }),
+      seoPagesPlugin({
+        projectUrl: env.VITE_SUPABASE_URL,
+        publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        siteUrl: "https://www.thrivein.io",
+      }),
     ].filter(Boolean),
     resolve: {
       alias: {

@@ -103,9 +103,14 @@ export default function Onboarding() {
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("full_name, role, location, avatar_url, bio, onboarding_completed, onboarding_started_at")
+      .select("full_name, role, location, avatar_url, bio, username, onboarding_completed, onboarding_started_at")
       .eq("user_id", user.id)
       .single();
+
+    if (profileData?.username) {
+      setUsername(profileData.username);
+      setUsernameStatus("yours");
+    }
 
     if (profileData?.onboarding_completed) { navigate("/circle"); return; }
 

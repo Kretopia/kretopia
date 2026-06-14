@@ -844,8 +844,12 @@ export function SoundStageRoom({
               isHost={isHost}
               mode={mode}
               camStream={localCamStream}
-              onJoin={() => setPhase("joining")}
+              onJoin={() => {
+                if (isBackstage && isHost) void openTheDoors();
+                setPhase("joining");
+              }}
               onCancel={leave}
+              backstage={isBackstage && isHost}
             />
           ) : joining ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">

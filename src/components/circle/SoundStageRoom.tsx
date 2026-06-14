@@ -1722,7 +1722,7 @@ function MicCheckScreen({
           ) : (
             <Mic className="h-4 w-4 mr-2" />
           )}
-          {isHost ? "Go live on stage" : "Join the room"}
+          {isHost ? (backstage ? "Open doors & go live" : "Go live on stage") : "Join the room"}
         </Button>
         <Button
           variant="ghost"

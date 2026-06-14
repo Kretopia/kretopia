@@ -805,12 +805,20 @@ export function SoundStageRoom({
               <X className="h-4 w-4" />
             </Button>
           </div>
-          {isBackstage && isHost && (
+          {isBackstage && isHost && phase === "miccheck" && (
+            <div className="rounded-xl bg-[hsl(var(--signal-amber))]/10 border border-[hsl(var(--signal-amber))]/40 px-3 py-2">
+              <p className="text-[11px] font-semibold leading-tight">Soundcheck mode</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">
+                Check your camera + mic. Doors open the moment you tap Go live.
+              </p>
+            </div>
+          )}
+          {isBackstage && isHost && phase !== "miccheck" && (
             <div className="flex items-center gap-2 rounded-xl bg-[hsl(var(--signal-amber))]/10 border border-[hsl(var(--signal-amber))]/40 px-3 py-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold leading-tight">Soundcheck mode</p>
+                <p className="text-[11px] font-semibold leading-tight">Doors still closed</p>
                 <p className="text-[10px] text-muted-foreground leading-snug">
-                  Check your camera + mic. Nobody can see this stage yet.
+                  Rehearse as long as you like — tap when you're ready for the rail.
                 </p>
               </div>
               <Button

@@ -190,9 +190,10 @@ const CircleDetail = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <Helmet>
-        <title>{circle.title} · Circle | ThriveIN</title>
-        <meta name="description" content={circle.tagline || circle.description?.slice(0, 150) || `${circle.title} — a creative circle on ThriveIN.`} />
+        <title>{circle.title} · Crew | ThriveIN</title>
+        <meta name="description" content={circle.tagline || circle.description?.slice(0, 150) || `${circle.title} — a private Crew on ThriveIN.`} />
       </Helmet>
+
 
       <CircleHubHeader
         circle={circle}

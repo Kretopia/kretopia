@@ -5,7 +5,7 @@ import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, LayoutDashboard, Radar, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
   MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox,
-  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater
+  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 // UnifiedSearchDropdown removed from top nav — Thrive bar owns search
@@ -118,6 +118,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   // Guest navigation items
   const guestNavItems = [
+    { path: "/credits", label: "Verified Credits" },
     { path: "/spotlight", label: "Spotlight" },
     { path: "/about", label: "About Us" },
   ];
@@ -282,6 +283,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       {/* MORE — keep lean. Spotlight/Brand Vault/Referrals reachable by direct URL. */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">More</p>
+                      <MenuButton icon={Database} label="Verified Credits" onClick={() => handleNavigation("/credits")} path="/credits" />
                       <MenuButton icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
                       <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />
 

@@ -152,8 +152,30 @@ const ICDBProjectPage = () => {
   return (
     <>
       <Helmet>
-        <title>{project.title} — ThriveCredits | ThriveIN</title>
-        <meta name="description" content={project.description || `${project.title} — a ${formatType(project.type)} project on ThriveCredits.`} />
+        <title>{project.title}{project.year ? ` (${project.year})` : ""} — Verified Credits | ThriveIN</title>
+        <meta name="description" content={project.description || `${project.title} — ${formatType(project.type)}${project.year ? `, ${project.year}` : ""}. Full verified credits on ThriveIN.`} />
+        <link rel="canonical" href={`https://www.thrivein.io/credits/project/${project.id}`} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://www.thrivein.io/credits/project/${project.id}`} />
+        <meta property="og:title" content={`${project.title} — Verified Credits`} />
+        <meta property="og:description" content={project.description || `${formatType(project.type)}${project.year ? ` · ${project.year}` : ""}${project.client_brand ? ` · ${project.client_brand}` : ""}`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CreativeWork",
+          name: project.title,
+          datePublished: project.year ? String(project.year) : undefined,
+          genre: formatType(project.type),
+          contentLocation: project.location || undefined,
+          publisher: project.client_brand || project.platform || undefined,
+          url: `https://www.thrivein.io/credits/project/${project.id}`,
+          description: project.description || undefined,
+          contributor: roles.map(r => ({
+            "@type": "Person",
+            name: r.is_claimed && r.profile ? r.profile.full_name : (r.person_name || "Unknown"),
+            jobTitle: r.role_title,
+            url: r.is_claimed && r.claimed_by ? `https://www.thrivein.io/profile/${r.claimed_by}` : undefined,
+          })),
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background pb-24">
@@ -286,9 +308,29 @@ const ICDBProjectPage = () => {
                           Claim
                         </Button>
                       )}
+                      {!role.is_claimed && !currentUserId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-[11px] gap-1 shrink-0"
+                          onClick={() => navigate(`/auth?redirect=/credits/project/${projectId}`)}
+                        >
+                          <UserPlus className="h-3 w-3" /> Claim
+                        </Button>
+                      )}
                     </div>
                   ))}
           </div>
+
+          {!currentUserId && roles.some(r => !r.is_claimed) && (
+            <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+              <p className="text-sm font-semibold mb-1">Is your name on this project?</p>
+              <p className="text-xs text-muted-foreground mb-3">Sign up free, claim your role, and add it to your Creative Passport in 30 seconds.</p>
+              <Button size="sm" onClick={() => navigate(`/auth?redirect=/credits/project/${projectId}`)}>
+                Create your Passport
+              </Button>
+            </div>
+          )}
 
           {/* Share / Copy link */}
           <div className="mt-8 text-center">
@@ -297,7 +339,7 @@ const ICDBProjectPage = () => {
               size="sm"
               className="gap-2"
               onClick={() => {
-                navigator.clipboard.writeText(getShareUrl());
+                navigator.clipboard.writeText(window.location.href);
                 toast.success("Link copied!");
               }}
             >

@@ -312,8 +312,25 @@ const CreditDatabase = () => {
   return (
     <>
       <Helmet>
-        <title>ThriveCredits — Your Creative Passport | ThriveIN</title>
-        <meta name="description" content="Your creative passport. Search and claim your work across film, music, events, fashion, art, and all creative industries." />
+        <title>Verified Credits — Search Creative Work | ThriveIN</title>
+        <meta name="description" content="The IMDb of the creator economy. Search verified credits across film, TV, music, events, fashion, art, and more. Claim your work, get co-signed, build your Creative Passport." />
+        <link rel="canonical" href="https://www.thrivein.io/credits" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.thrivein.io/credits" />
+        <meta property="og:title" content="Verified Credits — Search Creative Work | ThriveIN" />
+        <meta property="og:description" content="The IMDb of the creator economy. Search verified credits, claim your work, get co-signed." />
+        <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "ThriveIN Verified Credits",
+          url: "https://www.thrivein.io/credits",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://www.thrivein.io/credits?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        })}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">

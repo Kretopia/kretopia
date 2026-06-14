@@ -7,27 +7,29 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, MessageSquare, Home, Users, Calendar, FolderKanban, Hash, Info, Sparkles } from "lucide-react";
+import { Loader2, MessageSquare, Home, Users, Calendar, Hash, Info, Sparkles, Newspaper, FolderOpen } from "lucide-react";
 import { CircleHubHeader } from "@/components/circle/hub/CircleHubHeader";
 import { CircleOverviewTab } from "@/components/circle/hub/CircleOverviewTab";
 import { CircleAboutTab } from "@/components/circle/hub/CircleAboutTab";
 import { CircleEventsTab } from "@/components/circle/hub/CircleEventsTab";
-import { CircleProjectsTab } from "@/components/circle/hub/CircleProjectsTab";
 import { CircleMediaTab } from "@/components/circle/hub/CircleMediaTab";
+import { CircleFeedTab } from "@/components/circle/hub/CircleFeedTab";
+import { CircleLibraryTab } from "@/components/circle/hub/CircleLibraryTab";
 import { CircleWelcomeModal } from "@/components/circle/hub/CircleWelcomeModal";
 import { CircleMemberDirectory } from "@/components/circle/CircleMemberDirectory";
 import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 
 const TABS = [
-  { value: "overview", label: "Overview", icon: Home },
-  { value: "members", label: "Members", icon: Users },
+  { value: "feed", label: "Feed", icon: Newspaper },
+  { value: "rooms", label: "Rooms", icon: Hash },
+  { value: "library", label: "Library", icon: FolderOpen },
   { value: "events", label: "Events", icon: Calendar },
-  { value: "projects", label: "Projects", icon: FolderKanban },
-  { value: "media", label: "Spotlight", icon: Sparkles },
-  { value: "chat", label: "Chat", icon: Hash },
+  { value: "members", label: "Crew", icon: Users },
+  { value: "spotlight", label: "Spotlight", icon: Sparkles },
   { value: "about", label: "About", icon: Info },
 ];
+
 
 const CircleDetail = () => {
   const { circleId } = useParams();
@@ -49,8 +51,9 @@ const CircleDetail = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const justJoined = useRef(false);
 
-  const tab = search.get("tab") || "overview";
+  const tab = search.get("tab") || "feed";
   const setTab = (v: string) => setSearch((p) => { p.set("tab", v); return p; }, { replace: true });
+
 
   const isAdmin = userRole === "admin" || circle?.created_by === user?.id;
 
@@ -178,18 +181,20 @@ const CircleDetail = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-background">
         <MessageSquare className="h-12 w-12 text-muted-foreground/30" />
-        <p className="text-muted-foreground">Circle not found</p>
-        <Button onClick={() => navigate("/circles")}>Browse circles</Button>
+        <p className="text-muted-foreground">Crew not found</p>
+        <Button onClick={() => navigate("/crews")}>Back to My Crews</Button>
       </div>
     );
   }
 
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Helmet>
-        <title>{circle.title} · Circle | ThriveIN</title>
-        <meta name="description" content={circle.tagline || circle.description?.slice(0, 150) || `${circle.title} — a creative circle on ThriveIN.`} />
+        <title>{circle.title} · Crew | ThriveIN</title>
+        <meta name="description" content={circle.tagline || circle.description?.slice(0, 150) || `${circle.title} — a private Crew on ThriveIN.`} />
       </Helmet>
+
 
       <CircleHubHeader
         circle={circle}
@@ -206,7 +211,7 @@ const CircleDetail = () => {
         onManage={() => setShowAdmin(true)}
       />
 
-      <Tabs value={tab} onValueChange={(v) => v === "chat" ? goToChat() : setTab(v)} className="mt-4">
+      <Tabs value={tab} onValueChange={(v) => v === "rooms" ? goToChat() : setTab(v)} className="mt-4">
         <div className="sticky top-14 z-30 bg-background border-b border-border/50">
           <TabsList className="w-full h-auto p-0 bg-transparent justify-start overflow-x-auto scrollbar-hide rounded-none">
             {TABS.map(t => (
@@ -222,15 +227,17 @@ const CircleDetail = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="overview" className="mt-4">
-          <CircleOverviewTab
-            circle={circle}
-            members={members}
-            events={events}
+        <TabsContent value="feed" className="mt-4">
+          <CircleFeedTab
+            circleId={circleId!}
             isMember={isMember}
-            onSwitchTab={setTab}
-            onCreateEvent={() => setShowCreateEvent(true)}
+            isAdmin={isAdmin}
+            onOpenChat={goToChat}
           />
+        </TabsContent>
+
+        <TabsContent value="library" className="mt-4">
+          <CircleLibraryTab circleId={circleId!} />
         </TabsContent>
 
         <TabsContent value="members" className="mt-4 px-4">
@@ -248,11 +255,7 @@ const CircleDetail = () => {
           />
         </TabsContent>
 
-        <TabsContent value="projects" className="mt-4">
-          <CircleProjectsTab circleId={circleId!} isMember={isMember} />
-        </TabsContent>
-
-        <TabsContent value="media" className="mt-4">
+        <TabsContent value="spotlight" className="mt-4">
           <CircleMediaTab circleId={circleId!} members={members} />
         </TabsContent>
 
@@ -260,6 +263,7 @@ const CircleDetail = () => {
           <CircleAboutTab circle={circle} leaderProfile={leader} memberCount={members.length} />
         </TabsContent>
       </Tabs>
+
 
       {showAdmin && circle && (
         <CircleAdminPanel circle={circle} onClose={() => { setShowAdmin(false); fetchAll(); }} />

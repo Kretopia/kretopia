@@ -260,12 +260,14 @@ const ThriveDesk = () => {
         {/* Pending invite — accept inline */}
         <ProjectInviteAcceptBanner projectId={projectId!} onAccepted={fetchProjectData} />
 
-        {/* Credit Confirmation Banner */}
-        <ConfirmCreditBanner
-          projectId={projectId!}
-          projectTitle={project.title}
-          onConfirmed={fetchProjectData}
-        />
+        {/* Credit Confirmation Banner — only when project opted-in to credits */}
+        {(project as any)?.track_as_credit && (
+          <ConfirmCreditBanner
+            projectId={projectId!}
+            projectTitle={project.title}
+            onConfirmed={fetchProjectData}
+          />
+        )}
 
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">

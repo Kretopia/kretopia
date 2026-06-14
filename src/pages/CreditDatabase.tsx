@@ -337,44 +337,21 @@ const CreditDatabase = () => {
         <div className="container mx-auto px-4 pt-3">
           <PassportAnchorStrip />
 
-          {/* My Work / Explore toggle */}
-          <div className="flex items-center gap-1.5 mt-3 p-1 rounded-full bg-muted/50 w-fit mx-auto">
-            <button
-              onClick={() => setView("mine")}
-              disabled={!currentUserId}
-              className={cn(
-                "px-4 h-8 rounded-full text-[12px] font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
-                view === "mine"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              My Work
-            </button>
-            <button
-              onClick={() => setView("explore")}
-              className={cn(
-                "px-4 h-8 rounded-full text-[12px] font-semibold transition-colors",
-                view === "explore"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Explore
-            </button>
-          </div>
+          {currentUserId && (
+            <div className="flex justify-center mt-3">
+              <button
+                onClick={() => navigate("/credits/mine")}
+                className="inline-flex items-center gap-1.5 px-4 h-8 rounded-full text-[12px] font-semibold bg-[hsl(var(--signal-teal))]/10 text-[hsl(var(--signal-teal))] border border-[hsl(var(--signal-teal))]/30 hover:bg-[hsl(var(--signal-teal))]/15 transition-colors"
+              >
+                <Star className="h-3.5 w-3.5" />
+                My Stamps
+              </button>
+            </div>
+          )}
         </div>
 
-        {view === "mine" && currentUserId ? (
-          <div className="container mx-auto px-4 py-6 max-w-3xl">
-            <UnifiedWorkHistory
-              userId={currentUserId}
-              isOwnProfile={true}
-              onRefresh={() => { /* local refresh handled inside */ }}
-            />
-          </div>
-        ) : (
         <>
+
         {/* Search Hero */}
         <div className={cn(
           "transition-all duration-300",
@@ -632,7 +609,6 @@ const CreditDatabase = () => {
           )}
         </div>
         </>
-        )}
       </div>
 
       {/* Claim Dialog */}

@@ -62,6 +62,7 @@ export const VoiceFirstCreateModal = ({
   const [brief, setBrief] = useState<ExtractedBrief | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [paymentsInvolved, setPaymentsInvolved] = useState<boolean | null>(null);
+  const [trackAsCredit, setTrackAsCredit] = useState<boolean>(false);
   const [workspaceType, setWorkspaceType] = useState<WorkspaceType>("general");
   const [rawInput, setRawInput] = useState<string>("");
 
@@ -84,6 +85,7 @@ export const VoiceFirstCreateModal = ({
       setSelected(new Set());
       setCreating(false);
       setPaymentsInvolved(null);
+      setTrackAsCredit(false);
       setWorkspaceType("general");
       setRawInput("");
     }
@@ -221,6 +223,7 @@ export const VoiceFirstCreateModal = ({
           status: "active",
           workspace_type: workspaceType,
           deal_type: paymentsInvolved ? "paid" : "personal",
+          track_as_credit: trackAsCredit,
           setup_completed: false,
         })
         .select()
@@ -596,6 +599,29 @@ export const VoiceFirstCreateModal = ({
                   No — personal/passion
                 </button>
               </div>
+            </div>
+
+            {/* Track as credit — opt-in */}
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Track as a credit?
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Turn on if this work is shareable — collaborators can be tagged
+                and the project flows into your Stamps when finished. Leave off
+                for private planning or personal notes.
+              </p>
+              <label className="flex items-center gap-2 cursor-pointer pt-1">
+                <input
+                  type="checkbox"
+                  checked={trackAsCredit}
+                  onChange={(e) => setTrackAsCredit(e.target.checked)}
+                  className="h-4 w-4 accent-primary"
+                />
+                <span className="text-sm font-medium">
+                  Yes — this is shareable work
+                </span>
+              </label>
             </div>
           </div>
         )}

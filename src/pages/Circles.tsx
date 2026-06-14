@@ -101,8 +101,8 @@ const CirclesPage = () => {
   return (
     <>
       <Helmet>
-        <title>Circles | ThriveIN</title>
-        <meta name="description" content="Join community spaces, discuss ideas, and grow with fellow creatives on ThriveIN." />
+        <title>Crews | ThriveIN</title>
+        <meta name="description" content="Your private Crews on ThriveIN — invite-only spaces to run with your people." />
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -113,13 +113,14 @@ const CirclesPage = () => {
               <div>
                 <h1 className="text-xl font-bold flex items-center gap-2">
                   <MessageSquareMore className="h-5 w-5 text-primary" />
-                  Circles
+                  Crews
                 </h1>
-                <p className="text-xs text-muted-foreground">{circles.length} circles · {circles.reduce((a, c) => a + c.member_count, 0).toLocaleString()} members</p>
+                <p className="text-xs text-muted-foreground">Private, invite-only. {myCircles.length} of yours</p>
               </div>
               <CreateCircleDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchCircles} />
             </div>
           </div>
+
 
           {/* Trending Banner */}
           {trendingCircles.length > 0 && (

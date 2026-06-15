@@ -511,7 +511,26 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{credit.title}</h4>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{credit.title}</h4>
+                          {(() => {
+                            const now = new Date().getFullYear();
+                            if (!credit.year) return null;
+                            const isFuture = credit.year > now;
+                            const isCurrent = credit.year === now;
+                            const label = isFuture ? "In Production" : isCurrent ? "Post-Prod" : "Released";
+                            const cls = isFuture
+                              ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                              : isCurrent
+                                ? "bg-primary/15 text-primary border-primary/30"
+                                : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
+                            return (
+                              <span className={cn("shrink-0 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border", cls)}>
+                                {label}
+                              </span>
+                            );
+                          })()}
+                        </div>
                         <p className="text-xs text-muted-foreground truncate">
                           {credit.role}
                           {credit.year && <span> · {credit.year}</span>}

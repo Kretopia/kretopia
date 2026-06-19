@@ -94,7 +94,7 @@ export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageS
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto">
+      <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto mx-auto w-full sm:max-w-xl">
         <SheetHeader className="text-left">
           <SheetTitle>Schedule a stage</SheetTitle>
         </SheetHeader>

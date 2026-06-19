@@ -164,7 +164,7 @@ export function LiveCallsPanel() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-2xl space-y-6">
       {/* Hero — Go Live */}
       <Card className="border-energy/40 bg-gradient-to-br from-energy/10 via-transparent to-primary/5 overflow-hidden">
         <CardContent className="p-5 sm:p-6 space-y-4">

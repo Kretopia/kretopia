@@ -105,7 +105,7 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-3xl max-h-[92vh] overflow-y-auto"
+        className="rounded-t-3xl max-h-[92vh] overflow-y-auto mx-auto w-full sm:max-w-xl"
       >
         <SheetHeader className="text-left">
           <SheetTitle className="flex items-center gap-2">

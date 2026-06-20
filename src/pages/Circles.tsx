@@ -133,7 +133,7 @@ const CirclesPage = () => {
                 {trendingCircles.map(c => (
                   <button
                     key={c.id}
-                    onClick={() => navigate(`/circle/${c.id}`)}
+                    onClick={() => navigate(`/crew/${c.id}`)}
                     className="flex items-center gap-2 bg-card border border-border/50 rounded-full px-3 py-1.5 shrink-0 hover:bg-accent/10 transition-colors"
                   >
                     <span className="text-sm">{c.icon_emoji}</span>

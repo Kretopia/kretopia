@@ -3858,6 +3858,123 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_feed_post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_feed_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "crew_feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_feed_post_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_feed_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "crew_feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_feed_posts: {
+        Row: {
+          circle_id: string
+          comment_count: number
+          content: string
+          created_at: string
+          id: string
+          is_pinned: boolean
+          media_type: string | null
+          media_url: string | null
+          reaction_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          circle_id: string
+          comment_count?: number
+          content: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          media_type?: string | null
+          media_url?: string | null
+          reaction_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          circle_id?: string
+          comment_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          media_type?: string | null
+          media_url?: string | null
+          reaction_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_feed_posts_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curated_stage_app_usage: {
         Row: {
           application_count: number
@@ -19452,6 +19569,10 @@ export type Database = {
       increment_thrive_doc_views: {
         Args: { _token: string }
         Returns: undefined
+      }
+      is_crew_member: {
+        Args: { _circle_id: string; _user_id: string }
+        Returns: boolean
       }
       is_event_host: {
         Args: { _event_id: string; _user_id: string }

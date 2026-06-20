@@ -133,7 +133,7 @@ const CirclesPage = () => {
                 {trendingCircles.map(c => (
                   <button
                     key={c.id}
-                    onClick={() => navigate(`/circle/${c.id}`)}
+                    onClick={() => navigate(`/crew/${c.id}`)}
                     className="flex items-center gap-2 bg-card border border-border/50 rounded-full px-3 py-1.5 shrink-0 hover:bg-accent/10 transition-colors"
                   >
                     <span className="text-sm">{c.icon_emoji}</span>
@@ -246,12 +246,12 @@ const CirclesList = ({ circles, loading, navigate }: { circles: CircleData[]; lo
         <div className="rounded-full bg-muted/50 p-6 mb-4 inline-flex">
           <MessageSquareMore className="h-10 w-10 text-muted-foreground" />
         </div>
-        <h3 className="font-semibold mb-2">No circles found</h3>
+        <h3 className="font-semibold mb-2">No crews found</h3>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-4">
-          Try a different search or create your own circle to connect with creators.
+          Crews are private and invite-only. Try a different search, or start your own.
         </p>
-        <Button size="sm" onClick={() => navigate("/circle")}>
-          Browse Creators
+        <Button size="sm" onClick={() => navigate("/crews")}>
+          Browse Crews
         </Button>
       </div>
     );
@@ -259,7 +259,7 @@ const CirclesList = ({ circles, loading, navigate }: { circles: CircleData[]; lo
   return (
     <div className="space-y-2">
       {circles.map(circle => (
-        <CircleCard key={circle.id} circle={circle} onClick={() => navigate(`/circle/${circle.id}`)} />
+        <CircleCard key={circle.id} circle={circle} onClick={() => navigate(`/crew/${circle.id}`)} />
       ))}
     </div>
   );

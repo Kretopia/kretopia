@@ -66,6 +66,7 @@ const CuratedStage = lazy(() => import("./pages/CuratedStage"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
 const CircleChatView = lazy(() => import("./pages/CircleChatView"));
 const Circles = lazy(() => import("./pages/Circles"));
+import { CircleToCrewRedirect } from "./components/CircleToCrewRedirect";
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ThriveGenerate = lazy(() => import("./pages/ThriveGenerate"));
@@ -305,13 +306,14 @@ const AppContent = () => {
           <Route path="/circle/speed/:id" element={<SpeedSession />} />
           <Route path="/circle/speed/:id/recap" element={<SpeedRecap />} />
            <Route path="/circle/stage/:id" element={<CuratedStage />}/>
-            <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
-            <Route path="/circle/:circleId/chat" element={<ProtectedRoute><CircleChatView /></ProtectedRoute>} />
-            <Route path="/circles" element={<Circles />} />
-            {/* Crews — canonical aliases for the rebranded Circles surfaces (private, invite-only). */}
+            {/* Crews — canonical surfaces (private, invite-only). */}
             <Route path="/crews" element={<Circles />} />
             <Route path="/crew/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
             <Route path="/crew/:circleId/chat" element={<ProtectedRoute><CircleChatView /></ProtectedRoute>} />
+            {/* Legacy /circle/:id deep links redirect to /crew/:id (Phase 1 lexicon swap). */}
+            <Route path="/circles" element={<Navigate to="/crews" replace />} />
+            <Route path="/circle/:circleId" element={<ProtectedRoute><CircleToCrewRedirect /></ProtectedRoute>} />
+            <Route path="/circle/:circleId/chat" element={<ProtectedRoute><CircleToCrewRedirect suffix="/chat" /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             

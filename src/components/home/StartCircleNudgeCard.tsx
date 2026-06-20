@@ -74,15 +74,15 @@ export function StartCircleNudgeCard({ className }: Props) {
 
   const Icon = reason === "host" ? Calendar : Users;
   const headline = reason === "host"
-    ? "Turn your event into a Circle"
-    : "You've built a network. Build your Circle.";
+    ? "Turn your event into a Crew"
+    : "You've built a network. Build your Crew.";
   const sub = reason === "host"
-    ? "Your attendees want to stay connected — give them a home."
-    : "Bring your collaborators together and keep the momentum going.";
+    ? "Your attendees want to stay connected — give them a private home."
+    : "Bring your collaborators together in an invite-only space.";
 
   return (
     <Link
-      to="/circles/create"
+      to="/crews"
       className={`group block relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card to-accent/5 p-4 hover:border-primary/60 transition-all ${className || ""}`}
     >
       <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/15 blur-2xl pointer-events-none" />

@@ -18943,6 +18943,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      gen_random_bytes: { Args: { size: number }; Returns: string }
       generate_bank_transfer_reference: { Args: never; Returns: string }
       generate_claim_token: { Args: never; Returns: string }
       generate_icdb_creator_id: { Args: never; Returns: string }

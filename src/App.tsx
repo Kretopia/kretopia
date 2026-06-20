@@ -66,6 +66,7 @@ const CuratedStage = lazy(() => import("./pages/CuratedStage"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
 const CircleChatView = lazy(() => import("./pages/CircleChatView"));
 const Circles = lazy(() => import("./pages/Circles"));
+import { CircleToCrewRedirect } from "./components/CircleToCrewRedirect";
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ThriveGenerate = lazy(() => import("./pages/ThriveGenerate"));

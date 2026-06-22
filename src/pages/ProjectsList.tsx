@@ -13,6 +13,7 @@ import { MyPendingInvitations } from "@/components/project/MyPendingInvitations"
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
+import { StudioFoldersBar, type StudioFolder } from "@/components/project/studio/StudioFoldersBar";
 
 const ProjectsList = () => {
   const navigate = useNavigate();

@@ -6,15 +6,13 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { requireAdminOrCron, adminGuardCorsHeaders } from "../_shared/admin-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
-};
+const corsHeaders = adminGuardCorsHeaders;
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const CRON_SECRET = Deno.env.get("CRON_SECRET");
+const CRON_SECRET = Deno.env.get("CRON_SECRET")!; // used for downstream invoke
 
 const ELIGIBLE_TIERS = ["pro", "creator_plus", "creatorplus", "creator+", "founder", "founding_member"];
 
@@ -22,10 +20,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const provided = req.headers.get("x-cron-secret");
-    if (!CRON_SECRET || provided !== CRON_SECRET) {
-      return json({ error: "unauthorized" }, 401);
-    }
+    const guard = await requireAdminOrCron(req);
+    if (!guard.ok) return guard.response;
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 

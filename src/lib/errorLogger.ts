@@ -55,6 +55,8 @@ const IGNORED_PATTERNS = [
   /Failed to fetch dynamically imported module/i, // stale chunk after deploy — auto-recovers on reload
   /Importing a module script failed/i, // same as above (Safari variant)
   /AbortError/i, // user-initiated cancellations
+  /Maximum call stack size exceeded/i, // recursion blow-up — logging it cascades
+  /null is not an object \(evaluating '.*postMessage'\)/i, // realtime/iframe transport race
 ];
 
 /** Also check the stack trace for known noisy sources. */

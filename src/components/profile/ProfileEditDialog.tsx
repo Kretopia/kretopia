@@ -272,6 +272,7 @@ export function ProfileEditDialog({
     passport_profession: "",
   });
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [inferringProfession, setInferringProfession] = useState(false);
 
   const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
   const hasShownToastRef = useRef(false);

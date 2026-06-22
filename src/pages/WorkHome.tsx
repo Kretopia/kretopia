@@ -49,6 +49,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
+import { StudioFoldersBar, type StudioFolder } from "@/components/project/studio/StudioFoldersBar";
 import { TodayStrip } from "@/components/desk/TodayStrip";
 import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
 import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
@@ -341,6 +342,19 @@ const CreatorWorkHome = () => {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
   const [wrapWeekOpen, setWrapWeekOpen] = useState(false);
+  const [folders, setFolders] = useState<StudioFolder[]>([]);
+  const [folderFilter, setFolderFilter] = useState<string>("all");
+
+  const fetchFolders = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("studio_folders")
+      .select("id, name, color, sort_order")
+      .eq("user_id", user.id)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+    setFolders((data as StudioFolder[]) || []);
+  };
 
   const fetchProjects = async () => {
     if (!user) return;
@@ -375,6 +389,7 @@ const CreatorWorkHome = () => {
 
   useEffect(() => {
     fetchProjects().catch(() => setLoading(false));
+    fetchFolders().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -384,6 +399,21 @@ const CreatorWorkHome = () => {
 
   const activeProjects = projects.filter(p => p.status === "active");
   const completedProjects = projects.filter(p => p.status === "completed" || p.status === "archived");
+
+  const folderCounts = (() => {
+    const counts: Record<string, number> = { unfiled: 0 };
+    for (const p of projects) {
+      const key = (p as any).studio_folder_id || "unfiled";
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return counts;
+  })();
+
+  const visibleProjects = projects.filter((p) => {
+    if (folderFilter === "all") return true;
+    if (folderFilter === "unfiled") return !(p as any).studio_folder_id;
+    return (p as any).studio_folder_id === folderFilter;
+  });
 
   return (
     <PageTransition>
@@ -432,6 +462,18 @@ const CreatorWorkHome = () => {
         {/* Pending invites */}
         <MyPendingInvitations />
 
+        {/* Folders bar — group, filter, AI-suggest */}
+        {user && projects.length > 0 && (
+          <StudioFoldersBar
+            userId={user.id}
+            folders={folders}
+            counts={folderCounts}
+            selected={folderFilter}
+            onSelect={setFolderFilter}
+            onChanged={() => { fetchFolders(); fetchProjects(); }}
+          />
+        )}
+
         {/* Studio rooms grid */}
         {projects.length > 0 && (
           <div className="space-y-2">
@@ -445,11 +487,12 @@ const CreatorWorkHome = () => {
         )}
 
         <StudioCardsGrid
-          projects={projects as any}
+          projects={visibleProjects as any}
           invoicesByProject={invoicesByProject}
           onNewProject={() => setShowCreateProject(true)}
         />
       </div>
+
 
       {/* Voice-first create */}
       <VoiceFirstCreateModal

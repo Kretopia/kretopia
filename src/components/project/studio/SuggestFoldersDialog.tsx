@@ -127,15 +127,14 @@ export const SuggestFoldersDialog = ({ userId, open, onOpenChange, onApplied }: 
       }
 
       // Update in parallel batches
-      await Promise.all(
-        moves.map((m) =>
-          supabase
-            .from("projects")
-            .update({ studio_folder_id: m.folderId })
-            .eq("id", m.id)
-            .eq("user_id", userId),
-        ),
-      );
+      const moveOne = async (m: { id: string; folderId: string }) => {
+        await supabase
+          .from("projects")
+          .update({ studio_folder_id: m.folderId })
+          .eq("id", m.id)
+          .eq("user_id", userId);
+      };
+      await Promise.all(moves.map(moveOne));
 
       toast({
         title: "Organized ✨",

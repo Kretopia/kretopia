@@ -59,6 +59,7 @@ const ProjectsList = () => {
   useEffect(() => {
     if (user) {
       fetchProjects();
+      fetchFolders();
       const trackPage = async () => {
         const { analytics } = await import("@/lib/analytics");
         analytics.pageView("projects_list");

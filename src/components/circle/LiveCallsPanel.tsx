@@ -196,20 +196,28 @@ export function LiveCallsPanel() {
       {/* Match Strike — Go Live CTA */}
       <div className="relative">
         <button
-          onClick={() => user && setGoLiveOpen(true)}
-          disabled={!user}
-          className="relative w-full group overflow-hidden rounded-[24px] p-[1.5px] disabled:opacity-50 disabled:cursor-not-allowed"
+          type="button"
+          onClick={() => {
+            if (!user) {
+              toast({ title: "Sign in to open a stage" });
+              navigate("/auth?redirect=/discover?tab=live");
+              return;
+            }
+            setGoLiveOpen(true);
+          }}
+          className="relative w-full group overflow-hidden rounded-[24px] p-[1.5px] cursor-pointer"
         >
-          <div
-            className="absolute inset-0 bg-[length:200%_auto] animate-[gradient_3s_linear_infinite]"
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[length:200%_auto] animate-[gradient_3s_linear_infinite]"
             style={{
               backgroundImage:
                 "linear-gradient(to right, hsl(var(--signal-amber)), hsl(var(--signal-pink)), hsl(var(--signal-amber)))",
             }}
           />
-          <div className="relative bg-card rounded-[22px] py-5 px-6 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div
+          <span className="pointer-events-none relative flex bg-card rounded-[22px] py-5 px-6 items-center justify-between">
+            <span className="flex items-center gap-4">
+              <span
                 className="w-12 h-12 rounded-2xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform"
                 style={{
                   background:
@@ -218,37 +226,45 @@ export function LiveCallsPanel() {
                 }}
               >
                 <Plus className="w-6 h-6 text-white" strokeWidth={3} />
-              </div>
-              <div className="text-left">
-                <h4 className="text-xl font-black italic tracking-tighter text-foreground leading-none">
+              </span>
+              <span className="text-left">
+                <span className="block text-xl font-black italic tracking-tighter text-foreground leading-none">
                   START STAGE
-                </h4>
-                <p
-                  className="text-[10px] font-bold uppercase tracking-[0.2em] mt-1"
+                </span>
+                <span
+                  className="block text-[10px] font-bold uppercase tracking-[0.2em] mt-1"
                   style={{ color: "hsl(var(--signal-amber))" }}
                 >
                   Light the spark
-                </p>
-              </div>
-            </div>
-            <div className="bg-muted w-9 h-9 rounded-full flex items-center justify-center border border-border group-hover:translate-x-1 transition-transform">
+                </span>
+              </span>
+            </span>
+            <span className="bg-muted w-9 h-9 rounded-full flex items-center justify-center border border-border group-hover:translate-x-1 transition-transform">
               <Plus
                 className="w-4 h-4 rotate-45"
                 style={{ color: "hsl(var(--signal-pink))" }}
                 strokeWidth={2.5}
               />
-            </div>
-          </div>
+            </span>
+          </span>
         </button>
         <button
-          onClick={() => setScheduleOpen(true)}
-          disabled={!user}
-          className="mt-2 w-full text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground py-2 transition-colors disabled:opacity-50"
+          type="button"
+          onClick={() => {
+            if (!user) {
+              toast({ title: "Sign in to schedule a Speed Session" });
+              navigate("/auth?redirect=/discover?tab=live");
+              return;
+            }
+            setScheduleOpen(true);
+          }}
+          className="mt-2 w-full text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground py-2 transition-colors"
         >
           <CalendarPlus className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
           Or schedule a Speed Session
         </button>
       </div>
+
 
       {/* Curated Stages (Scout + Showcase) */}
       <section className="space-y-2">

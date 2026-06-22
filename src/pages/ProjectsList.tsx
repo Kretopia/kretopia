@@ -147,15 +147,27 @@ const ProjectsList = () => {
     return projects.filter((p) => {
       if (statusFilter !== "all" && p.status !== statusFilter) return false;
       if (payFilter !== "all" && (invoicesByProject[p.id] ?? "unsent") !== payFilter) return false;
+      if (folderFilter === "unfiled" && p.studio_folder_id) return false;
+      if (folderFilter !== "all" && folderFilter !== "unfiled" && p.studio_folder_id !== folderFilter) return false;
       if (q) {
         const hay = `${p.title ?? ""} ${p.client_name ?? ""} ${p.description ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [projects, query, statusFilter, payFilter, invoicesByProject]);
+  }, [projects, query, statusFilter, payFilter, folderFilter, invoicesByProject]);
 
-  const filtersActive = query.trim() !== "" || statusFilter !== "all" || payFilter !== "all";
+  const folderCounts = useMemo(() => {
+    const counts: Record<string, number> = { unfiled: 0 };
+    for (const p of projects) {
+      const key = p.studio_folder_id || "unfiled";
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return counts;
+  }, [projects]);
+
+  const filtersActive =
+    query.trim() !== "" || statusFilter !== "all" || payFilter !== "all" || folderFilter !== "all";
 
   const STATUS_CHIPS: { id: typeof statusFilter; label: string }[] = [
     { id: "all", label: "All" },

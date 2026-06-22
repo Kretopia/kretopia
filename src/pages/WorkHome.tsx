@@ -462,6 +462,18 @@ const CreatorWorkHome = () => {
         {/* Pending invites */}
         <MyPendingInvitations />
 
+        {/* Folders bar — group, filter, AI-suggest */}
+        {user && projects.length > 0 && (
+          <StudioFoldersBar
+            userId={user.id}
+            folders={folders}
+            counts={folderCounts}
+            selected={folderFilter}
+            onSelect={setFolderFilter}
+            onChanged={() => { fetchFolders(); fetchProjects(); }}
+          />
+        )}
+
         {/* Studio rooms grid */}
         {projects.length > 0 && (
           <div className="space-y-2">
@@ -475,11 +487,12 @@ const CreatorWorkHome = () => {
         )}
 
         <StudioCardsGrid
-          projects={projects as any}
+          projects={visibleProjects as any}
           invoicesByProject={invoicesByProject}
           onNewProject={() => setShowCreateProject(true)}
         />
       </div>
+
 
       {/* Voice-first create */}
       <VoiceFirstCreateModal

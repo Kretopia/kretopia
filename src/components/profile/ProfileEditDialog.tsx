@@ -272,6 +272,7 @@ export function ProfileEditDialog({
     passport_profession: "",
   });
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [inferringProfession, setInferringProfession] = useState(false);
 
   const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
   const hasShownToastRef = useRef(false);
@@ -365,6 +366,27 @@ export function ProfileEditDialog({
         supabase.functions.invoke('geocode-location', {
           body: { mode: 'single', location: formData.location, user_id: profile.user_id },
         }).catch((e) => console.warn('[ProfileEdit] geocode failed', e));
+      }
+
+      // Auto-tailor Passport layout via AI when empty or when role/bio changed (fire-and-forget)
+      const prevAny = profile as any;
+      const layoutNeedsRedetect =
+        !formData.passport_profession ||
+        formData.role !== prevAny.role ||
+        (formData.bio || "") !== (prevAny.bio || "");
+      if (layoutNeedsRedetect) {
+        supabase.functions
+          .invoke('infer-passport-profession', { body: { profile: { ...profile, ...formData } } })
+          .then(({ data }) => {
+            if (data?.profession && data.profession !== formData.passport_profession) {
+              supabase
+                .from('profiles')
+                .update({ passport_profession: data.profession } as any)
+                .eq('user_id', profile.user_id)
+                .then(() => onProfileUpdate());
+            }
+          })
+          .catch((e) => console.warn('[ProfileEdit] passport layout inference failed', e));
       }
 
       const newCompletion = checkProfileCompletion({
@@ -624,24 +646,49 @@ export function ProfileEditDialog({
               <FieldWrapper
                 label="Passport Layout"
                 isIncomplete={false}
-                hint="Pick how your Passport is laid out. Defaults to the best fit for your role."
+                hint="Auto-tailored by AI from your role, bio, and links. Re-run anytime."
               >
-                <Select
-                  value={formData.passport_profession || inferProfession({ role: formData.role, sub_roles: formData.sub_roles })}
-                  onValueChange={(value) => handleInputChange('passport_profession', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Auto (based on role)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(PROFESSION_LAYOUTS) as ProfessionKey[]).map((k) => (
-                      <SelectItem key={k} value={k}>
-                        {PROFESSION_LAYOUTS[k].label} — {PROFESSION_LAYOUTS[k].tagline}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {(() => {
+                  const detectedKey = (formData.passport_profession || inferProfession({ role: formData.role, sub_roles: formData.sub_roles })) as ProfessionKey;
+                  const layout = PROFESSION_LAYOUTS[detectedKey] || PROFESSION_LAYOUTS.default;
+                  return (
+                    <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold truncate">{layout.label}</div>
+                        <div className="text-xs text-muted-foreground truncate">{layout.tagline}</div>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="shrink-0 gap-1.5"
+                        disabled={inferringProfession}
+                        onClick={async () => {
+                          setInferringProfession(true);
+                          try {
+                            const { data, error } = await supabase.functions.invoke('infer-passport-profession', {
+                              body: { profile: { ...profile, ...formData } },
+                            });
+                            if (error) throw error;
+                            if (data?.profession) {
+                              handleInputChange('passport_profession', data.profession);
+                              toast({ title: "Layout updated", description: data.reasoning || `Set to ${PROFESSION_LAYOUTS[data.profession as ProfessionKey]?.label}` });
+                            }
+                          } catch (e: any) {
+                            toast({ title: "Couldn't auto-detect", description: e?.message || "Try again", variant: "destructive" });
+                          } finally {
+                            setInferringProfession(false);
+                          }
+                        }}
+                      >
+                        {inferringProfession ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        {formData.passport_profession ? "Re-detect" : "Auto-detect"}
+                      </Button>
+                    </div>
+                  );
+                })()}
               </FieldWrapper>
+
 
               <FieldWrapper
                 label="Location"

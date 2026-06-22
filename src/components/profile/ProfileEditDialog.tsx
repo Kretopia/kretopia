@@ -342,6 +342,8 @@ export function ProfileEditDialog({
         hourly_rate: hourlyRate && !isNaN(hourlyRate) ? hourlyRate : null,
         project_rate: projectRate && !isNaN(projectRate) ? projectRate : null,
         rate_currency: formData.rate_currency || 'USD',
+        cover_image_url: formData.cover_image_url || null,
+        passport_profession: formData.passport_profession || null,
       };
 
       console.log('[ProfileEdit] Saving profile with user_id:', profile.user_id);

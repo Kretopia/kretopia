@@ -41,6 +41,7 @@ import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 import { PassportHeroRibbon } from "@/components/passport/PassportHeroRibbon";
 import { LevelUpCard } from "@/components/passport/LevelUpCard";
 import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
+import { PassportClaimHero } from "@/components/passport/PassportClaimHero";
 import { computeStanding } from "@/lib/passport/standing";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
@@ -451,6 +452,20 @@ const ProfileContent = () => {
           });
           return (
             <>
+              <div className="mt-4">
+                <PassportClaimHero
+                  fullName={profile.full_name}
+                  handle={(profile as any).username || (profile as any).handle}
+                  userId={profile.user_id}
+                  standing={standing}
+                  verifiedCredits={verified}
+                  cosigns={cosigns}
+                  onShare={handleShare}
+                  onShowQR={() => setIsQRDialogOpen(true)}
+                  onDownloadEPK={() => setIsEPKEditorOpen(true)}
+                  onCosignWall={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
+                />
+              </div>
               <div className="mt-3">
                 <PassportHeroRibbon standing={standing} />
               </div>

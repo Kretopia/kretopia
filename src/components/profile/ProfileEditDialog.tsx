@@ -296,6 +296,8 @@ export function ProfileEditDialog({
         hourly_rate: (profile as any).hourly_rate?.toString() || "",
         project_rate: (profile as any).project_rate?.toString() || "",
         rate_currency: (profile as any).rate_currency || "USD",
+        cover_image_url: (profile as any).cover_image_url || "",
+        passport_profession: (profile as any).passport_profession || "",
       });
 
       const completion = checkProfileCompletion(profile);

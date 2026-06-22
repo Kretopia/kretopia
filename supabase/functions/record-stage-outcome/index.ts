@@ -82,25 +82,29 @@ serve(async (req) => {
     }
 
     // Pre-stamped connection request (context=stage)
-    await admin.from("connections").insert({
-      requester_id: user.id,
-      recipient_id: applicant_user_id,
-      status: "pending",
-      context: "stage",
-    }).catch(() => {});
+    try {
+      await admin.from("connections").insert({
+        requester_id: user.id,
+        recipient_id: applicant_user_id,
+        status: "pending",
+        context: "stage",
+      });
+    } catch (_) { /* non-fatal */ }
 
     // Immediate "Featured" credit for the applicant on "credit" outcome (host can verify)
     if (outcome === "credit") {
       const year = new Date(stage.starts_at).getFullYear();
-      await admin.from("credits").insert({
-        user_id: applicant_user_id,
-        project_name: stage.title,
-        role: stage.type === "scout" ? "Scouted Performer" : "Featured Guest",
-        year,
-        credit_category: "stage",
-        verification_status: "verified",
-        verified_by_user_id: user.id,
-      }).catch(() => {});
+      try {
+        await admin.from("credits").insert({
+          user_id: applicant_user_id,
+          project_name: stage.title,
+          role: stage.type === "scout" ? "Scouted Performer" : "Featured Guest",
+          year,
+          credit_category: "stage",
+          verification_status: "verified",
+          verified_by_user_id: user.id,
+        });
+      } catch (_) { /* non-fatal */ }
     }
 
     const titles: Record<Outcome, string> = {
@@ -109,13 +113,15 @@ serve(async (req) => {
       rolodex: "Saved to host's Rolodex",
       followup: "Host wants to follow up",
     };
-    await admin.from("notifications").insert({
-      user_id: applicant_user_id,
-      type: "stage_outcome",
-      title: titles[outcome as Outcome],
-      message: note ?? "Tap to see what's next.",
-      action_url: `/circle/stage/${stage_id}`,
-    }).catch(() => {});
+    try {
+      await admin.from("notifications").insert({
+        user_id: applicant_user_id,
+        type: "stage_outcome",
+        title: titles[outcome as Outcome],
+        message: note ?? "Tap to see what's next.",
+        action_url: `/circle/stage/${stage_id}`,
+      });
+    } catch (_) { /* non-fatal */ }
 
     return new Response(JSON.stringify({ ok: true, turn_id: turnId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,

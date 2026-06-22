@@ -462,7 +462,7 @@ const CreatorWorkHome = () => {
         {/* Pending invites */}
         <MyPendingInvitations />
 
-        {/* Folders bar — group, filter, AI-suggest */}
+        {/* Folders bar — group, filter, AI-suggest, drop targets */}
         {user && projects.length > 0 && (
           <StudioFoldersBar
             userId={user.id}
@@ -471,6 +471,21 @@ const CreatorWorkHome = () => {
             selected={folderFilter}
             onSelect={setFolderFilter}
             onChanged={() => { fetchFolders(); fetchProjects(); }}
+            onDropProject={async (projectId, folderId) => {
+              if (!user) return;
+              const { error } = await supabase
+                .from("projects")
+                .update({ studio_folder_id: folderId })
+                .eq("id", projectId)
+                .eq("created_by", user.id);
+              if (error) {
+                toast.error(error.message || "Couldn't move project");
+                return;
+              }
+              const folderName = folderId ? (folders.find(f => f.id === folderId)?.name ?? "folder") : "Unfiled";
+              toast.success(`Moved to ${folderName}`);
+              fetchProjects();
+            }}
           />
         )}
 
@@ -490,6 +505,22 @@ const CreatorWorkHome = () => {
           projects={visibleProjects as any}
           invoicesByProject={invoicesByProject}
           onNewProject={() => setShowCreateProject(true)}
+          folders={folders}
+          onMoveToFolder={async (projectId, folderId) => {
+            if (!user) return;
+            const { error } = await supabase
+              .from("projects")
+              .update({ studio_folder_id: folderId })
+              .eq("id", projectId)
+              .eq("created_by", user.id);
+            if (error) {
+              toast.error(error.message || "Couldn't move project");
+              return;
+            }
+            const folderName = folderId ? (folders.find(f => f.id === folderId)?.name ?? "folder") : "Unfiled";
+            toast.success(`Moved to ${folderName}`);
+            fetchProjects();
+          }}
         />
       </div>
 

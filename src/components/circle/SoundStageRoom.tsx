@@ -826,7 +826,7 @@ export function SoundStageRoom({
           <div className="flex items-center gap-3">
             {isBackstage ? (
               <Badge
-                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide bg-[hsl(var(--signal-amber))] text-background hover:bg-[hsl(var(--signal-amber))]"
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide bg-[hsl(var(--signal-amber))] text-[#05070D] hover:bg-[hsl(var(--signal-amber))]"
               >
                 <Radio className="h-2.5 w-2.5" /> Backstage
               </Badge>
@@ -836,6 +836,15 @@ export function SoundStageRoom({
                 className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide"
               >
                 <Radio className="h-2.5 w-2.5 animate-pulse" /> Live
+              </Badge>
+            )}
+            {recording && (
+              <Badge
+                variant="destructive"
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide animate-pulse"
+                title="This stage is being recorded"
+              >
+                <Circle className="h-2.5 w-2.5 fill-current" /> Rec
               </Badge>
             )}
             <div className="flex-1 min-w-0">

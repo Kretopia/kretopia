@@ -43,14 +43,16 @@ serve(async (req) => {
       .eq("id", application_id);
     if (error) throw error;
 
-    await admin.from("notifications").insert({
-      user_id: app.user_id,
-      type: "stage_application_reviewed",
-      title: decision === "accepted" ? "You're in! 🎬" : decision === "waitlist" ? "You're on the waitlist" : "Application update",
-      // @ts-ignore
-      message: `Your application for "${app.curated_stages.title}" was ${decision}.`,
-      action_url: `/circle/stage/${app.stage_id}`,
-    }).catch(() => {});
+    try {
+      await admin.from("notifications").insert({
+        user_id: app.user_id,
+        type: "stage_application_reviewed",
+        title: decision === "accepted" ? "You're in! 🎬" : decision === "waitlist" ? "You're on the waitlist" : "Application update",
+        // @ts-ignore
+        message: `Your application for "${app.curated_stages.title}" was ${decision}.`,
+        action_url: `/circle/stage/${app.stage_id}`,
+      });
+    } catch (_) { /* non-fatal */ }
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,

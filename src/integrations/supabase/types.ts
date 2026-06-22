@@ -12077,6 +12077,7 @@ export type Database = {
           partner_code_used: string | null
           partner_location_id: string | null
           passion_skills: Json | null
+          passport_profession: string | null
           payment_verified: boolean
           phone_number: string | null
           phone_otp: string | null
@@ -12255,6 +12256,7 @@ export type Database = {
           partner_code_used?: string | null
           partner_location_id?: string | null
           passion_skills?: Json | null
+          passport_profession?: string | null
           payment_verified?: boolean
           phone_number?: string | null
           phone_otp?: string | null
@@ -12433,6 +12435,7 @@ export type Database = {
           partner_code_used?: string | null
           partner_location_id?: string | null
           passion_skills?: Json | null
+          passport_profession?: string | null
           payment_verified?: boolean
           phone_number?: string | null
           phone_otp?: string | null

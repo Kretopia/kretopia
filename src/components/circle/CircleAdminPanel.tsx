@@ -11,14 +11,21 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   BarChart3, Users, MessageSquare, TrendingUp, Crown, Shield, User,
   Settings, Calendar, DollarSign, Mail, Sparkles, Check, Loader2, UserPlus, ShieldCheck,
+  Trash2, UserMinus, AlertTriangle,
 } from "lucide-react";
 import { CircleInviteTools } from "./CircleInviteTools";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useNavigate } from "react-router-dom";
 import type { CircleData } from "./CircleCard";
 
 interface CircleMember {
@@ -36,6 +43,10 @@ interface CircleAdminPanelProps {
 
 export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const isOwner = user?.id === circle.created_by;
+  const [deleting, setDeleting] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const { toast } = useToast();
   const { isAdmin: isPlatformAdmin } = useUserRole();
   const [members, setMembers] = useState<CircleMember[]>([]);
@@ -89,7 +100,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
       message_type: "system",
     });
     setVerificationRequested(true);
-    toast({ title: "Request sent", description: "Our team will review your circle within 48 hours." });
+    toast({ title: "Request sent", description: "Our team will review your Crew within 48 hours." });
   };
 
   const fetchData = async () => {
@@ -134,7 +145,37 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
 
   const updateMemberRole = async (userId: string, newRole: string) => {
     await supabase.from("spark_room_members").update({ role: newRole }).eq("room_id", circle.id).eq("user_id", userId);
+    toast({ title: "Role updated" });
     fetchData();
+  };
+
+  const removeMember = async (userId: string, name?: string) => {
+    setRemovingId(userId);
+    const { error } = await supabase
+      .from("spark_room_members")
+      .delete()
+      .eq("room_id", circle.id)
+      .eq("user_id", userId);
+    setRemovingId(null);
+    if (error) {
+      toast({ title: "Couldn't remove member", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: `Removed ${name || "member"}` });
+    fetchData();
+  };
+
+  const deleteCrew = async () => {
+    setDeleting(true);
+    const { error } = await supabase.from("spark_rooms").delete().eq("id", circle.id);
+    setDeleting(false);
+    if (error) {
+      toast({ title: "Couldn't delete Crew", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Crew deleted" });
+    onClose();
+    navigate("/crews");
   };
 
   const roleIcon = (role: string) => {
@@ -164,7 +205,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Circle Settings
+            Crew Settings
           </DialogTitle>
         </DialogHeader>
 
@@ -307,7 +348,10 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
         {/* Members View */}
         {activeView === 'members' && (
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">{members.length} member{members.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-muted-foreground">
+              {members.length} member{members.length !== 1 ? 's' : ''}
+              {isOwner && " · Promote admins/moderators or remove members"}
+            </p>
             {members.map(member => (
               <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
                 <Avatar className="h-8 w-8">
@@ -323,19 +367,53 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                 <div className="flex items-center gap-1.5">
                   {roleIcon(member.role)}
                   {member.user_id !== user?.id && member.user_id !== circle.created_by && (
-                    <select
-                      className="text-xs bg-muted/50 border border-border rounded px-1.5 py-0.5"
-                      value={member.role}
-                      onChange={e => updateMemberRole(member.user_id, e.target.value)}
-                    >
-                      <option value="member">Member</option>
-                      <option value="moderator">Moderator</option>
-                      <option value="admin">Admin</option>
-                      <option value="mentor">Mentor</option>
-                      <option value="featured">Featured Creator</option>
-                      <option value="og">OG Member</option>
-                      <option value="vip">VIP</option>
-                    </select>
+                    <>
+                      <select
+                        className="text-xs bg-muted/50 border border-border rounded px-1.5 py-0.5"
+                        value={member.role}
+                        onChange={e => updateMemberRole(member.user_id, e.target.value)}
+                      >
+                        <option value="member">Member</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Admin</option>
+                        <option value="mentor">Mentor</option>
+                        <option value="featured">Featured Creator</option>
+                        <option value="og">OG Member</option>
+                        <option value="vip">VIP</option>
+                      </select>
+                      {isOwner && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                              disabled={removingId === member.user_id}
+                              title="Remove from Crew"
+                            >
+                              <UserMinus className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove {member.full_name}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                They'll lose access to this Crew's feed, channels, events and stages. They can rejoin if you re-invite them.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => removeMember(member.user_id, member.full_name)}
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </>
                   )}
                   {member.user_id === circle.created_by && (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">Owner</Badge>
@@ -356,7 +434,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                 <h4 className="font-semibold text-sm">Tagline</h4>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                A one-liner shown under your circle name. Keep it short — like a creative manifesto.
+                A one-liner shown under your Crew name. Keep it short — like a creative manifesto.
               </p>
               <Input
                 placeholder="e.g. Build, collaborate, and grow together"
@@ -373,12 +451,12 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className={cn("h-4 w-4", isVerified ? "text-primary" : "text-muted-foreground")} />
-                  <h4 className="font-semibold text-sm">Verified Circle</h4>
+                  <h4 className="font-semibold text-sm">Verified Crew</h4>
                 </div>
                 {isVerified && <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">Verified</Badge>}
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Verified circles are reviewed by ThriveIN for authenticity, active leadership, and quality content.
+                Verified Crews are reviewed by ThriveIN for authenticity, active leadership, and quality content.
               </p>
               {isPlatformAdmin ? (
                 <Button
@@ -421,11 +499,11 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Automatically send a private message to new members when they join this circle.
+                Automatically send a private message to new members when they join this Crew.
               </p>
               {welcomeDmEnabled && (
                 <Textarea
-                  placeholder="Hey! Welcome to the circle — feel free to introduce yourself and share what you're working on!"
+                  placeholder="Hey! Welcome to the Crew — feel free to introduce yourself and share what you're working on!"
                   value={welcomeMessage}
                   onChange={e => setWelcomeMessage(e.target.value)}
                   maxLength={500}
@@ -434,11 +512,11 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               )}
             </Card>
 
-            {/* Circle Info */}
+            {/* Crew Info */}
             <Card className="p-4">
               <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-primary" />
-                Circle Info
+                Crew Info
               </h4>
               <div className="space-y-2 text-xs text-muted-foreground">
                 <div className="flex justify-between">
@@ -466,6 +544,44 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
               Save Settings
             </Button>
+
+            {/* Danger Zone — owner only */}
+            {isOwner && (
+              <Card className="p-4 border-destructive/40 bg-destructive/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <h4 className="font-semibold text-sm text-destructive">Danger zone</h4>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Deleting this Crew is permanent. All members, messages, channels and links to events/studios will be removed. This cannot be undone.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="w-full h-8 text-xs" disabled={deleting}>
+                      {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Trash2 className="h-3.5 w-3.5 mr-2" />}
+                      Delete this Crew
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete "{circle.title}"?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently deletes the Crew, removes every member, and erases the feed, channels and chat history. Events and Studios linked to it will be unlinked. <strong>This cannot be undone.</strong>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep Crew</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={deleteCrew}
+                      >
+                        Yes, delete it
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </Card>
+            )}
           </div>
         )}
 
@@ -512,7 +628,7 @@ const CircleEvents = ({ circleId, circleTitle }: { circleId: string; circleTitle
         <Card className="p-6 text-center">
           <Calendar className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
           <p className="text-sm text-muted-foreground">No events linked yet</p>
-          <p className="text-xs text-muted-foreground mt-1">Create events and assign them to this circle</p>
+          <p className="text-xs text-muted-foreground mt-1">Create events and assign them to this Crew</p>
         </Card>
       ) : (
         events.map(event => (

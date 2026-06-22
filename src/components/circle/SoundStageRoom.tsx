@@ -726,6 +726,31 @@ export function SoundStageRoom({
 
   const leave = () => onOpenChange(false);
 
+  const toggleRecording = async () => {
+    const call = callRef.current;
+    if (!call || !isHost) return;
+    setRecordingBusy(true);
+    try {
+      if (recording) {
+        await (call as any).stopRecording?.();
+      } else {
+        await (call as any).startRecording?.({ layout: { preset: "default" } });
+        toast({
+          title: "Recording started",
+          description: "Everyone in the room is notified. Recording uploads to your Daily workspace after the stage ends.",
+        });
+      }
+    } catch (e: any) {
+      setRecordingBusy(false);
+      toast({
+        title: "Couldn't toggle recording",
+        description: e?.message || "Cloud recording may not be enabled on this workspace.",
+        variant: "destructive",
+      });
+    }
+  };
+
+
   const list = Object.values(members);
   // Remote participants whose audio track we need to play (call-object mode
   // does NOT auto-play remote audio — we must attach <audio> elements).

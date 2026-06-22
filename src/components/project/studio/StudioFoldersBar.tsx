@@ -46,6 +46,7 @@ interface StudioFoldersBarProps {
   selected: string; // "all" | "unfiled" | folder id
   onSelect: (id: string) => void;
   onChanged: () => void;
+  onDropProject?: (projectId: string, folderId: string | null) => void | Promise<void>;
 }
 
 // Map color name → tailwind-ish HSL token tints

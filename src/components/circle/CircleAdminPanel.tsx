@@ -145,7 +145,37 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
 
   const updateMemberRole = async (userId: string, newRole: string) => {
     await supabase.from("spark_room_members").update({ role: newRole }).eq("room_id", circle.id).eq("user_id", userId);
+    toast({ title: "Role updated" });
     fetchData();
+  };
+
+  const removeMember = async (userId: string, name?: string) => {
+    setRemovingId(userId);
+    const { error } = await supabase
+      .from("spark_room_members")
+      .delete()
+      .eq("room_id", circle.id)
+      .eq("user_id", userId);
+    setRemovingId(null);
+    if (error) {
+      toast({ title: "Couldn't remove member", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: `Removed ${name || "member"}` });
+    fetchData();
+  };
+
+  const deleteCrew = async () => {
+    setDeleting(true);
+    const { error } = await supabase.from("spark_rooms").delete().eq("id", circle.id);
+    setDeleting(false);
+    if (error) {
+      toast({ title: "Couldn't delete Crew", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Crew deleted" });
+    onClose();
+    navigate("/crews");
   };
 
   const roleIcon = (role: string) => {

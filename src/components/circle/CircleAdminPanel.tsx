@@ -544,6 +544,44 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
               Save Settings
             </Button>
+
+            {/* Danger Zone — owner only */}
+            {isOwner && (
+              <Card className="p-4 border-destructive/40 bg-destructive/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <h4 className="font-semibold text-sm text-destructive">Danger zone</h4>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Deleting this Crew is permanent. All members, messages, channels and links to events/studios will be removed. This cannot be undone.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="w-full h-8 text-xs" disabled={deleting}>
+                      {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Trash2 className="h-3.5 w-3.5 mr-2" />}
+                      Delete this Crew
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete "{circle.title}"?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently deletes the Crew, removes every member, and erases the feed, channels and chat history. Events and Studios linked to it will be unlinked. <strong>This cannot be undone.</strong>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep Crew</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={deleteCrew}
+                      >
+                        Yes, delete it
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </Card>
+            )}
           </div>
         )}
 

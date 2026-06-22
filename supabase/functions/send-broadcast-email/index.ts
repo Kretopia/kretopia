@@ -1,13 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { requireAdminOrCron, adminGuardCorsHeaders } from "../_shared/admin-guard.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const corsHeaders = adminGuardCorsHeaders;
 
 const baseUrl = 'https://www.thrivein.io';
 
@@ -17,40 +15,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const guard = await requireAdminOrCron(req);
+    if (!guard.ok) return guard.response;
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
-    // Verify admin access
-    const authHeader = req.headers.get("authorization");
-    let isAdmin = false;
-    
-    if (authHeader) {
-      const supabaseClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-        global: { headers: { Authorization: authHeader } }
-      });
-      
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (user) {
-        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-        const { data: hasRole } = await supabaseAdmin.rpc('has_role', { 
-          _user_id: user.id, 
-          _role: 'admin' 
-        });
-        isAdmin = hasRole === true;
-      }
-    }
 
-    // Also allow cron secret
-    const cronSecret = req.headers.get("x-cron-secret");
-    const expectedSecret = Deno.env.get("CRON_SECRET");
-    if (cronSecret === expectedSecret) isAdmin = true;
-
-    if (!isAdmin) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - admin access required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     // Parse custom email content from request body
     const body = await req.json().catch(() => ({}));

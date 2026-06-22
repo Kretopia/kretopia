@@ -82,13 +82,15 @@ serve(async (req) => {
     if (error) throw error;
 
     // Notify host
-    await admin.from("notifications").insert({
-      user_id: stage.host_user_id,
-      type: "stage_application",
-      title: "New application to your Scout Stage",
-      message: pitch ? String(pitch).slice(0, 140) : "Tap to review.",
-      action_url: `/circle/stage/${stage_id}`,
-    }).catch(() => {});
+    try {
+      await admin.from("notifications").insert({
+        user_id: stage.host_user_id,
+        type: "stage_application",
+        title: "New application to your Scout Stage",
+        message: pitch ? String(pitch).slice(0, 140) : "Tap to review.",
+        action_url: `/circle/stage/${stage_id}`,
+      });
+    } catch (_) { /* non-fatal */ }
 
     return new Response(JSON.stringify({ application: app }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,

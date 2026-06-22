@@ -1,10 +1,19 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNowStrict } from "date-fns";
-import { ArrowUpRight, CheckCircle2, Clock, Mic } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Clock, Mic, MoreVertical, Folder, FolderMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { moodLabel } from "./moodGradient";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { StudioFolder } from "./StudioFoldersBar";
 
 // Solid, on-brand accent colors per mood (no gradients — keeps it editorial).
 const MOOD_ACCENT: Record<string, string> = {

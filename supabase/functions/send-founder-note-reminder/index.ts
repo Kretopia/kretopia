@@ -1,49 +1,27 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { requireAdminOrCron, adminGuardCorsHeaders } from "../_shared/admin-guard.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const corsHeaders = adminGuardCorsHeaders;
 
 const baseUrl = "https://www.thrivein.io";
 
 // Sends a Sunday reminder email to all admins to write the weekly founder note.
-// Triggered by pg_cron Sundays at 18:00 UTC.
+// Triggered by pg_cron Sundays at 18:00 UTC. Also callable by admins for preview.
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const guard = await requireAdminOrCron(req);
+    if (!guard.ok) return guard.response;
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    const cronSecret = req.headers.get("x-cron-secret");
-    const expectedSecret = Deno.env.get("CRON_SECRET");
-    let isAuthorized = cronSecret === expectedSecret;
-
-    if (!isAuthorized) {
-      const authHeader = req.headers.get("authorization");
-      if (authHeader) {
-        const sb = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-          global: { headers: { Authorization: authHeader } },
-        });
-        const { data: { user } } = await sb.auth.getUser();
-        if (user) {
-          const { data: hasRole } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-          isAuthorized = hasRole === true;
-        }
-      }
-    }
-
-    if (!isAuthorized) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     // Get all admin user IDs
     const { data: admins } = await supabaseAdmin

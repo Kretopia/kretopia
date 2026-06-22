@@ -1,13 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { requireAdminOrCron, adminGuardCorsHeaders } from "../_shared/admin-guard.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const corsHeaders = adminGuardCorsHeaders;
+
 
 const baseUrl = "https://www.thrivein.io";
 
@@ -39,6 +38,9 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const guard = await requireAdminOrCron(req);
+    if (!guard.ok) return guard.response;
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
@@ -47,33 +49,8 @@ const handler = async (req: Request): Promise<Response> => {
     try { body = await req.json(); } catch { /* GET / cron */ }
     const isPreview = body?.preview === true;
     const previewRecipient: string | undefined = body?.recipient_email;
+    const callerUserId: string | null = guard.viaCron ? null : guard.userId;
 
-    // Auth: cron secret OR admin user OR preview by admin
-    const cronSecret = req.headers.get("x-cron-secret");
-    const expectedSecret = Deno.env.get("CRON_SECRET");
-    const authHeader = req.headers.get("authorization");
-    let isAuthorized = cronSecret === expectedSecret;
-    let callerUserId: string | null = null;
-
-    if (!isAuthorized && authHeader) {
-      const supabaseClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-        global: { headers: { Authorization: authHeader } },
-      });
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (user) {
-        const { data: hasRole } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-        if (hasRole === true) {
-          isAuthorized = true;
-          callerUserId = user.id;
-        }
-      }
-    }
-
-    if (!isAuthorized) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const nowIso = new Date().toISOString();

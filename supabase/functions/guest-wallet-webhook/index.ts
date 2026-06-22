@@ -66,6 +66,22 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Webhook-event idempotency (matches stripe-wallet-webhook pattern).
+    // If we've seen this event.id before, return 200 immediately.
+    const { error: dupErr } = await admin.from("stripe_webhook_events").insert({
+      event_id: event.id,
+      type: event.type,
+      payload: event as unknown as Record<string, unknown>,
+    });
+    if (dupErr && (dupErr as { code?: string }).code === "23505") {
+      return new Response(JSON.stringify({ received: true, idempotent_event: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
+
     const { data: topup, error: topupError } = await admin
       .from("guest_wallet_topups")
       .select("id, wallet_id, amount_cents, status")

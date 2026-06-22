@@ -1,11 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { requireAdminOrCron, adminGuardCorsHeaders } from "../_shared/admin-guard.ts";
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+const corsHeaders = adminGuardCorsHeaders;
 
 interface EmailRequest {
   to: string;
@@ -18,22 +16,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validate cron secret or admin auth for automated calls
-  const cronSecret = req.headers.get("x-cron-secret");
-  const expectedSecret = Deno.env.get("CRON_SECRET");
-  const authHeader = req.headers.get("authorization");
-  
-  // Allow if cron secret matches OR if there's valid service role auth
-  const hasValidCronSecret = expectedSecret && cronSecret === expectedSecret;
-  const hasServiceRoleAuth = authHeader?.includes(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
-  
-  if (!hasValidCronSecret && !hasServiceRoleAuth) {
-    console.error("Unauthorized: Invalid or missing authentication");
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
+  const guard = await requireAdminOrCron(req);
+  if (!guard.ok) return guard.response;
+
 
   try {
     const { to, fullName, inviteCode }: EmailRequest = await req.json();

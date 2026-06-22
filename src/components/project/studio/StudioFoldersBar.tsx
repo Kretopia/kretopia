@@ -46,6 +46,7 @@ interface StudioFoldersBarProps {
   selected: string; // "all" | "unfiled" | folder id
   onSelect: (id: string) => void;
   onChanged: () => void;
+  onDropProject?: (projectId: string, folderId: string | null) => void | Promise<void>;
 }
 
 // Map color name → tailwind-ish HSL token tints
@@ -92,6 +93,7 @@ export const StudioFoldersBar = ({
   selected,
   onSelect,
   onChanged,
+  onDropProject,
 }: StudioFoldersBarProps) => {
   const { toast } = useToast();
   const [createOpen, setCreateOpen] = useState(false);
@@ -101,6 +103,28 @@ export const StudioFoldersBar = ({
   const [renameValue, setRenameValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+
+  const handleDragOver = (e: React.DragEvent, key: string) => {
+    if (!onDropProject) return;
+    if (e.dataTransfer.types.includes("application/x-thrive-project")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if (dropTarget !== key) setDropTarget(key);
+    }
+  };
+  const handleDragLeave = (key: string) => {
+    if (dropTarget === key) setDropTarget(null);
+  };
+  const handleDrop = (e: React.DragEvent, folderId: string | null) => {
+    if (!onDropProject) return;
+    const projectId = e.dataTransfer.getData("application/x-thrive-project");
+    setDropTarget(null);
+    if (projectId) {
+      e.preventDefault();
+      onDropProject(projectId, folderId);
+    }
+  };
 
   const totalCount =
     (counts["unfiled"] ?? 0) +
@@ -209,9 +233,9 @@ export const StudioFoldersBar = ({
         <div className="flex items-start gap-2 rounded-xl border border-[hsl(var(--signal-teal))]/30 bg-[hsl(var(--signal-teal))]/5 px-3 py-2 text-[12px]">
           <Sparkles className="h-3.5 w-3.5 mt-0.5 shrink-0 text-[hsl(var(--signal-teal))]" />
           <div className="flex-1">
-            <p className="font-semibold leading-tight">Organize your studios</p>
+            <p className="font-semibold leading-tight">Drag any studio into a folder</p>
             <p className="text-muted-foreground leading-snug mt-0.5">
-              Tap a folder to filter. Use <span className="font-semibold text-foreground">⋯</span> on any project card to move it.
+              Drop on <span className="font-semibold text-foreground">Unfiled</span> to take it out, or tap <span className="font-semibold text-foreground">⋯</span> on a card.
             </p>
           </div>
           <button
@@ -239,23 +263,43 @@ export const StudioFoldersBar = ({
           count={totalCount}
         />
 
-        {/* Unfiled */}
-        <FolderTile
-          active={selected === "unfiled"}
-          onClick={() => onSelect("unfiled")}
-          tint={{ bg: "bg-muted", ring: "ring-foreground/20", ink: "text-muted-foreground" }}
-          icon={<Inbox className="h-5 w-5" />}
-          label="Unfiled"
-          count={counts["unfiled"] ?? 0}
-        />
+        {/* Unfiled — drop target removes from folder */}
+        <div
+          onDragOver={(e) => handleDragOver(e, "unfiled")}
+          onDragLeave={() => handleDragLeave("unfiled")}
+          onDrop={(e) => handleDrop(e, null)}
+          className={cn(
+            "rounded-2xl transition-all",
+            dropTarget === "unfiled" && "ring-2 ring-foreground/50 ring-offset-2 ring-offset-background scale-[1.03]",
+          )}
+        >
+          <FolderTile
+            active={selected === "unfiled"}
+            onClick={() => onSelect("unfiled")}
+            tint={{ bg: "bg-muted", ring: "ring-foreground/20", ink: "text-muted-foreground" }}
+            icon={<Inbox className="h-5 w-5" />}
+            label="Unfiled"
+            count={counts["unfiled"] ?? 0}
+          />
+        </div>
 
         {/* User folders */}
         {folders.map((f) => {
           const tint = tintFor(f.color);
           const active = selected === f.id;
           const isRenaming = renamingId === f.id;
+          const isOver = dropTarget === f.id;
           return (
-            <div key={f.id} className="relative group">
+            <div
+              key={f.id}
+              className={cn(
+                "relative group rounded-2xl transition-all",
+                isOver && cn("ring-2 ring-offset-2 ring-offset-background scale-[1.03]", tint.ring),
+              )}
+              onDragOver={(e) => handleDragOver(e, f.id)}
+              onDragLeave={() => handleDragLeave(f.id)}
+              onDrop={(e) => handleDrop(e, f.id)}
+            >
               <button
                 onClick={() => onSelect(f.id)}
                 className={cn(

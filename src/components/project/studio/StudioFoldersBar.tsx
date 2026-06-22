@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Folder, FolderPlus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Folder, FolderPlus, Pencil, Trash2, Check, X, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SuggestFoldersDialog } from "./SuggestFoldersDialog";
 
 export interface StudioFolder {
   id: string;

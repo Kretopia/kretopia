@@ -124,6 +124,41 @@ export const ProfileHero = ({
 
   return (
     <div className="w-full">
+      {/* Cover Banner — wide hero strip above the header card */}
+      <div
+        className={cn(
+          "relative rounded-2xl overflow-hidden mb-3 aspect-[3/1] sm:aspect-[4/1] group",
+          !profile.cover_image_url && "bg-gradient-to-br from-primary/15 via-accent/10 to-energy/15 border border-border"
+        )}
+      >
+        {profile.cover_image_url ? (
+          <img
+            src={profile.cover_image_url}
+            alt={`${displayName || "Profile"} cover`}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          isOwnProfile && (
+            <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
+              Add a cover image to make your Passport pop
+            </div>
+          )
+        )}
+        {isOwnProfile && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="absolute top-2 right-2 h-7 text-xs gap-1 shadow-md opacity-90 hover:opacity-100"
+            onClick={onEdit}
+            aria-label="Edit cover image"
+          >
+            <Camera className="h-3 w-3" />
+            {profile.cover_image_url ? "Change cover" : "Add cover"}
+          </Button>
+        )}
+      </div>
+
       {/* Unclaimed Profile Banner */}
       {isUnclaimedProfile && (
         <div className="mb-4 p-3 rounded-xl bg-accent/10 border border-accent/30">

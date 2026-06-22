@@ -19,7 +19,7 @@ import {
   Snowflake, Crown, Eye, Sparkles, Zap, Star, Gift, Search,
   Image, Briefcase, BarChart3, MessageSquare, FileText,
 } from "lucide-react";
-// tierSystem removed — reputation is calculated from statusEngine
+// Reputation is calculated from Standing (src/lib/passport/standing.ts)
 
 interface SearchedUser {
   user_id: string;

@@ -1,34 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { MessageSquareMore, TrendingUp, Plus, Search, Users, Sparkles } from "lucide-react";
+import { MessageSquareMore, Plus, Search, Users } from "lucide-react";
 import { CreateCircleDialog } from "@/components/scene/CirclesTab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CircleCard, type CircleData } from "@/components/circle/CircleCard";
-
 import { CircleActivityDigest } from "@/components/circle/CircleActivityDigest";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const CATEGORIES = [
-  { value: "all", label: "All", emoji: "🌐" },
-  { value: "music", label: "Music", emoji: "" },
-  { value: "film", label: "Film", emoji: "" },
-  { value: "design", label: "Design", emoji: "" },
-  { value: "photo", label: "Photo", emoji: "" },
-  { value: "tech", label: "Tech", emoji: "" },
-  { value: "business", label: "Biz", emoji: "" },
-  { value: "collab", label: "Collabs", emoji: "" },
-  { value: "podcast", label: "Podcast", emoji: "🎙" },
-  { value: "writing", label: "Writers", emoji: "✍" },
-  { value: "events", label: "Events", emoji: "" },
-];
 
 const CirclesPage = () => {
   const navigate = useNavigate();
@@ -36,29 +17,38 @@ const CirclesPage = () => {
   const [circles, setCircles] = useState<CircleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [activeTab, setActiveTab] = useState("explore");
   const [showCreate, setShowCreate] = useState(false);
 
   const fetchCircles = useCallback(async () => {
+    if (!user) { setCircles([]); setLoading(false); return; }
     setLoading(true);
     try {
+      // My Crews only: rooms I'm a member of
+      const { data: memberRows } = await supabase
+        .from("spark_room_members")
+        .select("room_id, role")
+        .eq("user_id", user.id);
+
+      const ids = (memberRows ?? []).map((m: any) => m.room_id);
+      if (!ids.length) { setCircles([]); setLoading(false); return; }
+
       const { data: roomsData } = await supabase
         .from("spark_rooms")
         .select("*")
+        .in("id", ids)
         .eq("is_active", true)
-        .order("member_count", { ascending: false });
+        .order("updated_at", { ascending: false });
 
       if (!roomsData?.length) { setCircles([]); setLoading(false); return; }
 
       const creatorIds = [...new Set(roomsData.map(r => r.created_by))];
-      const [profilesRes, membershipsRes] = await Promise.all([
-        supabase.from("profiles").select("user_id, full_name, avatar_url").in("user_id", creatorIds),
-        user ? supabase.from("spark_room_members").select("room_id, role").eq("user_id", user.id) : Promise.resolve({ data: [] }),
-      ]);
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, avatar_url")
+        .in("user_id", creatorIds);
 
-      const profileMap = new Map(profilesRes.data?.map(p => [p.user_id, p]) || []);
-      const memberMap = new Map((membershipsRes.data as any[])?.map(m => [m.room_id, m.role]) || []);
+      const profileMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
+      const roleMap = new Map((memberRows ?? []).map((m: any) => [m.room_id, m.role]));
 
       setCircles(roomsData.map(r => ({
         ...r,
@@ -73,11 +63,11 @@ const CirclesPage = () => {
         cover_url: r.cover_url || null,
         creator_name: profileMap.get(r.created_by)?.full_name || "Unknown",
         creator_avatar: profileMap.get(r.created_by)?.avatar_url || undefined,
-        is_member: memberMap.has(r.id),
-        user_role: memberMap.get(r.id) || undefined,
+        is_member: true,
+        user_role: roleMap.get(r.id) || "member",
       })));
     } catch (err) {
-      console.error("Error fetching circles:", err);
+      console.error("Error fetching crews:", err);
     } finally {
       setLoading(false);
     }
@@ -85,183 +75,93 @@ const CirclesPage = () => {
 
   useEffect(() => { fetchCircles(); }, [fetchCircles]);
 
-  const myCircles = circles.filter(c => c.is_member);
-  const trendingCircles = circles
-    .sort((a, b) => b.message_count - a.message_count)
-    .slice(0, 5);
-
-  const displayCircles = (activeTab === "mine" ? myCircles : circles).filter(c => {
-    const matchSearch = !searchQuery || 
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchCategory = activeCategory === "all" || c.category === activeCategory;
-    return matchSearch && matchCategory;
-  });
+  const displayCircles = circles.filter(c =>
+    !searchQuery ||
+    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <>
       <Helmet>
-        <title>Crews | ThriveIN</title>
+        <title>My Crews | ThriveIN</title>
         <meta name="description" content="Your private Crews on ThriveIN — invite-only spaces to run with your people." />
       </Helmet>
 
       <div className="min-h-screen bg-background">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
           {/* Header */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-xl font-bold flex items-center gap-2">
-                  <MessageSquareMore className="h-5 w-5 text-primary" />
-                  Crews
-                </h1>
-                <p className="text-xs text-muted-foreground">Private, invite-only. {myCircles.length} of yours</p>
-              </div>
-              <CreateCircleDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchCircles} />
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold flex items-center gap-2">
+                <MessageSquareMore className="h-5 w-5 text-primary" />
+                My Crews
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                {circles.length === 0 ? "Private, invite-only spaces for your people." : `${circles.length} ${circles.length === 1 ? "Crew" : "Crews"}`}
+              </p>
             </div>
+            <Button size="sm" variant="gradient" onClick={() => setShowCreate(true)}>
+              <Plus className="h-4 w-4 mr-1.5" /> New Crew
+            </Button>
           </div>
 
+          <CreateCircleDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchCircles} />
 
-          {/* Trending Banner */}
-          {trendingCircles.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center gap-1.5 mb-2">
-                <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trending</p>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-                {trendingCircles.map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => navigate(`/crew/${c.id}`)}
-                    className="flex items-center gap-2 bg-card border border-border/50 rounded-full px-3 py-1.5 shrink-0 hover:bg-accent/10 transition-colors"
-                  >
-                    <span className="text-sm">{c.icon_emoji}</span>
-                    <span className="text-xs font-medium truncate max-w-[100px]">{c.title}</span>
-                    <Badge variant="secondary" className="text-[9px] px-1 py-0">{c.member_count}</Badge>
-                  </button>
-                ))}
-              </div>
+          {circles.length > 0 && <CircleActivityDigest className="mb-3" />}
+
+          {circles.length > 3 && (
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search your Crews..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 bg-muted/50"
+              />
             </div>
           )}
 
-
-          {/* Activity Digest (for My Circles tab context) */}
-          {activeTab === "mine" && <CircleActivityDigest className="mb-3" />}
-
-          {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search your Crews..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10 bg-muted/50"
-            />
-          </div>
-
-          {/* Category Filter */}
-          <div className="flex gap-1.5 overflow-x-auto pb-3 -mx-1 px-1 scrollbar-hide">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.value}
-                onClick={() => setActiveCategory(cat.value)}
-                className={cn(
-                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium shrink-0 transition-colors border",
-                  activeCategory === cat.value
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card border-border/50 text-muted-foreground hover:bg-accent/10"
-                )}
-              >
-                <span>{cat.emoji}</span>
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tabs: Explore / My Crews */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-3 h-9">
-              <TabsTrigger value="explore" className="gap-1.5 text-xs">
-                <Sparkles className="h-3.5 w-3.5" />
-                Discover
-              </TabsTrigger>
-              <TabsTrigger value="mine" className="gap-1.5 text-xs">
-                <Users className="h-3.5 w-3.5" />
-                My Crews
-                {myCircles.length > 0 && (
-                  <span className="ml-1 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
-                    {myCircles.length}
-                  </span>
-                )}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="explore" className="mt-0">
-              <CirclesList circles={displayCircles} loading={loading} navigate={navigate} />
-            </TabsContent>
-
-            <TabsContent value="mine" className="mt-0">
-              {!loading && myCircles.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-                  <p className="font-semibold mb-1">No Crews yet</p>
-                  <p className="text-sm text-muted-foreground mb-4">Crews are invite-only. Start your own or wait for a host to add you.</p>
-                  <Button variant="gradient" size="sm" onClick={() => setShowCreate(true)}>
-                    <Plus className="h-4 w-4 mr-2" /> Start a Crew
-                  </Button>
-                </Card>
-              ) : (
-                <CirclesList circles={displayCircles} loading={loading} navigate={navigate} />
-              )}
-            </TabsContent>
-          </Tabs>
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="rounded-xl border bg-card p-4 animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-full bg-muted" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-2/3 rounded bg-muted" />
+                      <div className="h-3 w-1/2 rounded bg-muted" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : circles.length === 0 ? (
+            <Card className="p-8 text-center">
+              <div className="rounded-full bg-primary/10 p-4 mb-3 inline-flex">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <p className="font-semibold mb-1">Start your first Crew</p>
+              <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                A Crew is your private home for your community, fans or collaborators.
+                Run a feed, drop events, host stages, spin up Studios — all in one place.
+              </p>
+              <Button variant="gradient" onClick={() => setShowCreate(true)}>
+                <Plus className="h-4 w-4 mr-2" /> Create a Crew
+              </Button>
+            </Card>
+          ) : displayCircles.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No Crews match your search.</p>
+          ) : (
+            <div className="space-y-2">
+              {displayCircles.map(circle => (
+                <CircleCard key={circle.id} circle={circle} onClick={() => navigate(`/crew/${circle.id}`)} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>
-  );
-};
-
-const CirclesList = ({ circles, loading, navigate }: { circles: CircleData[]; loading: boolean; navigate: (path: string) => void }) => {
-  if (loading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="rounded-xl border bg-card p-4 animate-pulse">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-muted" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-2/3 rounded bg-muted" />
-                <div className="h-3 w-1/2 rounded bg-muted" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  if (circles.length === 0) {
-    return (
-      <div className="text-center py-12 px-4">
-        <div className="rounded-full bg-muted/50 p-6 mb-4 inline-flex">
-          <MessageSquareMore className="h-10 w-10 text-muted-foreground" />
-        </div>
-        <h3 className="font-semibold mb-2">No crews found</h3>
-        <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-4">
-          Crews are private and invite-only. Try a different search, or start your own.
-        </p>
-        <Button size="sm" onClick={() => navigate("/crews")}>
-          Browse Crews
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <div className="space-y-2">
-      {circles.map(circle => (
-        <CircleCard key={circle.id} circle={circle} onClick={() => navigate(`/crew/${circle.id}`)} />
-      ))}
-    </div>
   );
 };
 

@@ -233,9 +233,9 @@ export const StudioFoldersBar = ({
         <div className="flex items-start gap-2 rounded-xl border border-[hsl(var(--signal-teal))]/30 bg-[hsl(var(--signal-teal))]/5 px-3 py-2 text-[12px]">
           <Sparkles className="h-3.5 w-3.5 mt-0.5 shrink-0 text-[hsl(var(--signal-teal))]" />
           <div className="flex-1">
-            <p className="font-semibold leading-tight">Organize your studios</p>
+            <p className="font-semibold leading-tight">Drag any studio into a folder</p>
             <p className="text-muted-foreground leading-snug mt-0.5">
-              Tap a folder to filter. Use <span className="font-semibold text-foreground">⋯</span> on any project card to move it.
+              Drop on <span className="font-semibold text-foreground">Unfiled</span> to take it out, or tap <span className="font-semibold text-foreground">⋯</span> on a card.
             </p>
           </div>
           <button

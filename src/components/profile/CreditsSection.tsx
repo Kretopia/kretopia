@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AchievementCard } from "./AchievementCard";
 import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
+import { MediaPlayerModal } from "./MediaPlayerModal";
+import { parseMediaUrl } from "@/lib/mediaUtils";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useNavigate } from "react-router-dom";
 

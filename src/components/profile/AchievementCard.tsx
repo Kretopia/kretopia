@@ -226,10 +226,12 @@ export const AchievementCard = ({
   // Original layout for cards with images
   return (
     <Card
+      onClick={onCardClick}
       className={cn(
         "group relative overflow-hidden transition-all duration-300 hover:shadow-lg",
         getVariantStyles(),
-        isFeatured && "ring-2 ring-primary/20"
+        isFeatured && "ring-2 ring-primary/20",
+        onCardClick && "cursor-pointer"
       )}
     >
       <CardContent className="p-0">

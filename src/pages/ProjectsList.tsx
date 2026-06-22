@@ -214,6 +214,18 @@ const ProjectsList = () => {
       {/* Pending Invitations (only if any) */}
       <MyPendingInvitations />
 
+      {/* Folders bar (always visible when there's at least one project) */}
+      {user && projects.length > 0 && (
+        <StudioFoldersBar
+          userId={user.id}
+          folders={folders}
+          counts={folderCounts}
+          selected={folderFilter}
+          onSelect={setFolderFilter}
+          onChanged={fetchFolders}
+        />
+      )}
+
       {/* Search + quick filters (only when there's something to search) */}
       {projects.length > 2 && (
         <div className="space-y-2">

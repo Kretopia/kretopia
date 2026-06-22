@@ -43,6 +43,10 @@ interface CircleAdminPanelProps {
 
 export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const isOwner = user?.id === circle.created_by;
+  const [deleting, setDeleting] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const { toast } = useToast();
   const { isAdmin: isPlatformAdmin } = useUserRole();
   const [members, setMembers] = useState<CircleMember[]>([]);

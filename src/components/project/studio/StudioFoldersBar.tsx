@@ -288,8 +288,18 @@ export const StudioFoldersBar = ({
           const tint = tintFor(f.color);
           const active = selected === f.id;
           const isRenaming = renamingId === f.id;
+          const isOver = dropTarget === f.id;
           return (
-            <div key={f.id} className="relative group">
+            <div
+              key={f.id}
+              className={cn(
+                "relative group rounded-2xl transition-all",
+                isOver && cn("ring-2 ring-offset-2 ring-offset-background scale-[1.03]", tint.ring),
+              )}
+              onDragOver={(e) => handleDragOver(e, f.id)}
+              onDragLeave={() => handleDragLeave(f.id)}
+              onDrop={(e) => handleDrop(e, f.id)}
+            >
               <button
                 onClick={() => onSelect(f.id)}
                 className={cn(

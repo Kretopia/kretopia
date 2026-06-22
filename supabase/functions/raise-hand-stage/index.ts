@@ -43,13 +43,15 @@ serve(async (req) => {
     if (error) throw error;
 
     // Best-effort notify host
-    await admin.from("notifications").insert({
-      user_id: stage.host_user_id,
-      type: "stage_hand_raised",
-      title: "🖐 Hand raised on your stage",
-      message: "Tap to pull them up.",
-      action_url: `/circle/stage/${stage_id}`,
-    }).catch(() => {});
+    try {
+      await admin.from("notifications").insert({
+        user_id: stage.host_user_id,
+        type: "stage_hand_raised",
+        title: "🖐 Hand raised on your stage",
+        message: "Tap to pull them up.",
+        action_url: `/circle/stage/${stage_id}`,
+      });
+    } catch (_) { /* non-fatal */ }
 
     return new Response(JSON.stringify({ hand: data }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
   } catch (e) {

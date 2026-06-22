@@ -19,6 +19,8 @@ import {
   CaptionsOff,
   ScreenShare,
   ScreenShareOff,
+  Circle,
+  Square,
 } from "lucide-react";
 import {
   DropdownMenu,

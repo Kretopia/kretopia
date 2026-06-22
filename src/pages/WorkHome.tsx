@@ -342,6 +342,19 @@ const CreatorWorkHome = () => {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
   const [wrapWeekOpen, setWrapWeekOpen] = useState(false);
+  const [folders, setFolders] = useState<StudioFolder[]>([]);
+  const [folderFilter, setFolderFilter] = useState<string>("all");
+
+  const fetchFolders = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("studio_folders")
+      .select("id, name, color, sort_order")
+      .eq("user_id", user.id)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+    setFolders((data as StudioFolder[]) || []);
+  };
 
   const fetchProjects = async () => {
     if (!user) return;

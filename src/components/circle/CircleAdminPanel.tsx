@@ -11,14 +11,21 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   BarChart3, Users, MessageSquare, TrendingUp, Crown, Shield, User,
   Settings, Calendar, DollarSign, Mail, Sparkles, Check, Loader2, UserPlus, ShieldCheck,
+  Trash2, UserMinus, AlertTriangle,
 } from "lucide-react";
 import { CircleInviteTools } from "./CircleInviteTools";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useNavigate } from "react-router-dom";
 import type { CircleData } from "./CircleCard";
 
 interface CircleMember {

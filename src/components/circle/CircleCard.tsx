@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Users, MessageSquare, Lock, Crown, DollarSign, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -58,6 +59,8 @@ export const CircleCard = ({ circle, onClick }: { circle: CircleData; onClick: (
   const activity = getActivityLevel(circle.message_count);
   const crewIsNew = isNew(circle.created_at);
   const gradient = gradientFor(circle.id);
+  const [coverFailed, setCoverFailed] = useState(false);
+  const showImage = !!circle.cover_url && !coverFailed;
 
   return (
     <div
@@ -66,10 +69,12 @@ export const CircleCard = ({ circle, onClick }: { circle: CircleData; onClick: (
     >
       {/* Cover (image or signature gradient) */}
       <div className="relative h-32 w-full overflow-hidden">
-        {circle.cover_url ? (
+        {showImage ? (
           <img
-            src={circle.cover_url}
+            src={circle.cover_url!}
             alt=""
+            loading="lazy"
+            onError={() => setCoverFailed(true)}
             className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
           />
         ) : (

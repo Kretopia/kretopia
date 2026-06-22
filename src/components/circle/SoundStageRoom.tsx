@@ -426,6 +426,24 @@ export function SoundStageRoom({
         // Screen share events — flip local state so the button reflects truth.
         call.on("local-screen-share-started", () => setSharingScreen(true));
         call.on("local-screen-share-stopped", () => setSharingScreen(false));
+        // Cloud recording state sync (host triggers, all participants see).
+        call.on("recording-started" as any, () => {
+          setRecording(true);
+          setRecordingBusy(false);
+        });
+        call.on("recording-stopped" as any, () => {
+          setRecording(false);
+          setRecordingBusy(false);
+        });
+        call.on("recording-error" as any, (ev: any) => {
+          setRecording(false);
+          setRecordingBusy(false);
+          toast({
+            title: "Recording unavailable",
+            description: ev?.errorMsg || "Daily cloud recording isn't enabled on this workspace.",
+            variant: "destructive",
+          });
+        });
 
         call.on(
           "active-speaker-change",

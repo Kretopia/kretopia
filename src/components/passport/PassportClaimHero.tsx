@@ -78,7 +78,7 @@ export const PassportClaimHero = ({
             }
           >
             <ShieldCheck className="h-3 w-3 mr-1" />
-            {isVerifiedPro ? `L${level} ${standing.label}` : `L${level}`}
+            {isVerifiedPro ? `L${level} ${standing.title}` : `L${level}`}
           </Badge>
         </div>
 

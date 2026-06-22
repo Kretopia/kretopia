@@ -20,6 +20,7 @@ export interface AchievementCardProps {
   isOwnProfile?: boolean;
   onDelete?: () => void;
   onRequestEndorsement?: () => void;
+  onCardClick?: () => void;
   icon?: React.ReactNode;
   metadata?: Record<string, string | number>;
   category?: string | null;

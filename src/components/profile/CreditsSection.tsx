@@ -321,26 +321,30 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
         )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {credits.map((credit) => (
-            <AchievementCard
-              key={credit.id}
-              variant="credit"
-              title={credit.project_name}
-              subtitle={credit.role}
-              year={credit.year}
-              url={credit.url}
-              imageUrl={credit.thumbnail_url}
-              verificationStatus={credit.verification_status}
-              endorsementCount={credit.endorsement_count || 0}
-              isFeatured={credit.is_featured}
-              isOwnProfile={isOwnProfile}
-              onDelete={() => handleDelete(credit.id)}
-              onRequestEndorsement={() => setEndorsementCredit(credit)}
-              icon={<Film className="h-16 w-16" />}
-              metadata={credit.platform ? { Platform: credit.platform } : undefined}
-              category={credit.credit_category || credit.project_type}
-            />
-          ))}
+          {credits.map((credit) => {
+            const playable = !!credit.url && (!!parseMediaUrl(credit.url) || /\.(mp3|wav|m4a|ogg|mp4|webm|mov)(\?|$)/i.test(credit.url));
+            return (
+              <AchievementCard
+                key={credit.id}
+                variant="credit"
+                title={credit.project_name}
+                subtitle={credit.role}
+                year={credit.year}
+                url={credit.url}
+                imageUrl={credit.thumbnail_url}
+                verificationStatus={credit.verification_status}
+                endorsementCount={credit.endorsement_count || 0}
+                isFeatured={credit.is_featured}
+                isOwnProfile={isOwnProfile}
+                onDelete={() => handleDelete(credit.id)}
+                onRequestEndorsement={() => setEndorsementCredit(credit)}
+                onCardClick={playable ? () => setMediaCredit(credit) : undefined}
+                icon={<Film className="h-16 w-16" />}
+                metadata={credit.platform ? { Platform: credit.platform } : undefined}
+                category={credit.credit_category || credit.project_type}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -352,6 +356,20 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
           userId={userId}
         />
       )}
+
+      <MediaPlayerModal
+        isOpen={!!mediaCredit}
+        onClose={() => setMediaCredit(null)}
+        item={mediaCredit && mediaCredit.url ? {
+          title: mediaCredit.project_name,
+          description: mediaCredit.role,
+          media_type: /\.(mp3|wav|m4a|ogg)(\?|$)/i.test(mediaCredit.url) ? 'audio'
+            : /\.(mp4|webm|mov)(\?|$)/i.test(mediaCredit.url) ? 'video'
+            : 'embed',
+          media_url: mediaCredit.url,
+          thumbnail_url: mediaCredit.thumbnail_url,
+        } : null}
+      />
     </div>
   );
 };

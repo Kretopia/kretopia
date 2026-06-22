@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import type { Database } from "@/integrations/supabase/types";
 import { SubRolesPicker } from "./SubRolesPicker";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PROFESSION_LAYOUTS, inferProfession, type ProfessionKey } from "@/lib/passport/professionProfiles";
 
 // Comprehensive roles covering Music, Film, Design, Fashion, Content Creation, Tech, and more
 export const ROLE_OPTIONS = [
@@ -266,7 +268,10 @@ export function ProfileEditDialog({
     hourly_rate: "",
     project_rate: "",
     rate_currency: "USD",
+    cover_image_url: "",
+    passport_profession: "",
   });
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
   const hasShownToastRef = useRef(false);
@@ -293,6 +298,8 @@ export function ProfileEditDialog({
         hourly_rate: (profile as any).hourly_rate?.toString() || "",
         project_rate: (profile as any).project_rate?.toString() || "",
         rate_currency: (profile as any).rate_currency || "USD",
+        cover_image_url: (profile as any).cover_image_url || "",
+        passport_profession: (profile as any).passport_profession || "",
       });
 
       const completion = checkProfileCompletion(profile);
@@ -337,6 +344,8 @@ export function ProfileEditDialog({
         hourly_rate: hourlyRate && !isNaN(hourlyRate) ? hourlyRate : null,
         project_rate: projectRate && !isNaN(projectRate) ? projectRate : null,
         rate_currency: formData.rate_currency || 'USD',
+        cover_image_url: formData.cover_image_url || null,
+        passport_profession: formData.passport_profession || null,
       };
 
       console.log('[ProfileEdit] Saving profile with user_id:', profile.user_id);
@@ -541,7 +550,7 @@ export function ProfileEditDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 py-3">
           {/* AI Auto-Fill Button */}
           <Button
             variant="outline"
@@ -556,400 +565,498 @@ export function ProfileEditDialog({
             )}
           </Button>
 
-          <FieldWrapper 
-            label="Full Name" 
-            isIncomplete={isFieldIncomplete('full_name')}
-            hint="Your name helps others recognize you"
-          >
-            <Input
-              value={formData.full_name}
-              onChange={(e) => handleInputChange('full_name', e.target.value)}
-              placeholder="Enter your full name"
-            />
-          </FieldWrapper>
+          <Tabs defaultValue="basics" className="w-full">
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="basics">Basics</TabsTrigger>
+              <TabsTrigger value="cover">Cover</TabsTrigger>
+              <TabsTrigger value="rates">Rates</TabsTrigger>
+              <TabsTrigger value="links">Links</TabsTrigger>
+            </TabsList>
 
-          <FieldWrapper 
-            label="Role" 
-            isIncomplete={isFieldIncomplete('role')}
-            hint="What do you do? This helps you get discovered"
-          >
-            <Select
-              value={formData.role}
-              onValueChange={(value) => handleInputChange('role', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select your primary role" />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldWrapper>
-
-          <FieldWrapper
-            label="Specialties (sub-roles)"
-            isIncomplete={false}
-            hint="Add other things you do — e.g. a Producer who also shoots photo and sings"
-          >
-            <SubRolesPicker
-              mainRole={formData.role}
-              value={formData.sub_roles}
-              onChange={(next) => setFormData((p) => ({ ...p, sub_roles: next }))}
-            />
-          </FieldWrapper>
-
-          <FieldWrapper 
-            label="Location" 
-            isIncomplete={isFieldIncomplete('location')}
-            hint="Where are you based? Helps with local opportunities"
-          >
-            <Select
-              value={formData.location}
-              onValueChange={(value) => handleInputChange('location', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select your location" />
-              </SelectTrigger>
-              <SelectContent>
-                {LOCATION_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldWrapper>
-
-          <FieldWrapper 
-            label="Bio" 
-            isIncomplete={isFieldIncomplete('bio')}
-            hint="Tell your story - what makes you unique?"
-          >
-            <Textarea
-              value={formData.bio}
-              onChange={(e) => handleInputChange('bio', e.target.value)}
-              placeholder="Tell us about yourself, your work, and what you're looking for..."
-              rows={4}
-            />
-          </FieldWrapper>
-
-          <FieldWrapper 
-            label="Website" 
-            isIncomplete={isFieldIncomplete('Website or Social Link')}
-            hint="Link to your website or portfolio — we'll scan it for projects to import"
-          >
-            <div className="flex gap-2">
-              <Input
-                value={formData.website}
-                onChange={(e) => handleInputChange('website', e.target.value)}
-                placeholder="https://yourportfolio.com"
-                type="url"
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="shrink-0 gap-1"
-                disabled={!formData.website?.trim() || syncing.website}
-                onClick={() => triggerCreditSync('website', formData.website)}
-                title="Scan your website for projects to import"
+            {/* ===================== BASICS ===================== */}
+            <TabsContent value="basics" className="space-y-6 mt-4">
+              <FieldWrapper
+                label="Full Name"
+                isIncomplete={isFieldIncomplete('full_name')}
+                hint="Your name helps others recognize you"
               >
-                {syncing.website ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                Sync
-              </Button>
-            </div>
-          </FieldWrapper>
+                <Input
+                  value={formData.full_name}
+                  onChange={(e) => handleInputChange('full_name', e.target.value)}
+                  placeholder="Enter your full name"
+                />
+              </FieldWrapper>
 
-          {/* Rate Card */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium flex items-center gap-2">
-              Rate Card
-              <Badge variant="secondary" className="text-[10px]">Visible on profile</Badge>
-            </h3>
-            <p className="text-xs text-muted-foreground -mt-2">Help brands & clients quickly assess budget fit</p>
-            
-            <div className="grid grid-cols-3 gap-3">
-              <FieldWrapper label="Currency" isIncomplete={false}>
+              <FieldWrapper
+                label="Role"
+                isIncomplete={isFieldIncomplete('role')}
+                hint="What do you do? This helps you get discovered"
+              >
                 <Select
-                  value={formData.rate_currency}
-                  onValueChange={(value) => handleInputChange('rate_currency', value)}
+                  value={formData.role}
+                  onValueChange={(value) => handleInputChange('role', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select your primary role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="USD">$ USD</SelectItem>
-                    <SelectItem value="EUR">€ EUR</SelectItem>
-                    <SelectItem value="GBP">£ GBP</SelectItem>
-                    <SelectItem value="CAD">$ CAD</SelectItem>
-                    <SelectItem value="AUD">$ AUD</SelectItem>
-                    <SelectItem value="TTD">$ TTD</SelectItem>
-                    <SelectItem value="JMD">$ JMD</SelectItem>
+                    {ROLE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </FieldWrapper>
-              <FieldWrapper label="Hourly Rate" isIncomplete={false}>
-                <Input
-                  value={formData.hourly_rate}
-                  onChange={(e) => handleInputChange('hourly_rate', e.target.value)}
-                  placeholder="e.g. 75"
-                  type="number"
-                  min="0"
-                />
-              </FieldWrapper>
-              <FieldWrapper label="Project Rate" isIncomplete={false}>
-                <Input
-                  value={formData.project_rate}
-                  onChange={(e) => handleInputChange('project_rate', e.target.value)}
-                  placeholder="e.g. 2000"
-                  type="number"
-                  min="0"
-                />
-              </FieldWrapper>
-            </div>
-          </div>
 
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium">Social Media & Portfolio Links</h3>
-            <p className="text-xs text-muted-foreground -mt-2">
-              Add your profile links so visitors can find you across platforms — and we'll auto-populate your profile (bio, projects, credits) from any link with a <span className="font-medium text-foreground">Sync</span> button.
-            </p>
-            
-            <FieldWrapper label="Instagram" isIncomplete={false}>
-              <Input
-                value={formData.instagram_url}
-                onChange={(e) => handleInputChange('instagram_url', e.target.value)}
-                placeholder="https://instagram.com/username"
-              />
-            </FieldWrapper>
-
-            <FieldWrapper label="YouTube" isIncomplete={false}>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.youtube_url}
-                  onChange={(e) => handleInputChange('youtube_url', e.target.value)}
-                  placeholder="https://youtube.com/@yourchannel"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 gap-1"
-                  disabled={!formData.youtube_url?.trim() || syncing.youtube}
-                  onClick={() => triggerCreditSync('youtube', formData.youtube_url)}
-                  title="Import credits from this channel"
-                >
-                  {syncing.youtube ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                  Sync
-                </Button>
-              </div>
-            </FieldWrapper>
-
-            <FieldWrapper label="TikTok" isIncomplete={false}>
-              <Input
-                value={formData.tiktok_url}
-                onChange={(e) => handleInputChange('tiktok_url', e.target.value)}
-                placeholder="https://tiktok.com/@username"
-              />
-            </FieldWrapper>
-
-            <FieldWrapper label="Spotify" isIncomplete={false}>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.spotify_url}
-                  onChange={(e) => handleInputChange('spotify_url', e.target.value)}
-                  placeholder="https://open.spotify.com/artist/..."
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 gap-1"
-                  disabled={!formData.spotify_url?.trim() || syncing.spotify}
-                  onClick={() => triggerCreditSync('spotify', formData.spotify_url)}
-                  title="Import discography from Spotify"
-                >
-                  {syncing.spotify ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                  Sync
-                </Button>
-              </div>
-            </FieldWrapper>
-
-            <FieldWrapper label="Twitter/X" isIncomplete={false}>
-              <Input
-                value={formData.twitter_url}
-                onChange={(e) => handleInputChange('twitter_url', e.target.value)}
-                placeholder="https://x.com/username"
-              />
-            </FieldWrapper>
-
-            <FieldWrapper label="LinkedIn" isIncomplete={false}>
-              <Input
-                value={formData.linkedin_url}
-                onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
-                placeholder="https://linkedin.com/in/username"
-              />
-            </FieldWrapper>
-
-            <FieldWrapper label="Behance" isIncomplete={false}>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.behance_url}
-                  onChange={(e) => handleInputChange('behance_url', e.target.value)}
-                  placeholder="https://behance.net/username"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 gap-1"
-                  disabled={!formData.behance_url?.trim() || syncing.behance}
-                  onClick={() => triggerCreditSync('behance', formData.behance_url)}
-                  title="Import projects from Behance"
-                >
-                  {syncing.behance ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                  Sync
-                </Button>
-              </div>
-            </FieldWrapper>
-
-            <FieldWrapper label="IMDb" isIncomplete={false}>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.imdb_url}
-                  onChange={(e) => handleInputChange('imdb_url', e.target.value)}
-                  placeholder="https://imdb.com/name/..."
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 gap-1"
-                  disabled={!formData.imdb_url?.trim() || syncing.imdb}
-                  onClick={() => triggerCreditSync('imdb', formData.imdb_url)}
-                  title="Import credits from this IMDb profile"
-                >
-                  {syncing.imdb ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                  Sync
-                </Button>
-              </div>
-            </FieldWrapper>
-
-            <FieldWrapper label="SoundCloud" isIncomplete={false}>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.soundcloud_url}
-                  onChange={(e) => handleInputChange('soundcloud_url', e.target.value)}
-                  placeholder="https://soundcloud.com/username"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 gap-1"
-                  disabled={!formData.soundcloud_url?.trim() || syncing.soundcloud}
-                  onClick={() => triggerCreditSync('soundcloud', formData.soundcloud_url)}
-                  title="Import tracks from SoundCloud"
-                >
-                  {syncing.soundcloud ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                  Sync
-                </Button>
-              </div>
-            </FieldWrapper>
-
-            <FieldWrapper label="Vimeo" isIncomplete={false}>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.vimeo_url}
-                  onChange={(e) => handleInputChange('vimeo_url', e.target.value)}
-                  placeholder="https://vimeo.com/username"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 gap-1"
-                  disabled={!formData.vimeo_url?.trim() || syncing.vimeo}
-                  onClick={() => triggerCreditSync('vimeo', formData.vimeo_url)}
-                  title="Import videos from Vimeo"
-                >
-                  {syncing.vimeo ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                  Sync
-                </Button>
-              </div>
-            </FieldWrapper>
-          </div>
-        </div>
-
-        {/* Video Intro Section */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Video className="h-4 w-4" />
-            Video Intro
-          </h3>
-          {profile?.video_intro_url ? (
-            <div className="relative rounded-lg overflow-hidden border bg-muted">
-              <video
-                src={profile.video_intro_url}
-                controls
-                className="w-full max-h-40 object-cover"
-              />
-              <Button
-                variant="destructive"
-                size="sm"
-                className="absolute top-2 right-2 h-7 text-xs"
-                onClick={async () => {
-                  await supabase.from("profiles").update({ video_intro_url: null }).eq("user_id", profile.user_id);
-                  toast({ title: "Video intro removed" });
-                  onProfileUpdate();
-                }}
+              <FieldWrapper
+                label="Specialties (sub-roles)"
+                isIncomplete={false}
+                hint="Add other things you do — e.g. a Producer who also shoots photo and sings"
               >
-                <X className="h-3 w-3 mr-1" />
-                Remove
-              </Button>
-            </div>
-          ) : (
-            <label className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 cursor-pointer transition-colors">
-              <Upload className="h-6 w-6 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Upload a 30-60s video intro (max 50MB)</span>
-              <input
-                type="file"
-                accept="video/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  if (file.size > 50 * 1024 * 1024) {
-                    toast({ title: "File too large", description: "Max 50MB", variant: "destructive" });
-                    return;
-                  }
-                  try {
-                    const ext = file.name.split(".").pop();
-                    const path = `${profile.user_id}/video-intro.${ext}`;
-                    await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-                    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-                    await supabase.from("profiles").update({ video_intro_url: urlData.publicUrl }).eq("user_id", profile.user_id);
-                    toast({ title: "Video intro uploaded!" });
-                    onProfileUpdate();
-                  } catch (err: any) {
-                    toast({ title: "Upload failed", description: err.message, variant: "destructive" });
-                  }
-                }}
-              />
-            </label>
-          )}
+                <SubRolesPicker
+                  mainRole={formData.role}
+                  value={formData.sub_roles}
+                  onChange={(next) => setFormData((p) => ({ ...p, sub_roles: next }))}
+                />
+              </FieldWrapper>
+
+              <FieldWrapper
+                label="Passport Layout"
+                isIncomplete={false}
+                hint="Pick how your Passport is laid out. Defaults to the best fit for your role."
+              >
+                <Select
+                  value={formData.passport_profession || inferProfession({ role: formData.role, sub_roles: formData.sub_roles })}
+                  onValueChange={(value) => handleInputChange('passport_profession', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Auto (based on role)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(PROFESSION_LAYOUTS) as ProfessionKey[]).map((k) => (
+                      <SelectItem key={k} value={k}>
+                        {PROFESSION_LAYOUTS[k].label} — {PROFESSION_LAYOUTS[k].tagline}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldWrapper>
+
+              <FieldWrapper
+                label="Location"
+                isIncomplete={isFieldIncomplete('location')}
+                hint="Where are you based? Helps with local opportunities"
+              >
+                <Select
+                  value={formData.location}
+                  onValueChange={(value) => handleInputChange('location', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LOCATION_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldWrapper>
+
+              <FieldWrapper
+                label="Bio"
+                isIncomplete={isFieldIncomplete('bio')}
+                hint="Tell your story - what makes you unique?"
+              >
+                <Textarea
+                  value={formData.bio}
+                  onChange={(e) => handleInputChange('bio', e.target.value)}
+                  placeholder="Tell us about yourself, your work, and what you're looking for..."
+                  rows={4}
+                />
+              </FieldWrapper>
+            </TabsContent>
+
+            {/* ===================== COVER ===================== */}
+            <TabsContent value="cover" className="space-y-6 mt-4">
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <Upload className="h-4 w-4" /> Cover Image
+                </h3>
+                <p className="text-xs text-muted-foreground -mt-1">
+                  A wide banner that sits at the top of your Passport. Use 1500×500 for best results.
+                </p>
+                {formData.cover_image_url ? (
+                  <div className="relative rounded-lg overflow-hidden border bg-muted aspect-[3/1]">
+                    <img
+                      src={formData.cover_image_url}
+                      alt="Cover"
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2 h-7 text-xs"
+                      onClick={() => handleInputChange('cover_image_url', '')}
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center gap-2 p-6 rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 cursor-pointer transition-colors">
+                    {uploadingCover ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {uploadingCover ? "Uploading…" : "Upload a cover image (JPG/PNG, max 8MB)"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploadingCover}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file || !profile) return;
+                        if (file.size > 8 * 1024 * 1024) {
+                          toast({ title: "File too large", description: "Max 8MB", variant: "destructive" });
+                          return;
+                        }
+                        setUploadingCover(true);
+                        try {
+                          const ext = file.name.split(".").pop() || 'jpg';
+                          const path = `${profile.user_id}/cover-${Date.now()}.${ext}`;
+                          const { error: upErr } = await supabase.storage
+                            .from("avatars")
+                            .upload(path, file, { upsert: true, cacheControl: '3600' });
+                          if (upErr) throw upErr;
+                          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+                          handleInputChange('cover_image_url', urlData.publicUrl);
+                          toast({ title: "Cover ready", description: "Save to apply to your Passport." });
+                        } catch (err: any) {
+                          toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+                        } finally {
+                          setUploadingCover(false);
+                        }
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Video Intro */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <Video className="h-4 w-4" /> Video Intro
+                </h3>
+                {profile?.video_intro_url ? (
+                  <div className="relative rounded-lg overflow-hidden border bg-muted">
+                    <video
+                      src={profile.video_intro_url}
+                      controls
+                      className="w-full max-h-40 object-cover"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2 h-7 text-xs"
+                      onClick={async () => {
+                        await supabase.from("profiles").update({ video_intro_url: null }).eq("user_id", profile.user_id);
+                        toast({ title: "Video intro removed" });
+                        onProfileUpdate();
+                      }}
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 cursor-pointer transition-colors">
+                    <Upload className="h-6 w-6 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Upload a 30-60s video intro (max 50MB)</span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 50 * 1024 * 1024) {
+                          toast({ title: "File too large", description: "Max 50MB", variant: "destructive" });
+                          return;
+                        }
+                        try {
+                          const ext = file.name.split(".").pop();
+                          const path = `${profile.user_id}/video-intro.${ext}`;
+                          await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+                          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+                          await supabase.from("profiles").update({ video_intro_url: urlData.publicUrl }).eq("user_id", profile.user_id);
+                          toast({ title: "Video intro uploaded!" });
+                          onProfileUpdate();
+                        } catch (err: any) {
+                          toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+                        }
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* ===================== RATES ===================== */}
+            <TabsContent value="rates" className="space-y-4 mt-4">
+              <h3 className="text-sm font-medium flex items-center gap-2">
+                Rate Card
+                <Badge variant="secondary" className="text-[10px]">Visible on profile</Badge>
+              </h3>
+              <p className="text-xs text-muted-foreground -mt-2">Help brands & clients quickly assess budget fit</p>
+
+              <div className="grid grid-cols-3 gap-3">
+                <FieldWrapper label="Currency" isIncomplete={false}>
+                  <Select
+                    value={formData.rate_currency}
+                    onValueChange={(value) => handleInputChange('rate_currency', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">$ USD</SelectItem>
+                      <SelectItem value="EUR">€ EUR</SelectItem>
+                      <SelectItem value="GBP">£ GBP</SelectItem>
+                      <SelectItem value="CAD">$ CAD</SelectItem>
+                      <SelectItem value="AUD">$ AUD</SelectItem>
+                      <SelectItem value="TTD">$ TTD</SelectItem>
+                      <SelectItem value="JMD">$ JMD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FieldWrapper>
+                <FieldWrapper label="Hourly Rate" isIncomplete={false}>
+                  <Input
+                    value={formData.hourly_rate}
+                    onChange={(e) => handleInputChange('hourly_rate', e.target.value)}
+                    placeholder="e.g. 75"
+                    type="number"
+                    min="0"
+                  />
+                </FieldWrapper>
+                <FieldWrapper label="Project Rate" isIncomplete={false}>
+                  <Input
+                    value={formData.project_rate}
+                    onChange={(e) => handleInputChange('project_rate', e.target.value)}
+                    placeholder="e.g. 2000"
+                    type="number"
+                    min="0"
+                  />
+                </FieldWrapper>
+              </div>
+            </TabsContent>
+
+            {/* ===================== LINKS ===================== */}
+            <TabsContent value="links" className="space-y-4 mt-4">
+              <p className="text-xs text-muted-foreground">
+                Add your profile links so visitors can find you across platforms — and we'll auto-populate your profile (bio, projects, credits) from any link with a <span className="font-medium text-foreground">Sync</span> button.
+              </p>
+
+              <FieldWrapper
+                label="Website"
+                isIncomplete={isFieldIncomplete('Website or Social Link')}
+                hint="Link to your website or portfolio — we'll scan it for projects to import"
+              >
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    placeholder="https://yourportfolio.com"
+                    type="url"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 gap-1"
+                    disabled={!formData.website?.trim() || syncing.website}
+                    onClick={() => triggerCreditSync('website', formData.website)}
+                  >
+                    {syncing.website ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    Sync
+                  </Button>
+                </div>
+              </FieldWrapper>
+
+              <FieldWrapper label="Instagram" isIncomplete={false}>
+                <Input
+                  value={formData.instagram_url}
+                  onChange={(e) => handleInputChange('instagram_url', e.target.value)}
+                  placeholder="https://instagram.com/username"
+                />
+              </FieldWrapper>
+
+              <FieldWrapper label="YouTube" isIncomplete={false}>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.youtube_url}
+                    onChange={(e) => handleInputChange('youtube_url', e.target.value)}
+                    placeholder="https://youtube.com/@yourchannel"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 gap-1"
+                    disabled={!formData.youtube_url?.trim() || syncing.youtube}
+                    onClick={() => triggerCreditSync('youtube', formData.youtube_url)}
+                  >
+                    {syncing.youtube ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    Sync
+                  </Button>
+                </div>
+              </FieldWrapper>
+
+              <FieldWrapper label="TikTok" isIncomplete={false}>
+                <Input
+                  value={formData.tiktok_url}
+                  onChange={(e) => handleInputChange('tiktok_url', e.target.value)}
+                  placeholder="https://tiktok.com/@username"
+                />
+              </FieldWrapper>
+
+              <FieldWrapper label="Spotify" isIncomplete={false}>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.spotify_url}
+                    onChange={(e) => handleInputChange('spotify_url', e.target.value)}
+                    placeholder="https://open.spotify.com/artist/..."
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 gap-1"
+                    disabled={!formData.spotify_url?.trim() || syncing.spotify}
+                    onClick={() => triggerCreditSync('spotify', formData.spotify_url)}
+                  >
+                    {syncing.spotify ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    Sync
+                  </Button>
+                </div>
+              </FieldWrapper>
+
+              <FieldWrapper label="Twitter/X" isIncomplete={false}>
+                <Input
+                  value={formData.twitter_url}
+                  onChange={(e) => handleInputChange('twitter_url', e.target.value)}
+                  placeholder="https://x.com/username"
+                />
+              </FieldWrapper>
+
+              <FieldWrapper label="LinkedIn" isIncomplete={false}>
+                <Input
+                  value={formData.linkedin_url}
+                  onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                  placeholder="https://linkedin.com/in/username"
+                />
+              </FieldWrapper>
+
+              <FieldWrapper label="Behance" isIncomplete={false}>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.behance_url}
+                    onChange={(e) => handleInputChange('behance_url', e.target.value)}
+                    placeholder="https://behance.net/username"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 gap-1"
+                    disabled={!formData.behance_url?.trim() || syncing.behance}
+                    onClick={() => triggerCreditSync('behance', formData.behance_url)}
+                  >
+                    {syncing.behance ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    Sync
+                  </Button>
+                </div>
+              </FieldWrapper>
+
+              <FieldWrapper label="IMDb" isIncomplete={false}>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.imdb_url}
+                    onChange={(e) => handleInputChange('imdb_url', e.target.value)}
+                    placeholder="https://imdb.com/name/..."
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 gap-1"
+                    disabled={!formData.imdb_url?.trim() || syncing.imdb}
+                    onClick={() => triggerCreditSync('imdb', formData.imdb_url)}
+                  >
+                    {syncing.imdb ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    Sync
+                  </Button>
+                </div>
+              </FieldWrapper>
+
+              <FieldWrapper label="SoundCloud" isIncomplete={false}>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.soundcloud_url}
+                    onChange={(e) => handleInputChange('soundcloud_url', e.target.value)}
+                    placeholder="https://soundcloud.com/username"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 gap-1"
+                    disabled={!formData.soundcloud_url?.trim() || syncing.soundcloud}
+                    onClick={() => triggerCreditSync('soundcloud', formData.soundcloud_url)}
+                  >
+                    {syncing.soundcloud ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    Sync
+                  </Button>
+                </div>
+              </FieldWrapper>
+
+              <FieldWrapper label="Vimeo" isIncomplete={false}>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.vimeo_url}
+                    onChange={(e) => handleInputChange('vimeo_url', e.target.value)}
+                    placeholder="https://vimeo.com/username"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 gap-1"
+                    disabled={!formData.vimeo_url?.trim() || syncing.vimeo}
+                    onClick={() => triggerCreditSync('vimeo', formData.vimeo_url)}
+                  >
+                    {syncing.vimeo ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    Sync
+                  </Button>
+                </div>
+              </FieldWrapper>
+            </TabsContent>
+          </Tabs>
         </div>
+
 
         <div className="flex justify-end gap-2 pt-4 border-t">
           <Button

@@ -42,6 +42,7 @@ interface StudioProject {
   client_name?: string | null;
   description?: string | null;
   pinned_stage?: string | null;
+  studio_folder_id?: string | null;
   updated_at: string;
 }
 
@@ -49,6 +50,8 @@ interface StudioCardsGridProps {
   projects: StudioProject[];
   invoicesByProject?: Record<string, "paid" | "invoiced" | "unsent">;
   onNewProject: () => void;
+  folders?: StudioFolder[];
+  onMoveToFolder?: (projectId: string, folderId: string | null) => void;
 }
 
 const STATUS_PILL: Record<string, { label: string; tone: string }> = {

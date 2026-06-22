@@ -77,6 +77,10 @@ serve(async (req) => {
           enable_screenshare: true,
           enable_knocking: false,
           enable_prejoin_ui: false,
+          // Host-controlled cloud recording (Daily Cloud plan). Safe to
+          // request — Daily ignores recording calls if the workspace lacks
+          // the entitlement, so this still works on free plans (no-op).
+          enable_recording: "cloud",
           start_video_off: mode === "audio",
           start_audio_off: false,
         },

@@ -19,6 +19,8 @@ import {
   CaptionsOff,
   ScreenShare,
   ScreenShareOff,
+  Circle,
+  Square,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -138,6 +140,10 @@ export function SoundStageRoom({
   // triggers refreshMembers, but screen tracks live outside `members`).
   const [sharingScreen, setSharingScreen] = useState(false);
   const [screenTick, setScreenTick] = useState(0);
+  // Cloud recording (host-only). Daily emits recording-started/stopped events
+  // to ALL participants so the indicator stays in sync.
+  const [recording, setRecording] = useState(false);
+  const [recordingBusy, setRecordingBusy] = useState(false);
   const localLevelRef = useRef(0);
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>
@@ -422,6 +428,24 @@ export function SoundStageRoom({
         // Screen share events — flip local state so the button reflects truth.
         call.on("local-screen-share-started", () => setSharingScreen(true));
         call.on("local-screen-share-stopped", () => setSharingScreen(false));
+        // Cloud recording state sync (host triggers, all participants see).
+        call.on("recording-started" as any, () => {
+          setRecording(true);
+          setRecordingBusy(false);
+        });
+        call.on("recording-stopped" as any, () => {
+          setRecording(false);
+          setRecordingBusy(false);
+        });
+        call.on("recording-error" as any, (ev: any) => {
+          setRecording(false);
+          setRecordingBusy(false);
+          toast({
+            title: "Recording unavailable",
+            description: ev?.errorMsg || "Daily cloud recording isn't enabled on this workspace.",
+            variant: "destructive",
+          });
+        });
 
         call.on(
           "active-speaker-change",
@@ -704,6 +728,31 @@ export function SoundStageRoom({
 
   const leave = () => onOpenChange(false);
 
+  const toggleRecording = async () => {
+    const call = callRef.current;
+    if (!call || !isHost) return;
+    setRecordingBusy(true);
+    try {
+      if (recording) {
+        await (call as any).stopRecording?.();
+      } else {
+        await (call as any).startRecording?.({ layout: { preset: "default" } });
+        toast({
+          title: "Recording started",
+          description: "Everyone in the room is notified. Recording uploads to your Daily workspace after the stage ends.",
+        });
+      }
+    } catch (e: any) {
+      setRecordingBusy(false);
+      toast({
+        title: "Couldn't toggle recording",
+        description: e?.message || "Cloud recording may not be enabled on this workspace.",
+        variant: "destructive",
+      });
+    }
+  };
+
+
   const list = Object.values(members);
   // Remote participants whose audio track we need to play (call-object mode
   // does NOT auto-play remote audio — we must attach <audio> elements).
@@ -777,7 +826,7 @@ export function SoundStageRoom({
           <div className="flex items-center gap-3">
             {isBackstage ? (
               <Badge
-                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide bg-[hsl(var(--signal-amber))] text-background hover:bg-[hsl(var(--signal-amber))]"
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide bg-[hsl(var(--signal-amber))] text-[#05070D] hover:bg-[hsl(var(--signal-amber))]"
               >
                 <Radio className="h-2.5 w-2.5" /> Backstage
               </Badge>
@@ -787,6 +836,15 @@ export function SoundStageRoom({
                 className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide"
               >
                 <Radio className="h-2.5 w-2.5 animate-pulse" /> Live
+              </Badge>
+            )}
+            {recording && (
+              <Badge
+                variant="destructive"
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide animate-pulse"
+                title="This stage is being recorded"
+              >
+                <Circle className="h-2.5 w-2.5 fill-current" /> Rec
               </Badge>
             )}
             <div className="flex-1 min-w-0">
@@ -1111,6 +1169,26 @@ export function SoundStageRoom({
                   <CaptionsOff className="h-3.5 w-3.5" />
                 )}
                 <span>{captionsOn ? "Captions on" : "Captions"}</span>
+              </Button>
+            )}
+            {isHost && (
+              <Button
+                variant={recording ? "destructive" : "outline"}
+                size="sm"
+                className="rounded-full text-xs h-10 px-3 gap-1.5"
+                onClick={toggleRecording}
+                disabled={recordingBusy}
+                aria-label={recording ? "Stop recording" : "Start recording"}
+                title={recording ? "Recording — tap to stop" : "Record this stage"}
+              >
+                {recordingBusy ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : recording ? (
+                  <Square className="h-3.5 w-3.5 fill-current" />
+                ) : (
+                  <Circle className="h-3.5 w-3.5 fill-current text-destructive" />
+                )}
+                <span>{recording ? "Recording" : "Record"}</span>
               </Button>
             )}
             <div className="flex items-center gap-2">

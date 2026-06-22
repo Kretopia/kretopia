@@ -100,7 +100,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
       message_type: "system",
     });
     setVerificationRequested(true);
-    toast({ title: "Request sent", description: "Our team will review your circle within 48 hours." });
+    toast({ title: "Request sent", description: "Our team will review your Crew within 48 hours." });
   };
 
   const fetchData = async () => {
@@ -205,7 +205,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Circle Settings
+            Crew Settings
           </DialogTitle>
         </DialogHeader>
 
@@ -397,7 +397,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                 <h4 className="font-semibold text-sm">Tagline</h4>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                A one-liner shown under your circle name. Keep it short — like a creative manifesto.
+                A one-liner shown under your Crew name. Keep it short — like a creative manifesto.
               </p>
               <Input
                 placeholder="e.g. Build, collaborate, and grow together"
@@ -414,12 +414,12 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className={cn("h-4 w-4", isVerified ? "text-primary" : "text-muted-foreground")} />
-                  <h4 className="font-semibold text-sm">Verified Circle</h4>
+                  <h4 className="font-semibold text-sm">Verified Crew</h4>
                 </div>
                 {isVerified && <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">Verified</Badge>}
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Verified circles are reviewed by ThriveIN for authenticity, active leadership, and quality content.
+                Verified Crews are reviewed by ThriveIN for authenticity, active leadership, and quality content.
               </p>
               {isPlatformAdmin ? (
                 <Button
@@ -462,11 +462,11 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Automatically send a private message to new members when they join this circle.
+                Automatically send a private message to new members when they join this Crew.
               </p>
               {welcomeDmEnabled && (
                 <Textarea
-                  placeholder="Hey! Welcome to the circle — feel free to introduce yourself and share what you're working on!"
+                  placeholder="Hey! Welcome to the Crew — feel free to introduce yourself and share what you're working on!"
                   value={welcomeMessage}
                   onChange={e => setWelcomeMessage(e.target.value)}
                   maxLength={500}
@@ -475,11 +475,11 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               )}
             </Card>
 
-            {/* Circle Info */}
+            {/* Crew Info */}
             <Card className="p-4">
               <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-primary" />
-                Circle Info
+                Crew Info
               </h4>
               <div className="space-y-2 text-xs text-muted-foreground">
                 <div className="flex justify-between">
@@ -553,7 +553,7 @@ const CircleEvents = ({ circleId, circleTitle }: { circleId: string; circleTitle
         <Card className="p-6 text-center">
           <Calendar className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
           <p className="text-sm text-muted-foreground">No events linked yet</p>
-          <p className="text-xs text-muted-foreground mt-1">Create events and assign them to this circle</p>
+          <p className="text-xs text-muted-foreground mt-1">Create events and assign them to this Crew</p>
         </Card>
       ) : (
         events.map(event => (

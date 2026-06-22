@@ -309,6 +309,8 @@ const ProjectsList = () => {
           projects={filteredProjects as any}
           invoicesByProject={invoicesByProject}
           onNewProject={() => setShowVoiceCreate(true)}
+          folders={folders}
+          onMoveToFolder={moveProjectToFolder}
         />
       )}
 

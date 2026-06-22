@@ -40,6 +40,7 @@ export const AchievementCard = ({
   isOwnProfile = false,
   onDelete,
   onRequestEndorsement,
+  onCardClick,
   icon,
   metadata,
   category,

@@ -1,150 +1,83 @@
-## Direction
+# Standing Consolidation + Upgrade
 
-Double down on the **Creative Passport** as the headline product. Everything else (Discover, Stages, Gigs, Events, Studios, Pay, Credits) stays as supporting surfaces. Crews + sub-screens get hidden behind a flag — group chat lives in Messages only. ThriveDesk/Studios stays (forgot to call it out — it's the real collab moat alongside Passport; LinkedIn/Behance have nothing like it).
+One level system. Industry-true names. Real moat signals only.
 
-## 1. Hide Crews (keep code, kill entry points)
+## Part A — Make Standing canonical (cleanup)
 
-- BottomNav, hamburger, Home, and Discover: remove "Crews"/"Circles" links.
-- `/crews`, `/crew/:id`, `/circle*` routes stay live (deep links don't 404) but no in-app navigation surfaces them.
-- Messages: ensure "New group chat" exists as the replacement entry point. If missing, add a thin wrapper on `spark_rooms` typed `dm_group` so users can spin up a group without Crew machinery.
-- Memory update: mark Crews as sunset-from-UI (data preserved).
+Audit finding: both legacy systems are effectively dead code.
+- `tierSystem.ts` — only `POINT_REWARDS` is imported, by `xpSystem.ts`
+- `xpSystem.ts` — imported by nothing
+- `gamification.ts` (`LEVEL_NAMES` / Member→Legend) — imported by nothing
 
-## 2. Passport audit + profession-aware layout
+Actions:
+1. Delete `src/lib/tierSystem.ts`, `src/lib/xpSystem.ts`, `src/lib/gamification.ts`.
+2. Grep-verify zero remaining imports; remove the stale comment in `WalletXPSection.tsx`.
+3. Add a single `src/lib/passport/standingClient.ts` helper — `useStanding(userId)` — that loads the 6 inputs (verified credits, recent credits 90d, co-signs, profile %, active projects 90d, reply SLA) and returns `computeStanding(...)`. Every surface (`ProfileHero`, `PassportHeroRibbon`, `LevelUpCard`, badges, Discover cards) reads from this one hook.
 
-Current state: `ProfileHero` + ~40 sections rendered for everyone. Photographers see "Music splits", musicians see "Rate cards for shoots", etc. Noisy.
+## Part B — Upgrade Standing
 
-Introduce a **Profession Profile** system:
+### B1. Add L0 "Unclaimed"
+New first rung for scraped/unclaimed Passports. Title = "Unclaimed", CTA = "Claim your Passport". Once claimed → auto-promote to L1 Newcomer.
 
-```
-src/lib/passport/professionProfiles.ts
-  PROFESSION_LAYOUTS: Record<ProfessionKey, {
-    heroVariant: 'reel' | 'gallery' | 'waveform' | 'editorial' | 'showreel',
-    primarySections: SectionKey[],   // shown above the fold
-    secondarySections: SectionKey[], // shown below
-    hiddenSections: SectionKey[],    // never shown for this profession
-    shareTargets: ('epk' | 'compcard' | 'reel' | 'press' | 'rate' | 'site')[],
-  }>
-```
-
-Seed 8 archetypes derived from existing `professional taxonomy`:
-- **Model / Talent** → Comp Card first, measurements, polaroids, agency, usage rights.
-- **Photographer / Videographer** → Gallery hero, gear, rate card, recent shoots, locations.
-- **Musician / Producer** → Waveform hero, releases, splits, performances, riders.
-- **Filmmaker / Director / Editor** → Showreel hero, IMDB-style roll call, festivals.
-- **Designer / Illustrator / Art Director** → Mosaic portfolio, case studies, tools.
-- **Writer / Journalist / Editorial** → Editorial hero, bylines, clips, beats.
-- **Content Creator / Influencer** → Platform stats, brand work, audience demographics.
-- **Crew / Production (HMUA, stylist, gaffer, AD, etc.)** → Roll-call credits, day rates, kit list, availability.
-
-Render via a single `<PassportLayout profession={...} />` switch that composes existing section components — no rewrites of sections, just routing.
-
-Settings: "Showcase as: Model / Photographer / Musician / …" override (defaults inferred from `primary_role` + `sub_roles`).
-
-## 3. Profile setup that does the work for the user
-
-Already strong (search-your-name → claim). Tighten:
-
-- Surface `UniversalClaimFlow` as the **default empty-state** on `/profile` for any user with completion < 30%.
-- Add **"Pull from your platforms"** card that fans out in parallel: IG / TikTok / YouTube / Spotify / Behance / IMDb / LinkedIn / SoundCloud / Vimeo / ArtStation / Substack / Beatport / Bandcamp / Letterboxd. Reuse `PlatformConnectionCard` + `RescanAllLinksCard` and add the missing platforms to the scan map in `connected_platforms`.
-- One **"Refresh my Passport"** button that re-runs all connected platforms + AI autofill in one click and shows a diff/review screen before applying (already partially exists via `ai-autofill-profile`).
-- Gemini-powered **"Write my bio"** + **"Suggest my rate card"** + **"Generate my taglines"** as quick actions in `ProfileEditDialog`.
-
-## 4. Share surfaces, profession-aware
-
-Today: `ShareProfileDialog` shares one link. New `<PassportShareSheet />`:
-
-| Profession      | Default share order                                |
-| --------------- | -------------------------------------------------- |
-| Model           | Comp Card → EPK → Profile → Site                   |
-| Photographer    | Portfolio Site → Reel → EPK → Profile              |
-| Musician        | EPK → Site → Reel → Profile                        |
-| Filmmaker       | Showreel → Roll Call → EPK → Profile               |
-| Designer        | Site → Portfolio PDF → Profile                     |
-| Content Creator | Media Kit (EPK) → Rate Card → Profile              |
-| Writer          | Clips Page → Profile → EPK                         |
-| Crew            | Roll Call → Rate Card → Availability → Profile     |
-
-Each option: native share (Web Share API) + copy link + WhatsApp / Email / X / LinkedIn / IG-story PNG. Reuses existing EPK, CompCard, CreatorSite, EmbeddableCreditsWidget endpoints.
-
-## 5. One-click Website (paid feature, polished)
-
-`/site/:userId` + `/website-builder` exist. Make it real:
-
-- On `ProfileActions` for Creator+ accounts: prominent **"Publish as Website"** button → routes to `/website-builder` with profession template auto-selected (use `templateConfig.ts` already keyed by role).
-- One-click flow: pick template → preview → publish. Custom domain stays gated.
-- Add "Edit Website" pill on the live profile for owners with a published site.
-- Free/Spark tier sees an upsell preview (locked CTA + "Upgrade to publish").
-
-## 6. Verified Credits + Standing gamification
-
-Keep Credits/Co-signs as the moat. Replace the dormant "Standing" tier with an **active Level-Up loop**:
-
-```
-src/lib/passport/standing.ts
-  computeStanding(profile, credits, vouches, activity):
-    level: 1..10
-    title: 'Newcomer' → 'Working Creative' → 'Verified Pro' → 'Industry Name' → 'Marquee'
-    progress: 0..100 toward next
-    nextActions: [{ label, points, deeplink }]
-```
-
-Inputs (weighted):
-- Verified Credits count + recency
-- Co-signs received (high weight)
-- Profile completion (capped at 30%)
-- Active gigs / studios / collabs in last 90 days
-- Reply SLA + booking rate
-
-Surfaces:
-- **Hero ribbon** on Passport with title + thin progress bar.
-- **"Level up" card** on Home with 3 highest-leverage actions ("Add 2 more credits → Verified Pro").
-- **Weekly streak** chip already exists — keep, but tie it to Standing momentum.
-- Push/email at level-ups: "You just hit Verified Pro — here's what unlocks."
-
-No new currency. No leaderboards. Motivational, not gamey.
-
-## 7. Inspiration we steal
-
-- **Google "About this result"** → "About this Passport" tooltip on hero showing trust sources at a glance (verified by, co-signed by, platforms connected).
-- **Notion profile pages** → inline-edit on owner view, no separate edit modal for atomic fields.
-- **Linktree / Beacons** → the share sheet above.
-- **IMDb Pro** → roll-call + known-for grid.
-- **Read.cv** → typography-first editorial layout as the default for writers/designers.
-
-## 8. Out of scope (this pass)
-
-- Backend schema changes beyond a single `profiles.passport_profession` text column for the override.
-- Discover changes (stays as-is per direction).
-- Pricing changes.
-
-## Technical layout
+Levels become:
 
 ```text
-src/
-  lib/passport/
-    professionProfiles.ts     // archetype -> layout config
-    standing.ts               // level computation + next actions
-    shareTargets.ts           // per-profession share order
-  components/passport/
-    PassportLayout.tsx        // profession switch, composes existing sections
-    PassportHeroRibbon.tsx    // standing title + progress
-    PassportShareSheet.tsx    // replaces ShareProfileDialog
-    LevelUpCard.tsx           // home + profile surface
-    RefreshPassportButton.tsx // one-click re-scan + AI diff
-  pages/profile/Profile.tsx    // mount PassportLayout
-db:
-  profiles.passport_profession text null  (override; null = inferred)
-hide Crews:
-  src/components/BottomNav.tsx          // remove Crews item if present
-  src/components/home/*                 // remove Crews cards
-  hamburger menu                        // remove Crews link
-  Discover → Crews tab                  // hide
+L0  Unclaimed         (pre-claim only)
+L1  Newcomer          score 0
+L2  Working Creative  score 30
+L3  Verified Pro      score 75   ← gated, see B3
+L4  Industry Name     score 140  ← gated
+L5  Marquee           score 220  ← gated
 ```
 
-## Phasing
+### B2. Score decay (keeps the board honest)
+If no activity in 180 days: multiply score by 0.85 (computed at read time — no cron). Caps decay at -1 level. Shown in the LevelUpCard as "Slipping — add a recent credit to hold your standing."
 
-1. **Phase 1 (this pass):** Hide Crews entry points. Ship `PassportLayout` with 3 archetypes (Model, Photographer, Musician) + Standing v2 + new ShareSheet + "Publish as Website" wired. Everyone else falls back to current layout.
-2. **Phase 2:** Remaining 5 archetypes + Refresh Passport diff UI + missing platform scanners.
-3. **Phase 3:** Level-up email/push triggers + "About this Passport" trust tooltip.
+### B3. Verified-by-ThriveIN gate at L3+
+Score alone unlocks L1/L2. L3+ also requires `profiles.verification_score >= threshold` (uses existing verification system). If score qualifies but verification doesn't → user sees "L3 unlocked — finish verification to claim Verified Pro" with a deep link to the verification flow. Prevents gaming via self-added credits.
 
-Approve and I'll start Phase 1.
+### B4. Co-sign cap
+Cap unique co-signers contributing to score at 10. Beyond that, additional co-signs still display socially but don't inflate score. Prevents a single viral creator from running away.
+
+### B5. "What unlocks at next level" on LevelUpCard
+Append a small "Unlocks at [next level]" block to `LevelUpCard.tsx`:
+
+```text
+L2  Working Creative  → Listed in Discover
+L3  Verified Pro      → Scout priority + Verified badge on EPK
+L4  Industry Name     → Featured in Discover + press-kit badge
+L5  Marquee           → Top of Match queue + Marquee mark
+```
+
+These are display-only labels in v1 (no enforcement changes to Discover/Scout/Match yet — that's a follow-up).
+
+### B6. Recompute weights w/ cap
+Update `computeStanding` in `src/lib/passport/standing.ts`:
+- `cosignsReceived` → `Math.min(cosignsReceived, 10) * 6`
+- New input `lastActivityAt?: string` — applies the 0.85 decay if >180d
+- New input `verificationScore?: number` — drives the L3+ gate (returns `gatedAt` field naming the level the user qualifies for by score but can't claim yet)
+
+`Standing` return type gains:
+- `gatedAt: StandingLevel | null` — "you'd be Verified Pro but…"
+- `decaying: boolean`
+- `unlocks: { level, label }[]` — for the LevelUpCard
+
+## Technical notes
+
+- Pure-function change in `standing.ts` — no DB migration needed.
+- `useStanding` hook will read existing tables only: `credits`, `credit_vouches`, `connections`/`projects` for activity, `profiles.verification_score`, `profiles.updated_at` / latest credit `created_at` for `lastActivityAt`.
+- L0 detection: `profiles.user_id IS NULL` (the unclaimed-profile pattern already in use).
+- Memory update: `mem://features/passport/profession-and-standing-v2.md` gets the new level table + gating rules + decay rule.
+
+## Out of scope (deliberately)
+
+- Wiring Discover/Scout/Match to actually enforce unlocks — labels only in v1.
+- Migrating any historical XP/tier data — those tables aren't referenced.
+- New badges/icons beyond what `LevelUpCard` already renders.
+
+## Sequence
+
+1. Part A delete + hook (one pass).
+2. Type-check.
+3. Part B1–B6 in `standing.ts` + `LevelUpCard.tsx` + `PassportHeroRibbon.tsx`.
+4. Type-check, smoke via preview at `/profile`.

@@ -424,14 +424,30 @@ const ProfileContent = () => {
 
         {/* Standing ribbon — earned, motivational, never gamey */}
         {profile && (() => {
-          const verified = credits?.filter((c: any) => c.verification_status === 'verified').length || 0;
+          const verifiedCreditsList = credits?.filter((c: any) => c.verification_status === 'verified') || [];
+          const verified = verifiedCreditsList.length;
+          const ninetyDaysAgo = Date.now() - 90 * 86_400_000;
+          const recent90 = verifiedCreditsList.filter((c: any) => {
+            const t = c.created_at ? new Date(c.created_at).getTime() : 0;
+            return t > ninetyDaysAgo;
+          }).length;
           const completion = checkProfileCompletion(profile, portfolioItems?.length || 0).percentage;
           const cosigns = reviews?.filter((r: any) => r.status === 'approved').length || 0;
+          const lastCreditAt = verifiedCreditsList
+            .map((c: any) => c.created_at)
+            .filter(Boolean)
+            .sort()
+            .pop() as string | undefined;
+          const lastActivityAt = lastCreditAt || (profile as any).updated_at || null;
           const standing = computeStanding({
             verifiedCredits: verified,
+            recentCredits90d: recent90,
             cosignsReceived: cosigns,
             profileCompletionPct: completion,
             activeProjects90d: stats?.projects || 0,
+            lastActivityAt,
+            verificationScore: (profile as any).verification_score ?? 0,
+            unclaimed: !(profile as any).user_id,
           });
           return (
             <>

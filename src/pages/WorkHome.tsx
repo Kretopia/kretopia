@@ -389,6 +389,7 @@ const CreatorWorkHome = () => {
 
   useEffect(() => {
     fetchProjects().catch(() => setLoading(false));
+    fetchFolders().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 

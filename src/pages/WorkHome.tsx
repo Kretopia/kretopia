@@ -50,6 +50,7 @@ import { cn } from "@/lib/utils";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
 import { StudioFoldersBar, type StudioFolder } from "@/components/project/studio/StudioFoldersBar";
+import { toast } from "sonner";
 import { TodayStrip } from "@/components/desk/TodayStrip";
 import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
 import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";

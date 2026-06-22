@@ -13949,6 +13949,7 @@ export type Database = {
           setup_completed: boolean
           spark_room_id: string | null
           status: string | null
+          studio_folder_id: string | null
           title: string
           track_as_credit: boolean
           updated_at: string | null
@@ -13987,6 +13988,7 @@ export type Database = {
           setup_completed?: boolean
           spark_room_id?: string | null
           status?: string | null
+          studio_folder_id?: string | null
           title: string
           track_as_credit?: boolean
           updated_at?: string | null
@@ -14025,6 +14027,7 @@ export type Database = {
           setup_completed?: boolean
           spark_room_id?: string | null
           status?: string | null
+          studio_folder_id?: string | null
           title?: string
           track_as_credit?: boolean
           updated_at?: string | null
@@ -14060,6 +14063,13 @@ export type Database = {
             columns: ["spark_room_id"]
             isOneToOne: false
             referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_studio_folder_id_fkey"
+            columns: ["studio_folder_id"]
+            isOneToOne: false
+            referencedRelation: "studio_folders"
             referencedColumns: ["id"]
           },
         ]
@@ -16247,6 +16257,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      studio_folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       studio_pulse_comments: {
         Row: {

@@ -1,10 +1,29 @@
 import { useEffect, useState } from "react";
-import { Folder, FolderPlus, Pencil, Trash2, Check, X, Sparkles } from "lucide-react";
+import {
+  Folder,
+  FolderOpen,
+  FolderPlus,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  Sparkles,
+  LayoutGrid,
+  Inbox,
+  MoreHorizontal,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +48,43 @@ interface StudioFoldersBarProps {
   onChanged: () => void;
 }
 
+// Map color name → tailwind-ish HSL token tints
+const COLOR_TINT: Record<string, { bg: string; ring: string; ink: string }> = {
+  teal: {
+    bg: "bg-[hsl(var(--signal-teal))]/10",
+    ring: "ring-[hsl(var(--signal-teal))]/40",
+    ink: "text-[hsl(var(--signal-teal))]",
+  },
+  magenta: {
+    bg: "bg-[hsl(var(--signal-magenta))]/10",
+    ring: "ring-[hsl(var(--signal-magenta))]/40",
+    ink: "text-[hsl(var(--signal-magenta))]",
+  },
+  yellow: {
+    bg: "bg-[hsl(var(--signal-yellow))]/10",
+    ring: "ring-[hsl(var(--signal-yellow))]/40",
+    ink: "text-[hsl(var(--signal-yellow))]",
+  },
+  green: {
+    bg: "bg-emerald-500/10",
+    ring: "ring-emerald-500/40",
+    ink: "text-emerald-500",
+  },
+  blue: {
+    bg: "bg-sky-500/10",
+    ring: "ring-sky-500/40",
+    ink: "text-sky-500",
+  },
+  purple: {
+    bg: "bg-violet-500/10",
+    ring: "ring-violet-500/40",
+    ink: "text-violet-500",
+  },
+};
+
+const tintFor = (color: string | null | undefined) =>
+  COLOR_TINT[(color || "teal").toLowerCase()] || COLOR_TINT.teal;
+
 export const StudioFoldersBar = ({
   userId,
   folders,
@@ -38,8 +94,9 @@ export const StudioFoldersBar = ({
   onChanged,
 }: StudioFoldersBarProps) => {
   const { toast } = useToast();
-  const [creating, setCreating] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState<string>("teal");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [busy, setBusy] = useState(false);
@@ -49,6 +106,7 @@ export const StudioFoldersBar = ({
     (counts["unfiled"] ?? 0) +
     folders.reduce((sum, f) => sum + (counts[f.id] ?? 0), 0);
   const showSuggest = totalCount >= 3;
+
   const hintKey = `studio-folders-hint-dismissed`;
   const [showHint, setShowHint] = useState(false);
   useEffect(() => {
@@ -66,6 +124,7 @@ export const StudioFoldersBar = ({
     const { error } = await supabase.from("studio_folders").insert({
       user_id: userId,
       name,
+      color: newColor,
       sort_order: folders.length,
     });
     setBusy(false);
@@ -74,7 +133,8 @@ export const StudioFoldersBar = ({
       return;
     }
     setNewName("");
-    setCreating(false);
+    setNewColor("teal");
+    setCreateOpen(false);
     onChanged();
   };
 
@@ -108,22 +168,50 @@ export const StudioFoldersBar = ({
     onChanged();
   };
 
-  const chipBase =
-    "shrink-0 h-8 px-3 rounded-full text-[12px] font-semibold inline-flex items-center gap-1.5 border transition-colors";
-  const chipOn =
-    "bg-foreground text-background border-foreground";
-  const chipOff =
-    "bg-background text-muted-foreground border-border hover:text-foreground";
+  const COLOR_SWATCHES = ["teal", "magenta", "yellow", "green", "blue", "purple"];
 
   return (
-    <div className="space-y-2">
+    <section className="space-y-3">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <FolderOpen className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-[13px] font-semibold tracking-wide uppercase text-muted-foreground">
+            Folders
+          </h3>
+          <span className="text-[11px] text-muted-foreground/70">· {folders.length}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {showSuggest && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSuggestOpen(true)}
+              className="h-8 px-2.5 rounded-full text-[12px] font-semibold text-[hsl(var(--signal-teal))] hover:bg-[hsl(var(--signal-teal))]/10 gap-1"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden xs:inline">Suggest</span>
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setCreateOpen(true)}
+            className="h-8 px-2.5 rounded-full text-[12px] font-semibold text-muted-foreground hover:text-foreground gap-1"
+          >
+            <FolderPlus className="h-3.5 w-3.5" />
+            <span className="hidden xs:inline">New</span>
+          </Button>
+        </div>
+      </div>
+
       {showHint && (
         <div className="flex items-start gap-2 rounded-xl border border-[hsl(var(--signal-teal))]/30 bg-[hsl(var(--signal-teal))]/5 px-3 py-2 text-[12px]">
           <Sparkles className="h-3.5 w-3.5 mt-0.5 shrink-0 text-[hsl(var(--signal-teal))]" />
           <div className="flex-1">
             <p className="font-semibold leading-tight">Organize your studios</p>
             <p className="text-muted-foreground leading-snug mt-0.5">
-              Group projects into folders — tap <span className="font-semibold text-foreground">New folder</span> below, or let Izzy suggest groupings. Use the <span className="font-semibold text-foreground">⋯</span> on any card to move it.
+              Tap a folder to filter. Use <span className="font-semibold text-foreground">⋯</span> on any project card to move it.
             </p>
           </div>
           <button
@@ -138,175 +226,212 @@ export const StudioFoldersBar = ({
           </button>
         </div>
       )}
-    <div className="flex items-center gap-1.5 overflow-x-auto -mx-1 px-1 pb-0.5 scrollbar-none">
-      <button
-        onClick={() => onSelect("all")}
-        className={cn(chipBase, selected === "all" ? chipOn : chipOff)}
-      >
-        All
-        <span className="opacity-60">· {totalCount}</span>
-      </button>
 
-      <button
-        onClick={() => onSelect("unfiled")}
-        className={cn(chipBase, selected === "unfiled" ? chipOn : chipOff)}
-      >
-        Unfiled
-        <span className="opacity-60">· {counts["unfiled"] ?? 0}</span>
-      </button>
+      {/* Mobile-first folder grid */}
+      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2.5">
+        {/* All */}
+        <FolderTile
+          active={selected === "all"}
+          onClick={() => onSelect("all")}
+          tint={{ bg: "bg-foreground/5", ring: "ring-foreground/30", ink: "text-foreground" }}
+          icon={<LayoutGrid className="h-5 w-5" />}
+          label="All"
+          count={totalCount}
+        />
 
-      <span className="shrink-0 h-4 w-px bg-border mx-1" />
+        {/* Unfiled */}
+        <FolderTile
+          active={selected === "unfiled"}
+          onClick={() => onSelect("unfiled")}
+          tint={{ bg: "bg-muted", ring: "ring-foreground/20", ink: "text-muted-foreground" }}
+          icon={<Inbox className="h-5 w-5" />}
+          label="Unfiled"
+          count={counts["unfiled"] ?? 0}
+        />
 
-      {folders.map((f) => {
-        const active = selected === f.id;
-        const isRenaming = renamingId === f.id;
-        if (isRenaming) {
+        {/* User folders */}
+        {folders.map((f) => {
+          const tint = tintFor(f.color);
+          const active = selected === f.id;
+          const isRenaming = renamingId === f.id;
           return (
-            <div
-              key={f.id}
-              className="shrink-0 inline-flex items-center gap-1 h-8 px-2 rounded-full border border-border bg-background"
-            >
-              <Input
-                autoFocus
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") renameFolder(f.id);
-                  if (e.key === "Escape") setRenamingId(null);
-                }}
-                className="h-6 text-[12px] px-1.5 w-32 border-0 focus-visible:ring-0"
-              />
-              <button
-                onClick={() => renameFolder(f.id)}
-                disabled={busy}
-                className="h-6 w-6 grid place-items-center rounded-full text-emerald-600 hover:bg-muted"
-                aria-label="Save"
-              >
-                <Check className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={() => setRenamingId(null)}
-                className="h-6 w-6 grid place-items-center rounded-full text-muted-foreground hover:bg-muted"
-                aria-label="Cancel"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          );
-        }
-        return (
-          <DropdownMenu key={f.id}>
-            <div className={cn(chipBase, active ? chipOn : chipOff, "pr-1")}>
+            <div key={f.id} className="relative group">
               <button
                 onClick={() => onSelect(f.id)}
-                className="inline-flex items-center gap-1.5"
+                className={cn(
+                  "w-full aspect-[5/4] rounded-2xl border border-border/60 p-2.5 flex flex-col items-start justify-between text-left transition-all",
+                  tint.bg,
+                  active
+                    ? cn("ring-2", tint.ring, "border-transparent shadow-sm")
+                    : "hover:border-foreground/30 hover:shadow-sm",
+                )}
               >
-                <Folder className="h-3 w-3" />
-                <span className="truncate max-w-[140px]">{f.name}</span>
-                <span className="opacity-60">· {counts[f.id] ?? 0}</span>
+                <Folder className={cn("h-5 w-5", tint.ink)} />
+                {isRenaming ? (
+                  <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                    <Input
+                      autoFocus
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") renameFolder(f.id);
+                        if (e.key === "Escape") setRenamingId(null);
+                      }}
+                      onBlur={() => renameFolder(f.id)}
+                      className="h-7 text-[12px] px-1.5 border-0 bg-background/80 focus-visible:ring-1"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full min-w-0">
+                    <div className="text-[13px] font-semibold leading-tight truncate">
+                      {f.name}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                      {counts[f.id] ?? 0} {(counts[f.id] ?? 0) === 1 ? "project" : "projects"}
+                    </div>
+                  </div>
+                )}
               </button>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className={cn(
-                    "ml-1 h-5 w-5 rounded-full grid place-items-center",
-                    active ? "hover:bg-background/20" : "hover:bg-muted",
-                  )}
-                  aria-label="Folder options"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Pencil className="h-3 w-3" />
-                </button>
-              </DropdownMenuTrigger>
+
+              {/* Per-folder actions */}
+              {!isRenaming && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="absolute top-1.5 right-1.5 h-6 w-6 grid place-items-center rounded-full bg-background/80 backdrop-blur-none border border-border/60 opacity-0 group-hover:opacity-100 focus:opacity-100 active:opacity-100 transition-opacity"
+                      aria-label="Folder options"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal className="h-3.5 w-3.5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setRenameValue(f.name);
+                        setRenamingId(f.id);
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-2" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => deleteFolder(f.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-2" />
+                      Delete folder
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem
-                onClick={() => {
-                  setRenameValue(f.name);
-                  setRenamingId(f.id);
-                }}
-              >
-                <Pencil className="h-3.5 w-3.5 mr-2" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => deleteFolder(f.id)}
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-2" />
-                Delete folder
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      })}
+          );
+        })}
 
-      {creating ? (
-        <div className="shrink-0 inline-flex items-center gap-1 h-8 px-2 rounded-full border border-border bg-background">
-          <Input
-            autoFocus
-            placeholder="Folder name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") createFolder();
-              if (e.key === "Escape") {
-                setCreating(false);
-                setNewName("");
-              }
-            }}
-            className="h-6 text-[12px] px-1.5 w-32 border-0 focus-visible:ring-0"
-          />
-          <button
-            onClick={createFolder}
-            disabled={busy || !newName.trim()}
-            className="h-6 w-6 grid place-items-center rounded-full text-emerald-600 hover:bg-muted disabled:opacity-40"
-            aria-label="Create folder"
-          >
-            <Check className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => {
-              setCreating(false);
-              setNewName("");
-            }}
-            className="h-6 w-6 grid place-items-center rounded-full text-muted-foreground hover:bg-muted"
-            aria-label="Cancel"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      ) : (
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setCreating(true)}
-          className="shrink-0 h-8 px-2.5 rounded-full text-[12px] font-semibold text-muted-foreground hover:text-foreground gap-1"
+        {/* New folder tile */}
+        <button
+          onClick={() => setCreateOpen(true)}
+          className="aspect-[5/4] rounded-2xl border border-dashed border-border/80 p-2.5 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:border-foreground/40 hover:bg-muted/30 transition-colors"
         >
-          <FolderPlus className="h-3.5 w-3.5" />
-          New folder
-        </Button>
-      )}
+          <FolderPlus className="h-5 w-5" />
+          <span className="text-[12px] font-semibold">New folder</span>
+        </button>
+      </div>
 
-      {showSuggest && (
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setSuggestOpen(true)}
-          className="shrink-0 h-8 px-2.5 rounded-full text-[12px] font-semibold text-[hsl(var(--signal-teal))] hover:bg-[hsl(var(--signal-teal))]/10 gap-1"
-          title="Let Izzy suggest folders"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          Suggest
-        </Button>
-      )}
-    </div>
+      {/* Create folder dialog */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderPlus className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
+              New folder
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              autoFocus
+              placeholder="e.g. Client Work, 2026 Campaigns"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") createFolder();
+              }}
+            />
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                Color
+              </p>
+              <div className="flex gap-2">
+                {COLOR_SWATCHES.map((c) => {
+                  const t = tintFor(c);
+                  const on = newColor === c;
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => setNewColor(c)}
+                      className={cn(
+                        "h-8 w-8 rounded-full grid place-items-center transition-all",
+                        t.bg,
+                        on ? cn("ring-2", t.ring) : "ring-1 ring-border",
+                      )}
+                      aria-label={c}
+                    >
+                      <Folder className={cn("h-4 w-4", t.ink)} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" size="sm" onClick={() => setCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={createFolder} disabled={busy || !newName.trim()}>
+              <Check className="h-3.5 w-3.5 mr-1" />
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-    <SuggestFoldersDialog
-      userId={userId}
-      open={suggestOpen}
-      onOpenChange={setSuggestOpen}
-      onApplied={onChanged}
-    />
-    </div>
+      <SuggestFoldersDialog
+        userId={userId}
+        open={suggestOpen}
+        onOpenChange={setSuggestOpen}
+        onApplied={onChanged}
+      />
+    </section>
   );
 };
+
+interface TileProps {
+  active: boolean;
+  onClick: () => void;
+  tint: { bg: string; ring: string; ink: string };
+  icon: React.ReactNode;
+  label: string;
+  count: number;
+}
+
+const FolderTile = ({ active, onClick, tint, icon, label, count }: TileProps) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "w-full aspect-[5/4] rounded-2xl border border-border/60 p-2.5 flex flex-col items-start justify-between text-left transition-all",
+      tint.bg,
+      active
+        ? cn("ring-2", tint.ring, "border-transparent shadow-sm")
+        : "hover:border-foreground/30 hover:shadow-sm",
+    )}
+  >
+    <span className={tint.ink}>{icon}</span>
+    <div className="w-full min-w-0">
+      <div className="text-[13px] font-semibold leading-tight truncate">{label}</div>
+      <div className="text-[11px] text-muted-foreground mt-0.5">
+        {count} {count === 1 ? "project" : "projects"}
+      </div>
+    </div>
+  </button>
+);

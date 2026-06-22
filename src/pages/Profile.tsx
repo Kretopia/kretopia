@@ -422,6 +422,29 @@ const ProfileContent = () => {
           onCreatorCard={() => setIsCreatorCardOpen(true)}
         />
 
+        {/* Standing ribbon — earned, motivational, never gamey */}
+        {profile && (() => {
+          const verified = credits?.filter((c: any) => c.verification_status === 'verified').length || 0;
+          const completion = checkProfileCompletion(profile, portfolioItems?.length || 0).percentage;
+          const cosigns = reviews?.filter((r: any) => r.status === 'approved').length || 0;
+          const standing = computeStanding({
+            verifiedCredits: verified,
+            cosignsReceived: cosigns,
+            profileCompletionPct: completion,
+            activeProjects90d: stats?.projects || 0,
+          });
+          return (
+            <>
+              <div className="mt-3">
+                <PassportHeroRibbon standing={standing} />
+              </div>
+              <div className="mt-3">
+                <LevelUpCard standing={standing} />
+              </div>
+            </>
+          );
+        })()}
+
         {/* Passport Overview — 4 trust cards (Stamps · Connections · Projects · Co-signs) */}
         <div className="mt-3">
           <PassportOverview

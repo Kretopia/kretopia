@@ -8,11 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import {
-  Theater,
   LinkIcon,
   Loader2,
   Plus,
-  Radio,
   Calendar,
   Sparkles,
   CalendarPlus,

@@ -1162,6 +1162,26 @@ export function SoundStageRoom({
                 <span>{captionsOn ? "Captions on" : "Captions"}</span>
               </Button>
             )}
+            {isHost && (
+              <Button
+                variant={recording ? "destructive" : "outline"}
+                size="sm"
+                className="rounded-full text-xs h-10 px-3 gap-1.5"
+                onClick={toggleRecording}
+                disabled={recordingBusy}
+                aria-label={recording ? "Stop recording" : "Start recording"}
+                title={recording ? "Recording — tap to stop" : "Record this stage"}
+              >
+                {recordingBusy ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : recording ? (
+                  <Square className="h-3.5 w-3.5 fill-current" />
+                ) : (
+                  <Circle className="h-3.5 w-3.5 fill-current text-destructive" />
+                )}
+                <span>{recording ? "Recording" : "Record"}</span>
+              </Button>
+            )}
             <div className="flex items-center gap-2">
               {meSpeaker ? (
                 <>

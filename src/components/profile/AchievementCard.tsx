@@ -20,6 +20,7 @@ export interface AchievementCardProps {
   isOwnProfile?: boolean;
   onDelete?: () => void;
   onRequestEndorsement?: () => void;
+  onCardClick?: () => void;
   icon?: React.ReactNode;
   metadata?: Record<string, string | number>;
   category?: string | null;
@@ -39,6 +40,7 @@ export const AchievementCard = ({
   isOwnProfile = false,
   onDelete,
   onRequestEndorsement,
+  onCardClick,
   icon,
   metadata,
   category,
@@ -224,10 +226,12 @@ export const AchievementCard = ({
   // Original layout for cards with images
   return (
     <Card
+      onClick={onCardClick}
       className={cn(
         "group relative overflow-hidden transition-all duration-300 hover:shadow-lg",
         getVariantStyles(),
-        isFeatured && "ring-2 ring-primary/20"
+        isFeatured && "ring-2 ring-primary/20",
+        onCardClick && "cursor-pointer"
       )}
     >
       <CardContent className="p-0">
@@ -298,7 +302,7 @@ export const AchievementCard = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={onRequestEndorsement}
+                  onClick={(e) => { e.stopPropagation(); onRequestEndorsement(); }}
                   className="h-8 gap-1 text-xs text-primary hover:text-primary hover:bg-primary/10"
                 >
                   <UserPlus className="h-3.5 w-3.5" />
@@ -312,7 +316,7 @@ export const AchievementCard = ({
                   asChild
                   className="h-8"
                 >
-                  <a href={url} target="_blank" rel="noopener noreferrer">
+                  <a href={url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
@@ -321,7 +325,7 @@ export const AchievementCard = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={onDelete}
+                  onClick={(e) => { e.stopPropagation(); onDelete(); }}
                   className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="h-4 w-4" />

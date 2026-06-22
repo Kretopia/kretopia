@@ -64,7 +64,7 @@ export const PassportShareSheet = ({
     `mailto:?subject=${encodeURIComponent(profile.full_name ?? "Creative Passport")}&body=${encodeURIComponent(t.href(userId))}`;
 
   return (
-    <Sheet defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
+    <Sheet open={defaultOpen} onOpenChange={onOpenChange}>
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
       <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
         <SheetHeader className="text-left">

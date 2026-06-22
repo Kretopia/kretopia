@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, MessageSquare, Home, Users, Calendar, Hash, Info, Sparkles, Newspaper, FolderOpen } from "lucide-react";
+import { Loader2, MessageSquare, Home, Users, Calendar, Hash, Info, Sparkles, Newspaper, FolderOpen, Radio, FolderKanban } from "lucide-react";
 import { CircleHubHeader } from "@/components/circle/hub/CircleHubHeader";
 import { CircleOverviewTab } from "@/components/circle/hub/CircleOverviewTab";
 import { CircleAboutTab } from "@/components/circle/hub/CircleAboutTab";
@@ -15,6 +15,8 @@ import { CircleEventsTab } from "@/components/circle/hub/CircleEventsTab";
 import { CircleMediaTab } from "@/components/circle/hub/CircleMediaTab";
 import { CircleFeedTab } from "@/components/circle/hub/CircleFeedTab";
 import { CircleLibraryTab } from "@/components/circle/hub/CircleLibraryTab";
+import { CircleStagesTab } from "@/components/circle/hub/CircleStagesTab";
+import { CircleStudiosTab } from "@/components/circle/hub/CircleStudiosTab";
 import { CircleWelcomeModal } from "@/components/circle/hub/CircleWelcomeModal";
 import { CircleMemberDirectory } from "@/components/circle/CircleMemberDirectory";
 import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
@@ -22,11 +24,11 @@ import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 
 const TABS = [
   { value: "feed", label: "Feed", icon: Newspaper },
-  { value: "rooms", label: "Rooms", icon: Hash },
-  { value: "library", label: "Library", icon: FolderOpen },
+  { value: "rooms", label: "Channels", icon: Hash },
   { value: "events", label: "Events", icon: Calendar },
-  { value: "members", label: "Crew", icon: Users },
-  { value: "spotlight", label: "Spotlight", icon: Sparkles },
+  { value: "stages", label: "Stages", icon: Radio },
+  { value: "studios", label: "Studios", icon: FolderKanban },
+  { value: "members", label: "Members", icon: Users },
   { value: "about", label: "About", icon: Info },
 ];
 

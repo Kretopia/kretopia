@@ -400,6 +400,21 @@ const CreatorWorkHome = () => {
   const activeProjects = projects.filter(p => p.status === "active");
   const completedProjects = projects.filter(p => p.status === "completed" || p.status === "archived");
 
+  const folderCounts = (() => {
+    const counts: Record<string, number> = { unfiled: 0 };
+    for (const p of projects) {
+      const key = (p as any).studio_folder_id || "unfiled";
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return counts;
+  })();
+
+  const visibleProjects = projects.filter((p) => {
+    if (folderFilter === "all") return true;
+    if (folderFilter === "unfiled") return !(p as any).studio_folder_id;
+    return (p as any).studio_folder_id === folderFilter;
+  });
+
   return (
     <PageTransition>
       <Helmet>

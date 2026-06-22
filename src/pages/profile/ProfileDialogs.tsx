@@ -77,26 +77,19 @@ export const ProfileDialogs = ({
         onProfileUpdate={() => { window.location.reload(); }}
       />
 
-      <ShareProfileDialog
+      <PassportShareSheet
+        userId={profile.user_id}
         profile={{
-          full_name: profile.full_name || '',
-          role: profile.role || '',
-          bio: profile.bio || '',
-          user_id: profile.user_id,
-          avatar_url: profile.avatar_url || '',
-          verification_tier: profile.verification_tier || undefined,
-          professional_skills: Array.isArray(profile.professional_skills) ? profile.professional_skills as string[] : [],
-          location: profile.location || '',
+          full_name: profile.full_name,
+          role: profile.role,
+          sub_roles: Array.isArray((profile as any).sub_roles) ? (profile as any).sub_roles : [],
+          passport_profession: (profile as any).passport_profession ?? null,
         }}
-        portfolioItems={portfolioItems.map(item => ({
-          id: item.id,
-          thumbnail_url: item.thumbnail_url || undefined,
-          media_url: item.media_url || undefined,
-          title: item.title || undefined,
-        }))}
-        open={isShareDialogOpen}
+        canPublishSite={['creator', 'creator_plus', 'founder'].includes((profile as any).subscription_tier)}
+        defaultOpen={isShareDialogOpen}
         onOpenChange={setIsShareDialogOpen}
       />
+
 
       <ProfileQRDialog
         open={isQRDialogOpen}

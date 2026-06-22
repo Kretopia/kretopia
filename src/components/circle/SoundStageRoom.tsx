@@ -138,6 +138,10 @@ export function SoundStageRoom({
   // triggers refreshMembers, but screen tracks live outside `members`).
   const [sharingScreen, setSharingScreen] = useState(false);
   const [screenTick, setScreenTick] = useState(0);
+  // Cloud recording (host-only). Daily emits recording-started/stopped events
+  // to ALL participants so the indicator stays in sync.
+  const [recording, setRecording] = useState(false);
+  const [recordingBusy, setRecordingBusy] = useState(false);
   const localLevelRef = useRef(0);
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>

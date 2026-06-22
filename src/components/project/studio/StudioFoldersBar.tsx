@@ -116,6 +116,28 @@ export const StudioFoldersBar = ({
     "bg-background text-muted-foreground border-border hover:text-foreground";
 
   return (
+    <div className="space-y-2">
+      {showHint && (
+        <div className="flex items-start gap-2 rounded-xl border border-[hsl(var(--signal-teal))]/30 bg-[hsl(var(--signal-teal))]/5 px-3 py-2 text-[12px]">
+          <Sparkles className="h-3.5 w-3.5 mt-0.5 shrink-0 text-[hsl(var(--signal-teal))]" />
+          <div className="flex-1">
+            <p className="font-semibold leading-tight">Organize your studios</p>
+            <p className="text-muted-foreground leading-snug mt-0.5">
+              Group projects into folders — tap <span className="font-semibold text-foreground">New folder</span> below, or let Izzy suggest groupings. Use the <span className="font-semibold text-foreground">⋯</span> on any card to move it.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.setItem(hintKey, "1");
+              setShowHint(false);
+            }}
+            className="shrink-0 h-5 w-5 grid place-items-center rounded-full text-muted-foreground hover:bg-muted"
+            aria-label="Dismiss"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
     <div className="flex items-center gap-1.5 overflow-x-auto -mx-1 px-1 pb-0.5 scrollbar-none">
       <button
         onClick={() => onSelect("all")}
@@ -264,6 +286,27 @@ export const StudioFoldersBar = ({
           New folder
         </Button>
       )}
+
+      {showSuggest && (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setSuggestOpen(true)}
+          className="shrink-0 h-8 px-2.5 rounded-full text-[12px] font-semibold text-[hsl(var(--signal-teal))] hover:bg-[hsl(var(--signal-teal))]/10 gap-1"
+          title="Let Izzy suggest folders"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          Suggest
+        </Button>
+      )}
+    </div>
+
+    <SuggestFoldersDialog
+      userId={userId}
+      open={suggestOpen}
+      onOpenChange={setSuggestOpen}
+      onApplied={onChanged}
+    />
     </div>
   );
 };

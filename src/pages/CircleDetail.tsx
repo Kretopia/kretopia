@@ -238,17 +238,6 @@ const CircleDetail = () => {
           />
         </TabsContent>
 
-        <TabsContent value="library" className="mt-4">
-          <CircleLibraryTab circleId={circleId!} />
-        </TabsContent>
-
-        <TabsContent value="members" className="mt-4 px-4">
-          <CircleMemberDirectory
-            members={members}
-            onMessage={(userId) => navigate(`/messages?user=${userId}`)}
-          />
-        </TabsContent>
-
         <TabsContent value="events" className="mt-4">
           <CircleEventsTab
             events={events}
@@ -257,8 +246,19 @@ const CircleDetail = () => {
           />
         </TabsContent>
 
-        <TabsContent value="spotlight" className="mt-4">
-          <CircleMediaTab circleId={circleId!} members={members} />
+        <TabsContent value="stages" className="mt-4">
+          <CircleStagesTab circleId={circleId!} isMember={isMember} />
+        </TabsContent>
+
+        <TabsContent value="studios" className="mt-4">
+          <CircleStudiosTab circleId={circleId!} isMember={isMember} />
+        </TabsContent>
+
+        <TabsContent value="members" className="mt-4 px-4">
+          <CircleMemberDirectory
+            members={members}
+            onMessage={(userId) => navigate(`/messages?user=${userId}`)}
+          />
         </TabsContent>
 
         <TabsContent value="about" className="mt-4">

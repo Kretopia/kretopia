@@ -1,96 +1,150 @@
-# 30-Day Stabilize Plan — Execution Order
+## Direction
 
-Scope: stabilization only. No edge-function consolidation, no profiles split, no major refactors.
+Double down on the **Creative Passport** as the headline product. Everything else (Discover, Stages, Gigs, Events, Studios, Pay, Credits) stays as supporting surfaces. Crews + sub-screens get hidden behind a flag — group chat lives in Messages only. ThriveDesk/Studios stays (forgot to call it out — it's the real collab moat alongside Passport; LinkedIn/Behance have nothing like it).
 
----
+## 1. Hide Crews (keep code, kill entry points)
 
-## PHASE 1 — Security & Trust (Days 1–6) — AUDIT FIRST, FIX AFTER APPROVAL
+- BottomNav, hamburger, Home, and Discover: remove "Crews"/"Circles" links.
+- `/crews`, `/crew/:id`, `/circle*` routes stay live (deep links don't 404) but no in-app navigation surfaces them.
+- Messages: ensure "New group chat" exists as the replacement entry point. If missing, add a thin wrapper on `spark_rooms` typed `dm_group` so users can spin up a group without Crew machinery.
+- Memory update: mark Crews as sunset-from-UI (data preserved).
 
-**Deliverable: `SECURITY_AUDIT_2026.md` at repo root before any changes deploy.**
+## 2. Passport audit + profession-aware layout
 
-1. **RLS audit** — run `supabase--linter` + `security--run_security_scan`, then a targeted sweep on the known gaps from the prior audit:
-   - `stripe_webhook_events`, `guest_wallet_sessions/topups/transactions/wallets`, `telegram_messages`, `asset_folders`, `asset_versions`, `creator_payouts`, `creator_wallet_balances`, `campaign_recipients`, plus any other table flagged with 0 policies.
-   - For each: classify (intentional service-only vs. missing) → propose policy or explicit deny.
-2. **JWT verification audit** — grep every `supabase/functions/*/index.ts` for `verify_jwt = false` / missing `getClaims()`. Build a CSV: function · current state · should-be · risk.
-3. **Admin guard audit** — confirm every admin/cron edge fn uses `requireAdminOrCron`. List violators.
-4. **Wallet security review** — trace `wallet-*`, `stripe-wallet-webhook`, `guest-wallet-*`, `manual_bank_transfers`. Verify webhook signature checks, idempotency on `stripe_webhook_events`, and that guest tokens can never escalate to a real wallet.
+Current state: `ProfileHero` + ~40 sections rendered for everyone. Photographers see "Music splits", musicians see "Rate cards for shoots", etc. Noisy.
 
-Output: one markdown report with severity-tagged findings + recommended migrations/code changes. **Stop and wait for user approval before applying fixes.**
+Introduce a **Profession Profile** system:
 
----
+```
+src/lib/passport/professionProfiles.ts
+  PROFESSION_LAYOUTS: Record<ProfessionKey, {
+    heroVariant: 'reel' | 'gallery' | 'waveform' | 'editorial' | 'showreel',
+    primarySections: SectionKey[],   // shown above the fold
+    secondarySections: SectionKey[], // shown below
+    hiddenSections: SectionKey[],    // never shown for this profession
+    shareTargets: ('epk' | 'compcard' | 'reel' | 'press' | 'rate' | 'site')[],
+  }>
+```
 
-## PHASE 2 — Analytics Foundation (Days 7–11)
+Seed 8 archetypes derived from existing `professional taxonomy`:
+- **Model / Talent** → Comp Card first, measurements, polaroids, agency, usage rights.
+- **Photographer / Videographer** → Gallery hero, gear, rate card, recent shoots, locations.
+- **Musician / Producer** → Waveform hero, releases, splits, performances, riders.
+- **Filmmaker / Director / Editor** → Showreel hero, IMDB-style roll call, festivals.
+- **Designer / Illustrator / Art Director** → Mosaic portfolio, case studies, tools.
+- **Writer / Journalist / Editorial** → Editorial hero, bylines, clips, beats.
+- **Content Creator / Influencer** → Platform stats, brand work, audience demographics.
+- **Crew / Production (HMUA, stylist, gaffer, AD, etc.)** → Roll-call credits, day rates, kit list, availability.
 
-1. **Activation event** — define as: *new user completes onboarding AND performs one of {sends message, creates Studio, applies to gig, claims/edits Passport}* within 24h. Add `track_activation(user_id, source)` RPC + emit from those 4 surfaces.
-2. **D1/D7/D30 retention** — SQL view `user_retention_cohorts` keyed off `auth.users.created_at` + `user_session_pings`. Materialized refresh via existing cron.
-3. **Funnel definitions** — 4 funnels in `analytics_funnels` config table:
-   - Signup → Onboarding → Activation
-   - Scout view → Apply → Application sent
-   - Match → Message → Reply
-   - Studio create → Brief → First deliverable
-4. **Admin analytics dashboard** — new route `/admin/analytics` (admin-gated). Cards: DAU/WAU/MAU, activation rate, D1/D7/D30 by cohort week, 4 funnel charts. Reuses existing `site_analytics` + new views.
+Render via a single `<PassportLayout profession={...} />` switch that composes existing section components — no rewrites of sections, just routing.
 
-Deliverable: baseline numbers screenshotted into `ANALYTICS_BASELINE_2026.md`.
+Settings: "Showcase as: Model / Photographer / Musician / …" override (defaults inferred from `primary_role` + `sub_roles`).
 
----
+## 3. Profile setup that does the work for the user
 
-## PHASE 3 — Studio Reliability (Days 12–17) — NO NEW FEATURES
+Already strong (search-your-name → claim). Tighten:
 
-Per-flow checklist with Playwright smoke tests under `/tmp/browser/studio-*`:
+- Surface `UniversalClaimFlow` as the **default empty-state** on `/profile` for any user with completion < 30%.
+- Add **"Pull from your platforms"** card that fans out in parallel: IG / TikTok / YouTube / Spotify / Behance / IMDb / LinkedIn / SoundCloud / Vimeo / ArtStation / Substack / Beatport / Bandcamp / Letterboxd. Reuse `PlatformConnectionCard` + `RescanAllLinksCard` and add the missing platforms to the scan map in `connected_platforms`.
+- One **"Refresh my Passport"** button that re-runs all connected platforms + AI autofill in one click and shows a diff/review screen before applying (already partially exists via `ai-autofill-profile`).
+- Gemini-powered **"Write my bio"** + **"Suggest my rate card"** + **"Generate my taglines"** as quick actions in `ProfileEditDialog`.
 
-1. **DropZone + folders** — verify the recent folder/DnD work (StudioFoldersBar, MoveToFolderSheet, StudioCardsGrid). Test: create folder, drag project in on desktop, long-press move on mobile, paste-link import, BriefDropZone ingestion → `studio-ingest` edge fn.
-2. **Storage** — `useStorageQuota` accuracy vs. `storage.objects` trigger; quota block at tier caps; unified across project-files/portfolio/avatars/media/event-photos.
-3. **Sharing** — `project_share_links`, `project_guest_links`, public deck `/deck/:token`, EPK share, gig share. Verify `APP_URL` normalization.
-4. **Client collab** — guest-link redemption (JoinGuestStudio), `useStudioRole` gating (Money owner-only, no AI for clients), comments/approvals.
+## 4. Share surfaces, profession-aware
 
-Deliverable: `STUDIO_RELIABILITY_REPORT.md` — pass/fail matrix, bug list, fixes applied.
+Today: `ShareProfileDialog` shares one link. New `<PassportShareSheet />`:
 
----
+| Profession      | Default share order                                |
+| --------------- | -------------------------------------------------- |
+| Model           | Comp Card → EPK → Profile → Site                   |
+| Photographer    | Portfolio Site → Reel → EPK → Profile              |
+| Musician        | EPK → Site → Reel → Profile                        |
+| Filmmaker       | Showreel → Roll Call → EPK → Profile               |
+| Designer        | Site → Portfolio PDF → Profile                     |
+| Content Creator | Media Kit (EPK) → Rate Card → Profile              |
+| Writer          | Clips Page → Profile → EPK                         |
+| Crew            | Roll Call → Rate Card → Availability → Profile     |
 
-## PHASE 4 — Passport v4 (Days 18–24)
+Each option: native share (Web Share API) + copy link + WhatsApp / Email / X / LinkedIn / IG-story PNG. Reuses existing EPK, CompCard, CreatorSite, EmbeddableCreditsWidget endpoints.
 
-Single renderer: consolidate the 3 current Passport layouts into one `<PassportRenderer mode="public|epk|recruiter|owner" />`.
+## 5. One-click Website (paid feature, polished)
 
-New trust signals (computed in `passport_trust_signals` view):
-- **Trust Row** — verification + co-signs count + repeat-collaborator count + response time, in one strip above the fold.
-- **Recruiter Lens** (`mode="recruiter"`) — surfaces rates, availability, response rate, last 5 credits, co-signs. Hides social fluff.
-- **Availability** — `creator_availability_blocks` → green/amber/red chip.
-- **Response Rate** — derived from `messages` (replied within 48h / received) over 30d.
-- **Repeat Collaborators** — count of distinct users sharing ≥2 credits.
-- **Co-sign visibility** — promote `credit_vouches` to Trust Row + show on every credit card.
+`/site/:userId` + `/website-builder` exist. Make it real:
 
-Deliverable: one component, all routes (`/profile/:id`, `/u/:slug`, `/epk/:slug`, recruiter view) using it.
+- On `ProfileActions` for Creator+ accounts: prominent **"Publish as Website"** button → routes to `/website-builder` with profession template auto-selected (use `templateConfig.ts` already keyed by role).
+- One-click flow: pick template → preview → publish. Custom domain stays gated.
+- Add "Edit Website" pill on the live profile for owners with a published site.
+- Free/Spark tier sees an upsell preview (locked CTA + "Upgrade to publish").
 
----
+## 6. Verified Credits + Standing gamification
 
-## PHASE 5 — Quick Wins (Days 25–30)
+Keep Credits/Co-signs as the moat. Replace the dormant "Standing" tier with an **active Level-Up loop**:
 
-1. **Start Studio CTA** — prominent on Home empty state + Today + Passport ("Hire me → Start a Studio").
-2. **Scout Applied visibility** — `scouted_gig_actions` "applied" state → badge on ScoutedGigCard + filter chip "Hide applied".
-3. **Wallet onboarding** — copy + 3-step inline checklist in `ThriveWalletCard` (Add bank → Verify → First payout). Never says "Stripe".
-4. **Recruiter view toggle** — on own Passport, "Preview as Recruiter" button that re-renders with `mode="recruiter"`.
+```
+src/lib/passport/standing.ts
+  computeStanding(profile, credits, vouches, activity):
+    level: 1..10
+    title: 'Newcomer' → 'Working Creative' → 'Verified Pro' → 'Industry Name' → 'Marquee'
+    progress: 0..100 toward next
+    nextActions: [{ label, points, deeplink }]
+```
 
----
+Inputs (weighted):
+- Verified Credits count + recency
+- Co-signs received (high weight)
+- Profile completion (capped at 30%)
+- Active gigs / studios / collabs in last 90 days
+- Reply SLA + booking rate
 
-## Technical Notes
+Surfaces:
+- **Hero ribbon** on Passport with title + thin progress bar.
+- **"Level up" card** on Home with 3 highest-leverage actions ("Add 2 more credits → Verified Pro").
+- **Weekly streak** chip already exists — keep, but tie it to Standing momentum.
+- Push/email at level-ups: "You just hit Verified Pro — here's what unlocks."
 
-- All new tables: standard 4-step (CREATE → GRANT → RLS → POLICY).
-- All new edge fns: `getClaims()` in code, CORS from `npm:@supabase/supabase-js@2/cors`.
-- Analytics dashboard reuses `recharts` (already in deps).
-- Passport renderer lives at `src/components/passport/PassportRenderer.tsx`; existing layouts become thin wrappers during migration, then deleted in Phase 4 close-out.
-- Each phase ends with a markdown report at repo root.
+No new currency. No leaderboards. Motivational, not gamey.
 
-## Checkpoints
+## 7. Inspiration we steal
 
-- End of Phase 1: **STOP** — wait for approval on `SECURITY_AUDIT_2026.md` before applying fixes.
-- End of each subsequent phase: short status + next-phase confirmation.
+- **Google "About this result"** → "About this Passport" tooltip on hero showing trust sources at a glance (verified by, co-signed by, platforms connected).
+- **Notion profile pages** → inline-edit on owner view, no separate edit modal for atomic fields.
+- **Linktree / Beacons** → the share sheet above.
+- **IMDb Pro** → roll-call + known-for grid.
+- **Read.cv** → typography-first editorial layout as the default for writers/designers.
 
-## Out of Scope (Explicit)
+## 8. Out of scope (this pass)
 
-- Edge function consolidation (291 → ~90)
-- `profiles` table split
-- Model router
-- New Studio slices
-- Brand/Agency lens beyond Recruiter
+- Backend schema changes beyond a single `profiles.passport_profession` text column for the override.
+- Discover changes (stays as-is per direction).
+- Pricing changes.
 
-Confirm and I'll start with the Phase 1 audit (read-only, no code changes yet).
+## Technical layout
+
+```text
+src/
+  lib/passport/
+    professionProfiles.ts     // archetype -> layout config
+    standing.ts               // level computation + next actions
+    shareTargets.ts           // per-profession share order
+  components/passport/
+    PassportLayout.tsx        // profession switch, composes existing sections
+    PassportHeroRibbon.tsx    // standing title + progress
+    PassportShareSheet.tsx    // replaces ShareProfileDialog
+    LevelUpCard.tsx           // home + profile surface
+    RefreshPassportButton.tsx // one-click re-scan + AI diff
+  pages/profile/Profile.tsx    // mount PassportLayout
+db:
+  profiles.passport_profession text null  (override; null = inferred)
+hide Crews:
+  src/components/BottomNav.tsx          // remove Crews item if present
+  src/components/home/*                 // remove Crews cards
+  hamburger menu                        // remove Crews link
+  Discover → Crews tab                  // hide
+```
+
+## Phasing
+
+1. **Phase 1 (this pass):** Hide Crews entry points. Ship `PassportLayout` with 3 archetypes (Model, Photographer, Musician) + Standing v2 + new ShareSheet + "Publish as Website" wired. Everyone else falls back to current layout.
+2. **Phase 2:** Remaining 5 archetypes + Refresh Passport diff UI + missing platform scanners.
+3. **Phase 3:** Level-up email/push triggers + "About this Passport" trust tooltip.
+
+Approve and I'll start Phase 1.

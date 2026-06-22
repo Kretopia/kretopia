@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Share2, Edit, Download, IdCard, UserPlus, MoreHorizontal } from "lucide-react";
+import { Share2, Edit, Download, IdCard, UserPlus, MoreHorizontal, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
@@ -12,6 +12,10 @@ interface ProfileActionsProps {
   onDownload: () => void;
   onCreatorCard?: () => void;
   isOwner: boolean;
+  /** Show the "Publish as Website" entry — requires Creator+ / paid plan. */
+  canPublishSite?: boolean;
+  /** When true, show "Edit Website" instead of "Publish as Website". */
+  hasPublishedSite?: boolean;
 }
 
 /**
@@ -21,8 +25,19 @@ interface ProfileActionsProps {
  * an overflow menu so the row never overflows. Labels adapt to the user's
  * account tone — creatives see warm "Edit profile" / "Download EPK", while
  * brand/company accounts see "Edit brand page" / "Download brand one-pager".
+ *
+ * Paid creator accounts get a "Publish as Website" / "Edit Website" entry
+ * in the overflow that routes to the one-click site builder.
  */
-export const ProfileActions = ({ onShare, onEdit, onDownload, onCreatorCard, isOwner }: ProfileActionsProps) => {
+export const ProfileActions = ({
+  onShare,
+  onEdit,
+  onDownload,
+  onCreatorCard,
+  isOwner,
+  canPublishSite = false,
+  hasPublishedSite = false,
+}: ProfileActionsProps) => {
   const navigate = useNavigate();
   const { isBusiness, copy } = useAccountTone();
 
@@ -72,6 +87,12 @@ export const ProfileActions = ({ onShare, onEdit, onDownload, onCreatorCard, isO
               Creator Card
             </DropdownMenuItem>
           )}
+          {!isBusiness && (
+            <DropdownMenuItem onClick={() => navigate(canPublishSite ? "/website-builder" : "/subscription")}>
+              <Globe className="h-4 w-4 mr-2" />
+              {hasPublishedSite ? "Edit Website" : canPublishSite ? "Publish as Website" : "Publish as Website (Upgrade)"}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => navigate(inviteRoute)}>
             <UserPlus className="h-4 w-4 mr-2" />
@@ -82,3 +103,4 @@ export const ProfileActions = ({ onShare, onEdit, onDownload, onCreatorCard, isO
     </div>
   );
 };
+

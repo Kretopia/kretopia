@@ -29,6 +29,32 @@ const ProjectsList = () => {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "planning" | "wrapping" | "completed">("all");
   const [payFilter, setPayFilter] = useState<"all" | "unsent" | "invoiced" | "paid">("all");
+  const [folders, setFolders] = useState<StudioFolder[]>([]);
+  const [folderFilter, setFolderFilter] = useState<string>("all"); // "all" | "unfiled" | folder id
+
+  const fetchFolders = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("studio_folders")
+      .select("id, name, color, sort_order")
+      .eq("user_id", user.id)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+    setFolders((data as StudioFolder[]) || []);
+  };
+
+  const moveProjectToFolder = async (projectId: string, folderId: string | null) => {
+    const prev = projects;
+    setProjects((p) => p.map((pr) => (pr.id === projectId ? { ...pr, studio_folder_id: folderId } : pr)));
+    const { error } = await supabase
+      .from("projects")
+      .update({ studio_folder_id: folderId })
+      .eq("id", projectId);
+    if (error) {
+      setProjects(prev);
+      toast({ title: "Couldn't move project", description: error.message, variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     if (user) {

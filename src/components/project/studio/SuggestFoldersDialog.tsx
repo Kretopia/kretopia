@@ -127,8 +127,9 @@ export const SuggestFoldersDialog = ({ userId, open, onOpenChange, onApplied }: 
       }
 
       // Update in parallel batches
+      const client = supabase as any;
       const moveOne = async (m: { id: string; folderId: string }) => {
-        await supabase
+        await client
           .from("projects")
           .update({ studio_folder_id: m.folderId })
           .eq("id", m.id)

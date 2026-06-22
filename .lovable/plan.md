@@ -1,122 +1,96 @@
-## Crews — community rebrand of Circles
+# 30-Day Stabilize Plan — Execution Order
 
-A Skool / Mighty Networks / Circle.so-style community surface. **Private and invite-only** while we grow numbers — no directory, no SEO, no public landing. Name placeholder = **Crews** (Greenrooms still on the table; locked at the end).
-
-Builds on the existing Circles infrastructure (tables, RLS, edge functions, Sound Stages, calls) — this is a scope refresh + terminology rebrand, not a rewrite.
+Scope: stabilization only. No edge-function consolidation, no profiles split, no major refactors.
 
 ---
 
-### 1. Lexicon (one-pass swap)
+## PHASE 1 — Security & Trust (Days 1–6) — AUDIT FIRST, FIX AFTER APPROVAL
 
-| Old | New |
-|---|---|
-| Circle | Crew |
-| Circles | Crews |
-| My Circles | My Crews |
-| Channel | Room (inside a Crew) |
-| Community | Crew (anywhere user-facing) |
-| Members | Crew |
-| Sound Stage | (kept — it's a Crew Stage now) |
+**Deliverable: `SECURITY_AUDIT_2026.md` at repo root before any changes deploy.**
 
-Centralize in `src/lib/brandLexicon.ts` so future rename to Greenrooms is one string change.
+1. **RLS audit** — run `supabase--linter` + `security--run_security_scan`, then a targeted sweep on the known gaps from the prior audit:
+   - `stripe_webhook_events`, `guest_wallet_sessions/topups/transactions/wallets`, `telegram_messages`, `asset_folders`, `asset_versions`, `creator_payouts`, `creator_wallet_balances`, `campaign_recipients`, plus any other table flagged with 0 policies.
+   - For each: classify (intentional service-only vs. missing) → propose policy or explicit deny.
+2. **JWT verification audit** — grep every `supabase/functions/*/index.ts` for `verify_jwt = false` / missing `getClaims()`. Build a CSV: function · current state · should-be · risk.
+3. **Admin guard audit** — confirm every admin/cron edge fn uses `requireAdminOrCron`. List violators.
+4. **Wallet security review** — trace `wallet-*`, `stripe-wallet-webhook`, `guest-wallet-*`, `manual_bank_transfers`. Verify webhook signature checks, idempotency on `stripe_webhook_events`, and that guest tokens can never escalate to a real wallet.
 
----
-
-### 2. Access model — private + invite-only
-
-- Default `visibility = 'private'`.
-- Remove every public discovery entry point: `/circles` directory page, search results, suggestions on Home, Discover map cards, SEO sitemap entries for circle pages.
-- Join only by:
-  - Invite link (existing `circle_guest_rsvps` / invite token flow, re-skinned)
-  - Direct add by an owner/admin (Members tab → Add)
-- `/crew/:id` (alias of `/circle/:id`) returns a friendly "This Crew is private — ask the host for an invite" wall when not a member.
-- Sitemap + robots: exclude `/crew/*` and `/circle/*`.
-
-Keep old `/circle/*` routes alive as redirects to `/crew/*` so existing links/notifications don't break.
+Output: one markdown report with severity-tagged findings + recommended migrations/code changes. **Stop and wait for user approval before applying fixes.**
 
 ---
 
-### 3. Community-style Hub (Skool / Mighty / Circle.so feel)
+## PHASE 2 — Analytics Foundation (Days 7–11)
 
-Refactor the current 7-tab Hub into a tighter, feed-first layout:
+1. **Activation event** — define as: *new user completes onboarding AND performs one of {sends message, creates Studio, applies to gig, claims/edits Passport}* within 24h. Add `track_activation(user_id, source)` RPC + emit from those 4 surfaces.
+2. **D1/D7/D30 retention** — SQL view `user_retention_cohorts` keyed off `auth.users.created_at` + `user_session_pings`. Materialized refresh via existing cron.
+3. **Funnel definitions** — 4 funnels in `analytics_funnels` config table:
+   - Signup → Onboarding → Activation
+   - Scout view → Apply → Application sent
+   - Match → Message → Reply
+   - Studio create → Brief → First deliverable
+4. **Admin analytics dashboard** — new route `/admin/analytics` (admin-gated). Cards: DAU/WAU/MAU, activation rate, D1/D7/D30 by cohort week, 4 funnel charts. Reuses existing `site_analytics` + new views.
 
-```text
-┌─────────────────────────────┐
-│  Crew header (cover, name)  │
-│  Members pile · Live dot    │
-├─────────────────────────────┤
-│  [Feed] [Rooms] [Live]      │
-│  [Library] [Events] [Crew]  │
-└─────────────────────────────┘
-```
-
-- **Feed** (new default) — posts + reactions + comments, scroll-native. Reuse `studio_pulse_posts` pattern scoped by `circle_id`. Pinned post at top.
-- **Rooms** — existing channels (renamed). Group chat threads.
-- **Live** — Sound Stages + scheduled calls (unchanged engine, re-skinned).
-- **Library** — lightweight: pinned files + links from any Room. Reuses `project-files` bucket pattern, scoped by crew.
-- **Events** — crew-only events list (filtered `creative_jams` where `circle_id` matches and visibility=crew).
-- **Crew** (members tab) — roster, roles (owner/admin/member), invite button, leave.
-
-Drop standalone tabs that don't fit a private community feel: public leaderboard, browseable directory widgets.
+Deliverable: baseline numbers screenshotted into `ANALYTICS_BASELINE_2026.md`.
 
 ---
 
-### 4. Entry point — hamburger only
+## PHASE 3 — Studio Reliability (Days 12–17) — NO NEW FEATURES
 
-- Remove any bottom-nav, Today/Home rail, or top-nav surfacing of Circles.
-- Hamburger drawer gets a single **"Crews"** item under the Workspace group with a count badge for unread activity across all your crews.
-- Hamburger "Create a Crew" stays (owner action).
-- `/crews` index = "My Crews" list (private to you — list of crews you're a member of). No public discovery.
+Per-flow checklist with Playwright smoke tests under `/tmp/browser/studio-*`:
 
----
+1. **DropZone + folders** — verify the recent folder/DnD work (StudioFoldersBar, MoveToFolderSheet, StudioCardsGrid). Test: create folder, drag project in on desktop, long-press move on mobile, paste-link import, BriefDropZone ingestion → `studio-ingest` edge fn.
+2. **Storage** — `useStorageQuota` accuracy vs. `storage.objects` trigger; quota block at tier caps; unified across project-files/portfolio/avatars/media/event-photos.
+3. **Sharing** — `project_share_links`, `project_guest_links`, public deck `/deck/:token`, EPK share, gig share. Verify `APP_URL` normalization.
+4. **Client collab** — guest-link redemption (JoinGuestStudio), `useStudioRole` gating (Money owner-only, no AI for clients), comments/approvals.
 
-### 5. Notifications + activity
-
-- Repoint all existing circle_* notification copy to "Crew" lexicon (DB triggers' message templates).
-- Unread-per-crew counter feeds the hamburger badge via a single `get_my_crew_unread()` RPC (sum feed posts + room messages + live stages since `last_seen_at`).
-- Push notifications: "New post in {Crew name}", "{Name} started a Stage in {Crew}".
+Deliverable: `STUDIO_RELIABILITY_REPORT.md` — pass/fail matrix, bug list, fixes applied.
 
 ---
 
-### 6. What stays as-is (no work this round)
+## PHASE 4 — Passport v4 (Days 18–24)
 
-- Sound Stages engine, Speed Sessions, video calls, transcripts.
-- All existing DB tables — only **add** `circles.visibility` default flip + a `crew_feed_posts` view alias if needed.
-- Existing invite-token + guest RSVP flow.
+Single renderer: consolidate the 3 current Passport layouts into one `<PassportRenderer mode="public|epk|recruiter|owner" />`.
 
----
+New trust signals (computed in `passport_trust_signals` view):
+- **Trust Row** — verification + co-signs count + repeat-collaborator count + response time, in one strip above the fold.
+- **Recruiter Lens** (`mode="recruiter"`) — surfaces rates, availability, response rate, last 5 credits, co-signs. Hides social fluff.
+- **Availability** — `creator_availability_blocks` → green/amber/red chip.
+- **Response Rate** — derived from `messages` (replied within 48h / received) over 30d.
+- **Repeat Collaborators** — count of distinct users sharing ≥2 credits.
+- **Co-sign visibility** — promote `credit_vouches` to Trust Row + show on every credit card.
 
-### 7. Out of scope (revisit when traction grows)
-
-- Public discovery / directory
-- Paid / gated crews (Skool-style monetization)
-- Classroom / courses module
-- Crew SEO + sharable public landing pages
-- Leaderboard / gamification
+Deliverable: one component, all routes (`/profile/:id`, `/u/:slug`, `/epk/:slug`, recruiter view) using it.
 
 ---
 
-### Technical notes
+## PHASE 5 — Quick Wins (Days 25–30)
 
-- **Files touched (rebrand pass):** `src/lib/brandLexicon.ts`, all `src/pages/Circle*` → re-exported as `Crew*` (route alias, no file rename to keep git history), `BottomNav`, `HamburgerMenu`, `BrandLogo` adjacent strings, notification templates (DB function `format_notification_text` or equivalent).
-- **New components:** `CrewFeedTab`, `CrewLibraryTab`, `CrewPrivateWall`. Reuse existing `SoundStagesLot`, `CircleChannelsList` (renamed `CrewRoomsList` in re-export).
-- **New routes:** `/crews` (My Crews), `/crew/:id` (Hub), `/crew/:id/room/:roomId` (chat). Old `/circle/*` paths 301-redirect via `<Navigate>` in router.
-- **New DB:** `crew_feed_posts` table (id, crew_id, author_id, body, media jsonb, pinned, created_at) + GRANTs + RLS (members can read+write, owners can pin/delete). Reactions + comments via existing `feed_reactions` / `feed_comments` with `target_type='crew_post'`.
-- **New RPC:** `get_my_crew_unread()` returning `[{ crew_id, unread_count, last_activity_at }]`.
-- **Memory updates:** retire `circle-hub-architecture` memory in favor of new `crews-private-community` memory; add to Core: "Crews are private, invite-only. No public discovery."
+1. **Start Studio CTA** — prominent on Home empty state + Today + Passport ("Hire me → Start a Studio").
+2. **Scout Applied visibility** — `scouted_gig_actions` "applied" state → badge on ScoutedGigCard + filter chip "Hide applied".
+3. **Wallet onboarding** — copy + 3-step inline checklist in `ThriveWalletCard` (Add bank → Verify → First payout). Never says "Stripe".
+4. **Recruiter view toggle** — on own Passport, "Preview as Recruiter" button that re-renders with `mode="recruiter"`.
 
 ---
 
-### Phasing (so we ship something in each step)
+## Technical Notes
 
-1. **Lexicon + nav** — swap copy, hamburger entry, remove public entry points, redirect old routes. (~½ day)
-2. **Feed tab + Library tab** — new DB table, RPCs, RLS, mobile-first feed UI. (~1 day)
-3. **Visibility hardening + notification copy + unread badge.** (~½ day)
-4. **Name lock** — decide Crews vs Greenrooms, flip the one constant.
+- All new tables: standard 4-step (CREATE → GRANT → RLS → POLICY).
+- All new edge fns: `getClaims()` in code, CORS from `npm:@supabase/supabase-js@2/cors`.
+- Analytics dashboard reuses `recharts` (already in deps).
+- Passport renderer lives at `src/components/passport/PassportRenderer.tsx`; existing layouts become thin wrappers during migration, then deleted in Phase 4 close-out.
+- Each phase ends with a markdown report at repo root.
 
----
+## Checkpoints
 
-### Decisions still needed (I'll ask before step 1)
+- End of Phase 1: **STOP** — wait for approval on `SECURITY_AUDIT_2026.md` before applying fixes.
+- End of each subsequent phase: short status + next-phase confirmation.
 
-- Should existing public/joinable Circles be force-flipped to `private` on migration, or left as-is and only **new** crews default to private?
-- The crew creator role: keep current Circle owner/admin/member ladder, or simplify to owner + member only for invite-only mode?
+## Out of Scope (Explicit)
+
+- Edge function consolidation (291 → ~90)
+- `profiles` table split
+- Model router
+- New Studio slices
+- Brand/Agency lens beyond Recruiter
+
+Confirm and I'll start with the Phase 1 audit (read-only, no code changes yet).

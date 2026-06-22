@@ -38,7 +38,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
   FolderKanban, Briefcase, DollarSign, ArrowRight, Plus, Mic,
-  Clock, Loader2,
+  Clock, Loader2, ChevronLeft, Folder, Inbox,
   Building2, Users, UserSearch, Star,
 } from "lucide-react";
 
@@ -463,51 +463,8 @@ const CreatorWorkHome = () => {
         {/* Pending invites */}
         <MyPendingInvitations />
 
-        {/* Folders bar — group, filter, AI-suggest, drop targets */}
-        {user && projects.length > 0 && (
-          <StudioFoldersBar
-            userId={user.id}
-            folders={folders}
-            counts={folderCounts}
-            selected={folderFilter}
-            onSelect={setFolderFilter}
-            onChanged={() => { fetchFolders(); fetchProjects(); }}
-            onDropProject={async (projectId, folderId) => {
-              if (!user) return;
-              const { error } = await supabase
-                .from("projects")
-                .update({ studio_folder_id: folderId })
-                .eq("id", projectId)
-                .eq("created_by", user.id);
-              if (error) {
-                toast.error(error.message || "Couldn't move project");
-                return;
-              }
-              const folderName = folderId ? (folders.find(f => f.id === folderId)?.name ?? "folder") : "Unfiled";
-              toast.success(`Moved to ${folderName}`);
-              fetchProjects();
-            }}
-          />
-        )}
-
-        {/* Studio rooms grid */}
-        {projects.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-end justify-between">
-              <h2 className="text-base font-bold">Your studio rooms</h2>
-              <span className="text-xs text-muted-foreground">
-                {activeProjects.length} in progress · {completedProjects.length} delivered
-              </span>
-            </div>
-          </div>
-        )}
-
-        <StudioCardsGrid
-          projects={visibleProjects as any}
-          invoicesByProject={invoicesByProject}
-          onNewProject={() => setShowCreateProject(true)}
-          folders={folders}
-          onMoveToFolder={async (projectId, folderId) => {
+        {(() => {
+          const moveProject = async (projectId: string, folderId: string | null) => {
             if (!user) return;
             const { error } = await supabase
               .from("projects")
@@ -518,11 +475,118 @@ const CreatorWorkHome = () => {
               toast.error(error.message || "Couldn't move project");
               return;
             }
-            const folderName = folderId ? (folders.find(f => f.id === folderId)?.name ?? "folder") : "Unfiled";
+            const folderName = folderId
+              ? (folders.find(f => f.id === folderId)?.name ?? "folder")
+              : "Unfiled";
             toast.success(`Moved to ${folderName}`);
             fetchProjects();
-          }}
-        />
+          };
+
+          const hasFolders = folders.length > 0;
+          const atRoot = folderFilter === "all";
+          const currentFolder = folders.find((f) => f.id === folderFilter);
+          const unfiledProjects = projects.filter((p) => !(p as any).studio_folder_id);
+
+          // ── INSIDE A FOLDER (Drive-style detail view) ──
+          if (!atRoot && projects.length > 0) {
+            const folderName =
+              folderFilter === "unfiled" ? "Unfiled" : currentFolder?.name ?? "Folder";
+            const FolderIcon = folderFilter === "unfiled" ? Inbox : Folder;
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFolderFilter("all")}
+                    className="h-9 -ml-2 gap-1 rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Folders
+                  </Button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="h-11 w-11 rounded-2xl bg-muted grid place-items-center">
+                    <FolderIcon className="h-5 w-5 text-foreground/80" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-xl font-black tracking-[-0.02em] truncate">
+                      {folderName}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {visibleProjects.length}{" "}
+                      {visibleProjects.length === 1 ? "project" : "projects"}
+                    </p>
+                  </div>
+                </div>
+                <StudioCardsGrid
+                  projects={visibleProjects as any}
+                  invoicesByProject={invoicesByProject}
+                  onNewProject={() => setShowCreateProject(true)}
+                  folders={folders}
+                  onMoveToFolder={moveProject}
+                  hideHero
+                />
+              </div>
+            );
+          }
+
+          // ── ROOT — folders grid + loose projects below ──
+          return (
+            <>
+              {user && (projects.length > 0 || hasFolders) && (
+                <StudioFoldersBar
+                  userId={user.id}
+                  folders={folders}
+                  counts={folderCounts}
+                  selected={folderFilter}
+                  onSelect={setFolderFilter}
+                  onChanged={() => { fetchFolders(); fetchProjects(); }}
+                  onDropProject={moveProject}
+                />
+              )}
+
+              {hasFolders ? (
+                unfiledProjects.length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    <div className="flex items-end justify-between">
+                      <h2 className="text-base font-bold">Loose projects</h2>
+                      <span className="text-xs text-muted-foreground">
+                        {unfiledProjects.length} unfiled · drag onto a folder to file
+                      </span>
+                    </div>
+                    <StudioCardsGrid
+                      projects={unfiledProjects as any}
+                      invoicesByProject={invoicesByProject}
+                      onNewProject={() => setShowCreateProject(true)}
+                      folders={folders}
+                      onMoveToFolder={moveProject}
+                      hideHero
+                    />
+                  </div>
+                )
+              ) : (
+                <>
+                  {projects.length > 0 && (
+                    <div className="flex items-end justify-between pt-1">
+                      <h2 className="text-base font-bold">Your studio rooms</h2>
+                      <span className="text-xs text-muted-foreground">
+                        {activeProjects.length} in progress · {completedProjects.length} delivered
+                      </span>
+                    </div>
+                  )}
+                  <StudioCardsGrid
+                    projects={projects as any}
+                    invoicesByProject={invoicesByProject}
+                    onNewProject={() => setShowCreateProject(true)}
+                    folders={folders}
+                    onMoveToFolder={moveProject}
+                  />
+                </>
+              )}
+            </>
+          );
+        })()}
       </div>
 
 

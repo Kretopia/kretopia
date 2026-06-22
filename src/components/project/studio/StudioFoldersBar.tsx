@@ -263,15 +263,25 @@ export const StudioFoldersBar = ({
           count={totalCount}
         />
 
-        {/* Unfiled */}
-        <FolderTile
-          active={selected === "unfiled"}
-          onClick={() => onSelect("unfiled")}
-          tint={{ bg: "bg-muted", ring: "ring-foreground/20", ink: "text-muted-foreground" }}
-          icon={<Inbox className="h-5 w-5" />}
-          label="Unfiled"
-          count={counts["unfiled"] ?? 0}
-        />
+        {/* Unfiled — drop target removes from folder */}
+        <div
+          onDragOver={(e) => handleDragOver(e, "unfiled")}
+          onDragLeave={() => handleDragLeave("unfiled")}
+          onDrop={(e) => handleDrop(e, null)}
+          className={cn(
+            "rounded-2xl transition-all",
+            dropTarget === "unfiled" && "ring-2 ring-foreground/50 ring-offset-2 ring-offset-background scale-[1.03]",
+          )}
+        >
+          <FolderTile
+            active={selected === "unfiled"}
+            onClick={() => onSelect("unfiled")}
+            tint={{ bg: "bg-muted", ring: "ring-foreground/20", ink: "text-muted-foreground" }}
+            icon={<Inbox className="h-5 w-5" />}
+            label="Unfiled"
+            count={counts["unfiled"] ?? 0}
+          />
+        </div>
 
         {/* User folders */}
         {folders.map((f) => {

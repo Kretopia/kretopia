@@ -43,10 +43,21 @@ export const StudioFoldersBar = ({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [busy, setBusy] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
 
   const totalCount =
     (counts["unfiled"] ?? 0) +
     folders.reduce((sum, f) => sum + (counts[f.id] ?? 0), 0);
+  const showSuggest = totalCount >= 3;
+  const hintKey = `studio-folders-hint-dismissed`;
+  const [showHint, setShowHint] = useState(false);
+  useEffect(() => {
+    if (folders.length === 0 && totalCount >= 2) {
+      setShowHint(localStorage.getItem(hintKey) !== "1");
+    } else {
+      setShowHint(false);
+    }
+  }, [folders.length, totalCount]);
 
   const createFolder = async () => {
     const name = newName.trim();

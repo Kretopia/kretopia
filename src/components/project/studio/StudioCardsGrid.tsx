@@ -147,6 +147,13 @@ export const StudioCardsGrid = ({
                 key={project.id}
                 role="button"
                 tabIndex={0}
+                draggable={!!onMoveToFolder}
+                onDragStart={(e) => {
+                  if (!onMoveToFolder) return;
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("application/x-thrive-project", project.id);
+                  e.dataTransfer.setData("text/plain", project.title);
+                }}
                 onClick={() => navigate(`/desk/${project.id}`)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -159,6 +166,7 @@ export const StudioCardsGrid = ({
                   "border border-border bg-card",
                   "transition-all hover:border-foreground/30 hover:shadow-md hover:-translate-y-0.5",
                   "focus:outline-none focus:ring-2 focus:ring-primary",
+                  onMoveToFolder && "active:cursor-grabbing",
                 )}
               >
                 {/* Hairline accent strip — the only color, very thin */}

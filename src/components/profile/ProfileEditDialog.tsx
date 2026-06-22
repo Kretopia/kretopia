@@ -266,7 +266,10 @@ export function ProfileEditDialog({
     hourly_rate: "",
     project_rate: "",
     rate_currency: "USD",
+    cover_image_url: "",
+    passport_profession: "",
   });
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
   const hasShownToastRef = useRef(false);

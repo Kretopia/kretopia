@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Users, MessageSquare, Lock, Crown, DollarSign, TrendingUp, Zap, Sparkles } from "lucide-react";
+import { Users, MessageSquare, Lock, Crown, DollarSign, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface CircleData {
@@ -30,7 +30,7 @@ export interface CircleData {
 
 const isNew = (createdAt: string) => {
   const diff = Date.now() - new Date(createdAt).getTime();
-  return diff < 7 * 24 * 60 * 60 * 1000; // 7 days
+  return diff < 7 * 24 * 60 * 60 * 1000;
 };
 
 const getActivityLevel = (messageCount: number) => {
@@ -39,75 +39,98 @@ const getActivityLevel = (messageCount: number) => {
   return null;
 };
 
+// Deterministic gradient seed from id so each Crew gets a stable signature look
+const gradientFor = (seed: string) => {
+  const gradients = [
+    "from-[hsl(var(--signal-pink)/0.55)] via-[hsl(var(--signal-amber)/0.35)] to-[hsl(var(--signal-teal)/0.55)]",
+    "from-[hsl(var(--signal-teal)/0.55)] via-[hsl(var(--signal-pink)/0.35)] to-[hsl(var(--signal-amber)/0.55)]",
+    "from-[hsl(var(--signal-amber)/0.55)] via-[hsl(var(--signal-teal)/0.35)] to-[hsl(var(--signal-pink)/0.55)]",
+    "from-[hsl(var(--signal-pink)/0.6)] to-[hsl(var(--signal-teal)/0.6)]",
+    "from-[hsl(var(--signal-teal)/0.6)] to-[hsl(var(--signal-amber)/0.6)]",
+    "from-[hsl(var(--signal-amber)/0.6)] to-[hsl(var(--signal-pink)/0.6)]",
+  ];
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  return gradients[Math.abs(hash) % gradients.length];
+};
+
 export const CircleCard = ({ circle, onClick }: { circle: CircleData; onClick: () => void }) => {
   const activity = getActivityLevel(circle.message_count);
-  const circleIsNew = isNew(circle.created_at);
+  const crewIsNew = isNew(circle.created_at);
+  const gradient = gradientFor(circle.id);
 
   return (
     <div
-      className="group relative overflow-hidden rounded-xl border border-border/50 bg-card hover:border-primary/30 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 active:scale-[0.98]"
+      className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card hover:border-primary/40 cursor-pointer transition-all duration-200 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5"
       onClick={onClick}
     >
-      {/* Cover gradient */}
-      {circle.cover_url ? (
-        <div className="h-20 w-full overflow-hidden">
-          <img src={circle.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-transparent to-card" />
-        </div>
-      ) : (
-        <div className={cn(
-          "h-16 w-full bg-gradient-to-br opacity-80",
-          circle.category === "music" ? "from-primary/20 to-fuchsia-500/20" :
-          circle.category === "film" ? "from-rose-500/20 to-orange-500/20" :
-          circle.category === "design" ? "from-primary/20 to-primary/20" :
-          circle.category === "tech" ? "from-emerald-500/20 to-teal-500/20" :
-          circle.category === "business" ? "from-amber-500/20 to-yellow-500/20" :
-          "from-primary/10 to-primary/5"
-        )} />
-      )}
-
-      {/* New badge */}
-      {circleIsNew && (
-        <div className="absolute top-2 right-2 z-10">
-          <Badge className="text-[9px] px-1.5 py-0 bg-primary text-primary-foreground animate-pulse gap-0.5">
-            <Sparkles className="h-2.5 w-2.5" /> New
-          </Badge>
-        </div>
-      )}
-
-      <div className="px-4 pb-4 -mt-6 relative">
-        <div className="flex items-end gap-3 mb-2">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-xl bg-card border-2 border-background shadow-md flex items-center justify-center text-xl shrink-0">
-              {circle.icon_emoji}
+      {/* Cover (image or signature gradient) */}
+      <div className="relative h-32 w-full overflow-hidden">
+        {circle.cover_url ? (
+          <img
+            src={circle.cover_url}
+            alt=""
+            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+          />
+        ) : (
+          <div className={cn("w-full h-full bg-gradient-to-br", gradient)}>
+            {/* Subtle grain overlay via radial */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.18),transparent_60%)]" />
+            <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-90 drop-shadow-md">
+              {circle.icon_emoji || "👥"}
             </div>
-            {/* Activity pulse */}
+          </div>
+        )}
+        {/* Bottom fade for legibility */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card via-card/70 to-transparent" />
+
+        {/* Top-right pill chips */}
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+          {crewIsNew && (
+            <Badge className="text-[9px] px-1.5 py-0 bg-primary text-primary-foreground gap-0.5 backdrop-blur-sm">
+              <Sparkles className="h-2.5 w-2.5" /> New
+            </Badge>
+          )}
+          {circle.is_member ? (
+            <Badge className="text-[10px] px-2 py-0.5 bg-primary/90 text-primary-foreground border-0">Joined</Badge>
+          ) : circle.is_paid ? (
+            <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-amber-400/60 text-amber-100 bg-amber-500/30 backdrop-blur-sm">
+              <DollarSign className="h-2.5 w-2.5 mr-0.5" />{circle.price_monthly}/mo
+            </Badge>
+          ) : null}
+        </div>
+
+        {/* Top-left privacy */}
+        {circle.is_private && (
+          <div className="absolute top-2.5 left-2.5 rounded-full bg-black/40 backdrop-blur-sm p-1 z-10">
+            <Lock className="h-3 w-3 text-white" />
+          </div>
+        )}
+      </div>
+
+      {/* Body */}
+      <div className="px-4 pb-4 -mt-8 relative">
+        <div className="flex items-end gap-3 mb-2">
+          <div className="relative shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-card border-2 border-card shadow-lg flex items-center justify-center text-2xl">
+              {circle.icon_emoji || "👥"}
+            </div>
             {activity && (
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-card">
                 <div className="w-full h-full rounded-full bg-emerald-500 animate-ping opacity-75" />
               </div>
             )}
           </div>
-          <div className="flex-1 min-w-0 pb-0.5">
-            <div className="flex items-center gap-1.5">
-              <h3 className="font-bold text-sm truncate">{circle.title}</h3>
-              {circle.is_private && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
-            </div>
+          <div className="flex-1 min-w-0 pb-1">
+            <h3 className="font-bold text-base leading-tight truncate">{circle.title}</h3>
             {circle.creator_name && (
-              <p className="text-[10px] text-muted-foreground truncate">by {circle.creator_name}</p>
+              <p className="text-[11px] text-muted-foreground truncate">by {circle.creator_name}</p>
             )}
           </div>
-          {circle.is_member ? (
-            <Badge className="text-[10px] px-2 py-0.5 shrink-0 bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">Joined</Badge>
-          ) : circle.is_paid ? (
-            <Badge variant="outline" className="text-[10px] px-2 py-0.5 shrink-0 border-amber-500/50 text-amber-600 bg-amber-500/5">
-              <DollarSign className="h-2.5 w-2.5 mr-0.5" />{circle.price_monthly}/mo
-            </Badge>
-          ) : null}
         </div>
 
         {circle.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">{circle.description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{circle.description}</p>
         )}
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -119,13 +142,13 @@ export const CircleCard = ({ circle, onClick }: { circle: CircleData; onClick: (
               <MessageSquare className="h-3 w-3" /> {circle.message_count > 999 ? `${(circle.message_count / 1000).toFixed(1)}k` : circle.message_count}
             </span>
           )}
-          {circle.user_role === 'admin' && (
+          {circle.user_role === "admin" && (
             <span className="flex items-center gap-1 text-amber-600">
               <Crown className="h-3 w-3" /> Admin
             </span>
           )}
           {activity && (
-            <span className={cn("flex items-center gap-1 ml-auto", activity.color)}>
+            <span className={cn("flex items-center gap-1 ml-auto font-medium", activity.color)}>
               <TrendingUp className="h-3 w-3" /> {activity.label}
             </span>
           )}

@@ -575,7 +575,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
   );
 };
 
-// ─── Create Circle Dialog with paid options ───
+// ─── Create Crew Dialog ───
 export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; onCreated: () => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -586,9 +586,32 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState("");
   const [rules, setRules] = useState("");
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [creating, setCreating] = useState(false);
 
   const selectedCat = CIRCLE_CATEGORIES.find(c => c.value === category);
+
+  const handleCoverUpload = async (file: File) => {
+    if (!user) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Image too large", description: "Max 5MB", variant: "destructive" });
+      return;
+    }
+    setUploadingCover(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `crew-covers/${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("media").upload(path, file, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("media").getPublicUrl(path);
+      setCoverUrl(data.publicUrl);
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err?.message || "Try again", variant: "destructive" });
+    } finally {
+      setUploadingCover(false);
+    }
+  };
 
   const handleCreate = async () => {
     if (!user || !title.trim()) return;
@@ -603,14 +626,13 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
         is_paid: isPaid,
         price_monthly: isPaid ? parseFloat(price) || 0 : 0,
         rules: rules.trim() || null,
+        cover_url: coverUrl,
         created_by: user.id,
       }).select().single();
 
       if (error) throw error;
       if (data) {
-        // Add creator as admin member
         await supabase.from("spark_room_members").insert({ room_id: data.id, user_id: user.id, role: "admin" });
-        // Create default "general" channel
         await supabase.from("circle_channels").insert({
           circle_id: data.id,
           name: "general",
@@ -621,12 +643,12 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
           created_by: user.id,
         } as any);
       }
-      toast({ title: "Circle created!", description: `${title} is live` });
-      setTitle(""); setDescription(""); setCategory("general"); setIsPrivate(false); setIsPaid(false); setPrice(""); setRules("");
+      toast({ title: "Crew created!", description: `${title} is live` });
+      setTitle(""); setDescription(""); setCategory("general"); setIsPrivate(false); setIsPaid(false); setPrice(""); setRules(""); setCoverUrl(null);
       onOpenChange(false);
       onCreated();
     } catch {
-      toast({ title: "Error", description: "Couldn't create circle", variant: "destructive" });
+      toast({ title: "Error", description: "Couldn't create Crew", variant: "destructive" });
     } finally {
       setCreating(false);
     }
@@ -634,15 +656,45 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="gradient" size="sm" className="gap-1.5 shrink-0"><Plus className="h-4 w-4" /> Circle</Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Create a Circle</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Create a Crew</DialogTitle></DialogHeader>
         <div className="space-y-4 mt-2">
-          <Input placeholder="Circle name..." value={title} onChange={e => setTitle(e.target.value)} maxLength={100} />
-          <Textarea placeholder="What's this circle about? (optional)" value={description} onChange={e => setDescription(e.target.value)} maxLength={300} className="min-h-[80px]" />
-          
+          {/* Cover upload */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Cover image</p>
+            <label className="block relative h-28 w-full rounded-xl overflow-hidden border-2 border-dashed border-border/60 hover:border-primary/40 cursor-pointer transition-colors group">
+              {coverUrl ? (
+                <>
+                  <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium">
+                    Change cover
+                  </div>
+                </>
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-muted-foreground bg-gradient-to-br from-primary/5 via-transparent to-primary/5">
+                  {uploadingCover ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Plus className="h-5 w-5" />
+                      <span className="text-xs">Add a cover</span>
+                    </>
+                  )}
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f); }}
+                disabled={uploadingCover}
+              />
+            </label>
+          </div>
+
+          <Input placeholder="Crew name..." value={title} onChange={e => setTitle(e.target.value)} maxLength={100} />
+          <Textarea placeholder="What's this Crew about? (optional)" value={description} onChange={e => setDescription(e.target.value)} maxLength={300} className="min-h-[80px]" />
+
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">Category</p>
             <div className="flex flex-wrap gap-1.5">
@@ -681,7 +733,7 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
           )}
 
           <Textarea
-            placeholder="Circle rules or guidelines (optional)"
+            placeholder="Crew rules or guidelines (optional)"
             value={rules}
             onChange={e => setRules(e.target.value)}
             maxLength={500}
@@ -690,7 +742,7 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
 
           <Button className="w-full" variant="gradient" onClick={handleCreate} disabled={!title.trim() || creating || (isPaid && !price)}>
             {creating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            {isPaid ? `Create Paid Circle • $${price || '0'}/mo` : "Create Circle"}
+            {isPaid ? `Create paid Crew • $${price || '0'}/mo` : "Create Crew"}
           </Button>
         </div>
       </DialogContent>

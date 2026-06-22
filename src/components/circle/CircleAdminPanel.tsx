@@ -348,7 +348,10 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
         {/* Members View */}
         {activeView === 'members' && (
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">{members.length} member{members.length !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-muted-foreground">
+              {members.length} member{members.length !== 1 ? 's' : ''}
+              {isOwner && " · Promote admins/moderators or remove members"}
+            </p>
             {members.map(member => (
               <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
                 <Avatar className="h-8 w-8">
@@ -364,19 +367,53 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                 <div className="flex items-center gap-1.5">
                   {roleIcon(member.role)}
                   {member.user_id !== user?.id && member.user_id !== circle.created_by && (
-                    <select
-                      className="text-xs bg-muted/50 border border-border rounded px-1.5 py-0.5"
-                      value={member.role}
-                      onChange={e => updateMemberRole(member.user_id, e.target.value)}
-                    >
-                      <option value="member">Member</option>
-                      <option value="moderator">Moderator</option>
-                      <option value="admin">Admin</option>
-                      <option value="mentor">Mentor</option>
-                      <option value="featured">Featured Creator</option>
-                      <option value="og">OG Member</option>
-                      <option value="vip">VIP</option>
-                    </select>
+                    <>
+                      <select
+                        className="text-xs bg-muted/50 border border-border rounded px-1.5 py-0.5"
+                        value={member.role}
+                        onChange={e => updateMemberRole(member.user_id, e.target.value)}
+                      >
+                        <option value="member">Member</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Admin</option>
+                        <option value="mentor">Mentor</option>
+                        <option value="featured">Featured Creator</option>
+                        <option value="og">OG Member</option>
+                        <option value="vip">VIP</option>
+                      </select>
+                      {isOwner && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                              disabled={removingId === member.user_id}
+                              title="Remove from Crew"
+                            >
+                              <UserMinus className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove {member.full_name}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                They'll lose access to this Crew's feed, channels, events and stages. They can rejoin if you re-invite them.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => removeMember(member.user_id, member.full_name)}
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </>
                   )}
                   {member.user_id === circle.created_by && (
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">Owner</Badge>

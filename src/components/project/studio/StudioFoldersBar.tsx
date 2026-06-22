@@ -93,6 +93,7 @@ export const StudioFoldersBar = ({
   selected,
   onSelect,
   onChanged,
+  onDropProject,
 }: StudioFoldersBarProps) => {
   const { toast } = useToast();
   const [createOpen, setCreateOpen] = useState(false);
@@ -102,6 +103,28 @@ export const StudioFoldersBar = ({
   const [renameValue, setRenameValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+
+  const handleDragOver = (e: React.DragEvent, key: string) => {
+    if (!onDropProject) return;
+    if (e.dataTransfer.types.includes("application/x-thrive-project")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if (dropTarget !== key) setDropTarget(key);
+    }
+  };
+  const handleDragLeave = (key: string) => {
+    if (dropTarget === key) setDropTarget(null);
+  };
+  const handleDrop = (e: React.DragEvent, folderId: string | null) => {
+    if (!onDropProject) return;
+    const projectId = e.dataTransfer.getData("application/x-thrive-project");
+    setDropTarget(null);
+    if (projectId) {
+      e.preventDefault();
+      onDropProject(projectId, folderId);
+    }
+  };
 
   const totalCount =
     (counts["unfiled"] ?? 0) +

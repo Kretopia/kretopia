@@ -93,8 +93,8 @@ export function CircleStagesTab({ circleId, isMember }: Props) {
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-magenta opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-magenta" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-match opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-match" />
               </span>
               On air now <span className="text-muted-foreground font-normal">({live.length})</span>
             </h3>
@@ -103,17 +103,17 @@ export function CircleStagesTab({ circleId, isMember }: Props) {
             {live.map(s => (
               <button
                 key={s.id}
-                onClick={() => navigate(`/sound-stage/${s.id}`)}
-                className="w-full text-left rounded-xl border-2 border-magenta/40 bg-card p-3 hover:border-magenta transition-colors"
+                onClick={() => navigate("/discover?tab=live")}
+                className="w-full text-left rounded-xl border-2 border-match/40 bg-card p-3 hover:border-match transition-colors"
               >
                 <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-magenta/10 flex items-center justify-center shrink-0">
-                    {s.mode === "video" ? <Video className="h-5 w-5 text-magenta" /> : <Mic className="h-5 w-5 text-magenta" />}
+                  <div className="h-10 w-10 rounded-lg bg-match/10 flex items-center justify-center shrink-0">
+                    {s.mode === "video" ? <Video className="h-5 w-5 text-match" /> : <Mic className="h-5 w-5 text-match" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-sm truncate">{s.title}</p>
-                      <Badge className="bg-magenta text-white text-[9px] px-1.5 py-0">LIVE</Badge>
+                      <Badge className="bg-match text-white text-[9px] px-1.5 py-0">LIVE</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground truncate">
                       {hosts[s.host_user_id]?.full_name || "Host"}

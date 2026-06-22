@@ -85,8 +85,8 @@ export function CircleStudiosTab({ circleId, isMember }: Props) {
           className="w-full text-left rounded-xl border bg-card p-3 hover:bg-accent/5 transition-colors"
         >
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-lg bg-yellow/10 flex items-center justify-center shrink-0">
-              <FolderKanban className="h-5 w-5 text-yellow" />
+            <div className="h-10 w-10 rounded-lg bg-scout/10 flex items-center justify-center shrink-0">
+              <FolderKanban className="h-5 w-5 text-scout" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">

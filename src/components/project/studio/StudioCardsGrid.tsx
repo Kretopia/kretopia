@@ -80,6 +80,8 @@ export const StudioCardsGrid = ({
   projects,
   invoicesByProject = {},
   onNewProject,
+  folders = [],
+  onMoveToFolder,
 }: StudioCardsGridProps) => {
   const navigate = useNavigate();
 

@@ -13,6 +13,7 @@ import { MyPendingInvitations } from "@/components/project/MyPendingInvitations"
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
+import { StudioFoldersBar, type StudioFolder } from "@/components/project/studio/StudioFoldersBar";
 
 const ProjectsList = () => {
   const navigate = useNavigate();
@@ -28,10 +29,37 @@ const ProjectsList = () => {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "planning" | "wrapping" | "completed">("all");
   const [payFilter, setPayFilter] = useState<"all" | "unsent" | "invoiced" | "paid">("all");
+  const [folders, setFolders] = useState<StudioFolder[]>([]);
+  const [folderFilter, setFolderFilter] = useState<string>("all"); // "all" | "unfiled" | folder id
+
+  const fetchFolders = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("studio_folders")
+      .select("id, name, color, sort_order")
+      .eq("user_id", user.id)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+    setFolders((data as StudioFolder[]) || []);
+  };
+
+  const moveProjectToFolder = async (projectId: string, folderId: string | null) => {
+    const prev = projects;
+    setProjects((p) => p.map((pr) => (pr.id === projectId ? { ...pr, studio_folder_id: folderId } : pr)));
+    const { error } = await supabase
+      .from("projects")
+      .update({ studio_folder_id: folderId })
+      .eq("id", projectId);
+    if (error) {
+      setProjects(prev);
+      toast({ title: "Couldn't move project", description: error.message, variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     if (user) {
       fetchProjects();
+      fetchFolders();
       const trackPage = async () => {
         const { analytics } = await import("@/lib/analytics");
         analytics.pageView("projects_list");
@@ -119,15 +147,27 @@ const ProjectsList = () => {
     return projects.filter((p) => {
       if (statusFilter !== "all" && p.status !== statusFilter) return false;
       if (payFilter !== "all" && (invoicesByProject[p.id] ?? "unsent") !== payFilter) return false;
+      if (folderFilter === "unfiled" && p.studio_folder_id) return false;
+      if (folderFilter !== "all" && folderFilter !== "unfiled" && p.studio_folder_id !== folderFilter) return false;
       if (q) {
         const hay = `${p.title ?? ""} ${p.client_name ?? ""} ${p.description ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [projects, query, statusFilter, payFilter, invoicesByProject]);
+  }, [projects, query, statusFilter, payFilter, folderFilter, invoicesByProject]);
 
-  const filtersActive = query.trim() !== "" || statusFilter !== "all" || payFilter !== "all";
+  const folderCounts = useMemo(() => {
+    const counts: Record<string, number> = { unfiled: 0 };
+    for (const p of projects) {
+      const key = p.studio_folder_id || "unfiled";
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return counts;
+  }, [projects]);
+
+  const filtersActive =
+    query.trim() !== "" || statusFilter !== "all" || payFilter !== "all" || folderFilter !== "all";
 
   const STATUS_CHIPS: { id: typeof statusFilter; label: string }[] = [
     { id: "all", label: "All" },
@@ -173,6 +213,18 @@ const ProjectsList = () => {
 
       {/* Pending Invitations (only if any) */}
       <MyPendingInvitations />
+
+      {/* Folders bar (always visible when there's at least one project) */}
+      {user && projects.length > 0 && (
+        <StudioFoldersBar
+          userId={user.id}
+          folders={folders}
+          counts={folderCounts}
+          selected={folderFilter}
+          onSelect={setFolderFilter}
+          onChanged={fetchFolders}
+        />
+      )}
 
       {/* Search + quick filters (only when there's something to search) */}
       {projects.length > 2 && (
@@ -229,7 +281,7 @@ const ProjectsList = () => {
             ))}
             {filtersActive && (
               <button
-                onClick={() => { setQuery(""); setStatusFilter("all"); setPayFilter("all"); }}
+                onClick={() => { setQuery(""); setStatusFilter("all"); setPayFilter("all"); setFolderFilter("all"); }}
                 className="shrink-0 h-7 px-2.5 rounded-full text-[11px] font-semibold text-muted-foreground hover:text-foreground"
               >
                 Clear
@@ -247,7 +299,7 @@ const ProjectsList = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => { setQuery(""); setStatusFilter("all"); setPayFilter("all"); }}
+            onClick={() => { setQuery(""); setStatusFilter("all"); setPayFilter("all"); setFolderFilter("all"); }}
           >
             Clear filters
           </Button>
@@ -257,6 +309,8 @@ const ProjectsList = () => {
           projects={filteredProjects as any}
           invoicesByProject={invoicesByProject}
           onNewProject={() => setShowVoiceCreate(true)}
+          folders={folders}
+          onMoveToFolder={moveProjectToFolder}
         />
       )}
 

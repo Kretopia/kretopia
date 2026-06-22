@@ -1,10 +1,19 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNowStrict } from "date-fns";
-import { ArrowUpRight, CheckCircle2, Clock, Mic } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Clock, Mic, MoreVertical, Folder, FolderMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { moodLabel } from "./moodGradient";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { StudioFolder } from "./StudioFoldersBar";
 
 // Solid, on-brand accent colors per mood (no gradients — keeps it editorial).
 const MOOD_ACCENT: Record<string, string> = {
@@ -33,6 +42,7 @@ interface StudioProject {
   client_name?: string | null;
   description?: string | null;
   pinned_stage?: string | null;
+  studio_folder_id?: string | null;
   updated_at: string;
 }
 
@@ -40,6 +50,8 @@ interface StudioCardsGridProps {
   projects: StudioProject[];
   invoicesByProject?: Record<string, "paid" | "invoiced" | "unsent">;
   onNewProject: () => void;
+  folders?: StudioFolder[];
+  onMoveToFolder?: (projectId: string, folderId: string | null) => void;
 }
 
 const STATUS_PILL: Record<string, { label: string; tone: string }> = {
@@ -68,6 +80,8 @@ export const StudioCardsGrid = ({
   projects,
   invoicesByProject = {},
   onNewProject,
+  folders = [],
+  onMoveToFolder,
 }: StudioCardsGridProps) => {
   const navigate = useNavigate();
 
@@ -127,13 +141,21 @@ export const StudioCardsGrid = ({
             const pay = invoicesByProject[project.id];
             const isDone = project.status === "completed";
 
+            const currentFolder = folders.find((f) => f.id === project.studio_folder_id);
             return (
-              <button
+              <div
                 key={project.id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => navigate(`/desk/${project.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(`/desk/${project.id}`);
+                  }
+                }}
                 className={cn(
-                  "group relative text-left overflow-hidden rounded-2xl",
+                  "group relative text-left overflow-hidden rounded-2xl cursor-pointer",
                   "border border-border bg-card",
                   "transition-all hover:border-foreground/30 hover:shadow-md hover:-translate-y-0.5",
                   "focus:outline-none focus:ring-2 focus:ring-primary",
@@ -159,7 +181,7 @@ export const StudioCardsGrid = ({
                     </span>
                     {pay && (
                       <span
-                        className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground"
+                        className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mr-6"
                         title={PAY_LABEL[pay]}
                       >
                         <span className={cn("h-1.5 w-1.5 rounded-full", PAY_DOT[pay])} />
@@ -191,7 +213,14 @@ export const StudioCardsGrid = ({
                         style={{ background: accent }}
                       />
                       <span className="truncate text-foreground/70">
-                        {project.pinned_stage || moodLabel(project.mood)}
+                        {currentFolder ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Folder className="h-2.5 w-2.5" />
+                            {currentFolder.name}
+                          </span>
+                        ) : (
+                          project.pinned_stage || moodLabel(project.mood)
+                        )}
                       </span>
                     </span>
                     <span className="inline-flex items-center gap-1 shrink-0">
@@ -205,9 +234,55 @@ export const StudioCardsGrid = ({
                   </div>
                 </div>
 
-                {/* Subtle open arrow on hover */}
-                <ArrowUpRight className="absolute top-3 right-3 h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-foreground/60 transition-colors" />
-              </button>
+                {/* Card actions menu (folder assignment) */}
+                {onMoveToFolder && (
+                  <div className="absolute top-2 right-2" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-7 w-7 rounded-full grid place-items-center text-muted-foreground hover:bg-muted hover:text-foreground"
+                          aria-label="Project options"
+                        >
+                          <MoreVertical className="h-3.5 w-3.5" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          Move to folder
+                        </DropdownMenuLabel>
+                        {folders.length === 0 && (
+                          <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                            No folders yet. Create one from the bar above.
+                          </div>
+                        )}
+                        {folders.map((f) => (
+                          <DropdownMenuItem
+                            key={f.id}
+                            onClick={() => onMoveToFolder(project.id, f.id)}
+                            disabled={f.id === project.studio_folder_id}
+                          >
+                            <Folder className="h-3.5 w-3.5 mr-2" />
+                            {f.name}
+                            {f.id === project.studio_folder_id && (
+                              <CheckCircle2 className="h-3 w-3 ml-auto text-emerald-600" />
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                        {project.studio_folder_id && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => onMoveToFolder(project.id, null)}>
+                              <FolderMinus className="h-3.5 w-3.5 mr-2" />
+                              Remove from folder
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

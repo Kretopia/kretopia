@@ -38,6 +38,9 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const guard = await requireAdminOrCron(req);
+    if (!guard.ok) return guard.response;
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
@@ -46,33 +49,8 @@ const handler = async (req: Request): Promise<Response> => {
     try { body = await req.json(); } catch { /* GET / cron */ }
     const isPreview = body?.preview === true;
     const previewRecipient: string | undefined = body?.recipient_email;
+    const callerUserId: string | null = guard.viaCron ? null : guard.userId;
 
-    // Auth: cron secret OR admin user OR preview by admin
-    const cronSecret = req.headers.get("x-cron-secret");
-    const expectedSecret = Deno.env.get("CRON_SECRET");
-    const authHeader = req.headers.get("authorization");
-    let isAuthorized = cronSecret === expectedSecret;
-    let callerUserId: string | null = null;
-
-    if (!isAuthorized && authHeader) {
-      const supabaseClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-        global: { headers: { Authorization: authHeader } },
-      });
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (user) {
-        const { data: hasRole } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-        if (hasRole === true) {
-          isAuthorized = true;
-          callerUserId = user.id;
-        }
-      }
-    }
-
-    if (!isAuthorized) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const nowIso = new Date().toISOString();

@@ -368,6 +368,27 @@ export function ProfileEditDialog({
         }).catch((e) => console.warn('[ProfileEdit] geocode failed', e));
       }
 
+      // Auto-tailor Passport layout via AI when empty or when role/bio changed (fire-and-forget)
+      const prevAny = profile as any;
+      const layoutNeedsRedetect =
+        !formData.passport_profession ||
+        formData.role !== prevAny.role ||
+        (formData.bio || "") !== (prevAny.bio || "");
+      if (layoutNeedsRedetect) {
+        supabase.functions
+          .invoke('infer-passport-profession', { body: { profile: { ...profile, ...formData } } })
+          .then(({ data }) => {
+            if (data?.profession && data.profession !== formData.passport_profession) {
+              supabase
+                .from('profiles')
+                .update({ passport_profession: data.profession } as any)
+                .eq('user_id', profile.user_id)
+                .then(() => onProfileUpdate());
+            }
+          })
+          .catch((e) => console.warn('[ProfileEdit] passport layout inference failed', e));
+      }
+
       const newCompletion = checkProfileCompletion({
         ...profile,
         ...formData,

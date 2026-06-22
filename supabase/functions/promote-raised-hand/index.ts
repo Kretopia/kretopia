@@ -89,13 +89,15 @@ serve(async (req) => {
       payload: { token, turn_id: turn?.id, hand_id },
     });
 
-    await admin.from("notifications").insert({
-      user_id: hand.user_id,
-      type: "stage_promoted",
-      title: "You're up — host pulled you on stage",
-      message: "Tap to come on with mic and camera.",
-      action_url: `/circle/stage/${hand.stage_id}`,
-    }).catch(() => {});
+    try {
+      await admin.from("notifications").insert({
+        user_id: hand.user_id,
+        type: "stage_promoted",
+        title: "You're up — host pulled you on stage",
+        message: "Tap to come on with mic and camera.",
+        action_url: `/circle/stage/${hand.stage_id}`,
+      });
+    } catch (_) { /* non-fatal */ }
 
     return new Response(JSON.stringify({ ok: true, turn_id: turn?.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,

@@ -133,7 +133,7 @@ export const SuggestFoldersDialog = ({ userId, open, onOpenChange, onApplied }: 
           .from("projects")
           .update({ studio_folder_id: m.folderId })
           .eq("id", m.id)
-          .eq("user_id", userId);
+          .eq("created_by", userId);
       };
       await Promise.all(moves.map(moveOne));
 

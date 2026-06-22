@@ -1,7 +1,7 @@
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 import { ProfileEditDialog } from "@/components/profile/ProfileEditDialog";
-import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
+import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
 import { ProfileQRDialog } from "@/components/profile/ProfileQRDialog";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ShareableCreatorCard } from "@/components/profile/ShareableCreatorCard";

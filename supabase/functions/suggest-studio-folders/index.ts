@@ -32,7 +32,7 @@ serve(async (req) => {
     const { data: projects } = await supabase
       .from("projects")
       .select("id, title, description, client_name, workspace_type, status, mood, studio_folder_id")
-      .eq("user_id", user.id)
+      .eq("created_by", user.id)
       .order("updated_at", { ascending: false })
       .limit(60);
 

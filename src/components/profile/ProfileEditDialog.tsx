@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import type { Database } from "@/integrations/supabase/types";
 import { SubRolesPicker } from "./SubRolesPicker";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PROFESSION_LAYOUTS, inferProfession, type ProfessionKey } from "@/lib/passport/professionProfiles";
 
 // Comprehensive roles covering Music, Film, Design, Fashion, Content Creation, Tech, and more
 export const ROLE_OPTIONS = [

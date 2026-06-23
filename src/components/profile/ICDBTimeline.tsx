@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ICDBCreditForm } from "./ICDBCreditForm";
 import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
-import { parseMediaUrl } from "@/lib/mediaUtils";
+import { getBestPlayableMediaUrl, getModalMediaType, parseMediaUrl } from "@/lib/mediaUtils";
 import { MediaPlayerModal } from "./MediaPlayerModal";
 import { extractThumbnailFromUrl } from "@/lib/thumbnailExtractor";
 
@@ -330,6 +330,7 @@ function CategoryRow({
           const gradientIdx = idx % POSTER_GRADIENTS.length;
           const platformIcon = getPlatformIcon(credit.platform);
           const mediaType = getMediaType(credit);
+          const playableUrl = getBestPlayableMediaUrl(credit);
 
           return (
             <div
@@ -343,7 +344,8 @@ function CategoryRow({
                 if (bulkSelectMode && onToggleSelect) {
                   onToggleSelect(credit.id);
                 } else {
-                  navigate(`/production?name=${encodeURIComponent(credit.project_name)}`);
+                  if (playableUrl) onPlay(credit);
+                  else navigate(`/production?name=${encodeURIComponent(credit.project_name)}`);
                 }
               }}
             >
@@ -386,7 +388,7 @@ function CategoryRow({
               </div>
 
               {/* Play button */}
-              {(mediaType === 'video' || mediaType === 'audio') && (
+              {(playableUrl || mediaType === 'video' || mediaType === 'audio') && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
                     <Play className="h-5 w-5 text-foreground ml-0.5" />

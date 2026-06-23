@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Sparkles, Download, Share2, RefreshCw, ArrowLeft, Wand2 } from "lucide-react";
 import { DeckRenderer, type DeckContent } from "@/components/thrive/DeckRenderer";
-import { DECK_THEMES, type DeckTheme } from "@/lib/deckThemes";
+import { DECK_THEMES, defaultThemeFor, type DeckTheme } from "@/lib/deckThemes";
 import { exportDeckToPDF } from "@/lib/deckExport";
 import { SEO } from "@/components/SEO";
 import { BrandVaultChip } from "@/components/brand-vault/BrandVaultChip";
@@ -41,11 +41,17 @@ export default function ThriveGenerate() {
 
   const [intent, setIntent] = useState<Intent>(initialIntent);
   const [brief, setBrief] = useState(initialBrief);
-  const [theme, setTheme] = useState<DeckTheme>("editorial");
+  const [theme, setTheme] = useState<DeckTheme>(defaultThemeFor(initialIntent));
+  const [themeManuallySet, setThemeManuallySet] = useState(false);
   const [doc, setDoc] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState<any>(null);
   const renderRef = useRef<HTMLDivElement>(null);
+
+  // Auto-pair theme to intent unless the user has manually chosen one.
+  useEffect(() => {
+    if (!themeManuallySet) setTheme(defaultThemeFor(intent));
+  }, [intent, themeManuallySet]);
 
   useEffect(() => {
     if (!projectId) return;
@@ -192,9 +198,11 @@ export default function ThriveGenerate() {
                     key={t}
                     onClick={async () => {
                       setTheme(t);
+                      setThemeManuallySet(true);
                       await supabase.from("thrive_documents").update({ theme: t }).eq("id", doc.id);
                       setDoc({ ...doc, theme: t });
                     }}
+                    title={DECK_THEMES[t].description}
                     className={`p-2 rounded-md border text-xs font-medium transition ${theme === t || doc.theme === t ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
                   >
                     {DECK_THEMES[t].name}

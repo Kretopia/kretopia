@@ -3,11 +3,12 @@ import { ShieldCheck, Briefcase, DollarSign, Store, Zap } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 
 const FEATURES = [
-  { icon: ShieldCheck, label: "Creative Passport", desc: "Your verified creative identity — every Stamp is proof of work" },
+  { icon: ShieldCheck, label: "Creative Passport", desc: "The verified creative record — every Stamp is proof of work" },
   { icon: Briefcase, label: "Calls & Co-signs", desc: "Get put forward for real Calls, backed by people you've worked with" },
   { icon: DollarSign, label: "Productions & Receipts", desc: "Run projects, send invoices, show receipts — one Creative OS" },
   { icon: Store, label: "Your Press Kit, public", desc: "A site that shows up when someone Googles your name" },
 ];
+
 
 export const AuthBrandingPanel = () => (
   <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-cinematic">

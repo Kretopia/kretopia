@@ -422,7 +422,7 @@ const CreatorEPK = () => {
 
           {/* Name & Role */}
           <div className="space-y-1">
-            <p className="brand-eyebrow">Verified Creator EPK</p>
+            <p className="brand-eyebrow">Verified Creative Passport</p>
             <h1 className="text-3xl font-black tracking-[-0.03em]">{profile.full_name}</h1>
             <p className="text-primary font-bold uppercase tracking-wider text-xs">{profile.job_title || profile.role || 'Creator'}</p>
             {profile.location && (
@@ -431,6 +431,9 @@ const CreatorEPK = () => {
                 {profile.location}
               </p>
             )}
+            <p className="text-xs text-muted-foreground/90 max-w-xs mx-auto pt-1">
+              One link. Replaces résumé, IMDb, EPK, and business card — credits verified by collaborators on ThriveIN.
+            </p>
           </div>
 
           {/* Verification Badge */}

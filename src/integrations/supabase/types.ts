@@ -284,6 +284,45 @@ export type Database = {
           },
         ]
       }
+      agent_runs: {
+        Row: {
+          agent_kind: string
+          created_at: string
+          duration_ms: number | null
+          id: string
+          input_summary: string | null
+          output_summary: string | null
+          project_id: string | null
+          status: string
+          trigger: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_kind: string
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          input_summary?: string | null
+          output_summary?: string | null
+          project_id?: string | null
+          status?: string
+          trigger: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_kind?: string
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          input_summary?: string | null
+          output_summary?: string | null
+          project_id?: string | null
+          status?: string
+          trigger?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       agent_settings: {
         Row: {
           auto_approve_low_risk: boolean

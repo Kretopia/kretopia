@@ -12,6 +12,7 @@ import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
 import { AvailabilityCalendarSection } from "@/components/profile/AvailabilityCalendarSection";
+import { BookingWindowsCard } from "@/components/profile/BookingWindowsCard";
 import { CreditsSection } from "@/components/profile/CreditsSection";
 import { HireMeTrustBar } from "@/components/passport/HireMeTrustBar";
 
@@ -100,6 +101,11 @@ export const ProfileContentSections = ({
               className="mb-4"
             />
             <AvailabilityCalendarSection userId={profile.user_id} isOwner={true} />
+            <BookingWindowsCard
+              userId={profile.user_id}
+              username={profile.username ?? null}
+              bookingsEnabled={!!profile.bookings_enabled}
+            />
             <RateCardSection userId={profile.user_id} isOwner={true} />
             <WorkWithMeSection userId={profile.user_id} isOwner={true} creatorName={profile.full_name} />
           </>

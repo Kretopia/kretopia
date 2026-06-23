@@ -7,6 +7,7 @@
  */
 
 import type { ShareTarget } from "./professionProfiles";
+import { APP_URL } from "@/lib/constants";
 
 export interface ShareTargetMeta {
   id: ShareTarget;

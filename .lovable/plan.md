@@ -1,83 +1,112 @@
-# Standing Consolidation + Upgrade
+# Phase 1 — Make the Creative Passport Unmissable
 
-One level system. Industry-true names. Real moat signals only.
+Three coordinated moves: **(1)** rewrite the positioning copy across the most-seen surfaces, **(2)** ship a public, SEO-indexed Passport directory and `/@handle` vanity routes so the ID feels real, **(3)** add a "tagged credits → claim" wedge so creatives discover their record already exists.
 
-## Part A — Make Standing canonical (cleanup)
+---
 
-Audit finding: both legacy systems are effectively dead code.
-- `tierSystem.ts` — only `POINT_REWARDS` is imported, by `xpSystem.ts`
-- `xpSystem.ts` — imported by nothing
-- `gamification.ts` (`LEVEL_NAMES` / Member→Legend) — imported by nothing
+## 1. Lock the positioning: "The verified creative record"
 
-Actions:
-1. Delete `src/lib/tierSystem.ts`, `src/lib/xpSystem.ts`, `src/lib/gamification.ts`.
-2. Grep-verify zero remaining imports; remove the stale comment in `WalletXPSection.tsx`.
-3. Add a single `src/lib/passport/standingClient.ts` helper — `useStanding(userId)` — that loads the 6 inputs (verified credits, recent credits 90d, co-signs, profile %, active projects 90d, reply SLA) and returns `computeStanding(...)`. Every surface (`ProfileHero`, `PassportHeroRibbon`, `LevelUpCard`, badges, Discover cards) reads from this one hook.
+One line, used everywhere:
 
-## Part B — Upgrade Standing
+> **"The verified creative record the industry has been waiting for."**
 
-### B1. Add L0 "Unclaimed"
-New first rung for scraped/unclaimed Passports. Title = "Unclaimed", CTA = "Claim your Passport". Once claimed → auto-promote to L1 Newcomer.
+Subline (when there's room):
 
-Levels become:
+> *One Passport. Every credit. Co-signed by the people who were actually there.*
 
-```text
-L0  Unclaimed         (pre-claim only)
-L1  Newcomer          score 0
-L2  Working Creative  score 30
-L3  Verified Pro      score 75   ← gated, see B3
-L4  Industry Name     score 140  ← gated
-L5  Marquee           score 220  ← gated
-```
+**Where it ships:**
+- `src/components/passport/PassportClaimHero.tsx` — replace generic "Creative Passport" eyebrow with the locked line.
+- `src/pages/CreatorEPK.tsx` — the public EPK header (already updated last round) — align to the exact wording.
+- `src/components/auth/AuthBrandingPanel.tsx` — sign-in/sign-up right panel.
+- `src/components/landing/WhyCreatorsChooseSection.tsx` — landing-page hero line for the section.
+- Share copy in `src/lib/passport/shareTargets.ts` — so every shared link carries the line.
 
-### B2. Score decay (keeps the board honest)
-If no activity in 180 days: multiply score by 0.85 (computed at read time — no cron). Caps decay at -1 level. Shown in the LevelUpCard as "Slipping — add a recent credit to hold your standing."
+No new components — pure copy edit + one shared constant `PASSPORT_TAGLINE` in `src/lib/brandLexicon.ts` so we never drift again.
 
-### B3. Verified-by-ThriveIN gate at L3+
-Score alone unlocks L1/L2. L3+ also requires `profiles.verification_score >= threshold` (uses existing verification system). If score qualifies but verification doesn't → user sees "L3 unlocked — finish verification to claim Verified Pro" with a deep link to the verification flow. Prevents gaming via self-added credits.
+---
 
-### B4. Co-sign cap
-Cap unique co-signers contributing to score at 10. Beyond that, additional co-signs still display socially but don't inflate score. Prevents a single viral creator from running away.
+## 2. Public Passport directory + `/@handle` vanity routes
 
-### B5. "What unlocks at next level" on LevelUpCard
-Append a small "Unlocks at [next level]" block to `LevelUpCard.tsx`:
+**Goal:** make the Passport feel like a real, indexable, brand-discoverable record (the IMDb effect). A creative should be able to drop `thrivein.io/@ethan` on a business card and have it resolve.
 
-```text
-L2  Working Creative  → Listed in Discover
-L3  Verified Pro      → Scout priority + Verified badge on EPK
-L4  Industry Name     → Featured in Discover + press-kit badge
-L5  Marquee           → Top of Match queue + Marquee mark
-```
+### New routes (in `src/App.tsx`)
+- `GET /passport` → `PassportDirectory.tsx` — browsable, filterable list of public Passports (Standing, profession, location). Public — no auth required. SEO-indexed.
+- `GET /@:handle` → `HandleResolver.tsx` — looks up `profiles.username = handle` and redirects to `/profile/:userId` (or `/epk/:userId` for unauth visitors). 404 with "Claim @handle" CTA if not found.
+- `GET /passport/:passportId` (e.g. `/passport/THR-EF429`) → resolves the THR- ID the same way as @handle.
 
-These are display-only labels in v1 (no enforcement changes to Discover/Scout/Match yet — that's a follow-up).
+### Directory page (`src/pages/PassportDirectory.tsx`)
+- Header: tagline + count ("4,217 verified creative records").
+- Filters: Profession, Standing (L1–L5), Country.
+- Card grid using existing `<RollCall />` / discover-card patterns — avatar, name, `@handle`, THR-ID, profession, Standing badge, verified-stamp count, co-sign count.
+- Each card → `/profile/:userId` (or `/epk/:userId` for guests).
+- Empty/loading states use existing `<EmptyState />` + `<BrandLoader />`.
+- Public query: read from `public_profiles_safe` view (already exists per memory), filtered to profiles with `username IS NOT NULL` and at least 1 verified credit.
 
-### B6. Recompute weights w/ cap
-Update `computeStanding` in `src/lib/passport/standing.ts`:
-- `cosignsReceived` → `Math.min(cosignsReceived, 10) * 6`
-- New input `lastActivityAt?: string` — applies the 0.85 decay if >180d
-- New input `verificationScore?: number` — drives the L3+ gate (returns `gatedAt` field naming the level the user qualifies for by score but can't claim yet)
+### SEO
+- `<SEO />` tags + JSON-LD `Person` schema on `/@handle` pages.
+- Add `/passport` and top public passports to `public/sitemap.xml`.
+- Canonical URLs normalized via `APP_URL`.
 
-`Standing` return type gains:
-- `gatedAt: StandingLevel | null` — "you'd be Verified Pro but…"
-- `decaying: boolean`
-- `unlocks: { level, label }[]` — for the LevelUpCard
+### Nav surfacing
+- Add "Passport Directory" link in the public-landing nav + footer (`src/components/Footer.tsx`).
+- Add a discreet "Browse the Directory" link on the EPK footer CTA.
 
-## Technical notes
+---
 
-- Pure-function change in `standing.ts` — no DB migration needed.
-- `useStanding` hook will read existing tables only: `credits`, `credit_vouches`, `connections`/`projects` for activity, `profiles.verification_score`, `profiles.updated_at` / latest credit `created_at` for `lastActivityAt`.
-- L0 detection: `profiles.user_id IS NULL` (the unclaimed-profile pattern already in use).
-- Memory update: `mem://features/passport/profession-and-standing-v2.md` gets the new level table + gating rules + decay rule.
+## 3. The "Tagged-but-unclaimed" wedge
 
-## Out of scope (deliberately)
+The strongest trigger: *"Your name appears on 4 credits. Claim your Passport to own them."*
 
-- Wiring Discover/Scout/Match to actually enforce unlocks — labels only in v1.
-- Migrating any historical XP/tier data — those tables aren't referenced.
-- New badges/icons beyond what `LevelUpCard` already renders.
+### Where it fires
+- **Public EPK / `/@handle`** for un-signed-up visitors whose name appears on other creators' credits → `<TaggedCreditsClaimCTA />` floating banner: *"Someone's already tagged you in their work. Claim your Passport →"*
+- **Authenticated home (`UnifiedHome`)** for users who haven't claimed verified credits → existing `<PassportClaimHero />` gets a new prop `taggedCreditsCount` and shows: *"You appear in {N} credits. Claim them now."*
 
-## Sequence
+### Detection
+- Query `discovered_credits` + `project_roll_call` for rows where the tagged name/email matches the current user (or session-tracked claimable identity).
+- New tiny hook `useTaggedCredits(userId | guestEmail)` returning `{ count, samples }`.
 
-1. Part A delete + hook (one pass).
-2. Type-check.
-3. Part B1–B6 in `standing.ts` + `LevelUpCard.tsx` + `PassportHeroRibbon.tsx`.
-4. Type-check, smoke via preview at `/profile`.
+### Components
+- `src/components/passport/TaggedCreditsClaimCTA.tsx` — sticky bottom banner on public EPK / handle pages.
+- Extend `PassportClaimHero` to show the "N credits tagged you" line above the existing CTA when count > 0.
+
+---
+
+## 4. Files touched (no DB migration needed — uses existing tables)
+
+**New:**
+- `src/pages/PassportDirectory.tsx`
+- `src/pages/HandleResolver.tsx`
+- `src/components/passport/TaggedCreditsClaimCTA.tsx`
+- `src/hooks/useTaggedCredits.ts`
+
+**Edited (copy + routes + small wiring):**
+- `src/App.tsx` (3 new routes)
+- `src/lib/brandLexicon.ts` (add `PASSPORT_TAGLINE`)
+- `src/components/passport/PassportClaimHero.tsx` (tagline + tagged-credits line)
+- `src/pages/CreatorEPK.tsx` (mount `TaggedCreditsClaimCTA` for guests)
+- `src/components/auth/AuthBrandingPanel.tsx` (tagline)
+- `src/components/landing/WhyCreatorsChooseSection.tsx` (tagline)
+- `src/components/Footer.tsx` (directory link)
+- `src/lib/passport/shareTargets.ts` (tagline in share copy)
+- `public/sitemap.xml` (`/passport` entry)
+
+---
+
+## 5. Out of scope for this phase (queued for next)
+
+- Passport-gated Scout/Gigs (Standing thresholds on opportunity cards).
+- Co-sign Wall as profile hero + post-collab "co-sign your team" nudge.
+- Brand-side `/passport/search?role=…&standing=L3+` discovery for hirers.
+- Programmatic OG images for `/@handle` share cards.
+
+These build on the directory + wedge — they're stronger once the foundation exists.
+
+---
+
+## What you'll see when this ships
+- `thrivein.io/@ethan` resolves to a real, shareable, SEO-indexed Passport page.
+- `thrivein.io/passport` is a browsable record of every verified creative.
+- Any creative whose name appears on someone else's credit sees a banner the moment they land — *"You're already in the record. Claim it."*
+- One taut line — *"The verified creative record the industry has been waiting for"* — repeats across landing, auth, EPK, share cards, and the Passport hero.
+
+Approve and I'll build it in one pass.

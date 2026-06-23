@@ -25,10 +25,20 @@ export const getBestPlayableMediaUrl = (item: {
   media_url?: string | null;
   url?: string | null;
   verification_url?: string | null;
+  media_type?: string | null;
+  mediaType?: string | null;
 }): string | null => {
   const candidates = [item.primary_media_url, item.media_url, item.url, item.verification_url]
     .filter((value): value is string => !!value && value.trim().length > 0);
-  return candidates.find(isPlayableMediaUrl) || null;
+  const parsed = candidates.find(isPlayableMediaUrl);
+  if (parsed) return parsed;
+
+  const declaredType = item.media_type || item.mediaType;
+  if (declaredType === 'audio' || declaredType === 'video' || declaredType === 'image') {
+    return candidates[0] || null;
+  }
+
+  return null;
 };
 
 export const getModalMediaType = (url?: string | null, fallback?: string | null): 'audio' | 'video' | 'image' | 'embed' => {

@@ -372,6 +372,9 @@ export default function ThrivePay() {
           </div>
         </div>
 
+        {/* Thrive proactive nudges (Pay surface) */}
+        <SurfaceProactiveCards surface="pay" className="px-0 mb-4 sm:mb-6" />
+
         {/* Money Brief — daily-driver hero */}
         <div className="mb-4 sm:mb-6">
           <MoneyBrief />

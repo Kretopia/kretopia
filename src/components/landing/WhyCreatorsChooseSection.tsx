@@ -27,12 +27,13 @@ export const WhyCreatorsChooseSection = () => {
             Your Full Creative Studio
           </p>
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.95] text-foreground mb-5">
-            Why creators choose<br />
-            <span className="text-energy-glow">ThriveIN.</span>
+            The verified creative record<br />
+            <span className="text-energy-glow">the industry has been waiting for.</span>
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Stop juggling 9 different apps. Credits, gigs, contracts, invoices, websites, project management & payments — all in one place built for creatives.
+            One Passport. Every credit. Co-signed by the people who were actually there. Plus everything you need to run your career — gigs, contracts, invoices, websites, project management & payments — in one place built for creatives.
           </p>
+
         </div>
 
         <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">

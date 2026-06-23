@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MediaPlayerModal } from "./MediaPlayerModal";
-import { parseMediaUrl } from "@/lib/mediaUtils";
+import { getBestPlayableMediaUrl, getModalMediaType } from "@/lib/mediaUtils";
 import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
 
 // ── Category taxonomy (mirrors ICDBCreditForm) ──────────────────────
@@ -97,6 +97,8 @@ interface UnifiedCredit {
   year: number | null;
   platform?: string;
   url?: string;
+  primaryMediaUrl?: string | null;
+  mediaType?: string | null;
   thumbnailUrl?: string;
   isVerified: boolean;
   source?: string;
@@ -200,7 +202,9 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
           year: c.year,
           platform: c.platform || c.source,
           url: c.url || c.verification_url,
-          thumbnailUrl: c.thumbnail_url || c.primary_media_url,
+          primaryMediaUrl: c.primary_media_url,
+          mediaType: c.media_type,
+          thumbnailUrl: c.thumbnail_url,
           isVerified: c.verification_status === 'verified',
           source: c.source || 'manual',
           creditType: c.credit_category || c.project_type || 'credit',
@@ -464,8 +468,8 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                 {/* Credit cards */}
                 {displayCredits.map(credit => {
                   const Icon = CREDIT_TYPE_ICONS[credit.creditType || 'credit'] || Film;
-                  const mediaInfo = credit.url ? parseMediaUrl(credit.url) : null;
-                  const isPlayable = mediaInfo && ['youtube', 'vimeo', 'spotify', 'soundcloud'].includes(mediaInfo.platform);
+                  const playableUrl = getBestPlayableMediaUrl({ url: credit.url, primary_media_url: credit.primaryMediaUrl });
+                  const isPlayable = !!playableUrl;
                   const sourceLabel = SOURCE_LABELS[credit.source || ''] || credit.source;
 
                   return (
@@ -601,13 +605,16 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
       <MediaPlayerModal
         isOpen={!!selectedCredit}
         onClose={() => setSelectedCredit(null)}
-        item={selectedCredit ? {
-          title: selectedCredit.title,
-          description: `${selectedCredit.role}${selectedCredit.year ? ` · ${selectedCredit.year}` : ''}`,
-          media_type: selectedCredit.creditType === 'album' || selectedCredit.creditType === 'single' ? 'audio' : 'video',
-          media_url: selectedCredit.url || '',
-          thumbnail_url: selectedCredit.thumbnailUrl,
-        } : null}
+        item={selectedCredit && getBestPlayableMediaUrl({ url: selectedCredit.url, primary_media_url: selectedCredit.primaryMediaUrl }) ? (() => {
+          const mediaUrl = getBestPlayableMediaUrl({ url: selectedCredit.url, primary_media_url: selectedCredit.primaryMediaUrl })!;
+          return {
+            title: selectedCredit.title,
+            description: `${selectedCredit.role}${selectedCredit.year ? ` · ${selectedCredit.year}` : ''}`,
+            media_type: getModalMediaType(mediaUrl, selectedCredit.mediaType),
+            media_url: mediaUrl,
+            thumbnail_url: selectedCredit.thumbnailUrl,
+          };
+        })() : null}
       />
 
       {/* Endorsement Dialog */}

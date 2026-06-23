@@ -828,7 +828,7 @@ const CreatorEPK = () => {
             </h3>
             <div className="flex flex-wrap gap-2">
               {profile.achievement_badges.slice(0, 6).map((badge: string, index: number) => (
-                <Badge key={index} variant="outline" className="px-3 py-1 border-amber-500/50 text-amber-600 dark:text-amber-400">
+                <Badge key={index} variant="outline" className="px-3 py-1 bg-amber-500/10 border-amber-500/60 text-amber-700 dark:text-amber-300 font-semibold">
                   <Award className="h-3 w-3 mr-1" />
                   {badge}
                 </Badge>

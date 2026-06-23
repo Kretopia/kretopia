@@ -779,7 +779,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                   </div>
                   <div className="flex gap-2.5 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
                     {rowCredits.map((credit, idx) => {
-                      const thumbnail = getCreditThumbnail(credit);
+                      const thumbnail = credit.thumbnail_url
+                        || extractThumbnailFromUrl(credit.primary_media_url)
+                        || extractThumbnailFromUrl(credit.url);
                       const gradientIdx = idx % POSTER_GRADIENTS.length;
                       const playableUrl = getBestPlayableMediaUrl(credit);
                       return (

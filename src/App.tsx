@@ -326,9 +326,15 @@ const AppContent = () => {
             <Route path="/dispute-manage/:disputeId" element={<ProtectedRoute><DisputeManage /></ProtectedRoute>} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
             <Route path="/comp/:userId" element={<CompCard />} />
+            {/* Passport Directory + vanity routes — public, SEO-indexed.
+                Static "/passport/comp-card" must come BEFORE "/passport/:passportId". */}
+            <Route path="/passport" element={<PassportDirectory />} />
             <Route path="/passport/comp-card" element={<ProtectedRoute><CompCardBuilder /></ProtectedRoute>} />
+            <Route path="/passport/:passportId" element={<HandleResolver mode="passportId" />} />
+            <Route path="/@:handle" element={<HandleResolver mode="handle" />} />
             <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />
+
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/settings/copilot-memory" element={<ProtectedRoute><CopilotMemory /></ProtectedRoute>} />

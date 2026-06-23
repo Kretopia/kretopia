@@ -56,6 +56,10 @@ const PersonalRoom = lazy(() => import("./pages/PersonalRoom"));
 const BookingPage = lazy(() => import("./pages/BookingPage"));
 const CompCard = lazy(() => import("./pages/CompCard"));
 const CompCardBuilder = lazy(() => import("./pages/CompCardBuilder"));
+const AgentsActivity = lazy(() => import("./pages/AgentsActivity"));
+const FounderKitOnePager = lazy(() => import("./pages/FounderKitOnePager"));
+const FounderKitMetrics = lazy(() => import("./pages/FounderKitMetrics"));
+const DemoAgent = lazy(() => import("./pages/DemoAgent"));
 
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -301,6 +305,11 @@ const AppContent = () => {
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/claim" element={<Claim />} />
+            <Route path="/agents" element={<AgentsActivity />} />
+            <Route path="/demo/agent" element={<DemoAgent />} />
+            <Route path="/founder-kit" element={<FounderKitOnePager />} />
+            <Route path="/founder-kit/onepager" element={<FounderKitOnePager />} />
+            <Route path="/founder-kit/metrics" element={<FounderKitMetrics />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/founding-member" element={<ProtectedRoute><FoundingMember /></ProtectedRoute>} />
             <Route path="/company-onboarding" element={<ProtectedRoute><CompanyOnboarding /></ProtectedRoute>} />

@@ -36,11 +36,19 @@ export const MembershipMap = ({ locations }: MembershipMapProps) => {
       el.style.backgroundImage = "url(https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png)";
       el.style.backgroundSize = "100%";
 
+      const escapeHtml = (s: unknown) =>
+        String(s ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
         `<div>
-          <h3 class="font-semibold">${location.name}</h3>
-          <p class="text-sm text-muted-foreground">${location.address}</p>
-          <p class="text-sm font-semibold text-primary">+${location.points_per_visit} points</p>
+          <h3 class="font-semibold">${escapeHtml(location.name)}</h3>
+          <p class="text-sm text-muted-foreground">${escapeHtml(location.address)}</p>
+          <p class="text-sm font-semibold text-primary">+${escapeHtml(location.points_per_visit)} points</p>
         </div>`
       );
 

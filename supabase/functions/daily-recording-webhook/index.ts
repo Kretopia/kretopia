@@ -16,11 +16,60 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-signature",
 };
 
+// Constant-time hex comparison
+function timingSafeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+async function hmacSha256Hex(secret: string, message: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const raw = await req.text();
+
+    // ===== Signature validation — mandatory =====
+    const hmacSecret = Deno.env.get("DAILY_WEBHOOK_HMAC_SECRET");
+    if (!hmacSecret) {
+      console.error("[daily-recording-webhook] DAILY_WEBHOOK_HMAC_SECRET not set");
+      return new Response(
+        JSON.stringify({ error: "misconfigured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    // Daily signs with HMAC-SHA256(timestamp + "." + body). It sends
+    // `x-webhook-signature` (hex) and `x-webhook-timestamp` (unix seconds).
+    // Fall back to a raw-body signature for older webhook configs.
+    const incomingSig = (req.headers.get("x-webhook-signature") || "").trim().toLowerCase();
+    const timestamp = (req.headers.get("x-webhook-timestamp") || "").trim();
+    if (!incomingSig) {
+      return new Response("missing signature", { status: 401, headers: corsHeaders });
+    }
+    const candidates: string[] = [];
+    if (timestamp) candidates.push(await hmacSha256Hex(hmacSecret, `${timestamp}.${raw}`));
+    candidates.push(await hmacSha256Hex(hmacSecret, raw));
+    const ok = candidates.some((c) => timingSafeEqualHex(c, incomingSig));
+    if (!ok) {
+      console.warn("[daily-recording-webhook] signature mismatch");
+      return new Response("bad signature", { status: 401, headers: corsHeaders });
+    }
+
     const payload = JSON.parse(raw);
     const event = payload?.type ?? payload?.event ?? "";
 

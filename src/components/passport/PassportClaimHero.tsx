@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QrCode, FileDown, ShieldCheck, Sparkles, Share2, Lock, ArrowRight } from "lucide-react";
 import type { Standing } from "@/lib/passport/standing";
+import { BRAND } from "@/lib/brandLexicon";
 
 interface PassportClaimHeroProps {
   fullName?: string | null;
@@ -14,11 +15,14 @@ interface PassportClaimHeroProps {
   verifiedCredits: number;
   totalCredits?: number;
   cosigns: number;
+  /** Unclaimed discovered_credits — fires the "you're already on the record" wedge. */
+  taggedCount?: number;
   onShare: () => void;
   onShowQR: () => void;
   onDownloadEPK: () => void;
   onCosignWall?: () => void;
 }
+
 
 /**
  * PassportClaimHero — the "you must get this" pitch for the Creative Passport.
@@ -37,11 +41,13 @@ export const PassportClaimHero = ({
   verifiedCredits,
   totalCredits,
   cosigns,
+  taggedCount = 0,
   onShare,
   onShowQR,
   onDownloadEPK,
   onCosignWall,
 }: PassportClaimHeroProps) => {
+
   const displayUsername = useMemo(() => {
     if (handle) return `@${handle.replace(/^@/, "")}`;
     if (fullName) return `@${fullName.toLowerCase().replace(/[^a-z0-9]+/g, "")}`;
@@ -67,7 +73,20 @@ export const PassportClaimHero = ({
         Creative Passport
       </div>
 
-      <div className="p-5 pt-10 space-y-5">
+      <div className="p-5 pt-10 space-y-4">
+        {/* Locked headline */}
+        <p className="text-[11px] sm:text-xs leading-snug font-medium text-foreground/85 italic">
+          {BRAND.passportHeadline}
+        </p>
+
+        {/* Tagged-credits wedge */}
+        {taggedCount > 0 && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/[0.06] px-3 py-2 text-[11px] sm:text-xs text-amber-200">
+            <span className="font-bold text-amber-400">You're already on the record.</span>{" "}
+            Your name appears in {taggedCount} unclaimed credit{taggedCount === 1 ? "" : "s"} — claim {taggedCount === 1 ? "it" : "them"} below.
+          </div>
+        )}
+
         {/* Identity row */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -78,7 +97,7 @@ export const PassportClaimHero = ({
               {displayPassportId}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {displayUsername} · One link. Replaces your résumé, IMDb, EPK, and business card.
+              {displayUsername} · One link. Every credit. Co-signed by the people who were actually there.
             </p>
           </div>
           <Badge
@@ -92,6 +111,7 @@ export const PassportClaimHero = ({
             <ShieldCheck className="h-3 w-3 mr-1" />
             {isVerifiedPro ? `L${level} ${standing.title}` : `L${level}`}
           </Badge>
+
         </div>
 
         {/* Primary CTAs — the 4 hooks */}

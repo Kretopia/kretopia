@@ -37,10 +37,16 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.thrivein.io/passport</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://www.thrivein.io/credits</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+
   
 
   <url>

@@ -3,11 +3,12 @@ import { ShieldCheck, Briefcase, DollarSign, Store, Zap } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 
 const FEATURES = [
-  { icon: ShieldCheck, label: "Creative Passport", desc: "Your verified creative identity — every Stamp is proof of work" },
+  { icon: ShieldCheck, label: "Creative Passport", desc: "The verified creative record — every Stamp is proof of work" },
   { icon: Briefcase, label: "Calls & Co-signs", desc: "Get put forward for real Calls, backed by people you've worked with" },
   { icon: DollarSign, label: "Productions & Receipts", desc: "Run projects, send invoices, show receipts — one Creative OS" },
   { icon: Store, label: "Your Press Kit, public", desc: "A site that shows up when someone Googles your name" },
 ];
+
 
 export const AuthBrandingPanel = () => (
   <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-cinematic">
@@ -26,12 +27,13 @@ export const AuthBrandingPanel = () => (
       </p>
       
       <h2 className="font-serif text-3xl xl:text-5xl font-normal tracking-[-0.03em] leading-[1.02] mb-4">
-        The Operating System for{" "}
-        <span className="italic text-energy-glow">Creative Careers.</span>
+        The verified creative record{" "}
+        <span className="italic text-energy-glow">the industry has been waiting for.</span>
       </h2>
       <p className="text-muted-foreground mb-10 max-w-md leading-relaxed">
-        Build your Creative Passport. Collect verified Stamps. Run productions. Get paid — with Thrive handling the busy work.
+        One Passport. Every credit. Co-signed by the people who were actually there. Run productions, get paid, and build the record that travels with you.
       </p>
+
       
       <div className="space-y-3">
         {FEATURES.map((item) => {

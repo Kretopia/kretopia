@@ -49,8 +49,11 @@ const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
+const PassportDirectory = lazy(() => import("./pages/PassportDirectory"));
+const HandleResolver = lazy(() => import("./pages/HandleResolver"));
 const CompCard = lazy(() => import("./pages/CompCard"));
 const CompCardBuilder = lazy(() => import("./pages/CompCardBuilder"));
+
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ViewProfile = lazy(() => import("./pages/ViewProfile"));
@@ -323,9 +326,15 @@ const AppContent = () => {
             <Route path="/dispute-manage/:disputeId" element={<ProtectedRoute><DisputeManage /></ProtectedRoute>} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
             <Route path="/comp/:userId" element={<CompCard />} />
+            {/* Passport Directory + vanity routes — public, SEO-indexed.
+                Static "/passport/comp-card" must come BEFORE "/passport/:passportId". */}
+            <Route path="/passport" element={<PassportDirectory />} />
             <Route path="/passport/comp-card" element={<ProtectedRoute><CompCardBuilder /></ProtectedRoute>} />
+            <Route path="/passport/:passportId" element={<HandleResolver mode="passportId" />} />
+            <Route path="/@:handle" element={<HandleResolver mode="handle" />} />
             <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />
+
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/settings/copilot-memory" element={<ProtectedRoute><CopilotMemory /></ProtectedRoute>} />

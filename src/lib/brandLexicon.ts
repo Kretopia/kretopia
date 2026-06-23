@@ -31,6 +31,12 @@ export const BRAND = {
   passport: "Creative Passport",
   passportShort: "Passport",
   passportTagline: "Your verified creative identity.",
+  // LOCKED positioning line — use everywhere the Passport is pitched.
+  // Do not paraphrase. One line, one record.
+  passportHeadline: "The verified creative record the industry has been waiting for.",
+  passportSubline: "One Passport. Every credit. Co-signed by the people who were actually there.",
+
+
 
   // ── Credits / verifications ────────────────────────────────────────────
   stamps: "Stamps",

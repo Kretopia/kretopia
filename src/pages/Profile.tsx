@@ -43,6 +43,8 @@ import { LevelUpCard } from "@/components/passport/LevelUpCard";
 import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
 import { PassportClaimHero } from "@/components/passport/PassportClaimHero";
 import { computeStanding } from "@/lib/passport/standing";
+import { useTaggedCredits } from "@/hooks/useTaggedCredits";
+
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -80,6 +82,8 @@ const ProfileContent = () => {
   const { user } = useAuth();
   const { fetchData } = useProfileData();
   const { uploadAvatar, isUploading: isUploadingAvatar } = useAvatarUpload();
+  const { count: taggedCount } = useTaggedCredits(profile?.user_id);
+
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
@@ -462,6 +466,8 @@ const ProfileContent = () => {
                   verifiedCredits={verified}
                   totalCredits={credits?.length || 0}
                   cosigns={cosigns}
+                  taggedCount={taggedCount}
+
                   onShare={handleShare}
                   onShowQR={() => setIsQRDialogOpen(true)}
                   onDownloadEPK={() => setIsEPKEditorOpen(true)}

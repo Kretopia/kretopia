@@ -95,6 +95,16 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
         console.warn("[seo-pages] profiles RPC error:", e);
       }
 
+      // Dedupe profiles by user_id — RPC can return duplicates which causes
+      // S3 to reject concurrent PUTs to the same key during deploy.
+      {
+        const seen = new Set<string>();
+        profiles = profiles.filter((p) => {
+          if (!p.user_id || seen.has(p.user_id)) return false;
+          seen.add(p.user_id);
+          return true;
+        });
+      }
 
       // ---- Fetch verified credits -------------------------------------------
       let credits: CreditRow[] = [];
@@ -107,6 +117,16 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
         else console.warn(`[seo-pages] credits fetch failed: ${r.status}`);
       } catch (e) {
         console.warn("[seo-pages] credits fetch error:", e);
+      }
+
+      // Dedupe credits by id for the same reason.
+      {
+        const seen = new Set<string>();
+        credits = credits.filter((c) => {
+          if (!c.id || seen.has(c.id)) return false;
+          seen.add(c.id);
+          return true;
+        });
       }
 
 

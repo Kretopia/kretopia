@@ -53,7 +53,7 @@ export function DailyBriefingCard({ className }: { className?: string }) {
           .eq("brief_date", today)
           .maybeSingle();
         if (data) {
-          setBriefing(data as Briefing);
+          setBriefing(data as unknown as Briefing);
           setLoading(false);
           return;
         }

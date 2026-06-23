@@ -890,7 +890,7 @@ export const ThriveAgentFab = () => {
                         key={action.id}
                         action={action}
                         compact
-                        onResolved={(decision) => {
+                        onResolved={(decision, execResult) => {
                           // Mark the local copy as resolved so the card hides itself.
                           setActionsByMsg((prev) => ({
                             ...prev,
@@ -902,10 +902,26 @@ export const ThriveAgentFab = () => {
                                       decision === "approved"
                                         ? "executed"
                                         : "rejected",
+                                    result: execResult ?? a.result,
                                   }
                                 : a,
                             ),
                           }));
+                          // On approval, surface a tappable result card so the
+                          // user can jump straight to the thing Thrive made.
+                          if (decision === "approved") {
+                            const card = resultCardForAction({
+                              ...action,
+                              status: "executed",
+                              result: execResult ?? action.result,
+                            } as OrchAction);
+                            if (card) {
+                              setResultCardsByMsg((prev) => ({
+                                ...prev,
+                                [i]: [...(prev[i] ?? []), card],
+                              }));
+                            }
+                          }
                         }}
                       />
                     ))}

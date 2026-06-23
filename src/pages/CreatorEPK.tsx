@@ -136,6 +136,7 @@ const CreatorEPK = () => {
   const [notFound, setNotFound] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const [bioExpanded, setBioExpanded] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
 
   // Check if current user is the profile owner

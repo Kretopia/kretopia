@@ -97,6 +97,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
 
       // Dedupe profiles by user_id — RPC can return duplicates which causes
       // S3 to reject concurrent PUTs to the same key during deploy.
+      // Also cap total to keep upload volume under S3 per-prefix request rate.
       {
         const seen = new Set<string>();
         profiles = profiles.filter((p) => {
@@ -104,6 +105,13 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
           seen.add(p.user_id);
           return true;
         });
+        const MAX_PROFILE_PAGES = 200;
+        if (profiles.length > MAX_PROFILE_PAGES) {
+          console.warn(
+            `[seo-pages] Capping profile pages from ${profiles.length} to ${MAX_PROFILE_PAGES} to avoid S3 throttling.`,
+          );
+          profiles = profiles.slice(0, MAX_PROFILE_PAGES);
+        }
       }
 
       // ---- Fetch verified credits -------------------------------------------

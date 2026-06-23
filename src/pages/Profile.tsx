@@ -460,6 +460,7 @@ const ProfileContent = () => {
                   userId={profile.user_id}
                   standing={standing}
                   verifiedCredits={verified}
+                  totalCredits={credits?.length || 0}
                   cosigns={cosigns}
                   onShare={handleShare}
                   onShowQR={() => setIsQRDialogOpen(true)}

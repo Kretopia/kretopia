@@ -67,7 +67,7 @@ const LEVELS: Array<{ level: StandingLevel; title: string; min: number }> = [
   { level: 1, title: "Newcomer",         min: 0 },
   { level: 2, title: "Working Creative", min: 30 },
   { level: 3, title: "Verified Pro",     min: 75 },
-  { level: 4, title: "Industry Name",    min: 140 },
+  { level: 4, title: "Headliner",        min: 140 },
   { level: 5, title: "Marquee",          min: 220 },
 ];
 

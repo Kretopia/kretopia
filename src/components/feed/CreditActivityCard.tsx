@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { Briefcase, ExternalLink, Play } from "lucide-react";
-import { parseMediaUrl } from "@/lib/mediaUtils";
+import { getBestPlayableMediaUrl, getModalMediaType } from "@/lib/mediaUtils";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 
 interface CreditActivityCardProps {
@@ -16,6 +16,9 @@ interface CreditActivityCardProps {
     year: number | null;
     thumbnail_url: string | null;
     url: string | null;
+    primary_media_url?: string | null;
+    media_url?: string | null;
+    media_type?: string | null;
     created_at: string;
     profiles: {
       full_name: string;
@@ -27,27 +30,25 @@ interface CreditActivityCardProps {
 
 export const CreditActivityCard = ({ item }: CreditActivityCardProps) => {
   const [open, setOpen] = useState(false);
-  const mediaInfo = item.url ? parseMediaUrl(item.url) : null;
-  const isDirectMedia = !!item.url && /\.(mp3|wav|m4a|ogg|mp4|webm|mov)(\?|$)/i.test(item.url);
-  const isPlayable = !!mediaInfo || isDirectMedia;
+  const playableUrl = getBestPlayableMediaUrl(item);
+  const fallbackUrl = item.url || item.primary_media_url || item.media_url || null;
+  const isPlayable = !!playableUrl;
 
   const handleCardClick = () => {
-    if (isPlayable) {
+    if (playableUrl) {
       setOpen(true);
-    } else if (item.url) {
-      window.open(item.url, "_blank", "noopener,noreferrer");
+    } else if (fallbackUrl) {
+      window.open(fallbackUrl, "_blank", "noopener,noreferrer");
     }
   };
 
-  const mediaType = isDirectMedia && item.url
-    ? (/\.(mp3|wav|m4a|ogg)(\?|$)/i.test(item.url) ? "audio" : "video")
-    : "embed";
+  const mediaType = getModalMediaType(playableUrl, item.media_type);
 
   return (
     <>
       <Card
         onClick={handleCardClick}
-        className={`overflow-hidden hover:shadow-lg transition-all ${item.url ? "cursor-pointer" : ""}`}
+        className={`overflow-hidden hover:shadow-lg transition-all ${fallbackUrl ? "cursor-pointer" : ""}`}
       >
         {item.thumbnail_url && (
           <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-primary/5 group">
@@ -97,7 +98,7 @@ export const CreditActivityCard = ({ item }: CreditActivityCardProps) => {
           </div>
 
           <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-            {item.url ? (
+            {fallbackUrl ? (
               <span className="flex items-center gap-1">
                 {isPlayable ? <Play className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
                 {isPlayable ? "Tap to play" : "View Project"}
@@ -113,11 +114,11 @@ export const CreditActivityCard = ({ item }: CreditActivityCardProps) => {
       <MediaPlayerModal
         isOpen={open}
         onClose={() => setOpen(false)}
-        item={item.url ? {
+        item={playableUrl ? {
           title: item.project_name,
           description: `${item.role}${item.year ? ` · ${item.year}` : ""}`,
           media_type: mediaType,
-          media_url: item.url,
+          media_url: playableUrl,
           thumbnail_url: item.thumbnail_url,
         } : null}
       />

@@ -66,7 +66,7 @@ const PassportDirectory = () => {
       <SEO
         title="Passport Directory — The verified creative record | ThriveIN"
         description={BRAND.passportHeadline + " " + BRAND.passportSubline}
-        canonicalUrl={`${APP_URL}/passport`}
+        url={`${APP_URL}/passport`}
       />
 
       <div className="container mx-auto max-w-6xl px-4 py-10 sm:py-16">

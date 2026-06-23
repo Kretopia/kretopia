@@ -28,6 +28,8 @@ type OppsMode = "scouted" | "open" | "leads";
  * 4 lanes: People · Gigs · Live · Events. Each lane has sub-modes.
  */
 export default function Discover() {
+  const navigate = useNavigate();
+  const navTalent = () => navigate("/talent-finder");
   const [params, setParams] = useSearchParams();
   const requested = params.get("tab");
   const tab: Tab = useMemo(

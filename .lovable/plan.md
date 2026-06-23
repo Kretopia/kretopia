@@ -1,93 +1,92 @@
-## What we ship
+## Context
 
-Three things, smallest viable cut so we can iterate.
+- **Future Caribbean** — Global Agentic AI Buildathon. 40 teams · 10 tracks · 3 weeks remote · H200 GPUs · $70K prizes · finals at NYSE. Judges expect **always-on agentic AI systems** built on OpenClaw / open-source agent frameworks, deployable to real-world economies.
+- **Bridge for Billions — Conecta Caribbean** (EU + IDB Lab CARIBEquity). Early-stage incubation, validated business model focus, regional ESO network.
+- **Founder Institute — Caribbean Spring 2026** (fi.co/caribbean). AI-native company builder, virtual + in-person, idea-to-funding curriculum.
 
-### 1. Talent chip in Discover (quickest win)
+ThriveIN already has the right surface area (Thrive agent, desk-agent-watch, Smart Gig Scout, Sound Stages, Studio Brain, Pricing Co-Pilot, Sponsor Radar). The work is **sharpening the agentic narrative, hardening the demo, and producing application artifacts** — not rebuilding the product.
 
-`src/pages/Discover.tsx` — add a 4th pill in the **People** sub-toggle: `Talent` (icon `UserSearch`). Tapping it navigates to `/talent-finder` (the existing AI talent search). Also drop a small "Hiring? → Find talent" link in the **Gigs → Leads** helper strip. No new routes, no nav changes — Talent becomes one tap from Discover for creative accounts.
+## Goals
 
-### 2. Personal always-on room — `/@:handle/room`
+1. Make ThriveIN's agentic layer legible to judges (visible, narratable, measurable).
+2. Ship 1 flagship "always-on" agent loop we can demo end-to-end in 90 seconds.
+3. Produce a reusable founder kit (deck, one-pager, demo video, metrics) usable across all three applications.
 
-Goal: every creator has a stable, shareable link that opens a lobby on demand. Closest thing to ro.am's `ro.am/@you`.
+## Workstreams
 
-**Route:** `App.tsx` adds `/@:handle/room` → new `src/pages/PersonalRoom.tsx`.
+### A. Agentic Story Hardening (product + UI)
 
-**Owner view** (signed in & owns the handle):
-- "Open my room" button → calls existing `create-meeting` edge fn with `source: "adhoc"` and a deterministic title `${name}'s room`. Opens the lobby (`VideoCallSheet`) immediately.
-- Shows the canonical share URL: `https://www.thrivein.io/@handle/room` with copy + native share.
-- Toggle: "Knocks notify me" (writes to `notification_preferences`).
+A1. **"Agent Activity" surface** — new `/agents` route + Home card showing the last 20 autonomous actions across Desk-Agent-Watch, Smart Gig Scout, Sponsor Radar, Studio Brain, Pricing Co-Pilot. Each row: agent name · trigger · action taken · outcome · timestamp. Read from `agent_proposals` + `scouted_gig_actions` + `sponsor_leads` + `opportunity_intel_digests`. This is the single screen that proves "always-on."
 
-**Guest view** (no session, or not the owner):
-- Shows owner avatar + "{Name}'s room".
-- Primary CTA: **Knock** → opens a tiny form (name + optional message) → posts to a new edge fn `knock-personal-room` which:
-  1. Inserts a `notifications` row for the owner (`type: 'room_knock'`, `action_url: '/@handle/room?knock=…'`).
-  2. Sends a web push (reuses `push_subscriptions` flow already in `pushNotifications.ts`).
-  3. Returns `{ knock_id }`.
-- After knocking, the page polls (or subscribes via Realtime on a new `room_knocks` row) for the owner to **accept**, which creates a meeting via `create-meeting` and updates the knock with `meeting_id` + guest share token. The guest auto-redirects into the lobby.
+A2. **Agent Run Log** — extend `orch_tool_registry` calls + cron-driven edge functions to write to a unified `agent_runs` table (id, agent_kind, trigger, input_summary, output_summary, status, duration_ms, user_id). Backfill last 30 days where possible.
 
-**New table:** `room_knocks` (`id, owner_id, guest_name, guest_email?, guest_user_id?, message, status: pending|accepted|declined|expired, meeting_id, guest_token, created_at, expires_at`). RLS:
-- Owner can read/update their own rows.
-- Anyone can insert (rate-limited to 5/hour per IP via a Postgres function — defer rate limit to phase 2 if tight).
-- Guest reads via `guest_token` in URL through a SECURITY DEFINER RPC `get_knock_status(_knock_id uuid, _guest_token text)`.
+A3. **"Why this?" explainers** — every Smart Match card, Scouted Gig, Sponsor Lead, Pricing Co-Pilot quote already has reasoning. Surface a one-liner badge ("Agent reasoning →") that opens the rationale. This is what judges screenshot.
 
-**Owner notification UI:** new `<RoomKnockToast />` mounted in `App.tsx` next to `GlobalIncomingCall`, listens to Realtime `INSERT` on `room_knocks` for the current user. One-tap **Let them in** → calls `accept-room-knock` edge fn (creates meeting + writes knock).
+A4. **Public agent demo route** `/demo/agent` — no-auth, seeded demo Desk project where a visitor can type a brief and watch Thrive: draft tasks → propose milestones → draft an invoice → suggest a co-sign — all in real time with visible tool calls.
 
-### 3. Calendly-style booking — `/@:handle/book`
+### B. Future Caribbean Buildathon Track Fit
 
-Goal: visitors pick a slot from your weekly windows; we create a scheduled meeting + send a link + .ics.
+Map ThriveIN to the most plausible tracks:
 
-**New table:** `creator_booking_windows`:
-`id, user_id, weekday smallint (0=Sun…6=Sat), start_minute int, end_minute int, slot_minutes int default 30, buffer_minutes int default 0, timezone text, is_active bool, created_at`.
+- **Creative Economy / Cultural IP** — primary track. The Creative Passport + verified credits = an "always-on" agent that authenticates and monetizes Caribbean creative IP.
+- **Workforce / Skills** — secondary. Smart Gig Scout + Talent Finder = an agent matching creatives to global opportunities.
+- **MSME / SME enablement** — tertiary. ThriveDesk + Pricing Co-Pilot + ThrivePay = an agent running the back office for solo creative businesses.
 
-RLS: owner full CRUD; public `SELECT` for `is_active = true` rows.
+Pick the **Creative Economy** track as primary in the application; mention the other two as deployable extensions.
 
-**Owner settings:** new `src/components/profile/BookingWindowsCard.tsx` mounted inside the existing `AvailabilityCalendarSection` area of the profile editor. Lets the owner set per-weekday windows, slot length, buffer, timezone (default from browser). Also a master toggle `profiles.bookings_enabled` (new boolean column).
+### C. Application Artifacts (shared kit)
 
-**Public page:** `src/pages/BookingPage.tsx`
-- Resolves `@handle` → `user_id` (reuse `HandleResolver` lookup).
-- Shows next 14 days of available slots, computed client-side from `creator_booking_windows` minus:
-  - All-day blocks in `creator_availability_blocks` (we already have these).
-  - Existing scheduled `meetings` rows for the host in that window.
-- Guest picks slot → form (name, email, optional brief) → calls new edge fn `book-meeting` which:
-  1. Re-validates slot is still free (server-side).
-  2. Calls existing `create-meeting` logic to mint a Daily room + share token, with `scheduled_for` set.
-  3. Returns `{ share_url, ics_url, host_name }`.
-- Success screen: share link, "Add to calendar" (.ics via existing `src/lib/calendarLinks.ts`), confirmation email to guest via existing Resend setup.
+C1. **One-pager** (`/founder-kit/onepager`) — problem · agentic solution · traction · team · ask. Generated from existing brand assets + Brand System v1.
 
-**Owner side effect:** the booking writes a `notifications` row `type: 'new_booking'` linking to the meeting.
+C2. **Deck (10–12 slides)** — reuse `thrive-document-engine`. Slides: hook · creative-economy problem · agentic OS · Passport demo · Desk + Thrive Agent · Scout + Sponsor Radar · Pay/Wallet · traction (OG count, credits issued, gigs scouted) · Caribbean roots + global reach · team · ask. Export as PDF + shareable link.
 
-### Technical details
+C3. **90-second demo video** — Remotion already wired (`remotion/src/MainVideo.tsx`). New scene `SceneAgentLoop.tsx` showing the agent activity stream. Render at 1080p, host on `/share/agent-demo`.
 
-- **Edge functions (new):** `knock-personal-room`, `accept-room-knock`, `book-meeting`. All call into the existing `create-meeting` logic for room creation; we don't duplicate Daily plumbing.
-- **Reuses:** `create-meeting`, `mint-meeting-token`, `MeetingReadySheet`, `VideoCallSheet`, `calendarLinks.ts`, `HandleResolver` lookup, `pushNotifications.ts`, `notifications` table.
-- **No nav changes** for personal-room and booking — discovery is via the new "Share my room link" / "Share my booking link" buttons added to `ProfileActions.tsx` overflow menu (one extra section: **Sharing → Personal room · Booking page**).
-- **SEO:** both `/@handle/room` and `/@handle/book` get prerender entries in `plugins/profile-share-pages.ts` per profile so social cards work.
-- **Out of scope this round:** Google/Outlook two-way sync, recurring bookings, paid bookings (Stripe), team round-robin. All can layer on top of `creator_booking_windows` later.
+C4. **Metrics dashboard snapshot** — `/admin/metrics` already has the data. Lock a snapshot page `/founder-kit/metrics` with: OG cohort size, verified credits, gigs scouted, autonomous actions in last 30 days, conversion through Scout funnel.
 
-### Files
+C5. **Founder bio + Caribbean roots paragraph** — single source of truth in `mem://strategy/founder-bio.md` so we don't rewrite it three times.
 
-**New**
-- `src/pages/PersonalRoom.tsx`
-- `src/pages/BookingPage.tsx`
-- `src/components/calls/RoomKnockToast.tsx`
-- `src/components/profile/BookingWindowsCard.tsx`
-- `supabase/functions/knock-personal-room/index.ts`
-- `supabase/functions/accept-room-knock/index.ts`
-- `supabase/functions/book-meeting/index.ts`
+### D. Application-Specific Tailoring
 
-**Edited**
-- `src/App.tsx` — `/@:handle/room`, `/@:handle/book` routes; mount `<RoomKnockToast />`.
-- `src/pages/Discover.tsx` — add "Talent" chip in People row + leads strip link.
-- `src/components/profile/ProfileActions.tsx` — "Share my room" / "Share my booking" in overflow menu.
-- `src/pages/profile/ProfileDialogs.tsx` (or wherever the availability editor lives) — mount `BookingWindowsCard`.
-- `plugins/profile-share-pages.ts` — emit `/@handle/room` and `/@handle/book` per profile.
+D1. **Future Caribbean (apply by July 3)** — emphasize: OpenClaw-compatible agent layer, H200 use-case (we'd train a Caribbean creative-economy reasoning model on anonymized credit graph), open-source commitments (publish Thrive Agent tool schema). Include the `/demo/agent` link.
 
-**Migrations**
-- `creator_booking_windows` table + GRANTs + RLS + public-read policy for active rows.
-- `room_knocks` table + GRANTs + RLS + Realtime publication.
-- `profiles.bookings_enabled boolean default false`.
-- `notifications.type` accepts `'room_knock'` and `'new_booking'`.
+D2. **Bridge for Billions / Conecta Caribbean** — emphasize: ESO partnership potential (we already have Ambassador Program), traction in Trinidad, EU/IDB alignment via creative-economy GDP impact.
 
-### Memory
+D3. **Founder Institute Caribbean Spring 2026** — emphasize: AI-native from day one, idea-to-funding readiness, founder commitment + time availability. Less product detail, more founder story.
 
-Save `mem://features/scheduling/personal-room-and-booking` capturing the ownable lexicon ("**Knock**", "**Open my room**", "**Book a call**" — never "Calendly", never "ro.am"), the routes, and the table shapes.
+## Out of Scope
+
+- No new agent capabilities — only making existing ones visible and demo-able.
+- No backend rebuild — `agent_runs` is additive logging only.
+- No paid ads or PR push — application-cycle only.
+- Custom agent SDK / OpenClaw integration deferred until we are accepted (mention as commitment).
+
+## Deliverables Checklist
+
+```text
+[ ] /agents route + Home AgentActivityCard
+[ ] agent_runs table + backfill last 30d
+[ ] "Why this?" badges on Match, Scout, Sponsor, Pricing cards
+[ ] /demo/agent public seeded route
+[ ] /founder-kit/onepager (PDF export)
+[ ] /founder-kit/deck (12 slides, PDF + share link)
+[ ] /founder-kit/metrics snapshot
+[ ] 90s Remotion demo video at /share/agent-demo
+[ ] mem://strategy/founder-bio.md
+[ ] 3 tailored application drafts (Future Caribbean, B4B, FI)
+```
+
+## Suggested Order
+
+1. C5 + D drafts (no-code, unblocks application deadlines).
+2. A1 + A2 (the screen judges will look at).
+3. C1 + C2 + C4 (kit, reuses existing engines).
+4. A3 + A4 (polish).
+5. C3 video (last — needs A1/A4 done to film).
+
+## Open Questions
+
+1. Future Caribbean primary track — confirm **Creative Economy** is the pitch (vs Workforce or MSME)?
+2. Are we comfortable open-sourcing the Thrive Agent tool schema as a Buildathon commitment?
+3. For Bridge for Billions, applying as **Planting Seeds** (idea-stage) or **Conecta Caribbean** (growth)? FI we treat as separate.
+4. Founder bio — solo founder framing, or include any co-founder / advisors by name?

@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { AchievementCard } from "./AchievementCard";
 import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
 import { MediaPlayerModal } from "./MediaPlayerModal";
-import { parseMediaUrl } from "@/lib/mediaUtils";
+import { getBestPlayableMediaUrl, getModalMediaType } from "@/lib/mediaUtils";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useNavigate } from "react-router-dom";
 
@@ -22,6 +22,8 @@ interface Credit {
   year: number;
   platform?: string;
   url?: string;
+  primary_media_url?: string | null;
+  media_type?: string | null;
   thumbnail_url?: string;
   verification_status?: "unverified" | "pending" | "verified";
   endorsement_count?: number;
@@ -322,7 +324,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {credits.map((credit) => {
-            const playable = !!credit.url && (!!parseMediaUrl(credit.url) || /\.(mp3|wav|m4a|ogg|mp4|webm|mov)(\?|$)/i.test(credit.url));
+            const playableUrl = getBestPlayableMediaUrl(credit);
             return (
               <AchievementCard
                 key={credit.id}
@@ -338,7 +340,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
                 isOwnProfile={isOwnProfile}
                 onDelete={() => handleDelete(credit.id)}
                 onRequestEndorsement={() => setEndorsementCredit(credit)}
-                onCardClick={playable ? () => setMediaCredit(credit) : undefined}
+                onCardClick={playableUrl ? () => setMediaCredit(credit) : undefined}
                 icon={<Film className="h-16 w-16" />}
                 metadata={credit.platform ? { Platform: credit.platform } : undefined}
                 category={credit.credit_category || credit.project_type}
@@ -360,15 +362,16 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
       <MediaPlayerModal
         isOpen={!!mediaCredit}
         onClose={() => setMediaCredit(null)}
-        item={mediaCredit && mediaCredit.url ? {
-          title: mediaCredit.project_name,
-          description: mediaCredit.role,
-          media_type: /\.(mp3|wav|m4a|ogg)(\?|$)/i.test(mediaCredit.url) ? 'audio'
-            : /\.(mp4|webm|mov)(\?|$)/i.test(mediaCredit.url) ? 'video'
-            : 'embed',
-          media_url: mediaCredit.url,
-          thumbnail_url: mediaCredit.thumbnail_url,
-        } : null}
+        item={mediaCredit && getBestPlayableMediaUrl(mediaCredit) ? (() => {
+          const mediaUrl = getBestPlayableMediaUrl(mediaCredit)!;
+          return {
+            title: mediaCredit.project_name,
+            description: mediaCredit.role,
+            media_type: getModalMediaType(mediaUrl, mediaCredit.media_type),
+            media_url: mediaUrl,
+            thumbnail_url: mediaCredit.thumbnail_url,
+          };
+        })() : null}
       />
     </div>
   );

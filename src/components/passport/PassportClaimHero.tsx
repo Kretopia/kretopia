@@ -8,6 +8,7 @@ import type { Standing } from "@/lib/passport/standing";
 interface PassportClaimHeroProps {
   fullName?: string | null;
   handle?: string | null;
+  passportId?: string | null;
   userId: string;
   standing: Standing;
   verifiedCredits: number;
@@ -29,6 +30,7 @@ interface PassportClaimHeroProps {
 export const PassportClaimHero = ({
   fullName,
   handle,
+  passportId,
   userId,
   standing,
   verifiedCredits,
@@ -38,11 +40,16 @@ export const PassportClaimHero = ({
   onDownloadEPK,
   onCosignWall,
 }: PassportClaimHeroProps) => {
-  const displayHandle = useMemo(() => {
+  const displayUsername = useMemo(() => {
     if (handle) return `@${handle.replace(/^@/, "")}`;
     if (fullName) return `@${fullName.toLowerCase().replace(/[^a-z0-9]+/g, "")}`;
     return `@${userId.slice(0, 8)}`;
   }, [handle, fullName, userId]);
+
+  const displayPassportId = useMemo(() => {
+    if (passportId) return passportId;
+    return `THRIVE-${userId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+  }, [passportId, userId]);
 
   const level = standing.level;
   const needsForL3 = Math.max(0, 60 - (standing.score ?? 0));
@@ -60,13 +67,13 @@ export const PassportClaimHero = ({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-              Your Verified Creative ID
+              Your Creative Passport ID
             </p>
             <p className="text-2xl font-bold text-foreground truncate font-mono">
-              {displayHandle}
+              {displayPassportId}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              One link. Replaces your résumé, IMDb, EPK, and business card.
+              {displayUsername} · One link. Replaces your résumé, IMDb, EPK, and business card.
             </p>
           </div>
           <Badge

@@ -3,22 +3,25 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 
+const sb = supabase as any;
+
 type Metric = { label: string; value: string; sub?: string };
+
+async function safeCount(p: PromiseLike<{ count: number | null }>): Promise<number> {
+  try { return (await p).count ?? 0; } catch { return 0; }
+}
 
 async function load(): Promise<Metric[]> {
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
-  const safe = async (p: PromiseLike<{ count: number | null }>) => {
-    try { return (await p).count ?? 0; } catch { return 0; }
-  };
 
   const [og, credits, scoutedTotal, scoutedRecent, sponsors, agentRuns, projects] = await Promise.all([
-    safe(supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_founding_member", true)),
-    safe(supabase.from("credits").select("*", { count: "exact", head: true })),
-    safe(supabase.from("scouted_gigs").select("*", { count: "exact", head: true })),
-    safe(supabase.from("scouted_gigs").select("*", { count: "exact", head: true }).gte("created_at", since)),
-    safe(supabase.from("sponsor_leads").select("*", { count: "exact", head: true })),
-    safe(supabase.from("agent_runs").select("*", { count: "exact", head: true }).gte("created_at", since)),
-    safe(supabase.from("projects").select("*", { count: "exact", head: true })),
+    safeCount(sb.from("profiles").select("*", { count: "exact", head: true }).eq("is_founding_member", true)),
+    safeCount(sb.from("credits").select("*", { count: "exact", head: true })),
+    safeCount(sb.from("scouted_gigs").select("*", { count: "exact", head: true })),
+    safeCount(sb.from("scouted_gigs").select("*", { count: "exact", head: true }).gte("created_at", since)),
+    safeCount(sb.from("sponsor_leads").select("*", { count: "exact", head: true })),
+    safeCount(sb.from("agent_runs").select("*", { count: "exact", head: true }).gte("created_at", since)),
+    safeCount(sb.from("projects").select("*", { count: "exact", head: true })),
   ]);
 
   return [
@@ -50,7 +53,7 @@ export default function FounderKitMetrics() {
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {(metrics ?? Array.from({ length: 6 }, (_, i) => ({ label: "Loading", value: "—", sub: "" } as Metric))).map((m, i) => (
+        {(metrics ?? Array.from({ length: 6 }, () => ({ label: "Loading", value: "—", sub: "" } as Metric))).map((m, i) => (
           <Card key={i} className="p-5">
             <div className="text-3xl font-serif">{m.value}</div>
             <div className="text-sm font-medium mt-1">{m.label}</div>

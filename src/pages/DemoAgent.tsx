@@ -61,13 +61,15 @@ export default function DemoAgent() {
       setCalls(out.slice(0, i + 1));
     }
     // Best-effort log (anon-allowed insert)
-    supabase.from("agent_runs").insert({
-      agent_kind: "demo",
-      trigger: "public_demo",
-      input_summary: brief.slice(0, 200),
-      output_summary: `${out.length} tool calls`,
-      status: "ok",
-    }).then(() => {}).catch(() => {});
+    try {
+      await (supabase as any).from("agent_runs").insert({
+        agent_kind: "demo",
+        trigger: "public_demo",
+        input_summary: brief.slice(0, 200),
+        output_summary: `${out.length} tool calls`,
+        status: "ok",
+      });
+    } catch { /* ignore */ }
     setRunning(false);
   };
 

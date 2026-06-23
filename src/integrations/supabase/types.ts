@@ -236,9 +236,10 @@ export type Database = {
           id: string
           kind: Database["public"]["Enums"]["agent_proposal_kind"]
           owner_user_id: string
-          project_id: string
+          project_id: string | null
           source_signal: Json | null
           status: Database["public"]["Enums"]["agent_proposal_status"]
+          surface: string
           title: string
           updated_at: string
         }
@@ -252,9 +253,10 @@ export type Database = {
           id?: string
           kind: Database["public"]["Enums"]["agent_proposal_kind"]
           owner_user_id: string
-          project_id: string
+          project_id?: string | null
           source_signal?: Json | null
           status?: Database["public"]["Enums"]["agent_proposal_status"]
+          surface?: string
           title: string
           updated_at?: string
         }
@@ -268,9 +270,10 @@ export type Database = {
           id?: string
           kind?: Database["public"]["Enums"]["agent_proposal_kind"]
           owner_user_id?: string
-          project_id?: string
+          project_id?: string | null
           source_signal?: Json | null
           status?: Database["public"]["Enums"]["agent_proposal_status"]
+          surface?: string
           title?: string
           updated_at?: string
         }
@@ -19992,6 +19995,12 @@ export type Database = {
         | "collab_nudge"
         | "other"
         | "chase_invoice"
+        | "gig_match"
+        | "rate_optimize"
+        | "frequent_collaborator"
+        | "passport_polish"
+        | "home_focus"
+        | "pay_cashflow"
       agent_proposal_status: "pending" | "accepted" | "dismissed" | "expired"
       app_role: "admin" | "moderator" | "user" | "writer"
       curated_application_status:
@@ -20219,6 +20228,12 @@ export const Constants = {
         "collab_nudge",
         "other",
         "chase_invoice",
+        "gig_match",
+        "rate_optimize",
+        "frequent_collaborator",
+        "passport_polish",
+        "home_focus",
+        "pay_cashflow",
       ],
       agent_proposal_status: ["pending", "accepted", "dismissed", "expired"],
       app_role: ["admin", "moderator", "user", "writer"],

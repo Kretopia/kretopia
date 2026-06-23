@@ -114,6 +114,7 @@ const Scout = () => {
             </div>
           </div>
         )}
+        <SurfaceProactiveCards surface="scout" className="px-0 mb-4" />
         {tab === "scouted" && <ScoutedGigsSection />}
         {tab === "shortlist" && <ShortlistedGigs />}
         {tab === "marketplace" && <OpportunitiesFeed />}

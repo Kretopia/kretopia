@@ -148,7 +148,7 @@ Return a single tool call with the structured document.`;
 
 async function generate(intent: Intent, ctx: Record<string, unknown>, apiKey: string) {
   const skeleton = INTENT_SKELETONS[intent];
-  const theme = (ctx.theme as string) || "editorial";
+  const theme = (ctx.theme as string) || DEFAULT_THEME_BY_INTENT[intent] || "editorial";
   const userMsg = `BRIEF FROM USER:
 ${ctx.user_brief || "(none — infer from context)"}
 
@@ -316,7 +316,7 @@ serve(async (req) => {
     const intent = body.intent as Intent;
     const project_id = body.project_id as string | null;
     const user_brief = (body.user_brief as string) || "";
-    const theme = (body.theme as string) || "editorial";
+    const theme = (body.theme as string) || DEFAULT_THEME_BY_INTENT[intent] || "editorial";
     const document_id = body.document_id as string | null; // for regen
 
     if (!intent || !INTENT_SKELETONS[intent]) {

@@ -819,46 +819,8 @@ const CreatorEPK = () => {
           </div>
         )}
 
-        {/* Portfolio Preview */}
-        {portfolioItems.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              Portfolio
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {portfolioItems.map((item) => (
-                <button 
-                  key={item.id}
-                  onClick={() => setSelectedItem(item)}
-                  className="aspect-square rounded-lg overflow-hidden bg-muted relative group cursor-pointer hover:opacity-90 transition-opacity"
-                >
-                  {item.media_type === 'video' ? (
-                    <>
-                      <img 
-                        src={getMediaThumbnail(item)}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                        <Play className="h-6 w-6 text-white" />
-                      </div>
-                    </>
-                  ) : item.media_type === 'audio' ? (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 transition-colors">
-                      <Music className="h-8 w-8 text-primary/60" />
-                    </div>
-                  ) : (
-                    <img 
-                      src={getMediaThumbnail(item)}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Portfolio section removed — credits/roll-call already surfaces the same media. */}
+
 
         {/* Media Player Modal */}
         <MediaPlayerModal

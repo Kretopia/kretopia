@@ -82,6 +82,8 @@ const ProfileContent = () => {
   const { user } = useAuth();
   const { fetchData } = useProfileData();
   const { uploadAvatar, isUploading: isUploadingAvatar } = useAvatarUpload();
+  const { count: taggedCount } = useTaggedCredits(profile?.user_id);
+
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);

@@ -33,6 +33,7 @@ import { NewsletterPopup } from "./components/NewsletterPopup";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import UnifiedHome from "./components/home/UnifiedHome";
 import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
+import { RoomKnockToast } from "./components/calls/RoomKnockToast";
 import { ThriveAgentFab } from "./components/desk/ThriveAgentFab";
 import { DesktopCopilotRail } from "./components/desk/DesktopCopilotRail";
 import { ThriveBar } from "./components/agent/ThriveBar";
@@ -284,6 +285,7 @@ const AppContent = () => {
       
       {/* OnboardingTour removed — real /onboarding flow + GetStartedChecklist cover this. */}
       {user && <GlobalIncomingCall />}
+      {user && <RoomKnockToast />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}

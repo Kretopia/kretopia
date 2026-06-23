@@ -781,12 +781,13 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                     {rowCredits.map((credit, idx) => {
                       const thumbnail = credit.primary_media_url || credit.thumbnail_url;
                       const gradientIdx = idx % POSTER_GRADIENTS.length;
+                      const playableUrl = getBestPlayableMediaUrl(credit);
                       return (
                         <div
                           key={credit.id}
                           className="group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0"
                           style={{ width: "160px", aspectRatio: "2/3" }}
-                          onClick={() => navigate(`/production?name=${encodeURIComponent(credit.project_name)}`)}
+                          onClick={() => playableUrl ? setActiveMedia(credit) : navigate(`/production?name=${encodeURIComponent(credit.project_name)}`)}
                         >
                           {thumbnail ? (
                             <img src={thumbnail} alt={credit.project_name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
@@ -794,6 +795,13 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                             <div className={cn("absolute inset-0 bg-gradient-to-b", POSTER_GRADIENTS[gradientIdx])} />
                           )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                          {playableUrl && (
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                <Play className="h-5 w-5 text-foreground ml-0.5" />
+                              </div>
+                            </div>
+                          )}
                           <div className="absolute top-2 left-2">
                             <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/40 text-amber-400 bg-amber-500/10 h-4 px-1">
                               <Crown className="h-2.5 w-2.5" /> Featured
@@ -856,13 +864,16 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         <MediaPlayerModal
           isOpen={!!activeMedia}
           onClose={() => setActiveMedia(null)}
-          item={(activeMedia.url || activeMedia.primary_media_url) ? {
-            title: activeMedia.project_name,
-            description: activeMedia.description,
-            media_type: getMediaType(activeMedia) || 'video',
-            media_url: activeMedia.url || activeMedia.primary_media_url || '',
-            thumbnail_url: activeMedia.thumbnail_url,
-          } : null}
+          item={getBestPlayableMediaUrl(activeMedia) ? (() => {
+            const mediaUrl = getBestPlayableMediaUrl(activeMedia)!;
+            return {
+              title: activeMedia.project_name,
+              description: activeMedia.description,
+              media_type: getModalMediaType(mediaUrl, activeMedia.media_type || getMediaType(activeMedia)),
+              media_url: mediaUrl,
+              thumbnail_url: activeMedia.thumbnail_url,
+            };
+          })() : null}
         />
       )}
 

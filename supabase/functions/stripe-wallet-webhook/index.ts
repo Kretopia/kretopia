@@ -19,13 +19,17 @@ serve(async (req) => {
   const sig = req.headers.get("stripe-signature");
   const body = await req.text();
 
+  if (!secret) {
+    log("missing STRIPE_WALLET_WEBHOOK_SECRET");
+    return new Response("misconfigured", { status: 500 });
+  }
+  if (!sig) {
+    return new Response("missing signature", { status: 400 });
+  }
+
   let event: Stripe.Event;
   try {
-    if (secret && sig) {
-      event = await stripe.webhooks.constructEventAsync(body, sig, secret);
-    } else {
-      event = JSON.parse(body) as Stripe.Event;
-    }
+    event = await stripe.webhooks.constructEventAsync(body, sig, secret);
   } catch (err) {
     log("signature failed", err instanceof Error ? err.message : err);
     return new Response("bad sig", { status: 400 });

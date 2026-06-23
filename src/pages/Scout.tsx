@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
+import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { ShortlistedGigs } from "@/components/opportunity/ShortlistedGigs";

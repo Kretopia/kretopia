@@ -26,6 +26,11 @@ export const Footer = () => {
             <h4 className="font-semibold text-sm">{t("footer.product")}</h4>
             <ul className="space-y-2 text-sm">
               <li>
+                <Link to="/passport" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Passport Directory
+                </Link>
+              </li>
+              <li>
                 <Link to="/subscription" className="text-muted-foreground hover:text-foreground transition-colors">
                   {t("footer.pricing")}
                 </Link>
@@ -41,6 +46,7 @@ export const Footer = () => {
                 </Link>
               </li>
             </ul>
+
           </div>
 
           {/* Company */}

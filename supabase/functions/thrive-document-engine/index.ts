@@ -80,12 +80,47 @@ const COVER_STYLES: Record<Intent, string> = {
 };
 
 const THEME_HINTS: Record<string, string> = {
-  editorial: "Editorial magazine feel. Generous margins, refined typography zone.",
-  bold:      "Brutalist, high-contrast, oversized type zone, single saturated accent.",
-  minimal:   "White space, one element, near-monochrome.",
-  cinematic: "Filmic colour grade, anamorphic feel, atmospheric.",
-  warm:      "Sunlit palette, soft grain, intimate framing.",
+  editorial:  "Editorial magazine feel. Generous margins, refined typography zone.",
+  bold:       "Brutalist, high-contrast, oversized type zone, single saturated accent.",
+  minimal:    "White space, one element, near-monochrome.",
+  cinematic:  "Filmic colour grade, anamorphic feel, atmospheric.",
+  playful:    "Warm gradients, rounded corners, friendly energy.",
+  magazine:   "Editorial cover, big serif display, two-column body, caption rule.",
+  noir:       "Late-night gallery, deep ink, gold rule, museum-grade.",
+  caribbean:  "Sunlit palette, soft grain, hand-set italic display, intimate framing.",
+  letterhead: "Formal correspondence. No imagery in body. Logo lockup top, signature block bottom.",
 };
+
+// Per-archetype default theme when caller doesn't specify.
+const DEFAULT_THEME_BY_INTENT: Record<Intent, string> = {
+  sponsor_deck: "bold",
+  pitch_deck: "editorial",
+  business_plan: "minimal",
+  client_proposal: "editorial",
+  treatment: "cinematic",
+  rate_card: "minimal",
+  moodboard_deck: "cinematic",
+  one_pager: "magazine",
+  letter_of_intent: "letterhead",
+};
+
+const LAYOUT_GUIDE = `Pick ONE layout per slide based on what the slide is actually saying:
+- "standard"          → default. Heading + body + bullets.
+- "hero"              → opening/section break with a big image. Use image_prompt.
+- "stats"             → 2-3 numeric proof points. Use stats:[{value,label,sub?}].
+- "two_column"        → comparison / before-after / scope vs out-of-scope. Use columns:[{heading,body?,bullets?}].
+- "quote"             → testimonial, mission statement, single-line manifesto. Use quote:{text,attribution?}.
+- "pricing"           → packages / rate card / sponsor tiers. Use pricing:[{name,price,includes:[],highlighted?}].
+- "roll_call"         → team, cast, key crew, past clients. Use roll_call:[{name,role,note?}].
+- "letterhead_cover"  → LOI cover page only. Use recipient:{name,org,address,date,subject}. NO body.
+- "letterhead_body"   → LOI letter body. Full paragraphs in body.
+
+Rules:
+- Use specialised layouts when the data fits. Don't force everything into "standard".
+- Sponsor tiers, packages, rate cards MUST use "pricing".
+- Team / cast / crew / "who's in the room" MUST use "roll_call".
+- Traction numbers, market sizing, audience reach MUST use "stats".
+- For LOI: slide 1 = "letterhead_cover", slide 2 = "letterhead_body", slide 3 can be "standard" bullets.`;
 
 const SYSTEM = (intent: Intent, theme: string) => `You are Izzy — the user's Executive Producer inside ThriveIN. You're not a generic AI; you run their business.
 
@@ -93,6 +128,9 @@ You're drafting a ${intent.replace("_", " ")} for a creative professional.
 Tone: ${INTENT_SKELETONS[intent].tone}
 Cover art direction: ${COVER_STYLES[intent]}
 Theme overlay (${theme}): ${THEME_HINTS[theme] || THEME_HINTS.editorial}
+
+LAYOUTS — slides are not all the same shape:
+${LAYOUT_GUIDE}
 
 RULES:
 - Write like a senior producer who already knows the user. Reference their real credits, co-signs, rates, past work where given.
@@ -144,8 +182,74 @@ Draft the document now.`;
                 bullets: { type: "array", items: { type: "string" } },
                 image_prompt: { type: "string", description: "Optional. Image-gen prompt if this slide should have a hero image." },
                 callout: { type: "string" },
+                layout: {
+                  type: "string",
+                  enum: ["standard","hero","stats","two_column","quote","pricing","roll_call","letterhead_cover","letterhead_body"],
+                  description: "Layout variant — see LAYOUTS in system prompt.",
+                },
+                stats: {
+                  type: "array",
+                  description: "Use with layout=stats. 2-3 numeric proof points.",
+                  items: {
+                    type: "object",
+                    properties: { value: { type: "string" }, label: { type: "string" }, sub: { type: "string" } },
+                    required: ["value","label"],
+                    additionalProperties: false,
+                  },
+                },
+                columns: {
+                  type: "array",
+                  description: "Use with layout=two_column.",
+                  items: {
+                    type: "object",
+                    properties: { heading: { type: "string" }, body: { type: "string" }, bullets: { type: "array", items: { type: "string" } } },
+                    required: ["heading"],
+                    additionalProperties: false,
+                  },
+                },
+                quote: {
+                  type: "object",
+                  description: "Use with layout=quote.",
+                  properties: { text: { type: "string" }, attribution: { type: "string" } },
+                  required: ["text"],
+                  additionalProperties: false,
+                },
+                pricing: {
+                  type: "array",
+                  description: "Use with layout=pricing. Packages / sponsor tiers / rate-card lines.",
+                  items: {
+                    type: "object",
+                    properties: {
+                      name: { type: "string" },
+                      price: { type: "string" },
+                      includes: { type: "array", items: { type: "string" } },
+                      highlighted: { type: "boolean" },
+                    },
+                    required: ["name","price","includes"],
+                    additionalProperties: false,
+                  },
+                },
+                roll_call: {
+                  type: "array",
+                  description: "Use with layout=roll_call. Team, cast, crew, past clients.",
+                  items: {
+                    type: "object",
+                    properties: { name: { type: "string" }, role: { type: "string" }, note: { type: "string" } },
+                    required: ["name","role"],
+                    additionalProperties: false,
+                  },
+                },
+                recipient: {
+                  type: "object",
+                  description: "Use with layout=letterhead_cover.",
+                  properties: {
+                    name: { type: "string" }, org: { type: "string" }, address: { type: "string" },
+                    date: { type: "string" }, subject: { type: "string" },
+                  },
+                  additionalProperties: false,
+                },
               },
-              required: ["heading", "body"],
+              required: ["heading"],
               additionalProperties: false,
             },
           },

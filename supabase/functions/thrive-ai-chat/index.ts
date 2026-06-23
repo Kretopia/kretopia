@@ -207,6 +207,47 @@ serve(async (req) => {
           console.warn("memory retrieval failed", memErr);
         }
 
+        // ---- Thrive Brain: silently extract durable facts from this user
+        // turn (rates, vendors, contacts, project budgets, etc.) and persist
+        // to thrive_memory / studio_facts. Fire-and-forget so the stream is
+        // never blocked. The extractor itself short-circuits on questions
+        // and commands.
+        try {
+          const latestUserMsg = [...messages].reverse().find((m) => m.role === "user")?.content;
+          if (latestUserMsg && latestUserMsg.trim().length >= 12) {
+            const projectId =
+              (surface_context && typeof surface_context === "object"
+                ? ((surface_context as Record<string, unknown>).project_id ??
+                   (surface_context as Record<string, unknown>).active_project_id)
+                : null) as string | null;
+            const extractPromise = fetch(`${SUPABASE_URL}/functions/v1/thrive-memory-extract`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${SERVICE_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                user_id: user.id,
+                message: latestUserMsg,
+                project_id: projectId,
+              }),
+            }).catch((e) => {
+              console.warn("memory-extract dispatch failed", e);
+            });
+            // Don't await — keep streaming snappy. EdgeRuntime.waitUntil keeps
+            // the function alive long enough for the call to land.
+            try {
+              // @ts-ignore Deno Deploy global
+              EdgeRuntime?.waitUntil?.(extractPromise);
+            } catch {
+              // older runtimes — fall back to silent dangle
+            }
+          }
+        } catch (e) {
+          console.warn("memory-extract enqueue failed", e);
+        }
+
+
         // ---- Thrive long-term memory ----
         try {
           const { data: tm } = await admin

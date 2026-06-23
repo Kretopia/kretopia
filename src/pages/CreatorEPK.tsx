@@ -522,17 +522,31 @@ const CreatorEPK = () => {
           />
         )}
 
-        {/* Why work with me — pulled from headline/bio so the press kit leads with positioning */}
-        {(profile.headline || profile.bio) && (
-          <div className="mb-6 p-5 rounded-xl border-l-4 border-primary bg-primary/5">
-            <h3 className="text-[11px] font-semibold text-primary uppercase tracking-wider mb-2">
-              Why work with me
-            </h3>
-            <p className="text-base leading-relaxed text-foreground">
-              {profile.headline || (profile.bio?.length > 280 ? profile.bio.slice(0, 277) + '…' : profile.bio)}
-            </p>
-          </div>
-        )}
+        {/* Why work with me — leads the press kit with positioning. */}
+        {(profile.headline || profile.bio) && (() => {
+          const longBio = profile.bio && profile.bio.length > 280;
+          const body = profile.headline
+            || (longBio && !bioExpanded ? `${profile.bio!.slice(0, 277)}…` : profile.bio);
+          return (
+            <div className="mb-6 p-5 rounded-xl border-l-4 border-primary bg-primary/5">
+              <h3 className="text-[11px] font-semibold text-primary uppercase tracking-wider mb-2">
+                Why work with me
+              </h3>
+              <p className="text-base leading-relaxed text-foreground whitespace-pre-line">
+                {body}
+              </p>
+              {!profile.headline && longBio && (
+                <button
+                  type="button"
+                  onClick={() => setBioExpanded((v) => !v)}
+                  className="mt-2 text-xs font-semibold text-primary hover:underline"
+                >
+                  {bioExpanded ? "Show less" : "Read more"}
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Unclaimed Profile Banner */}
         {profile.is_claimed === false && (

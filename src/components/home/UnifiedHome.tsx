@@ -637,6 +637,9 @@ export const UnifiedHome = () => {
             </div>
           )}
 
+          {/* Thrive proactive nudges (Home surface) — cross-surface signals */}
+          <SurfaceProactiveCards surface="home" className="mb-4 px-0" />
+
           {/* Duplicate-account merge prompt */}
           <div className="mb-4 empty:hidden">
             <DuplicateAccountBanner />

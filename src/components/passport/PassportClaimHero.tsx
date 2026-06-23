@@ -61,7 +61,7 @@ export const PassportClaimHero = ({
   const isVerifiedPro = level >= 3;
 
   return (
-    <Card className="relative overflow-hidden border-[hsl(var(--signal-teal))]/30 bg-gradient-to-br from-[hsl(var(--signal-teal))]/8 via-card to-card">
+    <Card className="relative overflow-hidden border-[hsl(var(--signal-teal))]/30 bg-card">
       {/* Tag */}
       <div className="absolute top-0 left-0 px-3 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg">
         Creative Passport

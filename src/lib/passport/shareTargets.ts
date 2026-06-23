@@ -20,7 +20,7 @@ export interface ShareTargetMeta {
   paidOnly?: boolean;
 }
 
-const O = (origin?: string) => origin ?? (typeof window !== "undefined" ? window.location.origin : "https://thrivein.io");
+const O = (origin?: string) => origin ?? APP_URL;
 
 export const SHARE_TARGETS: Record<ShareTarget, ShareTargetMeta> = {
   profile: {

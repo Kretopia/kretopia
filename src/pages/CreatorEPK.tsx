@@ -136,6 +136,7 @@ const CreatorEPK = () => {
   const [notFound, setNotFound] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const [bioExpanded, setBioExpanded] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
 
   // Check if current user is the profile owner
@@ -421,7 +422,7 @@ const CreatorEPK = () => {
 
           {/* Name & Role */}
           <div className="space-y-1">
-            <p className="brand-eyebrow">Verified Creator EPK</p>
+            <p className="brand-eyebrow">Verified Creative Passport</p>
             <h1 className="text-3xl font-black tracking-[-0.03em]">{profile.full_name}</h1>
             <p className="text-primary font-bold uppercase tracking-wider text-xs">{profile.job_title || profile.role || 'Creator'}</p>
             {profile.location && (
@@ -430,6 +431,9 @@ const CreatorEPK = () => {
                 {profile.location}
               </p>
             )}
+            <p className="text-xs text-muted-foreground/90 max-w-xs mx-auto pt-1">
+              One link. Replaces résumé, IMDb, EPK, and business card — credits verified by collaborators on ThriveIN.
+            </p>
           </div>
 
           {/* Verification Badge */}
@@ -521,17 +525,31 @@ const CreatorEPK = () => {
           />
         )}
 
-        {/* Why work with me — pulled from headline/bio so the press kit leads with positioning */}
-        {(profile.headline || profile.bio) && (
-          <div className="mb-6 p-5 rounded-xl border-l-4 border-primary bg-primary/5">
-            <h3 className="text-[11px] font-semibold text-primary uppercase tracking-wider mb-2">
-              Why work with me
-            </h3>
-            <p className="text-base leading-relaxed text-foreground">
-              {profile.headline || (profile.bio?.length > 280 ? profile.bio.slice(0, 277) + '…' : profile.bio)}
-            </p>
-          </div>
-        )}
+        {/* Why work with me — leads the press kit with positioning. */}
+        {(profile.headline || profile.bio) && (() => {
+          const longBio = profile.bio && profile.bio.length > 280;
+          const body = profile.headline
+            || (longBio && !bioExpanded ? `${profile.bio!.slice(0, 277)}…` : profile.bio);
+          return (
+            <div className="mb-6 p-5 rounded-xl border-l-4 border-primary bg-primary/5">
+              <h3 className="text-[11px] font-semibold text-primary uppercase tracking-wider mb-2">
+                Why work with me
+              </h3>
+              <p className="text-base leading-relaxed text-foreground whitespace-pre-line">
+                {body}
+              </p>
+              {!profile.headline && longBio && (
+                <button
+                  type="button"
+                  onClick={() => setBioExpanded((v) => !v)}
+                  className="mt-2 text-xs font-semibold text-primary hover:underline"
+                >
+                  {bioExpanded ? "Show less" : "Read more"}
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Unclaimed Profile Banner */}
         {profile.is_claimed === false && (
@@ -810,7 +828,7 @@ const CreatorEPK = () => {
             </h3>
             <div className="flex flex-wrap gap-2">
               {profile.achievement_badges.slice(0, 6).map((badge: string, index: number) => (
-                <Badge key={index} variant="outline" className="px-3 py-1 border-amber-500/50 text-amber-600 dark:text-amber-400">
+                <Badge key={index} variant="outline" className="px-3 py-1 bg-amber-500/10 border-amber-500/60 text-amber-700 dark:text-amber-300 font-semibold">
                   <Award className="h-3 w-3 mr-1" />
                   {badge}
                 </Badge>
@@ -819,46 +837,8 @@ const CreatorEPK = () => {
           </div>
         )}
 
-        {/* Portfolio Preview */}
-        {portfolioItems.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              Portfolio
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {portfolioItems.map((item) => (
-                <button 
-                  key={item.id}
-                  onClick={() => setSelectedItem(item)}
-                  className="aspect-square rounded-lg overflow-hidden bg-muted relative group cursor-pointer hover:opacity-90 transition-opacity"
-                >
-                  {item.media_type === 'video' ? (
-                    <>
-                      <img 
-                        src={getMediaThumbnail(item)}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                        <Play className="h-6 w-6 text-white" />
-                      </div>
-                    </>
-                  ) : item.media_type === 'audio' ? (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 transition-colors">
-                      <Music className="h-8 w-8 text-primary/60" />
-                    </div>
-                  ) : (
-                    <img 
-                      src={getMediaThumbnail(item)}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Portfolio section removed — credits/roll-call already surfaces the same media. */}
+
 
         {/* Media Player Modal */}
         <MediaPlayerModal

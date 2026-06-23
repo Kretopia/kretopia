@@ -41,11 +41,13 @@ export const PassportClaimHero = ({
   verifiedCredits,
   totalCredits,
   cosigns,
+  taggedCount = 0,
   onShare,
   onShowQR,
   onDownloadEPK,
   onCosignWall,
 }: PassportClaimHeroProps) => {
+
   const displayUsername = useMemo(() => {
     if (handle) return `@${handle.replace(/^@/, "")}`;
     if (fullName) return `@${fullName.toLowerCase().replace(/[^a-z0-9]+/g, "")}`;

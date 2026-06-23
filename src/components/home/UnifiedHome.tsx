@@ -637,6 +637,9 @@ export const UnifiedHome = () => {
             </div>
           )}
 
+          {/* Executive Producer's morning brief */}
+          <DailyBriefingCard className="mb-4" />
+
           {/* Thrive proactive nudges (Home surface) — cross-surface signals */}
           <SurfaceProactiveCards surface="home" className="mb-4 px-0" />
 

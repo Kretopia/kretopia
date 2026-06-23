@@ -16,6 +16,7 @@ const { hash: buildHash, plugin: versionJsonPlugin } = versionPlugin();
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const generateStaticSocialPages = env.VITE_GENERATE_STATIC_SOCIAL_PAGES === "true";
 
   return {
     define: {
@@ -131,32 +132,36 @@ export default defineConfig(({ mode }) => {
         },
       }),
       versionJsonPlugin,
-      magazineSharePagesPlugin({
+      // These plugins can emit hundreds/thousands of per-entity HTML files
+      // (/profile/:id, /credits/project/:id, /share/gig/:id, etc.). Lovable's
+      // preview uploader can throttle when too many generated files are pushed
+      // in one deploy, so keep them opt-in for dedicated SEO export builds.
+      generateStaticSocialPages && magazineSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",
       }),
-      profileSharePagesPlugin({
+      generateStaticSocialPages && profileSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",
       }),
-      gigSharePagesPlugin({
+      generateStaticSocialPages && gigSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",
       }),
-      eventSharePagesPlugin({
+      generateStaticSocialPages && eventSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",
       }),
-      campaignSharePagesPlugin({
+      generateStaticSocialPages && campaignSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",
       }),
-      seoPagesPlugin({
+      generateStaticSocialPages && seoPagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",

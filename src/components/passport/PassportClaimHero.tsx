@@ -12,6 +12,7 @@ interface PassportClaimHeroProps {
   userId: string;
   standing: Standing;
   verifiedCredits: number;
+  totalCredits?: number;
   cosigns: number;
   onShare: () => void;
   onShowQR: () => void;
@@ -34,6 +35,7 @@ export const PassportClaimHero = ({
   userId,
   standing,
   verifiedCredits,
+  totalCredits,
   cosigns,
   onShare,
   onShowQR,
@@ -46,9 +48,12 @@ export const PassportClaimHero = ({
     return `@${userId.slice(0, 8)}`;
   }, [handle, fullName, userId]);
 
+  // Match the THR-XXXXX format shown in ProfileHero (top of profile) so the
+  // Passport ID is consistent everywhere it appears for the same user.
   const displayPassportId = useMemo(() => {
+    if (userId) return `THR-${userId.replace(/-/g, "").slice(0, 5).toUpperCase()}`;
     if (passportId) return passportId;
-    return `THRIVE-${userId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    return "THR-—";
   }, [passportId, userId]);
 
   const level = standing.level;
@@ -148,7 +153,10 @@ export const PassportClaimHero = ({
         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <Sparkles className="h-3 w-3 text-[hsl(var(--signal-teal))]" />
           <span>
-            {verifiedCredits} verified credit{verifiedCredits === 1 ? "" : "s"} · {cosigns} peer co-sign{cosigns === 1 ? "" : "s"} · Industry-recognised ID
+            {typeof totalCredits === "number" && totalCredits !== verifiedCredits
+              ? `${totalCredits} stamps (${verifiedCredits} verified)`
+              : `${verifiedCredits} verified stamp${verifiedCredits === 1 ? "" : "s"}`}
+            {" · "}{cosigns} peer co-sign{cosigns === 1 ? "" : "s"} · Industry-recognised ID
           </span>
         </div>
       </div>

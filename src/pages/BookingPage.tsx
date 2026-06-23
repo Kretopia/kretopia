@@ -227,11 +227,10 @@ export default function BookingPage() {
           </Avatar>
           <div className="min-w-0">
             <h1 className="text-lg font-bold truncate">Book a call with {owner.full_name || `@${handle}`}</h1>
-            {owner.headline && <p className="text-xs text-muted-foreground truncate">{owner.headline}</p>}
           </div>
         </div>
 
-        {!owner.bookings_enabled || windows.length === 0 ? (
+        {windows.length === 0 ? (
           <Card className="mt-6"><CardContent className="p-5 text-center text-sm">
             <Clock className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
             {owner.full_name || handle} hasn't opened up booking slots yet.

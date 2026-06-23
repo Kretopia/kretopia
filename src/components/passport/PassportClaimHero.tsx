@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QrCode, FileDown, ShieldCheck, Sparkles, Share2, Lock, ArrowRight } from "lucide-react";
 import type { Standing } from "@/lib/passport/standing";
+import { BRAND } from "@/lib/brandLexicon";
 
 interface PassportClaimHeroProps {
   fullName?: string | null;
@@ -14,11 +15,14 @@ interface PassportClaimHeroProps {
   verifiedCredits: number;
   totalCredits?: number;
   cosigns: number;
+  /** Unclaimed discovered_credits — fires the "you're already on the record" wedge. */
+  taggedCount?: number;
   onShare: () => void;
   onShowQR: () => void;
   onDownloadEPK: () => void;
   onCosignWall?: () => void;
 }
+
 
 /**
  * PassportClaimHero — the "you must get this" pitch for the Creative Passport.

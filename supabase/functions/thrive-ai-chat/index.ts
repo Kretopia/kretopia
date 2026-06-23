@@ -226,6 +226,50 @@ serve(async (req) => {
           console.warn("thrive_memory load failed", e);
         }
 
+        // ---- Studio Brain: project-scoped facts + entities ----
+        try {
+          const projectId =
+            (surface_context && typeof surface_context === "object"
+              ? ((surface_context as Record<string, unknown>).project_id ??
+                 (surface_context as Record<string, unknown>).active_project_id)
+              : null) as string | null;
+          if (projectId && typeof projectId === "string") {
+            const [factsRes, entitiesRes] = await Promise.all([
+              admin
+                .from("studio_facts")
+                .select("kind, label, value, value_numeric, value_date, importance")
+                .eq("project_id", projectId)
+                .order("importance", { ascending: false })
+                .limit(40),
+              admin
+                .from("studio_entities")
+                .select("kind, name, aliases, attrs, importance")
+                .eq("project_id", projectId)
+                .order("importance", { ascending: false })
+                .limit(25),
+            ]);
+            const facts = (factsRes.data as any[]) ?? [];
+            const entities = (entitiesRes.data as any[]) ?? [];
+            if (facts.length || entities.length) {
+              const factLines = facts
+                .map((f: any) => {
+                  const v = f.value ?? (f.value_numeric != null ? String(f.value_numeric) : f.value_date ?? "");
+                  return `- [${f.kind}] ${f.label}${v ? `: ${v}` : ""}`;
+                })
+                .join("\n");
+              const entLines = entities
+                .map((e: any) => {
+                  const aliases = Array.isArray(e.aliases) && e.aliases.length ? ` (aka ${e.aliases.join(", ")})` : "";
+                  return `- [${e.kind}] ${e.name}${aliases}`;
+                })
+                .join("\n");
+              contextPreamble += `\n\nSTUDIO BRAIN (everything dropped into this project — brief facts, budgets, dates, vendors, contacts, references). Treat as ground truth for this Studio. Use naturally, never say "according to Studio Brain":${factLines ? `\nFacts:\n${factLines}` : ""}${entLines ? `\nPeople & vendors:\n${entLines}` : ""}\n`;
+            }
+          }
+        } catch (e) {
+          console.warn("studio_brain load failed", e);
+        }
+
         // Auto-resolve canonical thread when surface is set and no thread provided.
         if (!conversationId && (surface || persist)) {
           try {

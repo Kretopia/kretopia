@@ -3225,6 +3225,48 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_booking_windows: {
+        Row: {
+          buffer_minutes: number
+          created_at: string
+          end_minute: number
+          id: string
+          is_active: boolean
+          slot_minutes: number
+          start_minute: number
+          timezone: string
+          updated_at: string
+          user_id: string
+          weekday: number
+        }
+        Insert: {
+          buffer_minutes?: number
+          created_at?: string
+          end_minute: number
+          id?: string
+          is_active?: boolean
+          slot_minutes?: number
+          start_minute: number
+          timezone?: string
+          updated_at?: string
+          user_id: string
+          weekday: number
+        }
+        Update: {
+          buffer_minutes?: number
+          created_at?: string
+          end_minute?: number
+          id?: string
+          is_active?: boolean
+          slot_minutes?: number
+          start_minute?: number
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
       creator_payout_methods: {
         Row: {
           brand: string | null
@@ -11993,6 +12035,7 @@ export type Database = {
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
+          bookings_enabled: boolean
           boost_expires_at: string | null
           calendly_url: string | null
           claim_token: string | null
@@ -12172,6 +12215,7 @@ export type Database = {
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          bookings_enabled?: boolean
           boost_expires_at?: string | null
           calendly_url?: string | null
           claim_token?: string | null
@@ -12351,6 +12395,7 @@ export type Database = {
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          bookings_enabled?: boolean
           boost_expires_at?: string | null
           calendly_url?: string | null
           claim_token?: string | null
@@ -14585,6 +14630,54 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      room_knocks: {
+        Row: {
+          created_at: string
+          expires_at: string
+          guest_email: string | null
+          guest_name: string
+          guest_token: string
+          guest_user_id: string | null
+          id: string
+          meeting_id: string | null
+          message: string | null
+          owner_id: string
+          share_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          guest_email?: string | null
+          guest_name: string
+          guest_token?: string
+          guest_user_id?: string | null
+          id?: string
+          meeting_id?: string | null
+          message?: string | null
+          owner_id: string
+          share_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          guest_email?: string | null
+          guest_name?: string
+          guest_token?: string
+          guest_user_id?: string | null
+          id?: string
+          meeting_id?: string | null
+          message?: string | null
+          owner_id?: string
+          share_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       saved_bank_accounts: {
         Row: {
@@ -19246,6 +19339,15 @@ export type Database = {
           image_urls: string[]
           is_guest: boolean
           kind: string
+        }[]
+      }
+      get_knock_status: {
+        Args: { _guest_token: string; _knock_id: string }
+        Returns: {
+          expires_at: string
+          meeting_id: string
+          share_url: string
+          status: string
         }[]
       }
       get_mutual_connections: {

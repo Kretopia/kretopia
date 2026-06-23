@@ -33,6 +33,7 @@ import { NewsletterPopup } from "./components/NewsletterPopup";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import UnifiedHome from "./components/home/UnifiedHome";
 import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
+import { RoomKnockToast } from "./components/calls/RoomKnockToast";
 import { ThriveAgentFab } from "./components/desk/ThriveAgentFab";
 import { DesktopCopilotRail } from "./components/desk/DesktopCopilotRail";
 import { ThriveBar } from "./components/agent/ThriveBar";
@@ -51,6 +52,8 @@ const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
 const PassportDirectory = lazy(() => import("./pages/PassportDirectory"));
 const HandleResolver = lazy(() => import("./pages/HandleResolver"));
+const PersonalRoom = lazy(() => import("./pages/PersonalRoom"));
+const BookingPage = lazy(() => import("./pages/BookingPage"));
 const CompCard = lazy(() => import("./pages/CompCard"));
 const CompCardBuilder = lazy(() => import("./pages/CompCardBuilder"));
 
@@ -282,6 +285,7 @@ const AppContent = () => {
       
       {/* OnboardingTour removed — real /onboarding flow + GetStartedChecklist cover this. */}
       {user && <GlobalIncomingCall />}
+      {user && <RoomKnockToast />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}
@@ -331,6 +335,8 @@ const AppContent = () => {
             <Route path="/passport" element={<PassportDirectory />} />
             <Route path="/passport/comp-card" element={<ProtectedRoute><CompCardBuilder /></ProtectedRoute>} />
             <Route path="/passport/:passportId" element={<HandleResolver mode="passportId" />} />
+            <Route path="/@:handle/room" element={<PersonalRoom />} />
+            <Route path="/@:handle/book" element={<BookingPage />} />
             <Route path="/@:handle" element={<HandleResolver mode="handle" />} />
             <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />

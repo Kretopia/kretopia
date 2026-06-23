@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
-import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search, Radar, Store, Plus, Handshake } from "lucide-react";
+import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search, Radar, Store, Plus, Handshake, UserSearch } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,6 +28,8 @@ type OppsMode = "scouted" | "open" | "leads";
  * 4 lanes: People · Gigs · Live · Events. Each lane has sub-modes.
  */
 export default function Discover() {
+  const navigate = useNavigate();
+  const navTalent = () => navigate("/talent-finder");
   const [params, setParams] = useSearchParams();
   const requested = params.get("tab");
   const tab: Tab = useMemo(
@@ -127,13 +130,20 @@ export default function Discover() {
               { id: "swipe", label: "Swipe", icon: Sparkles },
               { id: "browse", label: "Browse", icon: LayoutGrid },
               { id: "nearby", label: "Nearby", icon: Map },
+              { id: "talent", label: "Talent", icon: UserSearch },
             ] as const).map((m) => {
               const Icon = m.icon;
               const active = peopleMode === m.id;
               return (
                 <button
                   key={m.id}
-                  onClick={() => setPeopleMode(m.id)}
+                  onClick={() => {
+                    if (m.id === "talent") {
+                      navTalent();
+                      return;
+                    }
+                    setPeopleMode(m.id as PeopleMode);
+                  }}
                   className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold rounded-full transition-colors inline-flex items-center justify-center gap-1 ${
                     active ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground"
                   }`}

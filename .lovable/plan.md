@@ -1,112 +1,93 @@
-# Phase 1 — Make the Creative Passport Unmissable
+## What we ship
 
-Three coordinated moves: **(1)** rewrite the positioning copy across the most-seen surfaces, **(2)** ship a public, SEO-indexed Passport directory and `/@handle` vanity routes so the ID feels real, **(3)** add a "tagged credits → claim" wedge so creatives discover their record already exists.
+Three things, smallest viable cut so we can iterate.
 
----
+### 1. Talent chip in Discover (quickest win)
 
-## 1. Lock the positioning: "The verified creative record"
+`src/pages/Discover.tsx` — add a 4th pill in the **People** sub-toggle: `Talent` (icon `UserSearch`). Tapping it navigates to `/talent-finder` (the existing AI talent search). Also drop a small "Hiring? → Find talent" link in the **Gigs → Leads** helper strip. No new routes, no nav changes — Talent becomes one tap from Discover for creative accounts.
 
-One line, used everywhere:
+### 2. Personal always-on room — `/@:handle/room`
 
-> **"The verified creative record the industry has been waiting for."**
+Goal: every creator has a stable, shareable link that opens a lobby on demand. Closest thing to ro.am's `ro.am/@you`.
 
-Subline (when there's room):
+**Route:** `App.tsx` adds `/@:handle/room` → new `src/pages/PersonalRoom.tsx`.
 
-> *One Passport. Every credit. Co-signed by the people who were actually there.*
+**Owner view** (signed in & owns the handle):
+- "Open my room" button → calls existing `create-meeting` edge fn with `source: "adhoc"` and a deterministic title `${name}'s room`. Opens the lobby (`VideoCallSheet`) immediately.
+- Shows the canonical share URL: `https://www.thrivein.io/@handle/room` with copy + native share.
+- Toggle: "Knocks notify me" (writes to `notification_preferences`).
 
-**Where it ships:**
-- `src/components/passport/PassportClaimHero.tsx` — replace generic "Creative Passport" eyebrow with the locked line.
-- `src/pages/CreatorEPK.tsx` — the public EPK header (already updated last round) — align to the exact wording.
-- `src/components/auth/AuthBrandingPanel.tsx` — sign-in/sign-up right panel.
-- `src/components/landing/WhyCreatorsChooseSection.tsx` — landing-page hero line for the section.
-- Share copy in `src/lib/passport/shareTargets.ts` — so every shared link carries the line.
+**Guest view** (no session, or not the owner):
+- Shows owner avatar + "{Name}'s room".
+- Primary CTA: **Knock** → opens a tiny form (name + optional message) → posts to a new edge fn `knock-personal-room` which:
+  1. Inserts a `notifications` row for the owner (`type: 'room_knock'`, `action_url: '/@handle/room?knock=…'`).
+  2. Sends a web push (reuses `push_subscriptions` flow already in `pushNotifications.ts`).
+  3. Returns `{ knock_id }`.
+- After knocking, the page polls (or subscribes via Realtime on a new `room_knocks` row) for the owner to **accept**, which creates a meeting via `create-meeting` and updates the knock with `meeting_id` + guest share token. The guest auto-redirects into the lobby.
 
-No new components — pure copy edit + one shared constant `PASSPORT_TAGLINE` in `src/lib/brandLexicon.ts` so we never drift again.
+**New table:** `room_knocks` (`id, owner_id, guest_name, guest_email?, guest_user_id?, message, status: pending|accepted|declined|expired, meeting_id, guest_token, created_at, expires_at`). RLS:
+- Owner can read/update their own rows.
+- Anyone can insert (rate-limited to 5/hour per IP via a Postgres function — defer rate limit to phase 2 if tight).
+- Guest reads via `guest_token` in URL through a SECURITY DEFINER RPC `get_knock_status(_knock_id uuid, _guest_token text)`.
 
----
+**Owner notification UI:** new `<RoomKnockToast />` mounted in `App.tsx` next to `GlobalIncomingCall`, listens to Realtime `INSERT` on `room_knocks` for the current user. One-tap **Let them in** → calls `accept-room-knock` edge fn (creates meeting + writes knock).
 
-## 2. Public Passport directory + `/@handle` vanity routes
+### 3. Calendly-style booking — `/@:handle/book`
 
-**Goal:** make the Passport feel like a real, indexable, brand-discoverable record (the IMDb effect). A creative should be able to drop `thrivein.io/@ethan` on a business card and have it resolve.
+Goal: visitors pick a slot from your weekly windows; we create a scheduled meeting + send a link + .ics.
 
-### New routes (in `src/App.tsx`)
-- `GET /passport` → `PassportDirectory.tsx` — browsable, filterable list of public Passports (Standing, profession, location). Public — no auth required. SEO-indexed.
-- `GET /@:handle` → `HandleResolver.tsx` — looks up `profiles.username = handle` and redirects to `/profile/:userId` (or `/epk/:userId` for unauth visitors). 404 with "Claim @handle" CTA if not found.
-- `GET /passport/:passportId` (e.g. `/passport/THR-EF429`) → resolves the THR- ID the same way as @handle.
+**New table:** `creator_booking_windows`:
+`id, user_id, weekday smallint (0=Sun…6=Sat), start_minute int, end_minute int, slot_minutes int default 30, buffer_minutes int default 0, timezone text, is_active bool, created_at`.
 
-### Directory page (`src/pages/PassportDirectory.tsx`)
-- Header: tagline + count ("4,217 verified creative records").
-- Filters: Profession, Standing (L1–L5), Country.
-- Card grid using existing `<RollCall />` / discover-card patterns — avatar, name, `@handle`, THR-ID, profession, Standing badge, verified-stamp count, co-sign count.
-- Each card → `/profile/:userId` (or `/epk/:userId` for guests).
-- Empty/loading states use existing `<EmptyState />` + `<BrandLoader />`.
-- Public query: read from `public_profiles_safe` view (already exists per memory), filtered to profiles with `username IS NOT NULL` and at least 1 verified credit.
+RLS: owner full CRUD; public `SELECT` for `is_active = true` rows.
 
-### SEO
-- `<SEO />` tags + JSON-LD `Person` schema on `/@handle` pages.
-- Add `/passport` and top public passports to `public/sitemap.xml`.
-- Canonical URLs normalized via `APP_URL`.
+**Owner settings:** new `src/components/profile/BookingWindowsCard.tsx` mounted inside the existing `AvailabilityCalendarSection` area of the profile editor. Lets the owner set per-weekday windows, slot length, buffer, timezone (default from browser). Also a master toggle `profiles.bookings_enabled` (new boolean column).
 
-### Nav surfacing
-- Add "Passport Directory" link in the public-landing nav + footer (`src/components/Footer.tsx`).
-- Add a discreet "Browse the Directory" link on the EPK footer CTA.
+**Public page:** `src/pages/BookingPage.tsx`
+- Resolves `@handle` → `user_id` (reuse `HandleResolver` lookup).
+- Shows next 14 days of available slots, computed client-side from `creator_booking_windows` minus:
+  - All-day blocks in `creator_availability_blocks` (we already have these).
+  - Existing scheduled `meetings` rows for the host in that window.
+- Guest picks slot → form (name, email, optional brief) → calls new edge fn `book-meeting` which:
+  1. Re-validates slot is still free (server-side).
+  2. Calls existing `create-meeting` logic to mint a Daily room + share token, with `scheduled_for` set.
+  3. Returns `{ share_url, ics_url, host_name }`.
+- Success screen: share link, "Add to calendar" (.ics via existing `src/lib/calendarLinks.ts`), confirmation email to guest via existing Resend setup.
 
----
+**Owner side effect:** the booking writes a `notifications` row `type: 'new_booking'` linking to the meeting.
 
-## 3. The "Tagged-but-unclaimed" wedge
+### Technical details
 
-The strongest trigger: *"Your name appears on 4 credits. Claim your Passport to own them."*
+- **Edge functions (new):** `knock-personal-room`, `accept-room-knock`, `book-meeting`. All call into the existing `create-meeting` logic for room creation; we don't duplicate Daily plumbing.
+- **Reuses:** `create-meeting`, `mint-meeting-token`, `MeetingReadySheet`, `VideoCallSheet`, `calendarLinks.ts`, `HandleResolver` lookup, `pushNotifications.ts`, `notifications` table.
+- **No nav changes** for personal-room and booking — discovery is via the new "Share my room link" / "Share my booking link" buttons added to `ProfileActions.tsx` overflow menu (one extra section: **Sharing → Personal room · Booking page**).
+- **SEO:** both `/@handle/room` and `/@handle/book` get prerender entries in `plugins/profile-share-pages.ts` per profile so social cards work.
+- **Out of scope this round:** Google/Outlook two-way sync, recurring bookings, paid bookings (Stripe), team round-robin. All can layer on top of `creator_booking_windows` later.
 
-### Where it fires
-- **Public EPK / `/@handle`** for un-signed-up visitors whose name appears on other creators' credits → `<TaggedCreditsClaimCTA />` floating banner: *"Someone's already tagged you in their work. Claim your Passport →"*
-- **Authenticated home (`UnifiedHome`)** for users who haven't claimed verified credits → existing `<PassportClaimHero />` gets a new prop `taggedCreditsCount` and shows: *"You appear in {N} credits. Claim them now."*
+### Files
 
-### Detection
-- Query `discovered_credits` + `project_roll_call` for rows where the tagged name/email matches the current user (or session-tracked claimable identity).
-- New tiny hook `useTaggedCredits(userId | guestEmail)` returning `{ count, samples }`.
+**New**
+- `src/pages/PersonalRoom.tsx`
+- `src/pages/BookingPage.tsx`
+- `src/components/calls/RoomKnockToast.tsx`
+- `src/components/profile/BookingWindowsCard.tsx`
+- `supabase/functions/knock-personal-room/index.ts`
+- `supabase/functions/accept-room-knock/index.ts`
+- `supabase/functions/book-meeting/index.ts`
 
-### Components
-- `src/components/passport/TaggedCreditsClaimCTA.tsx` — sticky bottom banner on public EPK / handle pages.
-- Extend `PassportClaimHero` to show the "N credits tagged you" line above the existing CTA when count > 0.
+**Edited**
+- `src/App.tsx` — `/@:handle/room`, `/@:handle/book` routes; mount `<RoomKnockToast />`.
+- `src/pages/Discover.tsx` — add "Talent" chip in People row + leads strip link.
+- `src/components/profile/ProfileActions.tsx` — "Share my room" / "Share my booking" in overflow menu.
+- `src/pages/profile/ProfileDialogs.tsx` (or wherever the availability editor lives) — mount `BookingWindowsCard`.
+- `plugins/profile-share-pages.ts` — emit `/@handle/room` and `/@handle/book` per profile.
 
----
+**Migrations**
+- `creator_booking_windows` table + GRANTs + RLS + public-read policy for active rows.
+- `room_knocks` table + GRANTs + RLS + Realtime publication.
+- `profiles.bookings_enabled boolean default false`.
+- `notifications.type` accepts `'room_knock'` and `'new_booking'`.
 
-## 4. Files touched (no DB migration needed — uses existing tables)
+### Memory
 
-**New:**
-- `src/pages/PassportDirectory.tsx`
-- `src/pages/HandleResolver.tsx`
-- `src/components/passport/TaggedCreditsClaimCTA.tsx`
-- `src/hooks/useTaggedCredits.ts`
-
-**Edited (copy + routes + small wiring):**
-- `src/App.tsx` (3 new routes)
-- `src/lib/brandLexicon.ts` (add `PASSPORT_TAGLINE`)
-- `src/components/passport/PassportClaimHero.tsx` (tagline + tagged-credits line)
-- `src/pages/CreatorEPK.tsx` (mount `TaggedCreditsClaimCTA` for guests)
-- `src/components/auth/AuthBrandingPanel.tsx` (tagline)
-- `src/components/landing/WhyCreatorsChooseSection.tsx` (tagline)
-- `src/components/Footer.tsx` (directory link)
-- `src/lib/passport/shareTargets.ts` (tagline in share copy)
-- `public/sitemap.xml` (`/passport` entry)
-
----
-
-## 5. Out of scope for this phase (queued for next)
-
-- Passport-gated Scout/Gigs (Standing thresholds on opportunity cards).
-- Co-sign Wall as profile hero + post-collab "co-sign your team" nudge.
-- Brand-side `/passport/search?role=…&standing=L3+` discovery for hirers.
-- Programmatic OG images for `/@handle` share cards.
-
-These build on the directory + wedge — they're stronger once the foundation exists.
-
----
-
-## What you'll see when this ships
-- `thrivein.io/@ethan` resolves to a real, shareable, SEO-indexed Passport page.
-- `thrivein.io/passport` is a browsable record of every verified creative.
-- Any creative whose name appears on someone else's credit sees a banner the moment they land — *"You're already in the record. Claim it."*
-- One taut line — *"The verified creative record the industry has been waiting for"* — repeats across landing, auth, EPK, share cards, and the Passport hero.
-
-Approve and I'll build it in one pass.
+Save `mem://features/scheduling/personal-room-and-booking` capturing the ownable lexicon ("**Knock**", "**Open my room**", "**Book a call**" — never "Calendly", never "ro.am"), the routes, and the table shapes.

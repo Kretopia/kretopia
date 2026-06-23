@@ -5505,6 +5505,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ep_daily_briefings: {
+        Row: {
+          brief_date: string
+          created_at: string
+          followup_count: number
+          generated_by: string
+          id: string
+          risk_count: number
+          sections: Json
+          summary: string | null
+          task_count: number
+          user_id: string
+        }
+        Insert: {
+          brief_date: string
+          created_at?: string
+          followup_count?: number
+          generated_by?: string
+          id?: string
+          risk_count?: number
+          sections?: Json
+          summary?: string | null
+          task_count?: number
+          user_id: string
+        }
+        Update: {
+          brief_date?: string
+          created_at?: string
+          followup_count?: number
+          generated_by?: string
+          id?: string
+          risk_count?: number
+          sections?: Json
+          summary?: string | null
+          task_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       episode_clips: {
         Row: {
           captions: Json | null
@@ -20001,6 +20040,13 @@ export type Database = {
         | "passport_polish"
         | "home_focus"
         | "pay_cashflow"
+        | "sponsor_followup_due"
+        | "contract_unsigned"
+        | "client_silence"
+        | "deliverable_overdue"
+        | "budget_incomplete"
+        | "team_role_missing"
+        | "daily_briefing_action"
       agent_proposal_status: "pending" | "accepted" | "dismissed" | "expired"
       app_role: "admin" | "moderator" | "user" | "writer"
       curated_application_status:
@@ -20234,6 +20280,13 @@ export const Constants = {
         "passport_polish",
         "home_focus",
         "pay_cashflow",
+        "sponsor_followup_due",
+        "contract_unsigned",
+        "client_silence",
+        "deliverable_overdue",
+        "budget_incomplete",
+        "team_role_missing",
+        "daily_briefing_action",
       ],
       agent_proposal_status: ["pending", "accepted", "dismissed", "expired"],
       app_role: ["admin", "moderator", "user", "writer"],

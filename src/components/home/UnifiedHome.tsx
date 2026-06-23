@@ -50,6 +50,7 @@ import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
+import { DailyBriefingCard } from "@/components/home/DailyBriefingCard";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { TodayThreeCards } from "@/components/home/TodayThreeCards";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
@@ -636,6 +637,9 @@ export const UnifiedHome = () => {
               </div>
             </div>
           )}
+
+          {/* Executive Producer's morning brief */}
+          <DailyBriefingCard className="mb-4" />
 
           {/* Thrive proactive nudges (Home surface) — cross-surface signals */}
           <SurfaceProactiveCards surface="home" className="mb-4 px-0" />

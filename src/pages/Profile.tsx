@@ -456,6 +456,7 @@ const ProfileContent = () => {
                 <PassportClaimHero
                   fullName={profile.full_name}
                   handle={(profile as any).username || (profile as any).handle}
+                  passportId={(profile as any).icdb_creator_id}
                   userId={profile.user_id}
                   standing={standing}
                   verifiedCredits={verified}

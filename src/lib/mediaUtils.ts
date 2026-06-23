@@ -5,11 +5,56 @@ export interface MediaInfo {
   thumbnailUrl: string;
 }
 
+export type DirectMediaType = 'audio' | 'video' | 'image' | null;
+
+export const getDirectMediaType = (url?: string | null): DirectMediaType => {
+  if (!url) return null;
+  if (/\.(mp3|wav|m4a|ogg|aac|flac)(\?|#|$)/i.test(url)) return 'audio';
+  if (/\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(url)) return 'video';
+  if (/\.(jpg|jpeg|png|webp|gif)(\?|#|$)/i.test(url)) return 'image';
+  return null;
+};
+
+export const isPlayableMediaUrl = (url?: string | null): boolean => {
+  if (!url) return false;
+  return !!parseMediaUrl(url) || !!getDirectMediaType(url);
+};
+
+export const getBestPlayableMediaUrl = (item: {
+  primary_media_url?: string | null;
+  media_url?: string | null;
+  url?: string | null;
+  verification_url?: string | null;
+  media_type?: string | null;
+  mediaType?: string | null;
+}): string | null => {
+  const candidates = [item.primary_media_url, item.media_url, item.url, item.verification_url]
+    .filter((value): value is string => !!value && value.trim().length > 0);
+  const parsed = candidates.find(isPlayableMediaUrl);
+  if (parsed) return parsed;
+
+  const declaredType = item.media_type || item.mediaType;
+  if (declaredType === 'audio' || declaredType === 'video' || declaredType === 'image') {
+    return candidates[0] || null;
+  }
+
+  return null;
+};
+
+export const getModalMediaType = (url?: string | null, fallback?: string | null): 'audio' | 'video' | 'image' | 'embed' => {
+  const mediaInfo = url ? parseMediaUrl(url) : null;
+  if (mediaInfo) return 'embed';
+  const directType = getDirectMediaType(url);
+  if (directType) return directType;
+  if (fallback === 'audio' || fallback === 'video' || fallback === 'image') return fallback;
+  return 'embed';
+};
+
 export const parseMediaUrl = (url: string): MediaInfo | null => {
   if (!url) return null;
 
   // YouTube
-  const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const youtubeRegex = /(?:youtube\.com\/(?:shorts\/|[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
   const youtubeMatch = url.match(youtubeRegex);
   if (youtubeMatch) {
     const id = youtubeMatch[1];

@@ -55,8 +55,8 @@ export const LevelUpCard = ({ standing, className }: Props) => {
         <div className="flex items-start gap-2 rounded-lg border border-[hsl(var(--signal-teal))]/30 bg-[hsl(var(--signal-teal))]/5 px-3 py-2 text-xs">
           <ShieldAlert className="h-3.5 w-3.5 text-[hsl(var(--signal-teal))] shrink-0 mt-0.5" />
           <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">You qualify for the next tier.</span>{" "}
-            {standing.gateReason} to claim it.
+            <span className="text-foreground font-medium">You qualify on score.</span>{" "}
+            {standing.gateReason ?? "Finish verification to claim the badge"}.
           </span>
         </div>
       )}

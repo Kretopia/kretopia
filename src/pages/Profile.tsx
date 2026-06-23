@@ -43,6 +43,8 @@ import { LevelUpCard } from "@/components/passport/LevelUpCard";
 import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
 import { PassportClaimHero } from "@/components/passport/PassportClaimHero";
 import { computeStanding } from "@/lib/passport/standing";
+import { useTaggedCredits } from "@/hooks/useTaggedCredits";
+
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 

@@ -199,9 +199,6 @@ export default function PersonalRoom() {
           <h1 className="mt-3 text-2xl font-bold tracking-tight">
             {owner.full_name || `@${handle}`}'s room
           </h1>
-          {owner.headline && (
-            <p className="text-sm text-muted-foreground mt-1">{owner.headline}</p>
-          )}
           <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-foreground">
             {canonicalUrl.replace(/^https?:\/\//, "")}
           </p>

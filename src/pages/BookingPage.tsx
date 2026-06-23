@@ -21,8 +21,6 @@ interface Owner {
   full_name: string | null;
   avatar_url: string | null;
   username: string | null;
-  headline: string | null;
-  bookings_enabled: boolean | null;
 }
 interface Window { weekday: number; start_minute: number; end_minute: number; slot_minutes: number; }
 interface DayWithSlots { date: Date; label: string; slots: Date[]; }
@@ -51,12 +49,12 @@ export default function BookingPage() {
     (async () => {
       const { data: p } = await supabase
         .from("public_profiles_safe")
-        .select("user_id, full_name, avatar_url, username, headline, bookings_enabled")
+        .select("user_id, full_name, avatar_url, username")
         .ilike("username", handle)
         .maybeSingle();
       if (cancelled) return;
       if (!p) { setNotFound(true); setLoading(false); return; }
-      setOwner(p as Owner);
+      setOwner(p as unknown as Owner);
 
       const [{ data: w }, { data: blocks }, { data: mtgs }] = await Promise.all([
         supabase

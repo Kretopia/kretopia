@@ -22,7 +22,6 @@ interface Owner {
   full_name: string | null;
   avatar_url: string | null;
   username: string | null;
-  headline: string | null;
 }
 
 export default function PersonalRoom() {
@@ -56,14 +55,14 @@ export default function PersonalRoom() {
     (async () => {
       const { data } = await supabase
         .from("public_profiles_safe")
-        .select("user_id, full_name, avatar_url, username, headline")
+        .select("user_id, full_name, avatar_url, username")
         .ilike("username", handle)
         .maybeSingle();
       if (cancelled) return;
       if (!data) {
         setNotFound(true);
       } else {
-        setOwner(data as Owner);
+        setOwner(data as unknown as Owner);
       }
       setLoading(false);
     })().catch(() => !cancelled && setNotFound(true));

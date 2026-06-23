@@ -127,7 +127,7 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
         console.warn("[seo-pages] credits fetch error:", e);
       }
 
-      // Dedupe credits by id for the same reason.
+      // Dedupe credits by id for the same reason, and cap.
       {
         const seen = new Set<string>();
         credits = credits.filter((c) => {
@@ -135,6 +135,13 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
           seen.add(c.id);
           return true;
         });
+        const MAX_CREDIT_PAGES = 300;
+        if (credits.length > MAX_CREDIT_PAGES) {
+          console.warn(
+            `[seo-pages] Capping credit pages from ${credits.length} to ${MAX_CREDIT_PAGES} to avoid S3 throttling.`,
+          );
+          credits = credits.slice(0, MAX_CREDIT_PAGES);
+        }
       }
 
 

@@ -466,6 +466,8 @@ const ProfileContent = () => {
                   verifiedCredits={verified}
                   totalCredits={credits?.length || 0}
                   cosigns={cosigns}
+                  taggedCount={taggedCount}
+
                   onShare={handleShare}
                   onShowQR={() => setIsQRDialogOpen(true)}
                   onDownloadEPK={() => setIsEPKEditorOpen(true)}

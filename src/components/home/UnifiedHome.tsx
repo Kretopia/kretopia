@@ -49,6 +49,7 @@ import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
+import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { TodayThreeCards } from "@/components/home/TodayThreeCards";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
@@ -635,6 +636,9 @@ export const UnifiedHome = () => {
               </div>
             </div>
           )}
+
+          {/* Thrive proactive nudges (Home surface) — cross-surface signals */}
+          <SurfaceProactiveCards surface="home" className="mb-4 px-0" />
 
           {/* Duplicate-account merge prompt */}
           <div className="mb-4 empty:hidden">

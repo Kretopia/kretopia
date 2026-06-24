@@ -214,34 +214,35 @@ export const HeroSection = () => {
           <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
             <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-6 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
               <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-              {pickVoice("ThriveIN", "Built for T&T Creatives")}
+              {pickVoice("Welcome to Kretopia", "Welcome to Kretopia")}
             </p>
 
             <h1 className="font-serif text-[2.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-normal tracking-[-0.03em] text-foreground leading-[1.02] mb-6">
-              Meet people. Build work.{" "}
-              <span className="italic text-primary">Own your record.</span>{" "}
-              Get paid.
+              Where{" "}
+              <span className="italic text-primary">Creativity</span>{" "}
+              Lives.
             </h1>
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mb-3">
-              ThriveIN is where creators find collaborators, run real projects,
-              build a verified <span className="text-foreground font-semibold">{"Creative Passport"}</span>,
-              and get paid — with <span className="text-foreground font-semibold">Thrive</span> handling the busy work.
+              <span className="text-foreground font-semibold">Kretopia</span> is the Creative Economy OS.
+              Build your <span className="text-foreground font-semibold">Creative Passport</span>,
+              find opportunities, meet collaborators, and get paid — with{" "}
+              <span className="text-foreground font-semibold">Kreto</span>, your AI Executive Producer.
             </p>
 
             <p className="text-xs text-muted-foreground/60 mb-7">
               {pickVoice(
-                "Free to join · Early creators get priority access",
-                "Free to start · No credit card · Made for we",
+                "Join the beta · Early creators get priority access",
+                "Join the beta · No credit card · Made for we",
               )}
             </p>
 
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-8 flex-wrap">
-            <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
-                {pickVoice("Start your Passport", "Start My Passport")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
+                Join Beta <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link to="/scout" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 px-6 py-4 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
-                <Briefcase className="h-4 w-4 text-primary" /> {pickVoice("Browse Gigs", "See Wha' Goin' On")}
+                <Briefcase className="h-4 w-4 text-primary" /> Watch Demo
               </Link>
             </div>
 
@@ -529,7 +530,7 @@ export const HeroSection = () => {
               <Shield className="h-6 w-6 text-primary mb-3" />
               <h3 className="text-sm font-bold text-foreground mb-2">Not just another portfolio</h3>
               <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
-                Most platforms show what you <span className="italic">say</span> you've done. ThriveIN helps prove what you've <span className="font-semibold text-foreground">actually</span> done.
+                Most platforms show what you <span className="italic">say</span> you've done. Kretopia helps prove what you've <span className="font-semibold text-foreground">actually</span> done.
               </p>
               <div className="space-y-2 text-[10px] text-muted-foreground">
                 <p className="flex items-center gap-1.5"><Search className="h-3 w-3 text-primary shrink-0" /> Search your name</p>

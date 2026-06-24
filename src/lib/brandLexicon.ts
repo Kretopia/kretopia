@@ -1,42 +1,50 @@
 /**
- * THRIVEIN BRAND BIBLE v1 — Ownable Language System
+ * KRETOPIA BRAND BIBLE v2 — Ownable Language System
  *
- * Single source of truth for the words ThriveIN owns. Use BRAND.* constants
- * in user-facing UI instead of hand-written labels. These are IP — guard them.
+ * Single source of truth for the words Kretopia owns. Use BRAND.* in
+ * user-facing UI instead of hand-written labels.
  *
- * Category: The Operating System for Creative Careers.
- * Long term: The Infrastructure Layer for Creative Work.
+ * Ecosystem:
+ *   Thrive Collective  → parent company (legal / footer)
+ *   Kretopia           → the platform (the Creative Economy OS)
+ *   ThriveIN           → community, events, magazine, IRL pillar (sub-brand)
+ *   Kreto              → the AI Executive Producer (the agent)
  *
- * See mem://style/branding/brand-bible-v1
- * See mem://strategy/thrive-agent-and-ownable-language
+ * Routes, tables, edge functions still use thrive_* / izzy_* / etc.
+ * That's intentional — those are infrastructure names, not user-facing.
+ * Never surface them in UI.
  */
 
 export const BRAND = {
+  // ── Ecosystem ───────────────────────────────────────────────────────────
+  name: "Kretopia",
+  parent: "Thrive Collective",
+  parentLine: "Kretopia by Thrive Collective",
+  community: "ThriveIN", // events, magazine, IRL, meetups, dinners
+  domain: "kretopia.com",
+
   // ── Category & positioning ──────────────────────────────────────────────
-  name: "ThriveIN",
-  category: "The Operating System for Creative Careers.",
-  categoryShort: "Creative Operating System",
-  promise: "Find your people. Run the project. Get paid.",
+  category: "The Creative Economy OS.",
+  categoryShort: "Creative Economy OS",
+  tagline: "Where Creativity Lives.",
+  welcomeLine: "Welcome to Kretopia. Where Creativity Lives.",
+  promise: "Build your profile. Find opportunities. Collaborate. Get paid.",
   futurePromise: "Get discovered. Get stamped. Get booked.",
 
   // ── The agent ───────────────────────────────────────────────────────────
-  // Izzy is the agent. Thrive/ThriveIN is the platform. Always keep them
-  // distinct in user-facing copy. "Thrive Copilot" / "Thrive Agent" are
-  // legacy code-side names only — never show them to users.
-  agentName: "Izzy",
-  agentRole: "Your Creative Executive Producer",
-  agentTagline: "Meet Izzy. Your Creative Executive Producer.",
+  // Kreto is the agent. Kretopia is the platform. Keep them distinct.
+  // Internal code may say "thrive-agent" / "izzy" — never surface those.
+  agentName: "Kreto",
+  agentRole: "Your AI Executive Producer",
+  agentTagline: "Meet Kreto. Your AI Executive Producer.",
+  agentVoice: "Producer, manager, connector, strategist, mentor.",
 
   // ── Profile / EPK ───────────────────────────────────────────────────────
   passport: "Creative Passport",
   passportShort: "Passport",
   passportTagline: "Your verified creative identity.",
-  // LOCKED positioning line — use everywhere the Passport is pitched.
-  // Do not paraphrase. One line, one record.
   passportHeadline: "The verified creative record the industry has been waiting for.",
   passportSubline: "One Passport. Every credit. Co-signed by the people who were actually there.",
-
-
 
   // ── Credits / verifications ────────────────────────────────────────────
   stamps: "Stamps",
@@ -53,11 +61,11 @@ export const BRAND = {
   rolodex: "The Rolodex",
 
   // ── Payments ───────────────────────────────────────────────────────────
+  // Pay surface rebrands to KrePay. Code path / route stays /thrivepay.
+  payments: "KrePay",
   receipts: "Receipts",
 
   // ── Opportunities (editorial label on Scout) ───────────────────────────
-  // NOTE: route stays /scout, table stays `opportunities`/`gigs` — this is
-  // a display label only. Keep "Gigs" for SEO equity on share pages.
   calls: "Calls",
   callsExamples: ["Open Calls", "Casting Calls", "Brand Calls"],
 
@@ -80,69 +88,68 @@ export const BRAND = {
   },
 
   // ── Crews (private invite-only communities) ─────────────────────────────
-  // Replaces the "Circles" / "Communities" language. Crews are private and
-  // invite-only while we build traction. Future rename to "Greenrooms" is a
-  // single string change here — do NOT inline "Crew(s)" anywhere else.
-  // Route stays /circles + /circle/:id for legacy, with /crews + /crew/:id
-  // as the canonical aliases.
   crew: "Crew",
   crews: "Crews",
   crewSingular: "Crew",
   myCrews: "My Crews",
-  crewRoom: "Room",        // a channel inside a crew
+  crewRoom: "Room",
   crewRooms: "Rooms",
   crewPrivateWall: "This Crew is private. Ask the host for an invite.",
+
+  // ── Top-level pillars (nav-facing labels) ──────────────────────────────
+  pillars: {
+    passport: "Passport",        // /profile
+    scout: "Scout",              // opportunities
+    match: "Match",              // collaborators
+    studio: "Studio",            // projects (was ThriveDesk)
+    soundstages: "SoundStages",  // live virtual rooms
+    pay: "KrePay",
+    kreto: "Kreto",
+    community: "ThriveIN",       // events, magazine, IRL
+  },
 } as const;
 
 /**
- * COLLISION POLICY — words G proposed that conflict with shipped concepts.
- * Decisions locked: keep existing container names, borrow G's editorial words
- * only where they don't whiplash users.
+ * COLLISION POLICY
  */
 export const BRAND_COLLISIONS = {
-  // "Productions" collides with Studios/ThriveDesk/Studio Room.
-  // RULE: Studios = the workspace container. Productions = the *output*
-  // (a finished body of work shown on the Creative Passport).
-  studios: "Studios",
-  productions: "Productions", // Passport output only
-
-  // "Rooms" collides with video call rooms + Spark rooms.
-  // RULE: keep "Events" as the surface name. "Sessions" allowed in copy.
+  studios: "Studio",
+  productions: "Productions",
   events: "Events",
   sessions: "Sessions",
-
-  // "Circle" already means the community feature.
-  // RULE: keep "Connections" everywhere. "The Circle" is OK as a Passport
-  // module label ("12 in their Circle") only.
   connections: "Connections",
 } as const;
 
 /**
- * Voice rules for Thrive (the agent).
- * Thrive is a presence, not a chatbot. Never call it AI.
+ * Voice rules for Kreto (the agent).
+ * Kreto is a producer, not a chatbot. Never call it AI assistant / bot.
  */
-export const THRIVE_VOICE = {
+export const KRETO_VOICE = {
   good: [
-    "Izzy noticed something.",
-    "Izzy made a draft.",
-    "Izzy put together a plan.",
-    "Izzy remembers your sponsors.",
-    "Izzy scouted three new Calls for you.",
+    "I found three opportunities for you.",
+    "Your Creative Passport is 84% complete.",
+    "You have a strong match with this creator.",
+    "I'd recommend updating your portfolio.",
+    "I put together a draft for you.",
   ],
   banned: [
     "AI generated",
     "AI-powered",
     "AI assistant",
     "Chatbot",
-    "Copilot", // reserved for legacy surfaces, do not introduce
+    "Copilot",
     "Bot",
   ],
 } as const;
 
+// Back-compat alias — older code imports THRIVE_VOICE.
+export const THRIVE_VOICE = KRETO_VOICE;
+
 /**
- * Campaign codenames (next 90 days).
+ * Campaign codenames.
  */
 export const BRAND_CAMPAIGNS = {
+  whereCreativityLives: "WHERE CREATIVITY LIVES",
   onTheRecord: "ON THE RECORD",
   getStamped: "GET STAMPED",
   showReceipts: "SHOW RECEIPTS",

@@ -123,8 +123,8 @@ All colors MUST be HSL.
      Lime/Neon vibe only applies when [data-vibe="neon"] is set explicitly.
      ============================================================ */
   .dark {
-    /* Brand System v1.0 surface stack */
-    --background: 225 44% 4%;        /* #05070D  near-black canvas */
+    /* Kretopia v1 brand sheet — Midnight #0B0B10 canvas */
+    --background: 240 18% 5%;        /* #0B0B10  near-black canvas */
     --foreground: 0 0% 100%;         /* #FFFFFF  primary text     */
 
     --card: 222 24% 9%;              /* #11141B  surface          */
@@ -174,11 +174,29 @@ All colors MUST be HSL.
     --gradient-gold: linear-gradient(135deg, hsl(43 100% 58%), hsl(36 96% 52%));
     --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(178 80% 47% / 0.14), transparent 70%);
 
-    /* Kretopia sunset — purple → magenta → coral → warm orange.
-       Use sparingly on hero CTAs, Kreto glow, pillar accent rings. */
-    --kretopia-sunset: linear-gradient(135deg, hsl(268 85% 58%) 0%, hsl(330 100% 60%) 35%, hsl(8 95% 62%) 70%, hsl(26 100% 60%) 100%);
-    --kretopia-sunset-soft: linear-gradient(135deg, hsl(268 85% 58% / 0.18) 0%, hsl(330 100% 60% / 0.18) 50%, hsl(26 100% 60% / 0.18) 100%);
-    --kretopia-glow: 0 0 60px -10px hsl(330 100% 60% / 0.45), 0 0 120px -20px hsl(268 85% 58% / 0.35);
+    /* ============================================================
+       KRETOPIA v1 BRAND SHEET — palette + signature gradients.
+       Midnight · Deep Purple · Magenta · Coral · Warm Orange · Soft Sand.
+       Use the gradients sparingly: hero CTAs, Kreto glow, pillar accents.
+       ============================================================ */
+    --k-midnight:    240 18% 5%;     /* #0B0B10 */
+    --k-purple:      248 92% 57%;    /* #4B2CF5 deep purple   */
+    --k-magenta:     326 100% 59%;   /* #FF2CA7 magenta       */
+    --k-coral:       14 100% 62%;    /* #FF6A3D coral         */
+    --k-orange:      31 100% 64%;    /* #FFB347 warm orange   */
+    --k-sand:        36 21% 93%;     /* #F2EFEA soft sand     */
+
+    /* Signature gradients from the brand sheet */
+    --k-grad-purple-dream:  linear-gradient(135deg, #4B2CF5 0%, #FF2CA7 100%);
+    --k-grad-sunset-drive:  linear-gradient(135deg, #FF2CA7 0%, #FF6A3D 100%);
+    --k-grad-creative-flow: linear-gradient(135deg, #4B2CF5 0%, #FFB347 100%);
+    --k-grad-full:          linear-gradient(135deg, #4B2CF5 0%, #FF2CA7 45%, #FF6A3D 75%, #FFB347 100%);
+
+    /* Backwards-compat: keep --kretopia-sunset pointing at the canonical
+       brand gradient (full sweep) so existing call sites stay correct. */
+    --kretopia-sunset: var(--k-grad-full);
+    --kretopia-sunset-soft: linear-gradient(135deg, hsl(248 92% 57% / 0.18) 0%, hsl(326 100% 59% / 0.18) 50%, hsl(31 100% 64% / 0.18) 100%);
+    --kretopia-glow: 0 0 60px -10px hsl(326 100% 59% / 0.5), 0 0 120px -20px hsl(248 92% 57% / 0.4);
 
     --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.5);
     --shadow-sm: 0 2px 4px hsl(0 0% 0% / 0.55);

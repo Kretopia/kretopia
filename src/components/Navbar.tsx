@@ -180,12 +180,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   key={path}
                   to={path}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-smooth text-sm font-medium",
-                    isActive ? "bg-energy/10 text-energy" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    "relative flex items-center gap-2 px-4 py-2 rounded-lg transition-smooth text-sm font-medium",
+                    isActive ? "text-foreground bg-white/[0.04]" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                   )}
                 >
                   <Icon className="h-4 w-4" />
                   {label}
+                  {isActive && (
+                    <span
+                      aria-hidden
+                      className="absolute -bottom-1 left-3 right-3 h-0.5 rounded-full"
+                      style={{ background: "var(--kretopia-sunset, linear-gradient(90deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+                    />
+                  )}
                 </Link>
               );
             })}
@@ -215,9 +222,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <Menu className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
-                <SheetHeader className="pr-8">
-                  <SheetTitle>Menu</SheetTitle>
+              <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-[hsl(var(--k-midnight))] text-white border-l border-white/10">
+                <SheetHeader className="pr-8 text-left">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FF2CA7]">Kretopia</p>
+                  <SheetTitle className="font-serif text-2xl font-normal text-white">Menu</SheetTitle>
                 </SheetHeader>
 
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">

@@ -222,9 +222,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <Menu className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
-                <SheetHeader className="pr-8">
-                  <SheetTitle>Menu</SheetTitle>
+              <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-[hsl(var(--k-midnight))] text-white border-l border-white/10">
+                <SheetHeader className="pr-8 text-left">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FF2CA7]">Kretopia</p>
+                  <SheetTitle className="font-serif text-2xl font-normal text-white">Menu</SheetTitle>
                 </SheetHeader>
 
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">

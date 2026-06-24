@@ -15,6 +15,7 @@ import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 import { LiveCallsPanel } from "@/components/circle/LiveCallsPanel";
 import { SessionsSection } from "@/components/sessions/SessionsSection";
 import { NearbyInline } from "@/components/discover/NearbyInline";
+import { KretoTip } from "@/components/agent/KretoTip";
 import { supabase } from "@/integrations/supabase/client";
 
 type Tab = "people" | "opps" | "live" | "events";
@@ -103,6 +104,10 @@ export default function Discover() {
             <span className="text-[11px] text-muted-foreground">Tap to join →</span>
           </button>
         )}
+
+        <div className="mt-3">
+          <KretoTip surface="discover" compact />
+        </div>
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="w-full">

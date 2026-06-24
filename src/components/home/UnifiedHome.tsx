@@ -447,8 +447,8 @@ export const UnifiedHome = () => {
         url="https://www.thrivein.io/"
       />
 
-      {/* ═══════════ GUEST LANDING — Kretopia v1 ═══════════ */}
-      {!user && !isWedge && (
+      {/* ═══════════ GUEST LANDING — Kretopia v1 (now canonical) ═══════════ */}
+      {!user && (
         <KretopiaLanding onSearchSubmit={handleHeroClaimSearch} />
       )}
 
@@ -577,7 +577,7 @@ export const UnifiedHome = () => {
             1. Hero (above)  2. Claim Your Credits  3. Product Reel (real screenshots)
             4. Comparison    5. Social Proof        6. Pricing
             7. ThriveFund teaser   8. Bottom CTA */}
-        {isWedge && <OneWedgeLanding onSearchSubmit={handleHeroClaimSearch} />}
+        {/* OneWedge legacy landing retired — Kretopia v1 above is canonical. */}
         {/* Kretopia v1 landing owns the full guest narrative + footer above.
             Legacy guest-only sections (ClaimYourCredits, CoreValueBlocks,
             ProductReel, ComparisonTable, SocialProof, PricingPreview,

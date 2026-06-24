@@ -27,6 +27,7 @@ import heroImage from "@/assets/kretopia-hero.jpg";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { BRAND } from "@/lib/brandLexicon";
+import { KretoAvatar } from "@/components/brand/KretoAvatar";
 
 interface KretopiaLandingProps {
   onSearchSubmit: (query: string) => void;
@@ -318,25 +319,18 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
         <div className="container relative mx-auto max-w-6xl px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-            {/* Kreto orb */}
+            {/* Kreto avatar */}
             <div className="relative flex items-center justify-center order-2 lg:order-1">
               <div
                 className="relative h-72 w-72 sm:h-80 sm:w-80 rounded-full flex items-center justify-center"
                 style={{
-                  background: "radial-gradient(circle at 30% 30%, hsl(330 100% 60% / 0.4), hsl(268 85% 58% / 0.2) 60%, transparent 80%)",
+                  background: "radial-gradient(circle at 30% 30%, hsl(330 100% 60% / 0.35), hsl(268 85% 58% / 0.18) 60%, transparent 80%)",
                   boxShadow: "var(--kretopia-glow)",
                 }}
               >
                 <div className="absolute inset-6 rounded-full border border-white/10" />
                 <div className="absolute inset-12 rounded-full border border-white/[0.06]" />
-                <motion.div
-                  animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="h-24 w-24 rounded-full flex items-center justify-center"
-                  style={{ background: "var(--kretopia-sunset)" }}
-                >
-                  <Sparkles className="h-10 w-10 text-white" />
-                </motion.div>
+                <KretoAvatar size="lg" />
               </div>
             </div>
 

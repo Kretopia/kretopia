@@ -43,6 +43,7 @@ import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist
 import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBanner";
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MorningPulse } from "@/components/home/MorningPulse";
+import { KretoTip } from "@/components/agent/KretoTip";
 import { CuratedStagesRail } from "@/components/circle/CuratedStagesRail";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
@@ -479,6 +480,11 @@ export const UnifiedHome = () => {
           {/* Today = Home, ≤3 cards. */}
           <div className="mb-4">
             <TodayThreeCards />
+          </div>
+
+          {/* Kreto contextual whisper — opens the global Copilot pre-loaded */}
+          <div className="mb-4">
+            <KretoTip surface="today" />
           </div>
 
           <UpcomingSessionsCard />

@@ -20,28 +20,31 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
-  ArrowRight, Search, Play, Sparkles, IdCard, Compass, Users2,
-  FolderKanban, Radio, Wallet, Calendar, Star,
+  ArrowRight, Search, Sparkles, Star,
 } from "lucide-react";
 import heroImage from "@/assets/kretopia-hero.jpg";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { BRAND } from "@/lib/brandLexicon";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { PILLAR_MOCKUPS } from "@/components/landing/PillarMockups";
 
 interface KretopiaLandingProps {
   onSearchSubmit: (query: string) => void;
 }
 
+// All pillar CTAs route guests to /auth with a return-to so they land on the
+// teased surface immediately after sign-in. Verified routes: /profile /scout
+// /match /desk /circle /thrivepay all exist in App.tsx.
 const PILLARS = [
-  { icon: IdCard,       name: "Passport",     tag: "Your creative identity",     route: "/profile",         accent: "from-[#4B2CF5] to-[#FF2CA7]" },
-  { icon: Compass,      name: "Scout",        tag: "Find opportunities",         route: "/scout",           accent: "from-[#FF2CA7] to-[#FF6A3D]" },
-  { icon: Users2,       name: "Match",        tag: "Find collaborators",         route: "/match",           accent: "from-[#FF2CA7] to-[#FFB347]" },
-  { icon: FolderKanban, name: "Studio",       tag: "Manage projects",            route: "/desk",            accent: "from-[#4B2CF5] to-[#FFB347]" },
-  { icon: Radio,        name: "SoundStages",  tag: "Live virtual rooms",         route: "/circle?tab=live", accent: "from-[#4B2CF5] to-[#FF6A3D]" },
-  { icon: Wallet,       name: "KrePay",       tag: "Contracts & payments",       route: "/thrivepay",       accent: "from-[#FF6A3D] to-[#FFB347]" },
-  { icon: Sparkles,     name: "Kreto",        tag: "Your AI Executive Producer", route: "/auth",            accent: "from-[#4B2CF5] via-[#FF2CA7] to-[#FFB347]" },
-  { icon: Calendar,     name: "ThriveIN",     tag: "Events · Magazine · IRL",    route: "/circle",          accent: "from-[#FF2CA7] to-[#FFB347]" },
+  { name: "Passport",    tag: "Your creative identity",     route: "/auth?next=/profile",         accent: "from-[#2A0FD9] to-[#9413D2]" },
+  { name: "Scout",       tag: "Find opportunities",         route: "/auth?next=/scout",           accent: "from-[#9413D2] to-[#E0179C]" },
+  { name: "Match",       tag: "Find collaborators",         route: "/auth?next=/match",           accent: "from-[#E0179C] to-[#FF3D7A]" },
+  { name: "Studio",      tag: "Manage projects",            route: "/auth?next=/desk",            accent: "from-[#2A0FD9] to-[#FEA61A]" },
+  { name: "SoundStages", tag: "Live virtual rooms",         route: "/auth?next=/circle?tab=live", accent: "from-[#4812F5] to-[#FF3D7A]" },
+  { name: "KrePay",      tag: "Contracts & payments",       route: "/auth?next=/thrivepay",       accent: "from-[#FF3D7A] to-[#FEA61A]" },
+  { name: "Kreto",       tag: "Your AI Executive Producer", route: "/auth",                       accent: "from-[#2A0FD9] via-[#E0179C] to-[#FEA61A]" },
+  { name: "ThriveIN",    tag: "Events · Magazine · IRL",    route: "/auth?next=/circle",          accent: "from-[#9413D2] to-[#FEA61A]" },
 ];
 
 const ROTATING_NAMES = ["Ethan Auguste", "Maria Santos", "James Lee", "Aaliyah Brooks", "Kenji Watanabe"];
@@ -150,7 +153,7 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
                   onClick={() => document.getElementById("kretopia-pillars")?.scrollIntoView({ behavior: "smooth" })}
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm px-6 py-4 text-sm font-semibold text-foreground hover:bg-white/[0.08] transition-all"
                 >
-                  <Play className="h-4 w-4" /> Watch Demo
+                  See the OS <ArrowRight className="h-4 w-4" />
                 </button>
               </motion.div>
 
@@ -278,31 +281,39 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {PILLARS.map((p, i) => (
-              <motion.div
-                key={p.name}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: i * 0.04 }}
-              >
-                <Link
-                  to={p.route}
-                  className="group relative block rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/15 p-5 sm:p-6 transition-all overflow-hidden h-full"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {PILLARS.map((p, i) => {
+              const Mock = PILLAR_MOCKUPS[p.name];
+              return (
+                <motion.div
+                  key={p.name}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.5, delay: i * 0.04 }}
                 >
-                  <div
-                    className={`absolute -top-12 -right-12 h-32 w-32 rounded-full opacity-0 group-hover:opacity-30 blur-2xl bg-gradient-to-br ${p.accent} transition-opacity duration-500`}
-                  />
-                  <div className={`relative h-10 w-10 rounded-xl bg-gradient-to-br ${p.accent} flex items-center justify-center mb-5 shadow-lg`}>
-                    <p.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <h3 className="relative text-base sm:text-lg font-bold text-foreground mb-1">{p.name}</h3>
-                  <p className="relative text-xs sm:text-sm text-muted-foreground leading-snug">{p.tag}</p>
-                  <ArrowRight className="relative h-3.5 w-3.5 text-muted-foreground/40 mt-4 group-hover:text-foreground group-hover:translate-x-1 transition-all" />
-                </Link>
-              </motion.div>
-            ))}
+                  <Link
+                    to={p.route}
+                    className="group relative block rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/15 p-3 sm:p-4 transition-all overflow-hidden h-full"
+                  >
+                    <div
+                      className={`absolute -top-12 -right-12 h-32 w-32 rounded-full opacity-0 group-hover:opacity-30 blur-2xl bg-gradient-to-br ${p.accent} transition-opacity duration-500`}
+                    />
+                    {/* Mockup teaser */}
+                    <div className="relative mb-3 transition-transform duration-500 group-hover:scale-[1.02]">
+                      {Mock ? <Mock /> : null}
+                    </div>
+                    <div className="relative flex items-end justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="text-base sm:text-lg font-bold text-foreground leading-tight">{p.name}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground leading-snug truncate">{p.tag}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-1 transition-all shrink-0" />
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

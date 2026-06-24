@@ -293,7 +293,11 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
     margin: 0;
     padding: 0;
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    /* Kretopia v1 — Satoshi is the OS typeface (Inter fallback) */
+    font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     /* Handle safe areas for mobile devices with notches */
     padding-bottom: env(safe-area-inset-bottom);
     /* Prevent pull-to-refresh on mobile */

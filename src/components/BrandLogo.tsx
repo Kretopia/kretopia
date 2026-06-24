@@ -24,8 +24,10 @@ const sizeConfig = {
 } as const;
 
 /**
- * Single source of truth for the ThriveIN brand mark.
- * Use this everywhere instead of inline logo rendering.
+ * Single source of truth for the Kretopia brand mark.
+ * Wordmark = "Kretopia" with the "to" rendered in signal-teal to echo
+ * the BrandDots triad without dominating. Use this everywhere instead
+ * of inline logo rendering.
  */
 export function BrandLogo({
   size = "md",
@@ -46,10 +48,11 @@ export function BrandLogo({
         <span
           className={cn(
             cfg.text,
-            "font-black tracking-tight text-foreground select-none"
+            "font-black tracking-tight text-foreground select-none lowercase"
           )}
+          style={{ letterSpacing: "-0.02em" }}
         >
-          Thrive<span style={{ color: "#17D9D4" }}>IN</span>
+          kre<span style={{ color: "#17D9D4" }}>to</span>pia
         </span>
       )}
       {showBeta && (
@@ -62,7 +65,7 @@ export function BrandLogo({
 
   if (linkToHome) {
     return (
-      <Link to="/" aria-label="ThriveIN Home">
+      <Link to="/" aria-label="Kretopia Home">
         {content}
       </Link>
     );

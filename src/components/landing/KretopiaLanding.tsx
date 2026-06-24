@@ -33,14 +33,14 @@ interface KretopiaLandingProps {
 }
 
 const PILLARS = [
-  { icon: IdCard,       name: "Passport",     tag: "Your creative identity",     route: "/profile",     accent: "from-fuchsia-500 to-violet-500" },
-  { icon: Compass,      name: "Scout",        tag: "Find opportunities",         route: "/scout",       accent: "from-amber-400 to-orange-500" },
-  { icon: Users2,       name: "Match",        tag: "Find collaborators",         route: "/match",       accent: "from-pink-500 to-rose-500" },
-  { icon: FolderKanban, name: "Studio",       tag: "Manage projects",            route: "/desk",        accent: "from-violet-500 to-indigo-500" },
-  { icon: Radio,        name: "SoundStages",  tag: "Live virtual rooms",         route: "/circle?tab=live", accent: "from-cyan-400 to-teal-500" },
-  { icon: Wallet,       name: "KrePay",       tag: "Contracts & payments",       route: "/thrivepay",   accent: "from-emerald-400 to-green-500" },
-  { icon: Sparkles,     name: "Kreto",        tag: "Your AI Executive Producer", route: "/auth",        accent: "from-fuchsia-500 via-pink-500 to-orange-400" },
-  { icon: Calendar,     name: "ThriveIN",     tag: "Events · Magazine · IRL",    route: "/circle",      accent: "from-rose-500 to-amber-500" },
+  { icon: IdCard,       name: "Passport",     tag: "Your creative identity",     route: "/profile",         accent: "from-[#4B2CF5] to-[#FF2CA7]" },
+  { icon: Compass,      name: "Scout",        tag: "Find opportunities",         route: "/scout",           accent: "from-[#FF2CA7] to-[#FF6A3D]" },
+  { icon: Users2,       name: "Match",        tag: "Find collaborators",         route: "/match",           accent: "from-[#FF2CA7] to-[#FFB347]" },
+  { icon: FolderKanban, name: "Studio",       tag: "Manage projects",            route: "/desk",            accent: "from-[#4B2CF5] to-[#FFB347]" },
+  { icon: Radio,        name: "SoundStages",  tag: "Live virtual rooms",         route: "/circle?tab=live", accent: "from-[#4B2CF5] to-[#FF6A3D]" },
+  { icon: Wallet,       name: "KrePay",       tag: "Contracts & payments",       route: "/thrivepay",       accent: "from-[#FF6A3D] to-[#FFB347]" },
+  { icon: Sparkles,     name: "Kreto",        tag: "Your AI Executive Producer", route: "/auth",            accent: "from-[#4B2CF5] via-[#FF2CA7] to-[#FFB347]" },
+  { icon: Calendar,     name: "ThriveIN",     tag: "Events · Magazine · IRL",    route: "/circle",          accent: "from-[#FF2CA7] to-[#FFB347]" },
 ];
 
 const ROTATING_NAMES = ["Ethan Auguste", "Maria Santos", "James Lee", "Aaliyah Brooks", "Kenji Watanabe"];

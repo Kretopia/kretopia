@@ -180,22 +180,25 @@ All colors MUST be HSL.
        Use the gradients sparingly: hero CTAs, Kreto glow, pillar accents.
        ============================================================ */
     --k-midnight:    240 18% 5%;     /* #0B0B10 */
-    --k-purple:      248 92% 57%;    /* #4B2CF5 deep purple   */
-    --k-magenta:     326 100% 59%;   /* #FF2CA7 magenta       */
-    --k-coral:       14 100% 62%;    /* #FF6A3D coral         */
-    --k-orange:      31 100% 64%;    /* #FFB347 warm orange   */
-    --k-sand:        36 21% 93%;     /* #F2EFEA soft sand     */
+    --k-blue:        251 92% 51%;    /* #2A0FD9 electric indigo-blue (logo start) */
+    --k-purple:      251 92% 52%;    /* #4812F5 deep blue-violet */
+    --k-violet:      282 82% 45%;    /* #9413D2 violet midpoint */
+    --k-magenta:     320 86% 49%;    /* #E0179C magenta */
+    --k-pink:        345 100% 62%;   /* #FF3D7A warm pink */
+    --k-amber:       38 99% 55%;     /* #FEA61A amber tip */
+    --k-sand:        36 21% 93%;     /* #F2EFEA soft sand */
 
-    /* Signature gradients from the brand sheet */
-    --k-grad-purple-dream:  linear-gradient(135deg, #4B2CF5 0%, #FF2CA7 100%);
-    --k-grad-sunset-drive:  linear-gradient(135deg, #FF2CA7 0%, #FF6A3D 100%);
-    --k-grad-creative-flow: linear-gradient(135deg, #4B2CF5 0%, #FFB347 100%);
-    --k-grad-full:          linear-gradient(135deg, #4B2CF5 0%, #FF2CA7 45%, #FF6A3D 75%, #FFB347 100%);
+    /* Signature gradients — re-tuned to match the actual K mark.
+       Heavy blue/violet runway, magenta in the lower third, amber only as a tip.
+       This keeps it OFF the Instagram (yellow→pink→purple) territory. */
+    --k-grad-purple-dream:  linear-gradient(160deg, #2A0FD9 0%, #4812F5 35%, #9413D2 100%);
+    --k-grad-sunset-drive:  linear-gradient(160deg, #9413D2 0%, #E0179C 55%, #FF3D7A 100%);
+    --k-grad-creative-flow: linear-gradient(160deg, #2A0FD9 0%, #9413D2 50%, #FEA61A 100%);
+    --k-grad-full:          linear-gradient(160deg, #2A0FD9 0%, #4812F5 22%, #9413D2 52%, #E0179C 78%, #FF3D7A 90%, #FEA61A 100%);
 
-    /* Backwards-compat: keep --kretopia-sunset pointing at the canonical
-       brand gradient (full sweep) so existing call sites stay correct. */
+    /* Backwards-compat: keep --kretopia-sunset pointing at the canonical full sweep. */
     --kretopia-sunset: var(--k-grad-full);
-    --kretopia-sunset-soft: linear-gradient(135deg, hsl(248 92% 57% / 0.18) 0%, hsl(326 100% 59% / 0.18) 50%, hsl(31 100% 64% / 0.18) 100%);
+    --kretopia-sunset-soft: linear-gradient(160deg, hsl(251 92% 51% / 0.20) 0%, hsl(282 82% 45% / 0.18) 50%, hsl(38 99% 55% / 0.14) 100%);
     --kretopia-glow: 0 0 60px -10px hsl(326 100% 59% / 0.5), 0 0 120px -20px hsl(248 92% 57% / 0.4);
 
     --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.5);

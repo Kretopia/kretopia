@@ -447,8 +447,8 @@ export const UnifiedHome = () => {
         url="https://www.thrivein.io/"
       />
 
-      {/* ═══════════ GUEST LANDING — Kretopia v1 ═══════════ */}
-      {!user && !isWedge && (
+      {/* ═══════════ GUEST LANDING — Kretopia v1 (now canonical) ═══════════ */}
+      {!user && (
         <KretopiaLanding onSearchSubmit={handleHeroClaimSearch} />
       )}
 

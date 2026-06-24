@@ -726,3 +726,34 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* ============================================================
+   KRETOPIA v1 — gradient utility classes (from brand sheet)
+   Use these instead of hard-coding gradient strings in components.
+   ============================================================ */
+.bg-k-purple-dream  { background-image: var(--k-grad-purple-dream); }
+.bg-k-sunset-drive  { background-image: var(--k-grad-sunset-drive); }
+.bg-k-creative-flow { background-image: var(--k-grad-creative-flow); }
+.bg-k-full          { background-image: var(--k-grad-full); }
+
+.text-k-purple-dream,
+.text-k-sunset-drive,
+.text-k-creative-flow,
+.text-k-full {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.text-k-purple-dream  { background-image: var(--k-grad-purple-dream); }
+.text-k-sunset-drive  { background-image: var(--k-grad-sunset-drive); }
+.text-k-creative-flow { background-image: var(--k-grad-creative-flow); }
+.text-k-full          { background-image: var(--k-grad-full); }
+
+.ring-k-glow {
+  box-shadow:
+    0 0 60px -10px hsl(326 100% 59% / 0.5),
+    0 0 120px -20px hsl(248 92% 57% / 0.4);
+}
+
+.font-display { font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif; }

@@ -32,6 +32,7 @@ import { CoreValueBlocks } from "@/components/landing/CoreValueBlocks";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { BottomCTASection } from "@/components/landing/BottomCTASection";
 import { OneWedgeLanding } from "@/components/landing/OneWedgeLanding";
+import { KretopiaLanding } from "@/components/landing/KretopiaLanding";
 import { useLandingVariant } from "@/hooks/useLandingVariant";
 // StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
@@ -440,135 +441,14 @@ export const UnifiedHome = () => {
   return (
     <div className="bg-background min-h-screen accent-passport">
       <SEO
-        title="ThriveIN | The Creative OS - Credits, EPKs & Workspace for Creators"
-        description="Claim your verified creative credits, build your professional industry EPK, collaborate globally, and manage milestone payments securely on ThriveIN.io."
+        title="Kretopia — Where Creativity Lives. The Creative Economy OS."
+        description="Kretopia is the Creative Economy OS. Build your Creative Passport, find opportunities, meet collaborators, and get paid — with Kreto, your AI Executive Producer."
         url="https://www.thrivein.io/"
       />
 
-      {/* ═══════════ GUEST HERO — CINEMATIC STAGE (control variant) ═══════════ */}
+      {/* ═══════════ GUEST LANDING — Kretopia v1 ═══════════ */}
       {!user && !isWedge && (
-        <div className="relative overflow-hidden bg-background">
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -top-40 -left-20 h-[520px] w-[520px] rounded-full bg-primary/15 blur-[160px]" />
-            <div className="absolute top-20 -right-20 h-[420px] w-[420px] rounded-full bg-primary/10 blur-[140px]" />
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-          </div>
-
-          <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-12 pb-8">
-            {/* Two-column cinematic stage */}
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-8 sm:mb-14 min-w-0">
-
-              {/* LEFT — Editorial headline + wedge copy + search. */}
-              <div className="relative z-10 text-center lg:text-left order-1 min-w-0 overflow-hidden">
-                <p className="inline-flex max-w-full items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em] sm:tracking-[0.3em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04] overflow-hidden whitespace-nowrap">
-                  <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                  <span className="truncate">ThriveIN · The Creative OS</span>
-                </p>
-
-                {/* PRIMARY HEADLINE — editorial scale, IMDb-meets-OS wedge */}
-                <h1 className="text-[2rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-tight text-foreground leading-[1.02] mb-4">
-                  The Creative OS for<br />
-                  <span className="text-primary italic font-black">Artists, Filmmakers &amp; Musicians.</span>
-                </h1>
-
-                {/* Subheadline — explicit, semantic, AI-scrapable */}
-                <h2 className="text-[0.95rem] sm:text-lg text-foreground font-semibold mb-5 leading-[1.5] max-w-xl mx-auto lg:mx-0">
-                  Build your verified industry credit registry, share your professional EPK, match with collaborators, and secure your project payments — <span className="text-foreground font-bold">all in one workspace.</span>
-                </h2>
-
-                {/* SEARCH BAR — first interactive element above the fold */}
-                <div className="max-w-xl mx-auto lg:mx-0 mb-3">
-                  <div className="text-center lg:text-left mb-2">
-                    <p className="inline-flex max-w-full items-center gap-2 text-xs sm:text-base font-black text-energy">
-                      <span className="truncate">Already have work? Search your name</span>
-                      <ArrowRight className="h-4 w-4 text-energy" />
-                    </p>
-                    <p className="text-xs text-foreground/75 font-medium mt-1">
-                      We'll find your verified credits across the web
-                    </p>
-                  </div>
-
-                  <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-energy via-primary to-energy shadow-[0_0_30px_-5px_hsl(var(--energy)/0.5)]">
-                    <div className="rounded-[14px] bg-card">
-                      <UnifiedSearchDropdown
-                        variant="hero"
-                        placeholder={t("landing.searchPlaceholder")}
-                        onQuerySubmit={handleHeroClaimSearch}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* STATS BAR — only render counters with real values (no empty 0+ noise) */}
-                {(() => {
-                  const items = [
-                    { key: "creators", value: stats.creators, label: t("landing.statsCreators") },
-                    { key: "connections", value: stats.connections, label: "Connections" },
-                    { key: "credits", value: stats.credits, label: t("landing.statsCredits") },
-                    { key: "gigs", value: stats.gigs, label: t("landing.statsGigs") },
-                  ].filter((x) => (x.value ?? 0) > 0);
-                  if (items.length === 0) return null;
-                  return (
-                    <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-5 mt-4 mb-2 flex-wrap">
-                      {items.map((item, i) => (
-                        <div key={item.key} className="flex items-center gap-3 sm:gap-5">
-                          {i > 0 && <div className="w-px h-7 bg-border" />}
-                          <div className="text-center lg:text-left">
-                            <p className="text-lg sm:text-xl font-extrabold text-foreground">{item.value.toLocaleString()}+</p>
-                            <p className="text-[9px] sm:text-[10px] text-foreground/70 font-bold uppercase tracking-wider">{item.label}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                {/* Industry rotator — cinematic flicker */}
-                <p className="text-xs sm:text-sm text-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mt-5 uppercase tracking-[0.16em] sm:tracking-[0.2em] font-black">
-                  For{" "}
-                  <span className="text-energy inline-block min-w-[110px]">
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={heroRoleIdx}
-                        initial={{ y: 10, opacity: 0, filter: "blur(4px)" }}
-                        animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                        exit={{ y: -10, opacity: 0, filter: "blur(4px)" }}
-                        transition={{ duration: 0.3 }}
-                        className="inline-block"
-                      >
-                        {HERO_ROLES[heroRoleIdx]}s
-                      </motion.span>
-                    </AnimatePresence>
-                  </span>
-                </p>
-
-                <div className="mt-6 text-left">
-                  <DiscoverCreativesRow />
-                </div>
-              </div>
-
-              {/* RIGHT — Auto-rotating phone carousel: Match → Desk → Pay → Thrive */}
-              <div className="relative order-2 min-w-0 overflow-hidden">
-                <HeroPhoneCarousel />
-              </div>
-            </div>
-
-            {/* PRIMARY CTA — inline OAuth */}
-            <div className="max-w-md mx-auto mb-8 text-center">
-              <h3 className="text-xl sm:text-2xl font-black text-foreground mb-1.5 tracking-tight">
-                Claim your spot
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                Join free in 1 tap — start building your verified creative identity today.
-              </p>
-              <OAuthQuickButtons hideDivider />
-              <p className="text-[10px] text-muted-foreground/60 mt-3">
-                Free forever · No credit card · 60-second setup
-              </p>
-            </div>
-
-          </div>
-        </div>
+        <KretopiaLanding onSearchSubmit={handleHeroClaimSearch} />
       )}
 
       {/* Live gigs strip removed — Smart Gig Scout is the new front door */}
@@ -692,97 +572,24 @@ export const UnifiedHome = () => {
             4. Comparison    5. Social Proof        6. Pricing
             7. ThriveFund teaser   8. Bottom CTA */}
         {isWedge && <OneWedgeLanding onSearchSubmit={handleHeroClaimSearch} />}
-        {!user && !isWedge && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
-        {!user && !isWedge && <CoreValueBlocks />}
-        {!user && !isWedge && <ProductReelSection />}
-        {!user && !isWedge && <ComparisonTableSection />}
-        {!user && !isWedge && <SocialProofSection />}
-        {!user && !isWedge && <PricingPreviewSection />}
-        {!user && !isWedge && <ThriveFundTeaserCard />}
-        {!user && !isWedge && <FAQSection />}
-        {!user && !isWedge && <BottomCTASection />}
+        {/* Kretopia v1 landing owns the full guest narrative + footer above.
+            Legacy guest-only sections (ClaimYourCredits, CoreValueBlocks,
+            ProductReel, ComparisonTable, SocialProof, PricingPreview,
+            ThriveFundTeaser, FAQ, BottomCTA, trust badges, founding-member
+            CTA, footer links) intentionally removed. */}
 
-
-        {/* "Creators For You" rail removed from Today — lives on /scout and /circle. */}
-
-        {/* Scouted gigs + MoneyBrief moved into "More from today" above to keep Today calm. */}
-
-        {/* Daily Driver IA: Streak + Spotlight stripped from Today — Home stays a focused brief.
-            Spotlight (Magazine + Podcast) lives at /spotlight; streak chips moved to Passport. */}
-
-        {/* Legacy "Gigs For You" removed — ScoutedGigsSection above is the moat. */}
-
-        {/* Hidden "What's Happening Near You" removed — /meetup + Sound Stages cover events. */}
-
-        {/* Hidden "Trending credits" removed — accessible via Credits tab. */}
-
-        {/* Trust badges - guest only */}
-        {!user && (
-          <div className="flex items-center justify-center gap-4 flex-wrap mb-6">
-            {[
-              { icon: Shield, label: t("landing.verifiedIdentity") },
-              { icon: CheckCircle, label: t("landing.escrowProtected") },
-              { icon: Star, label: t("landing.peerEndorsed") },
-            ].map(b => (
-              <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <b.icon className="h-3.5 w-3.5 text-[hsl(var(--signal-teal))]" />
-                <span className="font-medium">{b.label}</span>
-              </div>
-            ))}
+        {/* Footer for authed users only — guests get the Kretopia footer above. */}
+        {user && (
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
+            <Link to="/about" className="hover:text-foreground transition-colors">{t("common.about")}</Link>
+            <span className="text-border">·</span>
+            <Link to="/terms" className="hover:text-foreground transition-colors">{t("common.terms")}</Link>
+            <span className="text-border">·</span>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">{t("common.privacy")}</Link>
+            <span className="text-border">·</span>
+            <Link to="/community-guidelines" className="hover:text-foreground transition-colors">{t("footer.guidelines")}</Link>
           </div>
         )}
-
-        {/* ── CTA CARD ── */}
-        {/* ── CTA CARD ── Guests always; auth users only after they've taken an action */}
-        {/* Pass B.1: Pro upsell hidden for auth users — upgrade lives in Account/Settings. */}
-        {!user && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="rounded-2xl overflow-hidden relative"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--signal-teal))] via-[hsl(var(--signal-teal))]/90 to-primary" />
-          <div className="relative p-6 sm:p-8 text-center">
-            <div className="h-12 w-12 rounded-2xl bg-white/20 ring-1 ring-white/30 flex items-center justify-center mx-auto mb-3">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
-              {user ? t("landing.goProTitle") : t("landing.foundingMemberTitle")}
-            </h3>
-            <p className="text-xs sm:text-sm text-white/90 leading-relaxed mb-1 max-w-md mx-auto">
-              {user ? t("landing.goProDesc") : t("landing.foundingMemberDesc")}
-            </p>
-            {!user && (
-              <p className="text-[10px] text-white/70 mb-4">
-                {t("landing.pricingNote")}
-              </p>
-            )}
-            <Link
-              to={user ? "/subscription" : "/auth?tab=signup"}
-              className="inline-flex items-center gap-2 rounded-xl bg-white text-[hsl(var(--signal-teal))] px-6 py-3 text-sm font-bold hover:bg-white/95 transition-colors shadow-md"
-            >
-              {user ? t("landing.startTrial") : t("landing.joinNow")} <ArrowRight className="h-4 w-4" />
-            </Link>
-            {!user && (
-              <p className="text-[10px] text-white/40 mt-3">
-                {t("landing.builtByCreatives")}
-              </p>
-            )}
-          </div>
-        </motion.div>
-        )}
-
-        {/* Footer */}
-        <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
-          <Link to="/about" className="hover:text-foreground transition-colors">{t("common.about")}</Link>
-          <span className="text-border">·</span>
-          <Link to="/terms" className="hover:text-foreground transition-colors">{t("common.terms")}</Link>
-          <span className="text-border">·</span>
-          <Link to="/privacy" className="hover:text-foreground transition-colors">{t("common.privacy")}</Link>
-          <span className="text-border">·</span>
-          <Link to="/community-guidelines" className="hover:text-foreground transition-colors">{t("footer.guidelines")}</Link>
-        </div>
 
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
       </div>

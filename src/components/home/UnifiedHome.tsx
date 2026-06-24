@@ -572,97 +572,24 @@ export const UnifiedHome = () => {
             4. Comparison    5. Social Proof        6. Pricing
             7. ThriveFund teaser   8. Bottom CTA */}
         {isWedge && <OneWedgeLanding onSearchSubmit={handleHeroClaimSearch} />}
-        {!user && !isWedge && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
-        {!user && !isWedge && <CoreValueBlocks />}
-        {!user && !isWedge && <ProductReelSection />}
-        {!user && !isWedge && <ComparisonTableSection />}
-        {!user && !isWedge && <SocialProofSection />}
-        {!user && !isWedge && <PricingPreviewSection />}
-        {!user && !isWedge && <ThriveFundTeaserCard />}
-        {!user && !isWedge && <FAQSection />}
-        {!user && !isWedge && <BottomCTASection />}
+        {/* Kretopia v1 landing owns the full guest narrative + footer above.
+            Legacy guest-only sections (ClaimYourCredits, CoreValueBlocks,
+            ProductReel, ComparisonTable, SocialProof, PricingPreview,
+            ThriveFundTeaser, FAQ, BottomCTA, trust badges, founding-member
+            CTA, footer links) intentionally removed. */}
 
-
-        {/* "Creators For You" rail removed from Today — lives on /scout and /circle. */}
-
-        {/* Scouted gigs + MoneyBrief moved into "More from today" above to keep Today calm. */}
-
-        {/* Daily Driver IA: Streak + Spotlight stripped from Today — Home stays a focused brief.
-            Spotlight (Magazine + Podcast) lives at /spotlight; streak chips moved to Passport. */}
-
-        {/* Legacy "Gigs For You" removed — ScoutedGigsSection above is the moat. */}
-
-        {/* Hidden "What's Happening Near You" removed — /meetup + Sound Stages cover events. */}
-
-        {/* Hidden "Trending credits" removed — accessible via Credits tab. */}
-
-        {/* Trust badges - guest only */}
-        {!user && (
-          <div className="flex items-center justify-center gap-4 flex-wrap mb-6">
-            {[
-              { icon: Shield, label: t("landing.verifiedIdentity") },
-              { icon: CheckCircle, label: t("landing.escrowProtected") },
-              { icon: Star, label: t("landing.peerEndorsed") },
-            ].map(b => (
-              <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <b.icon className="h-3.5 w-3.5 text-[hsl(var(--signal-teal))]" />
-                <span className="font-medium">{b.label}</span>
-              </div>
-            ))}
+        {/* Footer for authed users only — guests get the Kretopia footer above. */}
+        {user && (
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
+            <Link to="/about" className="hover:text-foreground transition-colors">{t("common.about")}</Link>
+            <span className="text-border">·</span>
+            <Link to="/terms" className="hover:text-foreground transition-colors">{t("common.terms")}</Link>
+            <span className="text-border">·</span>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">{t("common.privacy")}</Link>
+            <span className="text-border">·</span>
+            <Link to="/community-guidelines" className="hover:text-foreground transition-colors">{t("footer.guidelines")}</Link>
           </div>
         )}
-
-        {/* ── CTA CARD ── */}
-        {/* ── CTA CARD ── Guests always; auth users only after they've taken an action */}
-        {/* Pass B.1: Pro upsell hidden for auth users — upgrade lives in Account/Settings. */}
-        {!user && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="rounded-2xl overflow-hidden relative"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--signal-teal))] via-[hsl(var(--signal-teal))]/90 to-primary" />
-          <div className="relative p-6 sm:p-8 text-center">
-            <div className="h-12 w-12 rounded-2xl bg-white/20 ring-1 ring-white/30 flex items-center justify-center mx-auto mb-3">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
-              {user ? t("landing.goProTitle") : t("landing.foundingMemberTitle")}
-            </h3>
-            <p className="text-xs sm:text-sm text-white/90 leading-relaxed mb-1 max-w-md mx-auto">
-              {user ? t("landing.goProDesc") : t("landing.foundingMemberDesc")}
-            </p>
-            {!user && (
-              <p className="text-[10px] text-white/70 mb-4">
-                {t("landing.pricingNote")}
-              </p>
-            )}
-            <Link
-              to={user ? "/subscription" : "/auth?tab=signup"}
-              className="inline-flex items-center gap-2 rounded-xl bg-white text-[hsl(var(--signal-teal))] px-6 py-3 text-sm font-bold hover:bg-white/95 transition-colors shadow-md"
-            >
-              {user ? t("landing.startTrial") : t("landing.joinNow")} <ArrowRight className="h-4 w-4" />
-            </Link>
-            {!user && (
-              <p className="text-[10px] text-white/40 mt-3">
-                {t("landing.builtByCreatives")}
-              </p>
-            )}
-          </div>
-        </motion.div>
-        )}
-
-        {/* Footer */}
-        <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
-          <Link to="/about" className="hover:text-foreground transition-colors">{t("common.about")}</Link>
-          <span className="text-border">·</span>
-          <Link to="/terms" className="hover:text-foreground transition-colors">{t("common.terms")}</Link>
-          <span className="text-border">·</span>
-          <Link to="/privacy" className="hover:text-foreground transition-colors">{t("common.privacy")}</Link>
-          <span className="text-border">·</span>
-          <Link to="/community-guidelines" className="hover:text-foreground transition-colors">{t("footer.guidelines")}</Link>
-        </div>
 
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
       </div>

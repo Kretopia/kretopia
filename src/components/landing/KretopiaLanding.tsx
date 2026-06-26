@@ -22,12 +22,12 @@ import { useEffect, useState } from "react";
 import {
   ArrowRight, Search, Sparkles, Star,
 } from "lucide-react";
-import heroImage from "@/assets/kretopia-hero.jpg";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { BRAND } from "@/lib/brandLexicon";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
 import { PILLAR_MOCKUPS } from "@/components/landing/PillarMockups";
+import { KretopiaHero } from "@/components/landing/KretopiaHero";
 
 interface KretopiaLandingProps {
   onSearchSubmit: (query: string) => void;

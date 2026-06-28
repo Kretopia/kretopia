@@ -211,56 +211,73 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
               Make it a verified Creative Passport.
             </p>
 
-            {/* Search field — restrained, premium */}
-            <div className="relative group max-w-xl">
+            {/* Search field — clean single input, submits straight into the claim flow */}
+            <form onSubmit={submit} className="relative group max-w-xl">
               <div
                 aria-hidden
                 className="absolute inset-0 -z-10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"
                 style={{
                   background:
-                    "radial-gradient(60% 100% at 50% 50%, rgba(255,10,120,0.18), transparent 70%)",
-                  filter: "blur(20px)",
+                    "radial-gradient(60% 100% at 50% 50%, rgba(255,10,120,0.22), transparent 70%)",
+                  filter: "blur(24px)",
                 }}
               />
               <div
-                className="relative border-b transition-colors duration-300"
-                style={{
-                  borderColor: "rgba(255,255,255,0.18)",
-                }}
+                className="relative flex items-center gap-3 border-b pb-3 transition-colors duration-300 focus-within:border-white/60"
+                style={{ borderColor: "rgba(255,255,255,0.22)" }}
               >
-                <div className="flex items-center gap-3 pb-1">
-                  <Search
-                    className="h-4 w-4 shrink-0"
-                    style={{ color: "rgba(255,255,255,0.5)" }}
+                <Search
+                  className="h-5 w-5 shrink-0"
+                  style={{ color: "rgba(255,255,255,0.55)" }}
+                />
+                <div className="relative flex-1 min-w-0">
+                  {/* Rotating ghost name — only when empty */}
+                  {query.length === 0 && (
+                    <div
+                      className="absolute inset-0 flex items-center pointer-events-none"
+                      style={{ fontFamily: "'Work Sans', sans-serif" }}
+                    >
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={nameIdx}
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 0.5, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.5 }}
+                          className="text-lg sm:text-xl italic font-serif text-white/50 select-none truncate"
+                        >
+                          Try “{ROTATING_NAMES[nameIdx]}”
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
+                  )}
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    enterKeyHint="search"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    aria-label="Search your name"
+                    className="relative w-full bg-transparent border-0 outline-none text-white text-lg sm:text-xl font-serif placeholder:text-white/40"
+                    style={{ caretColor: "#FF0A78" }}
                   />
-                  <div className="flex-1 min-w-0">
-                    <UnifiedSearchDropdown
-                      variant="hero"
-                      placeholder=""
-                      onQuerySubmit={onSearchSubmit}
-                    />
-                  </div>
                 </div>
-                {/* Rotating ghost name — sits under the input */}
-                <div
-                  className="absolute left-7 top-1/2 -translate-y-1/2 pointer-events-none flex items-baseline gap-2"
+                <button
+                  type="submit"
+                  aria-label="Find me"
+                  disabled={query.trim().length < 2}
+                  className="shrink-0 inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white text-[#05070D] text-sm font-medium tracking-wide transition-all hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ fontFamily: "'Work Sans', sans-serif" }}
                 >
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={nameIdx}
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 0.35, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.5 }}
-                      className="text-base sm:text-lg italic font-serif text-white/40 select-none [.unified-search-has-value_&]:hidden"
-                    >
-                      Try “{ROTATING_NAMES[nameIdx]}”
-                    </motion.span>
-                  </AnimatePresence>
-                </div>
+                  Find me
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
-            </div>
+            </form>
+
 
             <p
               className="mt-5 text-xs"

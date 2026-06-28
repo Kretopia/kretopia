@@ -30,6 +30,8 @@ interface KretopiaHeroProps {
 
 export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
   const [nameIdx, setNameIdx] = useState(0);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const id = setInterval(
@@ -38,6 +40,16 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
     );
     return () => clearInterval(id);
   }, []);
+
+  const submit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const q = query.trim();
+    if (q.length < 2) {
+      inputRef.current?.focus();
+      return;
+    }
+    onSearchSubmit(q);
+  };
 
   return (
     <section

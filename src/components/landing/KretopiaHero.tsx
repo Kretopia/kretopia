@@ -11,10 +11,9 @@
  *
  * Inspired by: A24 posters, Monocle covers, Apple TV product pages.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react";
-import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+import { Search, ArrowRight } from "lucide-react";
 import portraitImage from "@/assets/kretopia-hero-portrait.jpg";
 
 const ROTATING_NAMES = [

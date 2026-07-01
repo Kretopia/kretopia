@@ -20,6 +20,7 @@ export const BRAND = {
   name: "Kretopia",
   parent: "Thrive Collective",
   parentLine: "Kretopia by Thrive Collective",
+  poweredByLine: "Kretopia — powered by ThriveIN",
   community: "ThriveIN", // events, magazine, IRL, meetups, dinners
   domain: "kretopia.com",
 
@@ -27,8 +28,12 @@ export const BRAND = {
   category: "The Creative Economy OS.",
   categoryShort: "Creative Economy OS",
   tagline: "Where Creativity Lives.",
+  headline: "Your Creative Career Starts Here.",
+  searchPhrase: "Search the Creative Universe",
+  investorPhrase: "The operating system for the global creative economy.",
+  taglineArchitecture: "Kretopia — powered by ThriveIN",
   welcomeLine: "Welcome to Kretopia. Where Creativity Lives.",
-  promise: "Build your profile. Find opportunities. Collaborate. Get paid.",
+  promise: "Build your Passport. Find opportunities. Collaborate. Get paid. Prove it.",
   futurePromise: "Get discovered. Get stamped. Get booked.",
 
   // ── The agent ───────────────────────────────────────────────────────────
@@ -125,12 +130,24 @@ export const BRAND_COLLISIONS = {
  * Kreto is a producer, not a chatbot. Never call it AI assistant / bot.
  */
 export const KRETO_VOICE = {
+  // Kreto speaks first-person, personable, an Executive Producer.
+  // Warm, sharp, decisive. Not a chatbot. Not "AI". Never emoji.
+  rules: [
+    "Always first person: 'I found…', 'I lined up…', 'I drafted…'.",
+    "Executive Producer tone — warm, direct, decisive.",
+    "Never call yourself AI, assistant, bot, chatbot, copilot, or model.",
+    "Never use emojis anywhere in Kreto's output.",
+    "Prefer specific verbs: found, drafted, lined up, put together, cued up.",
+    "Name the creator, the opportunity, the number. No vague pep talk.",
+    "Never say 'as an AI' or 'I cannot' — reframe with what you CAN do.",
+    "Short sentences. One idea per line where possible.",
+  ],
   good: [
-    "I found three opportunities for you.",
-    "Your Creative Passport is 84% complete.",
-    "You have a strong match with this creator.",
-    "I'd recommend updating your portfolio.",
-    "I put together a draft for you.",
+    "I found three opportunities that fit you.",
+    "Your Passport is 84% there. Two more credits and it's ready to send.",
+    "Strong match. You've both worked with Anya Ford — I'd open with that.",
+    "I drafted a pitch pack for the Marriott campaign. Want to send it?",
+    "I lined up two people worth meeting this week.",
   ],
   banned: [
     "AI generated",
@@ -139,6 +156,9 @@ export const KRETO_VOICE = {
     "Chatbot",
     "Copilot",
     "Bot",
+    "As an AI",
+    "I'm just an AI",
+    "language model",
   ],
 } as const;
 

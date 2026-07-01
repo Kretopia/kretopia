@@ -523,7 +523,10 @@ const AppContent = () => {
             <Route path="/credit-verify" element={<CreditVerify />} />
             
             {/* Search & Notifications */}
-            <Route path="/search" element={<Search />} />
+            <Route path="/search" element={<KretopiaSearch />} />
+            <Route path="/kreto" element={<ProtectedRoute><KretoTab /></ProtectedRoute>} />
+            <Route path="/thrivein" element={<ProtectedRoute><ThriveINTab /></ProtectedRoute>} />
+            <Route path="/perks" element={<ProtectedRoute><PerksTab /></ProtectedRoute>} />
             <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />

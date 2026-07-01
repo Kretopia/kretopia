@@ -11,7 +11,8 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
-import BottomNav from "./components/BottomNav";
+import KretopiaBottomNav from "./components/nav/KretopiaBottomNav";
+import { KretopiaSidebar } from "./components/nav/KretopiaSidebar";
 import QuickActionFab from "./components/QuickActionFab";
 import { BrandLoader } from "./components/brand/BrandDots";
 
@@ -169,6 +170,12 @@ const ManageHub = lazy(() => import("./pages/ManageHub"));
 const ShareEventRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareEventRedirect })));
 const ShareMagazineRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareMagazineRedirect })));
 const ShareCampaignRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareCampaignRedirect })));
+
+// Kretopia V1 tabs
+const KretopiaSearch = lazy(() => import("./pages/KretopiaSearch"));
+const KretoTab = lazy(() => import("./pages/KretoTab"));
+const ThriveINTab = lazy(() => import("./pages/ThriveINTab"));
+const PerksTab = lazy(() => import("./pages/PerksTab"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -281,7 +288,8 @@ const AppContent = () => {
       <SkipLink />
       <PageViewTracker />
       {showNavbar && <Navbar user={user} />}
-      {showBottomNav && <BottomNav />}
+      {showNavbar && !!user && <KretopiaSidebar />}
+      {showBottomNav && <KretopiaBottomNav />}
       {showBottomNav && <QuickActionFab />}
       <ThriveAgentFab />
       <DesktopCopilotRail />
@@ -295,7 +303,7 @@ const AppContent = () => {
       {showGuestBanner && <GuestBanner />}
       <main
         id="main-content"
-        className={shouldAddBottomPadding ? "pb-36 lg:pb-0" : ""}
+        className={cn(shouldAddBottomPadding ? "pb-36 lg:pb-0" : "", user ? "lg:pl-60" : "")}
         style={{ paddingRight: "var(--copilot-rail-w, 0px)" }}
       >
         <Suspense fallback={<LoadingFallback />}>

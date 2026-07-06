@@ -208,7 +208,7 @@ export function StartProjectFromMatchDialog({
       if (!validationResult.success) {
         toast({
           title: "Invalid input",
-          description: validationResult.error.errors[0].message,
+          description: validationResult.error.issues[0].message,
           variant: "destructive",
         });
         return;

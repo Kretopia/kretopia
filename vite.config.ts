@@ -10,6 +10,7 @@ import { gigSharePagesPlugin } from "./plugins/gig-share-pages";
 import { eventSharePagesPlugin } from "./plugins/event-share-pages";
 import { campaignSharePagesPlugin } from "./plugins/campaign-share-pages";
 import { seoPagesPlugin } from "./plugins/seo-pages";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 const { hash: buildHash, plugin: versionJsonPlugin } = versionPlugin();
 

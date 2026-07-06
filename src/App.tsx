@@ -314,6 +314,7 @@ const AppContent = () => {
             <Route path="/" element={<DefaultRoute />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/claim" element={<Claim />} />
             <Route path="/agents" element={<AgentsActivity />} />
             <Route path="/demo/agent" element={<DemoAgent />} />

@@ -223,7 +223,7 @@ FROM public.founding_member_quests"
 dump industry_stats.csv       "SELECT * FROM public.industry_stats"
 dump icdb_role_taxonomy.csv   "SELECT * FROM public.icdb_role_taxonomy"
 dump location_categories.csv  "SELECT * FROM public.location_categories"
-dump email_templates.csv "SELECT id, name, subject, template_type, created_at, updated_at FROM public.email_templates"
+dump email_templates.csv "SELECT id, name, subject, created_at, updated_at FROM public.email_templates"
 
 echo
 echo "✅ done"

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfileContext } from "@/contexts/ProfileContext";
 import { useAuth } from "@/hooks/useAuth";
+import { getProfile, type Profile } from "@/lib/profile/profileService";
 
 export const useProfileData = () => {
   const { toast } = useToast();
@@ -42,15 +43,19 @@ export const useProfileData = () => {
       
       setCurrentUserId(currentUserId);
 
-      // Load core profile data first (fast)
+      // Load core profile data first (fast). Profile is read through profileService,
+      // which merges the normalized profile_* tables and falls back to legacy `profiles`.
       const [profileResult, connectionsResult, portfolioResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', currentUserId).maybeSingle(),
+        getProfile(currentUserId).then(
+          (data): { data: Profile | null; error: Error | null } => ({ data, error: null }),
+          (error: unknown): { data: Profile | null; error: Error | null } => ({ data: null, error: error as Error }),
+        ),
         supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', currentUserId).eq('status', 'accepted'),
         supabase.from('credits').select('*').eq('user_id', currentUserId).eq('source', 'portfolio').order('created_at', { ascending: false }).limit(6)
       ]);
 
       let { data, error } = profileResult;
-      
+
       if (error) {
         console.error('[Profile] Error loading profile:', error);
         toast({
@@ -92,14 +97,12 @@ export const useProfileData = () => {
           return;
         }
 
-        const { data: createdProfile, error: refetchError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', currentUserId)
-          .maybeSingle();
-
-        if (refetchError || !createdProfile) {
+        const createdProfile = await getProfile(currentUserId).catch((refetchError) => {
           console.error('[Profile] Profile still missing after auto-provision:', refetchError);
+          return null;
+        });
+
+        if (!createdProfile) {
           toast({
             title: 'Error',
             description: 'Unable to load your profile right now.',
@@ -172,13 +175,13 @@ export const useProfileData = () => {
             supabase.functions.invoke('enrich-creator-profile', {
               body: { user_id: currentUserId, scrape_website: true, skip_credits: true },
             }).then(async () => {
-              const [profileRefresh, awardsRefresh, pressRefresh] = await Promise.all([
-                supabase.from('profiles').select('*').eq('user_id', currentUserId!).maybeSingle(),
+              const [refreshedProfile, awardsRefresh, pressRefresh] = await Promise.all([
+                getProfile(currentUserId!).catch(() => null),
                 supabase.from('awards').select('*').eq('user_id', currentUserId!).order('year', { ascending: false }).limit(10),
                 supabase.from('press_links').select('*').eq('user_id', currentUserId!).order('published_date', { ascending: false }).limit(10),
               ]);
-              if (profileRefresh.data) {
-                setProfile({ ...profileRefresh.data, section_order: profileRefresh.data.section_order });
+              if (refreshedProfile) {
+                setProfile({ ...refreshedProfile, section_order: refreshedProfile.section_order });
               }
               if (awardsRefresh.data) setAwards(awardsRefresh.data);
               if (pressRefresh.data) setPressLinks(pressRefresh.data);

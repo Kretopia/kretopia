@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { Database } from "@/integrations/supabase/types";
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
+import type { Profile } from "@/lib/profile/profileService";
 
 interface ProfileContextType {
   profile: Profile | null;

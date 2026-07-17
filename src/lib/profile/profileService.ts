@@ -334,7 +334,7 @@ async function upsertSplitRow(
     profile_id: profileId,
     user_id: userId,
     ...payload,
-  });
+  } as never);
 
   if (error) throw error;
 }

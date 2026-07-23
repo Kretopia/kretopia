@@ -305,9 +305,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       {/* PILLARS — live surfaces not in bottom nav */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
-                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
+                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/discover?tab=people")} path="/discover" />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={Theater} label="Sound Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
+                      <MenuButton icon={Theater} label="Sound Stages" onClick={() => handleNavigation("/discover?tab=live")} path="/discover" />
 
                       <Separator className="my-3" />
 

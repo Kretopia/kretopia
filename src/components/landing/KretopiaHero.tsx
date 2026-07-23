@@ -91,9 +91,11 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease: [0.2, 0.65, 0.3, 0.95] }}
-              className="font-serif font-normal text-white leading-[0.92] tracking-[-0.025em]"
+              className="font-serif text-white leading-[0.95] tracking-[-0.025em]"
               style={{
                 fontSize: "clamp(2.75rem, 8.5vw, 7.5rem)",
+                fontWeight: 500,
+                WebkitFontSmoothing: "antialiased",
               }}
             >
               Welcome to <span className="italic">Kretopia</span>.

@@ -1,4 +1,4 @@
-# ThriveIN - Creator Platform
+# Kretopia — The Creative Economy OS
 # Allow all search engines to crawl public profiles
 
 User-agent: Googlebot

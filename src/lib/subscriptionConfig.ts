@@ -79,7 +79,7 @@ export const BRAND_SUBSCRIPTION_PRODUCTS = {
 /** Features shown on subscription page, split by account type */
 export const FREE_FEATURES: Record<AccountType, string[]> = {
   individual: [
-    "💬 Thrive Talk — 15 min/day (chat + voice combined)",
+    "Kreto Talk — 15 min/day (chat + voice combined)",
     "🛰️ Smart Gig Scout — preview (1 surfaced gig/week)",
     "Unlimited credit claiming",
     "20 swipes/day",
@@ -95,7 +95,7 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
     "Higher commission on transactions",
   ],
   company: [
-    "💬 Thrive Talk — 15 min/day (chat + voice combined)",
+    "Kreto Talk — 15 min/day (chat + voice combined)",
     "🛰️ Smart Talent Scout — preview (1 ranked shortlist/week)",
     "Unlimited credit claiming",
     "Unlimited paid job posts",
@@ -110,7 +110,7 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
 
 export const PRO_FEATURES: Record<AccountType, string[]> = {
   individual: [
-    "💬 Thrive Talk — 2 hours/day (chat + voice, with memory)",
+    "Kreto Talk — 2 hours/day (chat + voice, with memory)",
     "🛰️ Smart Gig Scout — daily, full feed (web, LinkedIn, IG, ATS)",
     "✍️ Auto-drafted cover letters for scouted gigs",
     "🤝 Project Copilot proposals — accept on-tap to run real actions",
@@ -127,7 +127,7 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
     "Priority support",
   ],
   company: [
-    "💬 Thrive Talk — 2 hours/day (chat + voice, with memory)",
+    "Kreto Talk — 2 hours/day (chat + voice, with memory)",
     "🛰️ Smart Talent Scout — daily ranked shortlists",
     "🤝 Outreach Copilot — drafts first-touch messages on-tap",
     "Unlimited opportunity postings",
@@ -144,7 +144,7 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
 export const CREATOR_PRO_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "Everything in Creator, plus:",
-    "💬 Thrive Talk — 10 hours/day (chat + voice + long-term memory)",
+    "Kreto Talk — 10 hours/day (chat + voice + long-term memory)",
     "⚙️ Autonomous Project Agent — runs your studio in the background (proposals + auto-actions)",
     "🛰️ Priority Scout queue + auto-saved shortlists",
     "🎨 All 9 premium site templates",
@@ -159,7 +159,7 @@ export const CREATOR_PRO_FEATURES: Record<AccountType, string[]> = {
   ],
   company: [
     "Everything in Brand Pro, plus:",
-    "💬 Thrive Talk — 10 hours/day (chat + voice + long-term memory)",
+    "Kreto Talk — 10 hours/day (chat + voice + long-term memory)",
     "⚙️ Autonomous Outreach Agent — sources & messages talent in the background",
     "🛰️ Priority Talent Scout + auto-saved shortlists",
     "🔗 Custom domain (yourdomain.com)",

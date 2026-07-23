@@ -280,7 +280,7 @@ export default function ThrivePay() {
   return (
     <>
       <SEO
-        title="ThrivePay — Wallet & Payments"
+        title="KrePay — Wallet & Payments"
         description="Manage your wallet, earnings, status, and payment account"
       />
 

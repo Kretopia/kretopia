@@ -219,8 +219,8 @@ const AcceptInvite = () => {
     ? `${preview.inviter_name ? preview.inviter_name + " invited you to " : "You're invited to "}${preview.title} · Studios`
     : "You're invited to collaborate · Studios";
   const seoDesc = preview
-    ? `Join ${preview.title} on ThriveIN — collaborate on briefs, tasks, files, and payments in one creative workspace.`
-    : "Open your invite to join the project workspace on ThriveIN.";
+    ? `Join ${preview.title} on Kretopia — collaborate on briefs, tasks, files, and payments in one creative workspace.`
+    : "Open your invite to join the project workspace on Kretopia.";
 
   return (
     <>
@@ -233,7 +233,7 @@ const AcceptInvite = () => {
               <div className="aspect-[1200/630] bg-gradient-to-br from-primary/30 via-primary/15 to-accent/20 relative flex flex-col justify-between p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-foreground">ThriveIN</p>
+                    <p className="text-xs font-bold text-foreground">Kretopia</p>
                     <p className="text-[10px] font-semibold text-primary">
                       Studios · {preview.workspace_type ? preview.workspace_type.replace("_", " ") : "Project"}
                     </p>

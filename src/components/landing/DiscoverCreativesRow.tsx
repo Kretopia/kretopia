@@ -87,7 +87,7 @@ export const DiscoverCreativesRow = () => {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-black text-foreground flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-accent" />
-          Real creators on ThriveIN
+          Real creators on Kretopia
         </h2>
       </div>
 

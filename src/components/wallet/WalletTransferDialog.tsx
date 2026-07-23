@@ -120,7 +120,7 @@ export function WalletTransferDialog({ open, onOpenChange, walletBalance, onTran
             Send Money
           </DialogTitle>
           <DialogDescription>
-            Transfer funds from your wallet to another ThriveIN user
+            Transfer funds from your wallet to another Kretopia user
           </DialogDescription>
         </DialogHeader>
 

@@ -53,8 +53,8 @@ const CreativeCircle = () => {
     if (!personalLink) return;
     if (navigator.share) {
       await navigator.share({
-        title: "Join ThriveIN",
-        text: "ThriveIN matches you with verified creatives who fit your style. Join me:",
+        title: "Join Kretopia",
+        text: "Kretopia matches you with verified creatives who fit your style. Join me:",
         url: personalLink,
       });
     } else {
@@ -76,7 +76,7 @@ const CreativeCircle = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl space-y-6 pb-24">
-      <SEO title="Creative Circle | ThriveIN" description="Grow your creative network, unlock rewards, and earn passive income by inviting creatives to ThriveIN." />
+      <SEO title="Creative Circle | Kretopia" description="Grow your creative network, unlock rewards, and earn passive income by inviting creatives to Kretopia." />
 
       {/* Hero — Current Tier */}
       <div className={cn("rounded-2xl p-6 bg-gradient-to-br border", network.tier.gradient, "border-border/50")}>
@@ -212,7 +212,7 @@ const CreativeCircle = () => {
           </div>
           <div className="flex gap-3">
             <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">3</div>
-            <div><span className="font-medium text-foreground">Earn passive commission</span> from ThriveIN's service fee when your referrals complete paid gigs — they keep 100% of their earnings</div>
+            <div><span className="font-medium text-foreground">Earn passive commission</span> from Kretopia's service fee when your referrals complete paid gigs — they keep 100% of their earnings</div>
           </div>
         </div>
       </Card>
@@ -259,7 +259,7 @@ const CreativeCircle = () => {
         })}
 
         <p className="text-[11px] text-muted-foreground text-center pt-2">
-          Commission is earned from ThriveIN's platform fee — your referrals keep 100% of their earnings. This isn't MLM — it's supporting each other to grow.
+          Commission is earned from Kretopia's platform fee — your referrals keep 100% of their earnings. This isn't MLM — it's supporting each other to grow.
         </p>
       </div>
     </div>

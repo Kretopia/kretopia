@@ -7,8 +7,8 @@ const Privacy = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <SEO 
-        title="Privacy Policy - ThriveIN"
-        description="How ThriveIN collects, uses, and protects your personal information"
+        title="Privacy Policy - Kretopia"
+        description="How Kretopia collects, uses, and protects your personal information"
       />
 
       {/* Legal notice - professional version */}
@@ -22,7 +22,7 @@ const Privacy = () => {
           <section>
             <h2>1. Introduction</h2>
             <p>
-              ThriveIN ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+              Kretopia ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
             </p>
           </section>
 
@@ -132,7 +132,7 @@ const Privacy = () => {
           <section>
             <h2>9. Children's Privacy</h2>
             <p>
-              ThriveIN is not intended for users under 18 years of age. We do not knowingly collect information from children under 18.
+              Kretopia is not intended for users under 18 years of age. We do not knowingly collect information from children under 18.
             </p>
           </section>
 

@@ -62,7 +62,7 @@ export const DripCampaignTab = () => {
   const [campaignSegmentId, setCampaignSegmentId] = useState("");
   const [campaignSubject, setCampaignSubject] = useState("");
   const [campaignBody, setCampaignBody] = useState("");
-  const [campaignCta, setCampaignCta] = useState("Visit ThriveIN →");
+  const [campaignCta, setCampaignCta] = useState("Visit Kretopia →");
   const [campaignCtaUrl, setCampaignCtaUrl] = useState("https://www.thrivein.io");
   const [campaignDailyLimit, setCampaignDailyLimit] = useState("95");
   const [creatingCampaign, setCreatingCampaign] = useState(false);
@@ -379,7 +379,7 @@ export const DripCampaignTab = () => {
 
           <div className="space-y-2">
             <Label>Subject Line</Label>
-            <Input placeholder="e.g. 🚀 Join ThriveIN - The Platform for Creatives" value={campaignSubject} onChange={e => setCampaignSubject(e.target.value)} />
+            <Input placeholder="e.g. 🚀 Join Kretopia - The Platform for Creatives" value={campaignSubject} onChange={e => setCampaignSubject(e.target.value)} />
           </div>
 
           <div className="space-y-2">

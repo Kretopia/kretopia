@@ -75,7 +75,7 @@ export const PeopleSection = ({
       const url = getShareUrl(`/guest/${encodeURIComponent(token)}`);
       const title = projectTitle || "my Studio";
       const shareText =
-`You're invited to "${title}" on ThriveIN 🎬
+`You're invited to "${title}" on Kretopia 🎬
 
 I've set up a private Studio for this project — brief, files, references and chat all in one place.
 
@@ -86,7 +86,7 @@ ${url}`;
       if (nav.share) {
         try {
           await nav.share({
-            title: `Join "${title}" on ThriveIN`,
+            title: `Join "${title}" on Kretopia`,
             text: shareText,
             url,
           });

@@ -126,7 +126,7 @@ const StudioRecap = () => {
           This studio recap may have been unpublished or the link is invalid.
         </p>
         <Button asChild>
-          <Link to="/">Go to ThriveIN</Link>
+          <Link to="/">Go to Kretopia</Link>
         </Button>
       </div>
     );
@@ -143,10 +143,10 @@ const StudioRecap = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <Helmet>
-        <title>{project.title} · Studio Recap · ThriveIN</title>
-        <meta name="description" content={project.recap_summary || project.description || `${project.title} — a studio recap on ThriveIN.`} />
+        <title>{project.title} · Studio Recap · Kretopia</title>
+        <meta name="description" content={project.recap_summary || project.description || `${project.title} — a studio recap on Kretopia.`} />
         <meta property="og:title" content={`${project.title} — Studio Recap`} />
-        <meta property="og:description" content={project.recap_summary || project.description || "Built in a ThriveIN Studio."} />
+        <meta property="og:description" content={project.recap_summary || project.description || "Built in a Kretopia Studio."} />
         {project.cover_url && <meta property="og:image" content={project.cover_url} />}
         <link rel="canonical" href={`https://www.thrivein.io/studio/${token}`} />
       </Helmet>

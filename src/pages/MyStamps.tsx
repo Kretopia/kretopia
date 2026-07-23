@@ -37,7 +37,7 @@ const MyStamps = () => {
   return (
     <>
       <Helmet>
-        <title>My Stamps — Verified Credits | ThriveIN</title>
+        <title>My Stamps — Verified Credits | Kretopia</title>
         <meta name="description" content="Your verified Stamps — the credits on your Creative Passport." />
         <meta name="robots" content="noindex" />
       </Helmet>

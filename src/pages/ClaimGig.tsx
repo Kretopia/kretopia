@@ -122,8 +122,8 @@ const ClaimGig = () => {
   return (
     <div className="min-h-screen p-4 md:p-6">
       <SEO
-        title={`Claim: ${opportunity.title} — ThriveIN`}
-        description={`Claim ownership of this gig listing and start receiving applications on ThriveIN`}
+        title={`Claim: ${opportunity.title} — Kretopia`}
+        description={`Claim ownership of this gig listing and start receiving applications on Kretopia`}
       />
       <div className="mx-auto max-w-2xl">
         {/* Hero */}
@@ -135,7 +135,7 @@ const ClaimGig = () => {
           <p className="text-muted-foreground">
             {isClaimed
               ? "This listing has already been claimed by its owner."
-              : "Your gig was listed on ThriveIN so creatives can discover and apply. Claim it to manage applicants, message talent, and fill the role faster."}
+              : "Your gig was listed on Kretopia so creatives can discover and apply. Claim it to manage applicants, message talent, and fill the role faster."}
           </p>
         </div>
 

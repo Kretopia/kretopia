@@ -73,7 +73,7 @@ export const PortfolioShowcase = () => {
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
           See what's being built on{" "}
           <span className="text-primary">
-            ThriveIN
+            Kretopia
           </span>
         </h2>
         <p className="mt-3 text-muted-foreground max-w-lg mx-auto text-sm sm:text-base">

@@ -424,7 +424,7 @@ Return ONLY valid JSON array:
             body: {
               projectTitle: opp.title,
               projectId: project.id,
-              inviterName: userProfile?.full_name || 'A ThriveIN user',
+              inviterName: userProfile?.full_name || 'A Kretopia user',
               inviteeUserId: applicant.applicant_id,
             }
           });

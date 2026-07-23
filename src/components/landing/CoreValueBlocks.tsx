@@ -11,7 +11,7 @@ export const CoreValueBlocks = () => {
       icon: ShieldCheck,
       eyebrow: "Pillar 1",
       title: "Verified Credit Registry (The IMDb for Creators)",
-      body: "Search any production, album, campaign, or event and claim your role on it. Collaborators co-sign each credit and ThriveIN verifies it against public records, giving every artist, filmmaker, musician, model, and producer an un-falsifiable, portable work history they actually own.",
+      body: "Search any production, album, campaign, or event and claim your role on it. Collaborators co-sign each credit and Kretopia verifies it against public records, giving every artist, filmmaker, musician, model, and producer an un-falsifiable, portable work history they actually own.",
       bullets: [
         "Search and claim past project credits across film, music, fashion, and events",
         "Peer co-signs and verification badges prove authorship",
@@ -22,7 +22,7 @@ export const CoreValueBlocks = () => {
       icon: FileText,
       eyebrow: "Pillar 2",
       title: "Instant Industry EPK Portfolios",
-      body: "Every ThriveIN profile auto-generates a professional Electronic Press Kit (EPK) at a custom URL — thrivein.io/your-name. Your verified credits, portfolio media, rates, reviews, and contact info ship in one link, ready to send to clients, agents, festivals, or labels.",
+      body: "Every Kretopia profile auto-generates a professional Electronic Press Kit (EPK) at a custom URL — thrivein.io/your-name. Your verified credits, portfolio media, rates, reviews, and contact info ship in one link, ready to send to clients, agents, festivals, or labels.",
       bullets: [
         "Auto-generated EPK with custom, sharable URL",
         "Portfolio media, rate card, reviews, and verified credits in one place",
@@ -50,7 +50,7 @@ export const CoreValueBlocks = () => {
       <div className="container mx-auto max-w-6xl px-4 sm:px-6">
         <div className="max-w-3xl mb-12 sm:mb-16">
           <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] text-energy mb-4">
-            What ThriveIN actually does
+            What Kretopia actually does
           </p>
           <h2
             id="core-value-heading"
@@ -59,7 +59,7 @@ export const CoreValueBlocks = () => {
             Three tools. One Creative OS.
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed">
-            ThriveIN replaces the scattered spreadsheets, link-in-bios, DM threads,
+            Kretopia replaces the scattered spreadsheets, link-in-bios, DM threads,
             and invoicing apps creatives use today with one connected system for
             credits, presentation, and paid work.
           </p>

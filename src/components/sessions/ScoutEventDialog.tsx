@@ -84,7 +84,7 @@ export const ScoutEventDialog = ({ trigger, open: controlledOpen, onOpenChange }
 
   const handleCopyClaimLink = () => {
     const claim = getClaimUrl();
-    const shareText = `Hey! I spotted your event "${result?.title}" and listed it on ThriveIN so creatives in the community can find it and RSVP. Claim it here to manage guests, send updates, and post photos:\n\n${claim}`;
+    const shareText = `Hey! I spotted your event "${result?.title}" and listed it on Kretopia so creatives in the community can find it and RSVP. Claim it here to manage guests, send updates, and post photos:\n\n${claim}`;
     navigator.clipboard.writeText(shareText);
     toast({ title: "Claim link copied", description: "Send it to the event host." });
   };
@@ -92,7 +92,7 @@ export const ScoutEventDialog = ({ trigger, open: controlledOpen, onOpenChange }
   const handleShareClaimLink = async () => {
     const claim = getClaimUrl();
     const shareData = {
-      title: `Your event is live on ThriveIN`,
+      title: `Your event is live on Kretopia`,
       text: `I scouted your event "${result?.title}" so creatives can find it. Claim it to manage RSVPs and message guests.`,
       url: claim,
     };

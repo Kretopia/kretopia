@@ -56,7 +56,7 @@ export const InviteCodesCard = () => {
       const inviteUrl = `https://www.thrivein.io/auth?invite=${code}`;
       const inviteMessage = `Stop cold DMing strangers for collabs.
 
-ThriveIN matches you with verified creatives who actually fit your style — portfolio-first, style-aware.
+Kretopia matches you with verified creatives who actually fit your style — portfolio-first, style-aware.
 
 I'm already on. Join me 👇
 ${inviteUrl}`;
@@ -104,7 +104,7 @@ ${inviteUrl}`;
           <h3 className="text-lg sm:text-xl font-bold">Your Invite Codes</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-3">
-          Share these codes with friends to invite them to ThriveIN
+          Share these codes with friends to invite them to Kretopia
         </p>
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary" className="flex items-center gap-1 text-xs">
@@ -211,7 +211,7 @@ ${inviteUrl}`;
                       />
                     </div>
                     <p className="text-xs text-center text-muted-foreground">
-                      Scan to join ThriveIN with this invite code
+                      Scan to join Kretopia with this invite code
                     </p>
                   </div>
                 )}
@@ -225,7 +225,7 @@ ${inviteUrl}`;
         <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             <strong>Pro Tip:</strong> Share your invite codes with fellow creators you know
-            and trust. Each person who joins with your code strengthens the ThriveIN community!
+            and trust. Each person who joins with your code strengthens the Kretopia community!
           </p>
         </div>
       )}

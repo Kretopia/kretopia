@@ -127,7 +127,7 @@ const DailyCheckIn = () => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-md pb-24 md:pb-6">
       <Helmet>
-        <title>Daily Check-In | ThriveIN</title>
+        <title>Daily Check-In | Kretopia</title>
         <meta name="description" content="Check in daily to build your streak, earn XP, and unlock rewards." />
       </Helmet>
 

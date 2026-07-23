@@ -254,7 +254,7 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
           <BlockRenderer blocks={profile.site_custom_blocks} theme="dark" accentColor="#ff00ff" />
         )}
 
-        {/* Powered by ThriveIN */}
+        {/* Powered by Kretopia */}
         <div className="mt-12 md:mt-20 pt-8 border-t border-zinc-900 text-center">
           <a
             href="https://www.thrivein.io"
@@ -262,7 +262,7 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
             rel="noopener noreferrer"
             className="text-xs text-zinc-600 hover:text-[#ff00ff] transition-colors uppercase tracking-widest"
           >
-            Powered by ThriveIN
+            Powered by Kretopia
           </a>
         </div>
       </footer>

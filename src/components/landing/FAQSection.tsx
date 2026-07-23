@@ -11,9 +11,9 @@ import {
  */
 const FAQS = [
   {
-    q: "What is ThriveIN.io?",
+    q: "What is Kretopia.io?",
     intro:
-      "ThriveIN.io is the Creative OS — an all-in-one professional network, portfolio builder, and workspace for artists, musicians, filmmakers, producers, and models.",
+      "Kretopia.io is the Creative OS — an all-in-one professional network, portfolio builder, and workspace for artists, musicians, filmmakers, producers, and models.",
     points: [
       "A verified credit registry for every creative industry (film, music, fashion, events, design)",
       "An auto-generated industry EPK at a custom URL (thrivein.io/your-name)",
@@ -24,19 +24,19 @@ const FAQS = [
   {
     q: "How does the creative credit tracking system work?",
     intro:
-      "ThriveIN's credit system gives creatives a verifiable record of every project they've worked on:",
+      "Kretopia's credit system gives creatives a verifiable record of every project they've worked on:",
     points: [
       "Search any production, album, campaign, event, or release in the registry",
       "Claim your role on it (director, producer, photographer, musician, model, designer, etc.)",
       "Collaborators co-sign your credit, which verifies authorship peer-to-peer",
-      "ThriveIN cross-references public records and platform data to issue a verified badge",
+      "Kretopia cross-references public records and platform data to issue a verified badge",
       "The result is an un-falsifiable, portable work history — like IMDb, but for every creative industry",
     ],
   },
   {
-    q: "What is an Industry EPK on ThriveIN?",
+    q: "What is an Industry EPK on Kretopia?",
     intro:
-      "An Industry EPK (Electronic Press Kit) is a professional, link-ready profile that ThriveIN generates automatically from your account:",
+      "An Industry EPK (Electronic Press Kit) is a professional, link-ready profile that Kretopia generates automatically from your account:",
     points: [
       "Custom URL — thrivein.io/your-name — ready to share with clients, agents, labels, festivals, or casting directors",
       "Pulls in your verified credits, portfolio media, rate card, reviews, and contact info",
@@ -47,7 +47,7 @@ const FAQS = [
   {
     q: "How do milestone payments protect freelance creatives?",
     intro:
-      "ThriveIN's milestone payments replace the 'invoice and hope' model freelance creatives usually face:",
+      "Kretopia's milestone payments replace the 'invoice and hope' model freelance creatives usually face:",
     points: [
       "Client funds are held in protected escrow before the project starts — no more starting work unpaid",
       "Funds release automatically as each agreed milestone (script, edit, delivery, final cut) is approved",
@@ -76,7 +76,7 @@ export const FAQSection = () => {
             Everything about the Creative OS
           </h2>
           <p className="mt-4 text-base text-muted-foreground">
-            Straight answers about credits, EPKs, and getting paid on ThriveIN.io.
+            Straight answers about credits, EPKs, and getting paid on Kretopia.io.
           </p>
         </div>
 

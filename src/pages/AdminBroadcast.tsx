@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 const AdminBroadcast = () => {
-  const [title, setTitle] = useState("New on ThriveIN: Voice tasks, video calls & ThrivePay");
+  const [title, setTitle] = useState("New on Kretopia: Voice tasks, video calls & ThrivePay");
   const [message, setMessage] = useState(`Hey Creator,
 
 We shipped a lot this week — here's what's new in your Studio:
@@ -37,7 +37,7 @@ Top inviters this month get featured in Spotlight + early access to the next dro
 
 See you inside,
 Ethan
-Founder, ThriveIN`);
+Founder, Kretopia`);
   const [link, setLink] = useState("/circle");
   const [testEmail, setTestEmail] = useState("");
   const [sendEmail, setSendEmail] = useState(true);

@@ -16,7 +16,7 @@ export function riskPill(level: OrchRiskLevel | undefined | null): RiskPill {
       return {
         label: "Low risk",
         className: "bg-energy/15 text-energy border-energy/30",
-        description: "Reversible. Won't notify anyone outside ThriveIN.",
+        description: "Reversible. Won't notify anyone outside Kretopia.",
       };
     case "locked":
       return {
@@ -29,7 +29,7 @@ export function riskPill(level: OrchRiskLevel | undefined | null): RiskPill {
       return {
         label: "Needs approval",
         className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
-        description: "Sends a message, spends money, or contacts someone outside ThriveIN.",
+        description: "Sends a message, spends money, or contacts someone outside Kretopia.",
       };
   }
 }

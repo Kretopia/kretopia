@@ -104,7 +104,7 @@ export default function ClaimProfile() {
       
       if (claimResult) {
         setClaimed(true);
-        toast.success('Profile claimed successfully! Welcome to ThriveIN.');
+        toast.success('Profile claimed successfully! Welcome to Kretopia.');
       } else {
         // Fallback to claim request if instant claim fails
         toast.error('Could not claim instantly. Submitting for review...');
@@ -174,7 +174,7 @@ export default function ClaimProfile() {
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold text-center mb-2">Welcome to ThriveIN!</h2>
+            <h2 className="text-2xl font-bold text-center mb-2">Welcome to Kretopia!</h2>
             <p className="text-muted-foreground text-center mb-2">
               Your profile has been claimed and data transferred to your account.
             </p>
@@ -226,7 +226,7 @@ export default function ClaimProfile() {
     <>
       <SEO 
         title={`Claim Your Profile - ${profile.full_name}`}
-        description={`Claim your ThriveIN profile for ${profile.full_name}`}
+        description={`Claim your Kretopia profile for ${profile.full_name}`}
       />
       
       <div className="min-h-screen bg-background py-12 px-4">
@@ -312,7 +312,7 @@ export default function ClaimProfile() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-primary">
                   <Sparkles className="h-5 w-5" />
-                  Join ThriveIN to Claim
+                  Join Kretopia to Claim
                 </CardTitle>
                 <CardDescription>
                   Create an account to claim this profile and connect with other creators.
@@ -391,7 +391,7 @@ export default function ClaimProfile() {
                       placeholder="https://twitter.com/yourhandle/status/..."
                     />
                     <p className="text-sm text-muted-foreground mt-2">
-                      Post about claiming your ThriveIN profile from a verified account.
+                      Post about claiming your Kretopia profile from a verified account.
                     </p>
                   </div>
                 </TabsContent>

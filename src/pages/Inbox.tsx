@@ -59,7 +59,7 @@ const Inbox = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24 accent-match">
-      <SEO title="Inbox - ThriveIN" description="What needs you, and what's good to know." />
+      <SEO title="Inbox - Kretopia" description="What needs you, and what's good to know." />
       <div className="container mx-auto max-w-2xl px-4 pt-6">
         <div className="flex items-center justify-between border-b-2 border-primary/20 pb-4 mb-4">
           <div className="space-y-1">

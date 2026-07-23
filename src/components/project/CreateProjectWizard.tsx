@@ -309,7 +309,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                 email: person.email || null,
                 projectTitle: title.trim(),
                 projectId: project.id,
-                inviterName: userProfile?.full_name || "A ThriveIN user",
+                inviterName: userProfile?.full_name || "A Kretopia user",
                 inviteeUserId: person.user_id,
               },
             }).catch(() => {});
@@ -327,7 +327,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                 email: person.email,
                 projectTitle: title.trim(),
                 projectId: project.id,
-                inviterName: userProfile?.full_name || "A ThriveIN user",
+                inviterName: userProfile?.full_name || "A Kretopia user",
               },
             }).catch(() => {});
           }

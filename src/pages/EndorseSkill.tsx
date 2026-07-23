@@ -196,7 +196,7 @@ export default function EndorseSkill() {
               variant="gradient" 
               className="w-full"
             >
-              Join ThriveIN
+              Join Kretopia
             </Button>
             <Button 
               onClick={() => navigate("/")} 
@@ -258,7 +258,7 @@ export default function EndorseSkill() {
                   variant="link" 
                   className="text-sm"
                 >
-                  Join ThriveIN →
+                  Join Kretopia →
                 </Button>
               </div>
             </form>
@@ -349,7 +349,7 @@ export default function EndorseSkill() {
                 variant="gradient" 
                 className="w-full"
               >
-                Join ThriveIN
+                Join Kretopia
               </Button>
             </div>
             <Button 

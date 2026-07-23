@@ -173,7 +173,7 @@ export function BankTransfersTab() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">To</p>
-                <p className="font-medium">{t.recipient?.full_name || "ThriveIN Wallet"}</p>
+                <p className="font-medium">{t.recipient?.full_name || "Kretopia Wallet"}</p>
                 {t.recipient_bank_snapshot?.bank_name && (
                   <p className="text-xs text-muted-foreground">
                     {t.recipient_bank_snapshot.bank_name} • {t.recipient_bank_snapshot.account_number}

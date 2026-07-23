@@ -125,7 +125,7 @@ export default function TalentFinder() {
   return (
     <PageTransition>
       <Helmet>
-        <title>Smart Talent Finder | ThriveIN</title>
+        <title>Smart Talent Finder | Kretopia</title>
         <meta name="description" content="Describe your project and instantly find the best creative talent — ranked by verified work." />
       </Helmet>
 

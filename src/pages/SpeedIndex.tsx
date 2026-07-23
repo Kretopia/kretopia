@@ -71,7 +71,7 @@ export default function SpeedIndex() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Speed Networking Nights — Meet 6+ Creators in 30 Minutes | ThriveIN"
+        title="Speed Networking Nights — Meet 6+ Creators in 30 Minutes | Kretopia"
         description="Themed video speed-networking for the creator economy. Producers × Singers, Filmmakers, Content Creators and more. RSVP free and meet your next collab."
       />
 

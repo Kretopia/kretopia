@@ -222,7 +222,7 @@ const Shortlists = () => {
 
   return (
     <div className="container max-w-3xl mx-auto p-4 sm:p-6 space-y-4">
-      <SEO title="My Shortlists · ThriveIN" description="Organize creators you want to hire into private talent lists." />
+      <SEO title="My Shortlists · Kretopia" description="Organize creators you want to hire into private talent lists." />
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">

@@ -72,7 +72,7 @@ const MagazineArticlePage = () => {
         <h1 className="text-xl font-bold mb-2">Article Not Found</h1>
         <p className="text-muted-foreground text-sm mb-6">This article may have been moved or removed.</p>
         <Link to="/" className="text-primary text-sm font-medium hover:underline">
-          Go to ThriveIN →
+          Go to Kretopia →
         </Link>
       </div>
     );
@@ -84,7 +84,7 @@ const MagazineArticlePage = () => {
   return (
     <>
       <Helmet>
-        <title>{article.title} | ThriveIN Magazine</title>
+        <title>{article.title} | Kretopia Magazine</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={canonicalUrl} />
 
@@ -93,7 +93,7 @@ const MagazineArticlePage = () => {
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:site_name" content="ThriveIN Magazine" />
+        <meta property="og:site_name" content="Kretopia Magazine" />
         {article.cover_image_url && <meta property="og:image" content={article.cover_image_url} />}
 
         {/* Twitter Card */}
@@ -110,10 +110,10 @@ const MagazineArticlePage = () => {
             headline: article.title,
             description,
             image: article.cover_image_url || undefined,
-            author: { "@type": "Organization", name: article.author_name || "ThriveIN Magazine" },
+            author: { "@type": "Organization", name: article.author_name || "Kretopia Magazine" },
             publisher: {
               "@type": "Organization",
-              name: "ThriveIN",
+              name: "Kretopia",
               url: "https://thrivein.io",
               logo: { "@type": "ImageObject", url: "https://thrivein.io/lovable-uploads/thrivein-logo.png" },
             },

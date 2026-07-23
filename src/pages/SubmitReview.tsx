@@ -154,7 +154,7 @@ export default function SubmitReview() {
               Are you a creative? Build your own verified profile!
             </p>
             <Button onClick={() => navigate("/auth")} variant="gradient" className="w-full">
-              Join ThriveIN
+              Join Kretopia
             </Button>
             <Button onClick={() => navigate("/")} variant="outline" className="w-full">
               Learn More
@@ -176,7 +176,7 @@ export default function SubmitReview() {
               Want to build your own verified creative profile?
             </p>
             <Button onClick={() => navigate("/auth")} variant="gradient" className="w-full">
-              Join ThriveIN
+              Join Kretopia
             </Button>
             <Button onClick={() => navigate("/")} variant="outline" className="w-full">
               Learn More
@@ -341,7 +341,7 @@ export default function SubmitReview() {
                 variant="link" 
                 className="text-sm"
               >
-                Join ThriveIN →
+                Join Kretopia →
               </Button>
             </div>
           </form>

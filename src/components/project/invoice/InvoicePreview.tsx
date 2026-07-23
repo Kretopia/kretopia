@@ -241,7 +241,7 @@ export function InvoicePreview({
             Thank you for your business
           </p>
           <p className="text-[9px] text-muted-foreground/40 mt-1">
-            Generated with ThriveIN • thrivein.app
+            Generated with Kretopia • thrivein.app
           </p>
         </div>
       </div>

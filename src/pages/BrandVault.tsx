@@ -47,7 +47,7 @@ export default function BrandVault() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <SEO title="Brand Vault · ThriveIN" description="Your persistent brand. Every deck, proposal and treatment Kreto generates inherits it." />
+      <SEO title="Brand Vault · Kretopia" description="Your persistent brand. Every deck, proposal and treatment Kreto generates inherits it." />
 
       <header className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">

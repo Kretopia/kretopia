@@ -76,7 +76,7 @@ async function createBidirectionalConnection(userId1: string, userId2: string) {
     // Send welcome notification
     await supabase.from('notifications').insert({
       user_id: userId1,
-      title: "🎉 Welcome to ThriveIN!",
+      title: "🎉 Welcome to Kretopia!",
       message: `You're now connected with ${founderProfile.full_name}, the founder! Say hello and start your creative journey.`,
       type: 'match',
       category: 'match',
@@ -88,7 +88,7 @@ async function createBidirectionalConnection(userId1: string, userId2: string) {
     });
 
     // Send a personal welcome DM from Ethan
-    const welcomeMessage = `Hey! Welcome to ThriveIN 👋 I'm Ethan Auguste, the founder. I built this platform because I believe every creative deserves to be discovered and get paid for their work.\n\nA few things to get you started:\n• Search your name to claim your credits\n• Complete your profile so others can find you\n• Check out the opportunities board for gigs\n\nIf you need anything at all — I'm right here. Let's build something great together! 🚀`;
+    const welcomeMessage = `Hey! Welcome to Kretopia 👋 I'm Ethan Auguste, the founder. I built this platform because I believe every creative deserves to be discovered and get paid for their work.\n\nA few things to get you started:\n• Search your name to claim your credits\n• Complete your profile so others can find you\n• Check out the opportunities board for gigs\n\nIf you need anything at all — I'm right here. Let's build something great together! 🚀`;
 
     await supabase.from('messages').insert({
       sender_id: userId2, // founder

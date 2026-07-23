@@ -7,7 +7,7 @@ import { useAccountTone } from "@/hooks/useAccountTone";
 /**
  * Kretopia V1 desktop sidebar. Renders on lg+ only. Mobile uses BottomNav.
  *
- * Order: Home · Search · Scout · Passport · Kreto · ThriveIN · Perks · Settings.
+ * Order: Home · Search · Scout · Passport · Kreto · Kretopia · Perks · Settings.
  * KrePay and Studio Lite are intentionally omitted — surfaced contextually.
  */
 const ITEMS = [
@@ -16,7 +16,7 @@ const ITEMS = [
   { path: "/scout", icon: Compass, label: "Scout" },
   { path: "/profile", icon: BadgeCheck, label: "Passport" },
   { path: "/kreto", icon: Sparkles, label: "Kreto" },
-  { path: "/thrivein", icon: Users, label: "ThriveIN" },
+  { path: "/thrivein", icon: Users, label: "Kretopia" },
   { path: "/perks", icon: Gift, label: "Perks" },
   { path: "/settings", icon: SettingsIcon, label: "Settings" },
 ];
@@ -74,7 +74,7 @@ export const KretopiaSidebar = memo(() => {
         })}
       </nav>
       <div className="mt-auto px-3 pt-4 text-[11px] text-muted-foreground">
-        Kretopia — powered by ThriveIN
+        Kretopia — powered by Kretopia
       </div>
     </aside>
   );

@@ -101,7 +101,7 @@ export default function CreditVerify() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">This link may be invalid or already removed.</p>
-            <Button onClick={() => navigate("/")} className="w-full">Go to ThriveIN</Button>
+            <Button onClick={() => navigate("/")} className="w-full">Go to Kretopia</Button>
           </CardContent>
         </Card>
       </div>
@@ -121,7 +121,7 @@ export default function CreditVerify() {
                 {accepted ? "Thanks — your confirmation now helps strengthen this creator’s verified record." : "Thanks — your response has been recorded."}
               </p>
             </div>
-            <Button onClick={() => navigate("/auth")} className="w-full">Build your ThriveIN profile</Button>
+            <Button onClick={() => navigate("/auth")} className="w-full">Build your Kretopia profile</Button>
           </CardContent>
         </Card>
       </div>

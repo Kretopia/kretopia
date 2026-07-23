@@ -75,7 +75,7 @@ export default function Discover() {
   return (
     <div className="min-h-screen bg-background pb-28">
       <SEO
-        title="Discover — People, Gigs, Live & Events | ThriveIN"
+        title="Discover — People, Gigs, Live & Events | Kretopia"
         description="Meet collaborators, find scouted gigs, drop into live stages, catch what's on — all in one feed."
       />
       <div className="max-w-2xl mx-auto px-4 pt-4">

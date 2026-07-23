@@ -39,7 +39,7 @@ export function PushNotificationsInfo() {
       </ul>
 
       <p className="text-[11px] text-muted-foreground border-t border-border pt-3">
-        Push works on Chrome, Edge, Firefox, and on iOS/Android when you've installed ThriveIN to your home screen.
+        Push works on Chrome, Edge, Firefox, and on iOS/Android when you've installed Kretopia to your home screen.
         Email notifications follow your separate email preferences.
       </p>
     </Card>

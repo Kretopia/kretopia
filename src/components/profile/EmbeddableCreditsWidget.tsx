@@ -46,7 +46,7 @@ export function EmbeddableCreditsWidget({ userId, displayName, thriveId, creditC
     <span style="font-size:13px;color:#6b7280">Verified Credits</span>
   </div>
   ${topCredits.slice(0, 3).map(c => `<div style="padding:8px 0;border-top:1px solid #f3f4f6;font-size:13px"><strong>${c.project_name}</strong> · ${c.role}</div>`).join('\n  ')}
-  <a href="${profileUrl}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;margin-top:12px">View Full Credits on ThriveIN</a>
+  <a href="${profileUrl}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;margin-top:12px">View Full Credits on Kretopia</a>
 </div>`;
 
   const embedMarkdown = `[![ThriveCredits](${baseUrl}/api/badge/${userId})](${profileUrl})
@@ -57,7 +57,7 @@ ${topCredits.slice(0, 3).map(c => `- **${c.project_name}** — ${c.role}`).join(
 [View Full Credits →](${profileUrl})`;
 
   const badgeUrl = `${profileUrl}`;
-  const badgeMarkdown = `[![Verified on ThriveIN](https://img.shields.io/badge/ThriveCredits-${creditCount}%20Credits-6366f1?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyTDkuMTkgOC42MyAyIDkuMjRsNS4xOCA1LjA5TDUuODIgMjJMMTIgMTguMjcgMTguMTggMjJsLTEuMzYtNy42N0wyMiA5LjI0bC03LjE5LS42MXoiLz48L3N2Zz4=)](${badgeUrl})`;
+  const badgeMarkdown = `[![Verified on Kretopia](https://img.shields.io/badge/ThriveCredits-${creditCount}%20Credits-6366f1?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyTDkuMTkgOC42MyAyIDkuMjRsNS4xOCA1LjA5TDUuODIgMjJMMTIgMTguMjcgMTguMTggMjJsLTEuMzYtNy42N0wyMiA5LjI0bC03LjE5LS42MXoiLz48L3N2Zz4=)](${badgeUrl})`;
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -125,7 +125,7 @@ ${topCredits.slice(0, 3).map(c => `- **${c.project_name}** — ${c.role}`).join(
             ))}
             <div className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary to-accent rounded-lg text-primary-foreground text-sm font-semibold">
               <Globe className="h-4 w-4" />
-              View Full Credits on ThriveIN
+              View Full Credits on Kretopia
             </div>
           </div>
         </div>

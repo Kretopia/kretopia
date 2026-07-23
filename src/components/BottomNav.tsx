@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
-// ThriveIN 2.0 — Daily Driver IA, collapsed to 4 + center FAB (QuickActionFab).
+// Kretopia 2.0 — Daily Driver IA, collapsed to 4 + center FAB (QuickActionFab).
 // Today · Desk · [＋] · Discover · Passport. Discover hub = People · Opportunities · Live.
 const NAV_ITEMS = [
   { path: "/", icon: Sun, label: "Today", hint: "Today — what to move forward" },

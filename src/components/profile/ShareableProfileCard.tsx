@@ -159,19 +159,19 @@ export const ShareableProfileCard = ({
 
       const file = new File([blob], `thrivein-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`, { type: "image/png" });
       const shareText = mode === "invite"
-        ? `Join me on ThriveIN! \n${qrUrl}`
-        : `Check out my creative profile on ThriveIN! \n${qrUrl}`;
+        ? `Join me on Kretopia! \n${qrUrl}`
+        : `Check out my creative profile on Kretopia! \n${qrUrl}`;
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
-          title: `${profile.full_name} on ThriveIN`,
+          title: `${profile.full_name} on Kretopia`,
           text: shareText,
           files: [file],
         });
         toast.success("Shared successfully!");
       } else if (navigator.share) {
         await navigator.share({
-          title: `${profile.full_name} on ThriveIN`,
+          title: `${profile.full_name} on Kretopia`,
           text: shareText,
           url: qrUrl,
         });
@@ -299,7 +299,7 @@ export const ShareableProfileCard = ({
                 <p className="text-white/60 text-[10px] text-center mb-3 leading-relaxed">
                   {mode === "profile" 
                     ? "Scan to view my full portfolio & connect" 
-                    : "Scan to join ThriveIN & collaborate"
+                    : "Scan to join Kretopia & collaborate"
                   }
                 </p>
                 

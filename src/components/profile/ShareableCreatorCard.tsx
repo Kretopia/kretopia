@@ -50,7 +50,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
   };
 
   const getShareText = () => {
-    return `Check out ${profile.full_name}'s creative profile on ThriveIN!`;
+    return `Check out ${profile.full_name}'s creative profile on Kretopia!`;
   };
 
   const generateCardBlob = async (): Promise<Blob | null> => {
@@ -115,7 +115,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
           const file = new File([blob], "creator-card.png", { type: "image/png" });
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
-              title: `${profile.full_name} on ThriveIN`,
+              title: `${profile.full_name} on Kretopia`,
               text: getShareText(),
               files: [file],
             });
@@ -124,7 +124,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
         }
         // Try share without file
         await navigator.share({
-          title: `${profile.full_name} on ThriveIN`,
+          title: `${profile.full_name} on Kretopia`,
           text: getShareText(),
           url: getProfileUrl(),
         });
@@ -164,7 +164,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
 
   const shareViaEmail = () => {
     const url = getProfileUrl();
-    const subject = encodeURIComponent(`${profile.full_name} on ThriveIN`);
+    const subject = encodeURIComponent(`${profile.full_name} on Kretopia`);
     const body = encodeURIComponent(`${getShareText()}\n\n${url}`);
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };

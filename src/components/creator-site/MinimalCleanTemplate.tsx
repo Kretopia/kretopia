@@ -171,7 +171,7 @@ export const MinimalCleanTemplate = ({ data }: { data: CreatorSiteData }) => {
       )}
       <footer className="max-w-3xl mx-auto px-6 py-8 flex justify-between items-center text-xs text-[#ccc]">
         <span>© {new Date().getFullYear()} {profile.full_name}</span>
-        <span>Powered by ThriveIN</span>
+        <span>Powered by Kretopia</span>
       </footer>
 
       <CustomProjectRequestDialog

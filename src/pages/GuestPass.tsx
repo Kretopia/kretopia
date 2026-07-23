@@ -48,7 +48,7 @@ const GuestPass = () => {
       height: 240,
       data: token,
       dotsOptions: { color: "#0F172A", type: "rounded" },
-      cornersSquareOptions: { color: "#20D3C2", type: "extra-rounded" },
+      cornersSquareOptions: { color: "#9413D2", type: "extra-rounded" },
       backgroundOptions: { color: "#ffffff" },
     });
     qr.append(qrRef.current);
@@ -60,7 +60,7 @@ const GuestPass = () => {
     const end = event.end_time || new Date(new Date(event.start_time).getTime() + 2 * 60 * 60 * 1000).toISOString();
     const loc = [event.venue_name, event.venue_address].filter(Boolean).join(", ");
     const ics = [
-      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ThriveIN//Event//EN",
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Kretopia//Event//EN",
       "BEGIN:VEVENT",
       `UID:${event.id}@thrivein.io`,
       `DTSTAMP:${dt(new Date().toISOString())}`,

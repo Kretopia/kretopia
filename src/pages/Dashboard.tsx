@@ -107,7 +107,7 @@ const DashboardContent = () => {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <SEO title="Dashboard · ThriveIN" description="Your private dashboard — money, profile health, tools." />
+      <SEO title="Dashboard · Kretopia" description="Your private dashboard — money, profile health, tools." />
 
       {/* Calm Scout-style header */}
       <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">

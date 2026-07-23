@@ -66,7 +66,7 @@ export const TrustPanel = ({ creatorId }: TrustPanelProps) => {
         <ShieldCheck className="h-5 w-5 text-primary" />
         <h3 className="font-bold text-lg">Trust Panel</h3>
         <Badge variant="secondary" className="ml-auto text-[10px]">
-          ThriveIN Verified
+          Kretopia Verified
         </Badge>
       </div>
 

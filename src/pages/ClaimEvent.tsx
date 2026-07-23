@@ -98,7 +98,7 @@ const ClaimEvent = () => {
           await supabase.from("notifications").insert({
             user_id: event.scouted_by,
             title: `Your scout was claimed`,
-            message: `${claimer?.full_name || "Someone"} claimed "${event.title}" — it's now live on ThriveIN.`,
+            message: `${claimer?.full_name || "Someone"} claimed "${event.title}" — it's now live on Kretopia.`,
             type: "event_update",
             action_url: `/event/${event.id}`,
           });
@@ -148,7 +148,7 @@ const ClaimEvent = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`Claim "${event.title}" on ThriveIN`} description="Take ownership of your event listing." />
+      <SEO title={`Claim "${event.title}" on Kretopia`} description="Take ownership of your event listing." />
       <div className="max-w-2xl mx-auto p-4 sm:p-8 space-y-6">
         <div className="text-center space-y-2">
           <Badge variant={isClaimed ? "secondary" : "outline"} className="mb-2">
@@ -160,7 +160,7 @@ const ClaimEvent = () => {
           <p className="text-muted-foreground text-sm sm:text-base">
             {isClaimed
               ? "Someone already claimed this event. View it below."
-              : "A creative spotted your event and listed it on ThriveIN so the community can find it. Claim it to take over and manage RSVPs."}
+              : "A creative spotted your event and listed it on Kretopia so the community can find it. Claim it to take over and manage RSVPs."}
           </p>
         </div>
 

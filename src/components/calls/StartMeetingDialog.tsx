@@ -389,7 +389,7 @@ export const StartMeetingDialog = ({
         calendarEvent={
           created?.scheduled && scheduledAt
             ? {
-                title: meetingTitle || title || "ThriveIN meeting",
+                title: meetingTitle || title || "Kretopia meeting",
                 description: description
                   ? `${description}\n\nJoin: ${created.shareUrl}`
                   : `Join: ${created.shareUrl}`,

@@ -196,7 +196,7 @@ export const StartCallSheet = ({
   const tabs: { id: typeof tab; label: string; icon: typeof Users; show: boolean }[] = [
     { id: "project", label: "From this project", icon: Users, show: !!projectId && projectMembers.length > 0 },
     { id: "network", label: "My connections", icon: UserCircle2, show: true },
-    { id: "search", label: "Anyone on ThriveIN", icon: Globe, show: true },
+    { id: "search", label: "Anyone on Kretopia", icon: Globe, show: true },
   ];
 
   const selectedCount = selected.size;
@@ -266,7 +266,7 @@ export const StartCallSheet = ({
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search people on ThriveIN…"
+                placeholder="Search people on Kretopia…"
                 className="pl-9 rounded-full h-10"
                 autoFocus
               />
@@ -279,7 +279,7 @@ export const StartCallSheet = ({
           {tab === "search" && searchQuery.trim().length < 2 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-8 text-muted-foreground gap-2 py-12">
               <Search className="h-8 w-8 opacity-40" />
-              <p className="text-sm">Type a name to search ThriveIN</p>
+              <p className="text-sm">Type a name to search Kretopia</p>
             </div>
           ) : searching ? (
             <div className="flex items-center justify-center py-10">

@@ -152,8 +152,8 @@ const ICDBProjectPage = () => {
   return (
     <>
       <Helmet>
-        <title>{project.title}{project.year ? ` (${project.year})` : ""} — Verified Credits | ThriveIN</title>
-        <meta name="description" content={project.description || `${project.title} — ${formatType(project.type)}${project.year ? `, ${project.year}` : ""}. Full verified credits on ThriveIN.`} />
+        <title>{project.title}{project.year ? ` (${project.year})` : ""} — Verified Credits | Kretopia</title>
+        <meta name="description" content={project.description || `${project.title} — ${formatType(project.type)}${project.year ? `, ${project.year}` : ""}. Full verified credits on Kretopia.`} />
         <link rel="canonical" href={`https://www.thrivein.io/credits/project/${project.id}`} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://www.thrivein.io/credits/project/${project.id}`} />

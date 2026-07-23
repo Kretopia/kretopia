@@ -59,12 +59,12 @@ export function ProfileLaunchScreen({
 
   const shareCopy = useMemo(() => {
     if (topCredit) {
-      return `I just verified my work on ${topCredit} (and more) on ThriveIN — see my creative résumé:`;
+      return `I just verified my work on ${topCredit} (and more) on Kretopia — see my creative résumé:`;
     }
     if (creditsCount > 0) {
-      return `I just verified ${creditsCount} of my projects on ThriveIN — see my creative résumé:`;
+      return `I just verified ${creditsCount} of my projects on Kretopia — see my creative résumé:`;
     }
-    return `This is my verified creative profile on ThriveIN — check it out:`;
+    return `This is my verified creative profile on Kretopia — check it out:`;
   }, [topCredit, creditsCount]);
 
   useEffect(() => {

@@ -298,7 +298,7 @@ const FundCampaign = () => {
             </label>
             <div className="text-[11px] text-muted-foreground bg-muted/50 rounded-md p-3">
               Your card is authorized now but only charged if the campaign reaches its goal by the
-              deadline. ThriveIN takes a 5% platform fee on funded campaigns.
+              deadline. Kretopia takes a 5% platform fee on funded campaigns.
             </div>
           </div>
           <DialogFooter>

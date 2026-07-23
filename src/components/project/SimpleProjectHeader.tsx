@@ -164,7 +164,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           if (navigator.share) {
             try {
               await navigator.share({
-                title: `Join "${project.title}" on ThriveIN`,
+                title: `Join "${project.title}" on Kretopia`,
                 text: shareText,
                 url: guestUrl,
               });

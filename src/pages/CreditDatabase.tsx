@@ -312,18 +312,18 @@ const CreditDatabase = () => {
   return (
     <>
       <Helmet>
-        <title>Verified Credits — Search Creative Work | ThriveIN</title>
+        <title>Verified Credits — Search Creative Work | Kretopia</title>
         <meta name="description" content="The IMDb of the creator economy. Search verified credits across film, TV, music, events, fashion, art, and more. Claim your work, get co-signed, build your Creative Passport." />
         <link rel="canonical" href="https://www.thrivein.io/credits" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.thrivein.io/credits" />
-        <meta property="og:title" content="Verified Credits — Search Creative Work | ThriveIN" />
+        <meta property="og:title" content="Verified Credits — Search Creative Work | Kretopia" />
         <meta property="og:description" content="The IMDb of the creator economy. Search verified credits, claim your work, get co-signed." />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "ThriveIN Verified Credits",
+          name: "Kretopia Verified Credits",
           url: "https://www.thrivein.io/credits",
           potentialAction: {
             "@type": "SearchAction",

@@ -148,7 +148,7 @@ export default function PurchaseSuccess() {
 
   return (
     <>
-      <SEO title="Purchase Complete - ThriveIN" />
+      <SEO title="Purchase Complete - Kretopia" />
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-lg">
           <CardHeader className="text-center">

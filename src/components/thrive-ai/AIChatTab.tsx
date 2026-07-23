@@ -234,7 +234,7 @@ const AIChatTab = () => {
               <MessageCircle className="h-8 w-8 text-primary" />
             </div>
             <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">ThriveIN Assistant</h3>
+              <h3 className="text-lg font-semibold">Kretopia Assistant</h3>
               <p className="text-sm text-muted-foreground max-w-md">
                 Your personal helper for pitches, pricing, outreach, contracts, and creative strategy. Personalized to your profile.
               </p>

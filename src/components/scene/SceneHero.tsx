@@ -41,7 +41,7 @@ export const SceneHero = ({ onNavigate }: Props) => {
         featured.push({
           type: "article",
           title: article.title,
-          subtitle: article.subtitle || "Read the latest from ThriveIN Magazine",
+          subtitle: article.subtitle || "Read the latest from Kretopia Magazine",
           imageUrl: article.cover_image_url,
           icon: <BookOpen className="h-3 w-3" />,
           badge: "Magazine",
@@ -89,7 +89,7 @@ export const SceneHero = ({ onNavigate }: Props) => {
           subtitle: "Your creative community hub for events, inspiration & stories",
           imageUrl: null,
           icon: <Flame className="h-3 w-3" />,
-          badge: "ThriveIN",
+          badge: "Kretopia",
         });
       }
 

@@ -12,21 +12,21 @@ const Magazine = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Creative Industry Magazine | ThriveIN</title>
-        <meta name="description" content="Read stories, interviews and features from creatives shaping the industry. ThriveIN Magazine covers film, music, design, fashion and more." />
+        <title>Creative Industry Magazine | Kretopia</title>
+        <meta name="description" content="Read stories, interviews and features from creatives shaping the industry. Kretopia Magazine covers film, music, design, fashion and more." />
         <link rel="canonical" href={canonicalUrl} />
         <meta name="robots" content="index, follow" />
 
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Creative Industry Magazine | ThriveIN" />
+        <meta property="og:title" content="Creative Industry Magazine | Kretopia" />
         <meta property="og:description" content="Read stories, interviews and features from creatives shaping the industry." />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:site_name" content="ThriveIN" />
+        <meta property="og:site_name" content="Kretopia" />
         <meta property="og:image" content="https://www.thrivein.io/og-image.png" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@thrivein_io" />
-        <meta name="twitter:title" content="Creative Industry Magazine | ThriveIN" />
+        <meta name="twitter:title" content="Creative Industry Magazine | Kretopia" />
         <meta name="twitter:description" content="Read stories, interviews and features from creatives shaping the industry." />
         <meta name="twitter:image" content="https://www.thrivein.io/og-image.png" />
 
@@ -34,12 +34,12 @@ const Magazine = () => {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
-            "name": "ThriveIN Magazine",
+            "name": "Kretopia Magazine",
             "description": "Stories, interviews and features from creatives shaping the industry.",
             "url": canonicalUrl,
             "publisher": {
               "@type": "Organization",
-              "name": "ThriveIN",
+              "name": "Kretopia",
               "url": "https://thrivein.io"
             }
           })}

@@ -11,7 +11,7 @@ export const CloseSection = () => (
   <section className="px-4 sm:px-6 py-16 sm:py-24 border-t border-border/40 bg-gradient-to-b from-background to-primary/[0.06]">
     <div className="container mx-auto max-w-3xl text-center">
       <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/5">
-        <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" /> ThriveIN · The Creative OS
+        <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" /> Kretopia · The Creative OS
       </p>
 
       <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.04em] leading-[1] text-foreground mb-5">

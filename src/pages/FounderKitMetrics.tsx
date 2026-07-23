@@ -41,8 +41,8 @@ export default function FounderKitMetrics() {
   return (
     <div className="container mx-auto max-w-4xl px-4 py-10">
       <Helmet>
-        <title>Traction · ThriveIN Founder Kit</title>
-        <meta name="description" content="Live ThriveIN traction snapshot for accelerator applications." />
+        <title>Traction · Kretopia Founder Kit</title>
+        <meta name="description" content="Live Kretopia traction snapshot for accelerator applications." />
         <meta name="robots" content="noindex" />
       </Helmet>
 

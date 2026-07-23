@@ -54,11 +54,11 @@ export default function SharedDeck() {
 
   return (
     <div className="min-h-screen bg-muted/30 py-6">
-      <SEO title={doc.title} description={content?.subtitle || "Made with ThriveIN"} />
+      <SEO title={doc.title} description={content?.subtitle || "Made with Kretopia"} />
       <div className="max-w-5xl mx-auto px-4">
         <DeckRenderer doc={content} theme={(doc.theme as DeckTheme) || "editorial"} coverImageUrl={doc.cover_image_url} />
         <div className="mt-8 text-center text-xs text-muted-foreground">
-          Made with Kreto on <a href="https://www.thrivein.io" className="underline">ThriveIN</a> — your Creative Executive Producer.
+          Made with Kreto on <a href="https://www.thrivein.io" className="underline">Kretopia</a> — your Creative Executive Producer.
         </div>
       </div>
     </div>

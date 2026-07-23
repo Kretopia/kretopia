@@ -99,7 +99,7 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <SEO title="Thrive Market" description="Buy and sell digital products and creative services on ThriveIN" />
+      <SEO title="Thrive Market" description="Buy and sell digital products and creative services on Kretopia" />
 
       <div className="container mx-auto max-w-7xl px-4 py-6 space-y-5">
         {/* Header */}

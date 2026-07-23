@@ -94,7 +94,7 @@ export function OnboardingCelebration({
 
           <h2 className="text-2xl font-bold text-white mb-1">Welcome, {firstName}!</h2>
           <p className="text-white/80 text-sm">
-            Your professional profile is live on ThriveIN
+            Your professional profile is live on Kretopia
           </p>
         </div>
 

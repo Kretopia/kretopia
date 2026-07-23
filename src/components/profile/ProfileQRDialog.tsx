@@ -66,7 +66,7 @@ export const ProfileQRDialog = ({
         ctx.fillText(`Connect with ${userName}`, canvas.width / 2, 100);
         
         ctx.font = "32px Arial";
-        ctx.fillText("Scan to connect on ThriveIN", canvas.width / 2, 1100);
+        ctx.fillText("Scan to connect on Kretopia", canvas.width / 2, 1100);
       }
 
       const pngFile = canvas.toDataURL("image/png");
@@ -83,8 +83,8 @@ export const ProfileQRDialog = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Connect with ${userName} on ThriveIN`,
-          text: `Scan my QR code or use this link to connect with me on ThriveIN`,
+          title: `Connect with ${userName} on Kretopia`,
+          text: `Scan my QR code or use this link to connect with me on Kretopia`,
           url: connectUrl,
         });
       } catch (error) {
@@ -131,7 +131,7 @@ export const ProfileQRDialog = ({
             <div className="text-center space-y-1">
               <p className="font-semibold">{userName}</p>
               <p className="text-sm text-muted-foreground">
-                Scan to connect on ThriveIN
+                Scan to connect on Kretopia
               </p>
             </div>
           </div>
@@ -141,8 +141,8 @@ export const ProfileQRDialog = ({
             <p className="text-sm font-medium">How it works:</p>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
               <li>Others scan your QR code with their phone</li>
-              <li>If they have ThriveIN: instant connection request</li>
-              <li>New to ThriveIN: sign up & auto-connect</li>
+              <li>If they have Kretopia: instant connection request</li>
+              <li>New to Kretopia: sign up & auto-connect</li>
             </ul>
           </div>
 

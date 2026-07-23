@@ -183,7 +183,7 @@ const Settings = () => {
       setIsInstalled(true);
       toast({
         title: "App Installed!",
-        description: "ThriveIN has been added to your home screen",
+        description: "Kretopia has been added to your home screen",
       });
     }
     setDeferredPrompt(null);
@@ -784,7 +784,7 @@ const Settings = () => {
                 Install App
               </CardTitle>
               <CardDescription>
-                Add ThriveIN to your home screen for the best experience
+                Add Kretopia to your home screen for the best experience
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -793,7 +793,7 @@ const Settings = () => {
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="font-medium text-green-600 dark:text-green-400">App Installed</p>
-                    <p className="text-sm text-muted-foreground">ThriveIN is on your home screen</p>
+                    <p className="text-sm text-muted-foreground">Kretopia is on your home screen</p>
                   </div>
                 </div>
               ) : (
@@ -934,7 +934,7 @@ const Settings = () => {
                 About & Links
               </CardTitle>
               <CardDescription>
-                Important links and information about ThriveIN
+                Important links and information about Kretopia
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1027,7 +1027,7 @@ const Settings = () => {
               <Separator />
               
               <p className="text-xs text-muted-foreground text-center">
-                © {new Date().getFullYear()} ThriveIN. All rights reserved.
+                © {new Date().getFullYear()} Kretopia. All rights reserved.
               </p>
             </CardContent>
           </Card>

@@ -50,7 +50,7 @@ export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogPro
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
-                ThriveIN Pro
+                Kretopia Pro
                 <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Recommended</span>
               </h3>
               <p className="text-sm text-muted-foreground mb-3">

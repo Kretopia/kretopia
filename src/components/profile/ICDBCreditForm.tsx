@@ -1009,7 +1009,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                 <CollapsibleTrigger asChild>
                   <Button variant="ghost" size="sm" className="w-full text-xs gap-1 text-muted-foreground">
                     <Mail className="h-3.5 w-3.5" />
-                    Invite someone not on ThriveIN
+                    Invite someone not on Kretopia
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-2 mt-2">
@@ -1034,7 +1034,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                     </Button>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    They'll receive an email + WhatsApp invite to claim their credit on ThriveIN
+                    They'll receive an email + WhatsApp invite to claim their credit on Kretopia
                   </p>
                 </CollapsibleContent>
               </Collapsible>

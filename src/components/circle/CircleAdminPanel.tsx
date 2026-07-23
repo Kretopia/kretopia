@@ -456,7 +456,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                 {isVerified && <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">Verified</Badge>}
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Verified Crews are reviewed by ThriveIN for authenticity, active leadership, and quality content.
+                Verified Crews are reviewed by Kretopia for authenticity, active leadership, and quality content.
               </p>
               {isPlatformAdmin ? (
                 <Button

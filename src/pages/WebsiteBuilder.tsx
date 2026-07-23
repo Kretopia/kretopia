@@ -618,7 +618,7 @@ const WebsiteBuilder = () => {
                   <Badge variant="secondary" className="text-[10px]">Creator+</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Point your own domain to your ThriveIN creator site using a URL redirect.
+                  Point your own domain to your Kretopia creator site using a URL redirect.
                 </p>
                 <div className="bg-background rounded-md p-3 border space-y-2">
                   <p className="text-[11px] font-semibold">Setup: Add a URL Redirect/Forward in your domain registrar pointing to:</p>

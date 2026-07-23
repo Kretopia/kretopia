@@ -786,7 +786,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       // Footer
       doc.setFontSize(7);
       doc.setTextColor(150, 150, 150);
-      doc.text("Powered by ThriveIN", 105, 285, { align: "center" });
+      doc.text("Powered by Kretopia", 105, 285, { align: "center" });
 
       const filePrefix = isQuoteDoc ? "quote" : "invoice";
       doc.save(`${filePrefix}-${invoice.invoice_number}.pdf`);

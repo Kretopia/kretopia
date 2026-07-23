@@ -40,8 +40,8 @@ export const HIDDEN_V1 = {
   agencyMode: false, // company/business tone is still respected — do not hide business logic
   communityFeed: true,
   fund: true,
-  magazine: true, // still lives inside ThriveIN, just no top-level nav
-  events: true,   // ThriveIN sub-surface
+  magazine: true, // still lives inside Kretopia, just no top-level nav
+  events: true,   // Kretopia sub-surface
   dashboards: true,
   gamifiedScore: true,
   matchTab: true, // the old swipe surface — replaced by Kreto suggestions on Home

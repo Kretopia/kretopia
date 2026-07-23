@@ -26,7 +26,7 @@ interface NewCredit {
 /**
  * Trending lane — light v1.
  * - Rising creators: most co-signs in the last 14 days
- * - New on ThriveIN: recently added verified credits
+ * - New on Kretopia: recently added verified credits
  * - Co-sign nudges: prompt to vouch for collaborators (placeholder card linking to Passport)
  */
 export const TrendingLane = () => {
@@ -135,12 +135,12 @@ export const TrendingLane = () => {
         )}
       </section>
 
-      {/* New on ThriveIN */}
+      {/* New on Kretopia */}
       <section className="space-y-2">
         <div className="flex items-center gap-2 px-1">
           <ShieldCheck className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
           <h3 className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground">
-            New on ThriveIN
+            New on Kretopia
           </h3>
         </div>
         {newCredits.length === 0 ? (

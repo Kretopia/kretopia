@@ -140,7 +140,7 @@ export default function CompanyOnboarding() {
       return;
     }
 
-    toast({ title: "Welcome to ThriveIN!", description: "Your company page is ready." });
+    toast({ title: "Welcome to Kretopia!", description: "Your company page is ready." });
     navigate("/work");
     setLoading(false);
   };
@@ -149,7 +149,7 @@ export default function CompanyOnboarding() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <SEO title="Set Up Your Company | ThriveIN" description="Set up your company profile on ThriveIN" />
+      <SEO title="Set Up Your Company | Kretopia" description="Set up your company profile on Kretopia" />
 
       {/* Progress bar */}
       <div className="sticky top-0 z-30 bg-background border-b px-4 py-3">
@@ -303,7 +303,7 @@ export default function CompanyOnboarding() {
                 </div>
 
                 <div>
-                  <Label>What are you looking to do on ThriveIN?</Label>
+                  <Label>What are you looking to do on Kretopia?</Label>
                   <div className="grid grid-cols-1 gap-2 mt-2">
                     {HIRING_GOALS.map(goal => (
                       <button

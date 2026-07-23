@@ -69,7 +69,7 @@ export function NewsletterPopup() {
       localStorage.setItem(STORAGE_KEY, Date.now().toString());
       toast({
         title: "You're in!",
-        description: "Welcome to the ThriveIN creative community.",
+        description: "Welcome to the Kretopia creative community.",
       });
       setTimeout(() => setOpen(false), 2000);
     } catch (err) {

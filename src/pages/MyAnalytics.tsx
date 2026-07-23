@@ -119,8 +119,8 @@ const MyAnalytics = () => {
   return (
     <>
       <SEO
-        title="My Dashboard - ThriveIN"
-        description="Track your creator journey, invites, matches, and engagement on ThriveIN."
+        title="My Dashboard - Kretopia"
+        description="Track your creator journey, invites, matches, and engagement on Kretopia."
       />
       <div className="min-h-screen bg-background pb-20 lg:pb-6">
         <div className="container mx-auto px-4 py-6 max-w-4xl">

@@ -335,8 +335,8 @@ const EventPage = () => {
   return (
     <>
       <SEO 
-        title={`${event.title} | ThriveIN Event`}
-        description={event.description?.slice(0, 155) || `Join ${creator?.full_name || 'a creator'} for ${event.title} on ThriveIN`}
+        title={`${event.title} | Kretopia Event`}
+        description={event.description?.slice(0, 155) || `Join ${creator?.full_name || 'a creator'} for ${event.title} on Kretopia`}
         type="article"
         image={event.cover_image_url || undefined}
         url={`https://thrivein.io/event/${eventId}`}
@@ -362,7 +362,7 @@ const EventPage = () => {
             "image": event.cover_image_url || undefined,
             "organizer": {
               "@type": "Person",
-              "name": creator?.full_name || 'ThriveIN Host'
+              "name": creator?.full_name || 'Kretopia Host'
             },
             "offers": event.is_ticketed && event.ticket_price ? {
               "@type": "Offer",
@@ -561,7 +561,7 @@ const EventPage = () => {
               <div className="text-left">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Your host</p>
                 <div className="flex items-center gap-1.5">
-                  <p className="font-semibold text-sm">{creator?.full_name || 'ThriveIN Host'}</p>
+                  <p className="font-semibold text-sm">{creator?.full_name || 'Kretopia Host'}</p>
                   {creator?.id_verified && (
                     <CheckCircle className="h-3.5 w-3.5 text-primary" aria-label="Verified" />
                   )}
@@ -909,11 +909,11 @@ const EventPage = () => {
             </div>
           )}
 
-          {/* Powered by ThriveIN */}
+          {/* Powered by Kretopia */}
           {!isAuthenticated && (
             <div className="text-center mt-8">
               <p className="text-xs text-muted-foreground">
-                Powered by <span className="font-semibold text-primary">ThriveIN</span> — The Creative Community Platform
+                Powered by <span className="font-semibold text-primary">Kretopia</span> — The Creative Community Platform
               </p>
             </div>
           )}

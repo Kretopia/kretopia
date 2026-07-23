@@ -171,7 +171,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
                 <span className="font-bold text-foreground">
                   {creatorCount.toLocaleString()}
                 </span>{" "}
-                creators building on ThriveIN
+                creators building on Kretopia
               </p>
             </div>
           )}

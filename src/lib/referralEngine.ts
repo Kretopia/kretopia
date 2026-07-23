@@ -151,7 +151,7 @@ export function getAllNetworkTiers(): NetworkTierMeta[] {
 
 export function getCommissionExplanation(tier: NetworkTierMeta): string {
   if (tier.rewards.commissionRate === 0) return "";
-  return `You earn ${tier.rewards.commissionRate}% of the platform service fee when your referrals complete paid gigs. This comes from ThriveIN's cut — your referrals keep 100% of their earnings.`;
+  return `You earn ${tier.rewards.commissionRate}% of the platform service fee when your referrals complete paid gigs. This comes from Kretopia's cut — your referrals keep 100% of their earnings.`;
 }
 
 export function getProRewardText(tier: NetworkTierMeta): string {

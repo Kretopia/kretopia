@@ -299,7 +299,7 @@ function TierProgressionList({ currentTier, referralCount }: { currentTier: stri
         );
       })}
       <p className="text-[10px] text-muted-foreground text-center pt-1">
-        Commission is earned from ThriveIN's platform fee — your referrals keep 100% of their earnings.
+        Commission is earned from Kretopia's platform fee — your referrals keep 100% of their earnings.
       </p>
     </div>
   );

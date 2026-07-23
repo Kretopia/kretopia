@@ -8,7 +8,7 @@ const COLOR_INK: Record<string, string> = {
   magenta: "text-[hsl(var(--signal-magenta))]",
   yellow: "text-[hsl(var(--signal-yellow))]",
   green: "text-emerald-500",
-  blue: "text-sky-500",
+  blue: "text-violet-500",
   purple: "text-violet-500",
 };
 const COLOR_BG: Record<string, string> = {
@@ -16,7 +16,7 @@ const COLOR_BG: Record<string, string> = {
   magenta: "bg-[hsl(var(--signal-magenta))]/10",
   yellow: "bg-[hsl(var(--signal-yellow))]/10",
   green: "bg-emerald-500/10",
-  blue: "bg-sky-500/10",
+  blue: "bg-violet-500/10",
   purple: "bg-violet-500/10",
 };
 

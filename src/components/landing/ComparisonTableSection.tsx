@@ -26,7 +26,7 @@ export const ComparisonTableSection = () => {
             </span>
           </h2>
           <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground">
-            ThriveIN replaces nine apps with one creative operating system — credits, gigs, collabs, and payments in one place.
+            Kretopia replaces nine apps with one creative operating system — credits, gigs, collabs, and payments in one place.
           </p>
         </div>
 
@@ -36,7 +36,7 @@ export const ComparisonTableSection = () => {
           <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 px-4 sm:px-6 py-3 bg-muted/50 border-b border-border/40 text-xs sm:text-sm font-semibold text-muted-foreground">
             <span>What you need</span>
             <span className="w-24 sm:w-32 text-center">Before</span>
-            <span className="w-16 text-center text-primary font-bold">ThriveIN</span>
+            <span className="w-16 text-center text-primary font-bold">Kretopia</span>
           </div>
 
           {TOOLS_REPLACED.map((item, i) => {
@@ -67,7 +67,7 @@ export const ComparisonTableSection = () => {
             );
           })}
 
-          {/* ThriveIN summary row */}
+          {/* Kretopia summary row */}
           <div className="flex items-center justify-between px-4 sm:px-6 py-4 bg-primary/5 border-t-2 border-primary/30">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />

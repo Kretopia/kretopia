@@ -404,7 +404,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
     <>
       {!embedded && (
         <Helmet>
-          <title>Events & Meetups | ThriveIN</title>
+          <title>Events & Meetups | Kretopia</title>
           <meta name="description" content="Discover creative events, jam sessions, workshops, and meetups near you. Host your own or join the community." />
         </Helmet>
       )}

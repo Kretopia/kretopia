@@ -287,7 +287,7 @@ export default function ThrivePay() {
       <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         <PassportAnchorStrip className="mb-3" />
 
-        {/* ThriveIN Wallet — frictionless payouts (Path 2) */}
+        {/* Kretopia Wallet — frictionless payouts (Path 2) */}
         <div className="mb-6">
           <ThriveWalletCard />
         </div>
@@ -513,7 +513,7 @@ export default function ThrivePay() {
                   Connect your bank — no Stripe account needed
                 </CardTitle>
                 <CardDescription>
-                  ThriveIN Wallet handles the heavy lifting. You won't manage a Stripe dashboard — just add your bank and get paid.
+                  Kretopia Wallet handles the heavy lifting. You won't manage a Stripe dashboard — just add your bank and get paid.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -521,7 +521,7 @@ export default function ThrivePay() {
                   {[
                     { icon: CheckCircle, title: "Secure & Compliant", desc: "Bank-grade security" },
                     { icon: Zap, title: "Fast Payouts", desc: "Direct to your bank" },
-                    { icon: DollarSign, title: "No Liability", desc: "ThriveIN never holds funds" },
+                    { icon: DollarSign, title: "No Liability", desc: "Kretopia never holds funds" },
                   ].map((f) => (
                     <div key={f.title} className="flex items-start gap-3">
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">

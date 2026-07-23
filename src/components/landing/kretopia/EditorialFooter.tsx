@@ -33,7 +33,7 @@ export const EditorialFooter = () => {
           >
             <span className="text-white">Kretopia</span> — the platform.{" "}
             <span className="block mt-1">
-              <span className="text-white">ThriveIN</span> — community, events, magazine.
+              <span className="text-white">Kretopia</span> — community, events, magazine.
             </span>
             <span className="block mt-1">
               <span className="text-white">Kreto</span> — Executive Producer.

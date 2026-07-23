@@ -213,7 +213,7 @@ const DisputeManage = () => {
   return (
     <>
       <Helmet>
-        <title>Manage dispute — ThriveIN</title>
+        <title>Manage dispute — Kretopia</title>
       </Helmet>
 
       <div className="container max-w-2xl py-6 px-4">

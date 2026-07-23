@@ -82,8 +82,8 @@ const Ambassadors = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="ThriveIN Ambassadors — Closed Beta"
-        description="The ThriveIN Ambassador Program is currently invite-only. Join the waitlist — earn 30% recurring commission, 5% on jobs your referrals win, lifetime Pro, and founder-tier perks."
+        title="Kretopia Ambassadors — Closed Beta"
+        description="The Kretopia Ambassador Program is currently invite-only. Join the waitlist — earn 30% recurring commission, 5% on jobs your referrals win, lifetime Pro, and founder-tier perks."
         url="https://thrivein.io/ambassadors"
       />
 
@@ -105,7 +105,7 @@ const Ambassadors = () => {
           </h1>
 
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-4">
-            The ThriveIN Ambassador Program is in closed beta. We're hand-picking a small group of creators with real influence in film, music, fashion, content, and events to shape what this becomes.
+            The Kretopia Ambassador Program is in closed beta. We're hand-picking a small group of creators with real influence in film, music, fashion, content, and events to shape what this becomes.
           </p>
           <p className="text-sm text-muted-foreground/80 max-w-2xl leading-relaxed mb-8">
             Want in? Join the waitlist below — we open new seats every few weeks and reach out personally.
@@ -130,7 +130,7 @@ const Ambassadors = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
             { icon: DollarSign, title: "30% recurring", body: "Earn 30% of every paid subscription your community brings in — every month, for as long as they stay." },
-            { icon: TrendingUp, title: "5% of their jobs", body: "When a creator you brought in gets paid for a gig on ThriveIN, you earn 5% of the platform fee — talent-manager style." },
+            { icon: TrendingUp, title: "5% of their jobs", body: "When a creator you brought in gets paid for a gig on Kretopia, you earn 5% of the platform fee — talent-manager style." },
             { icon: Link2, title: "Vanity invite link", body: "thrivein.io/with/yourname plus a co-branded landing page so your audience knows it's you." },
             { icon: Crown, title: "Lifetime Pro", body: "Free Creator+ for life the moment you're approved. Full access to every feature, no caps." },
             { icon: Award, title: "Status badges", body: "Permanent Ambassador badge, with rank tiers as you grow your roster — industry signal that you helped build this." },

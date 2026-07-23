@@ -133,7 +133,7 @@ export const InviteToProjectDialog = ({
           body: {
             projectTitle: project?.title || "Untitled Project",
             projectId: selectedProjectId,
-            inviterName: profile?.full_name || "A ThriveIN user",
+            inviterName: profile?.full_name || "A Kretopia user",
             inviteeUserId: recipientUserId,
           },
         })

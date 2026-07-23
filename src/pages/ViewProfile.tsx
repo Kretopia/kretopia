@@ -366,8 +366,8 @@ const ViewProfile = () => {
   return (
     <>
       <SEO 
-        title={`${profile.full_name} | ThriveIN`}
-        description={profile.bio || `Check out ${profile.full_name}'s profile on ThriveIN`}
+        title={`${profile.full_name} | Kretopia`}
+        description={profile.bio || `Check out ${profile.full_name}'s profile on Kretopia`}
       />
       
       <div className="min-h-screen bg-background pb-24 lg:pb-6">
@@ -845,7 +845,7 @@ const ViewProfile = () => {
           image_url: profile.avatar_url,
         }}
         externalUrl={`${APP_URL}/profile/${profile.user_id}`}
-        externalText={`Check out ${profile.full_name} on ThriveIN — ${APP_URL}/profile/${profile.user_id}`}
+        externalText={`Check out ${profile.full_name} on Kretopia — ${APP_URL}/profile/${profile.user_id}`}
       />
 
       {directCall.session && (

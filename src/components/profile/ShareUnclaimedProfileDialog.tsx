@@ -26,11 +26,11 @@ export const ShareUnclaimedProfileDialog = ({
   const shareMessages = {
     claim: {
       title: "Is this you?",
-      text: `Hey! I found your profile on ThriveIN. Is this you? Claim it to unlock all features: ${productionUrl}`
+      text: `Hey! I found your profile on Kretopia. Is this you? Claim it to unlock all features: ${productionUrl}`
     },
     simple: {
       title: "Check this out",
-      text: `Check out ${profileName}'s profile on ThriveIN: ${productionUrl}`
+      text: `Check out ${profileName}'s profile on Kretopia: ${productionUrl}`
     }
   };
 

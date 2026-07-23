@@ -2,18 +2,18 @@ import { X, Check, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 /**
- * Side-by-side comparison: Regular Portfolio vs ThriveIN Verified Profile
+ * Side-by-side comparison: Regular Portfolio vs Kretopia Verified Profile
  */
 export const BeforeAfterSection = () => {
   return (
     <section className="py-10 px-4 sm:px-6">
       <div className="container mx-auto max-w-3xl">
         <p className="text-center text-[10px] uppercase tracking-[0.2em] text-primary font-semibold mb-3">
-          Why ThriveIN?
+          Why Kretopia?
         </p>
         <h2 className="text-xl sm:text-2xl font-bold text-center text-foreground mb-6">
           Regular Portfolio <span className="text-muted-foreground font-normal">vs</span>{" "}
-          <span className="text-primary">ThriveIN</span>
+          <span className="text-primary">Kretopia</span>
         </h2>
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -44,7 +44,7 @@ export const BeforeAfterSection = () => {
               NEW
             </div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-primary mb-3">
-              ThriveIN
+              Kretopia
             </p>
             <ul className="space-y-2.5">
               {[

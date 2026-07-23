@@ -392,7 +392,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
 
   const shareCircle = async () => {
     const url = `https://www.thrivein.io/circle?tab=circles&circle=${circle.invite_code || circle.id}`;
-    const shareText = `Join "${circle.title}" on ThriveIN — where creatives connect, collaborate, and grow together \n\n${url}`;
+    const shareText = `Join "${circle.title}" on Kretopia — where creatives connect, collaborate, and grow together \n\n${url}`;
     try {
       await navigator.clipboard.writeText(shareText);
       setCopied(true);

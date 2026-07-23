@@ -30,7 +30,7 @@ interface Sponsor {
 
 const COLUMNS: { id: string; label: string; tone: string }[] = [
   { id: "lead",      label: "Lead",      tone: "bg-muted text-muted-foreground" },
-  { id: "outreach",  label: "Outreach",  tone: "bg-sky-500/15 text-sky-600 dark:text-sky-400" },
+  { id: "outreach",  label: "Outreach",  tone: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
   { id: "proposed",  label: "Proposed",  tone: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
   { id: "confirmed", label: "Confirmed", tone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
   { id: "delivered", label: "Delivered", tone: "bg-primary/15 text-primary" },

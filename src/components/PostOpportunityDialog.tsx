@@ -300,7 +300,7 @@ export const PostOpportunityDialog = ({
         analytics.opportunityCreate(newOpportunity.id);
       }
 
-      toast({ title: "Gig Posted!", description: "Your gig is now live on ThriveIN." });
+      toast({ title: "Gig Posted!", description: "Your gig is now live on Kretopia." });
 
       // Reset
       setFormData({

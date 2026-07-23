@@ -49,15 +49,15 @@ export default function AgentsActivity() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
       <Helmet>
-        <title>Always-On Agents · ThriveIN</title>
-        <meta name="description" content="Live log of autonomous actions ThriveIN agents have taken on behalf of creators." />
+        <title>Always-On Agents · Kretopia</title>
+        <meta name="description" content="Live log of autonomous actions Kretopia agents have taken on behalf of creators." />
       </Helmet>
 
       <header className="mb-6">
         <p className="text-xs uppercase tracking-wider text-muted-foreground">Agent Activity</p>
         <h1 className="font-serif text-3xl md:text-4xl mt-1">Always-on agents, doing real work.</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-prose">
-          Every row below is an autonomous action a ThriveIN agent has taken — drafting proposals, finding gigs,
+          Every row below is an autonomous action a Kretopia agent has taken — drafting proposals, finding gigs,
           identifying sponsors, refreshing Creative Passports. No human in the loop required.
         </p>
       </header>

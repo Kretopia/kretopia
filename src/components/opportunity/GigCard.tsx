@@ -51,7 +51,7 @@ const TYPE_CONFIG: Record<string, { label: string; chip: string; icon: typeof Br
   collab:         { label: "Collab",        chip: "bg-primary/20 text-primary border-primary/30",             icon: Handshake },
   collaboration:  { label: "Collab",        chip: "bg-primary/20 text-primary border-primary/30",             icon: Handshake },
   gig:            { label: "Quick Gig",     chip: "bg-amber-500/15 text-amber-400 border-amber-500/25",       icon: Zap },
-  project:        { label: "Project",       chip: "bg-sky-500/15 text-sky-400 border-sky-500/25",             icon: Target },
+  project:        { label: "Project",       chip: "bg-violet-500/15 text-violet-400 border-violet-500/25",             icon: Target },
   internship:     { label: "Internship",    chip: "bg-orange-500/15 text-orange-400 border-orange-500/25",    icon: GraduationCap },
   barter:         { label: "Barter",        chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25", icon: ArrowRightLeft },
 };

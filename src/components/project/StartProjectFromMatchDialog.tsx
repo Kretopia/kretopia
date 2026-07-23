@@ -293,7 +293,7 @@ export function StartProjectFromMatchDialog({
               email: matchedUserEmail,
               projectTitle: validationResult.data.title,
               projectId: project.id,
-              inviterName: userProfile?.full_name || 'A ThriveIN user',
+              inviterName: userProfile?.full_name || 'A Kretopia user',
               inviteeUserId: matchedUser.id,
             }
           }).catch(err => console.error('[StartProject] Invitation email failed:', err));

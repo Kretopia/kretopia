@@ -36,7 +36,7 @@ const ManageHub = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <Helmet>
-        <title>Manage · ThriveIN</title>
+        <title>Manage · Kretopia</title>
         <meta name="description" content="One dashboard for your clients, gigs, events, and campaigns." />
       </Helmet>
 

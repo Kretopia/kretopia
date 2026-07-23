@@ -153,7 +153,7 @@ export default function PartnerDirectory() {
             <div className="text-center space-y-2">
               <h1 className="text-4xl font-bold">Partner Directory</h1>
               <p className="text-muted-foreground text-lg">
-                Exclusive discounts and benefits for ThriveIN members
+                Exclusive discounts and benefits for Kretopia members
               </p>
             </div>
 

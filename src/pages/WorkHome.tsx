@@ -180,7 +180,7 @@ const BrandWorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Hiring Dashboard | ThriveIN</title>
+        <title>Hiring Dashboard | Kretopia</title>
         <meta name="description" content="Manage your talent pipeline — post gigs, review applicants, and hire creators." />
       </Helmet>
 
@@ -419,7 +419,7 @@ const CreatorWorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Studios | ThriveIN</title>
+        <title>Studios | Kretopia</title>
         <meta name="description" content="Studios — your project rooms. Voice-first project management for creatives." />
       </Helmet>
 

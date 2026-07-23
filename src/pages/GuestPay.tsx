@@ -121,8 +121,8 @@ export default function GuestPay() {
   return (
     <div className="min-h-screen bg-background pb-12">
       <SEO
-        title="Guest Wallet | ThriveIN"
-        description="Top up a prepaid balance to use at ThriveIN events and partner merchants."
+        title="Guest Wallet | Kretopia"
+        description="Top up a prepaid balance to use at Kretopia events and partner merchants."
       />
 
       <header className="border-b bg-card">
@@ -139,7 +139,7 @@ export default function GuestPay() {
               <div>
                 <h2 className="text-lg font-semibold">Get started</h2>
                 <p className="text-sm text-muted-foreground">
-                  Add a balance with Apple Pay, Google Pay, or card. Bring it to any ThriveIN event.
+                  Add a balance with Apple Pay, Google Pay, or card. Bring it to any Kretopia event.
                 </p>
               </div>
               <form onSubmit={handleStartSession} className="space-y-3">

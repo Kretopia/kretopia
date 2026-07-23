@@ -177,7 +177,7 @@ export default function PersonalRoom() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 text-center">
         <Fingerprint className="h-10 w-10 text-muted-foreground mb-3" />
         <h1 className="text-xl font-bold">Room not found</h1>
-        <p className="text-sm text-muted-foreground mt-1">@{handle} isn't on ThriveIN yet.</p>
+        <p className="text-sm text-muted-foreground mt-1">@{handle} isn't on Kretopia yet.</p>
         <Link to="/" className="mt-4 text-sm underline">Back home</Link>
       </div>
     );
@@ -186,7 +186,7 @@ export default function PersonalRoom() {
   return (
     <div className="min-h-screen bg-background pb-28">
       <SEO
-        title={`${owner.full_name || handle}'s room — ThriveIN`}
+        title={`${owner.full_name || handle}'s room — Kretopia`}
         description={`Knock to start a call with ${owner.full_name || handle}.`}
       />
       <div className="max-w-md mx-auto px-4 pt-10">

@@ -39,7 +39,7 @@ const EMPTY_VAULT: Vault = {
   is_default: true,
   logo_url: null,
   logo_dark_url: null,
-  palette: ["#0F172A", "#FF0A78", "#17D9D4"],
+  palette: ["#0F172A", "#FF0A78", "#9413D2"],
   fonts: { heading: "", body: "" },
   voice_tone: "",
   tagline: "",

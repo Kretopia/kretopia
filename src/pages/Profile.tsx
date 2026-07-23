@@ -395,8 +395,8 @@ const ProfileContent = () => {
           </div>
         </header>
 
-        {/* Thrive proactive nudges (Passport surface) */}
-        <SurfaceProactiveCards surface="passport" className="px-0 mb-4" />
+        {/* Kreto whisper — Passport surface */}
+        <KretoTip surface="passport" compact className="mb-4" />
 
         {/* Identity section — who you are */}
         <section id="identity" className="scroll-mt-20">

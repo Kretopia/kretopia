@@ -308,7 +308,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
 
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={Theater} label="Sound Stages" onClick={() => handleNavigation("/discover?tab=live")} path="/discover" />
+                      <MenuButton icon={Theater} label="Sound Stages" onClick={() => handleNavigation("/soundstages")} path="/soundstages" />
 
                       <Separator className="my-3" />
 

@@ -14,6 +14,8 @@ interface BrandLogoProps {
   iconOnly?: boolean;
   /** Use the full official lockup PNG (K + kretopia wordmark together). Overrides icon/textOnly. */
   lockup?: boolean;
+  /** Render for dark backgrounds (white wordmark) */
+  onDark?: boolean;
 }
 
 const sizeConfig = {

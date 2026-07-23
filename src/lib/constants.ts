@@ -3,7 +3,7 @@
  * Use this instead of window.location.origin when generating
  * links that will be shared externally (copy-to-clipboard, emails, etc).
  */
-export const APP_URL = "https://www.thrivein.io";
+export const APP_URL = "https://www.kretopia.com";
 
 /**
  * Returns a canonical thrivein.io URL for the given path or absolute URL.

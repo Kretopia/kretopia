@@ -48,7 +48,7 @@ const GuestPass = () => {
       height: 240,
       data: token,
       dotsOptions: { color: "#0F172A", type: "rounded" },
-      cornersSquareOptions: { color: "#20D3C2", type: "extra-rounded" },
+      cornersSquareOptions: { color: "#9413D2", type: "extra-rounded" },
       backgroundOptions: { color: "#ffffff" },
     });
     qr.append(qrRef.current);

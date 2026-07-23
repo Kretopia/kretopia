@@ -60,7 +60,7 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
         body="Your Creative Passport collects every project, every credit, every co-sign — verified by the collaborators who lived it with you. One link. Your whole career."
         caption="Passport · Chapter Three"
         image={passportImg}
-        accent="#17D9D4"
+        accent="#9413D2"
         href="/auth?next=/profile"
       />
 
@@ -138,7 +138,7 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
         body="Open mics, speed sessions, listening parties. Drop into a SoundStage to be seen — by an audience that came for exactly what you do."
         caption="SoundStages · Chapter Seven"
         image={soundstagesImg}
-        accent="#17D9D4"
+        accent="#9413D2"
         href="/auth?next=/circle?tab=live"
       />
 

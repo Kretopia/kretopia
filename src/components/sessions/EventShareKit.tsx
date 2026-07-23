@@ -87,7 +87,7 @@ export const EventShareKit = ({ event, hostFirstName, attendeeCount, open, onOpe
         height: 200,
         data: eventUrl,
         dotsOptions: { color: "#7B61FF", type: "rounded" },
-        cornersSquareOptions: { color: "#20D3C2", type: "extra-rounded" },
+        cornersSquareOptions: { color: "#9413D2", type: "extra-rounded" },
         backgroundOptions: { color: "#ffffff" },
         imageOptions: { crossOrigin: "anonymous" },
       });

@@ -155,7 +155,7 @@ Return ONLY valid JSON array:
     switch (priority) {
       case 'high': return 'border-l-4 border-l-red-500';
       case 'medium': return 'border-l-4 border-l-yellow-500';
-      case 'low': return 'border-l-4 border-l-blue-500';
+      case 'low': return 'border-l-4 border-l-violet-500';
       default: return '';
     }
   };

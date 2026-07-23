@@ -72,9 +72,9 @@ const COLOR_TINT: Record<string, { bg: string; ring: string; ink: string }> = {
     ink: "text-emerald-500",
   },
   blue: {
-    bg: "bg-sky-500/10",
-    ring: "ring-sky-500/40",
-    ink: "text-sky-500",
+    bg: "bg-violet-500/10",
+    ring: "ring-violet-500/40",
+    ink: "text-violet-500",
   },
   purple: {
     bg: "bg-violet-500/10",

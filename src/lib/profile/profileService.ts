@@ -277,37 +277,9 @@ async function resolveProfileAnchor(userId: string): Promise<{ id: string; user_
  * Falls back to legacy `profiles` row when split rows are not backfilled yet.
  */
 export async function getProfile(userId: string): Promise<Profile | null> {
-  const [coreResult, creativeResult, businessResult, mediaResult, accountResult] = await Promise.all([
-    fromSplit("profile_core").select("*").eq("user_id", userId).maybeSingle(),
-    fromSplit("profile_creative").select("*").eq("user_id", userId).maybeSingle(),
-    fromSplit("profile_business").select("*").eq("user_id", userId).maybeSingle(),
-    fromSplit("profile_media").select("*").eq("user_id", userId).maybeSingle(),
-    fromSplit("profile_account").select("*").eq("user_id", userId).maybeSingle(),
-  ]);
-
-  const errors = [
-    coreResult.error,
-    creativeResult.error,
-    businessResult.error,
-    mediaResult.error,
-    accountResult.error,
-  ].filter(Boolean);
-
-  if (errors.length > 0) {
-    throw errors[0];
-  }
-
-  if (coreResult.data) {
-    const merged = mergeSplitRows(
-      coreResult.data as Record<string, unknown>,
-      creativeResult.data as Record<string, unknown> | null,
-      businessResult.data as Record<string, unknown> | null,
-      mediaResult.data as Record<string, unknown> | null,
-      accountResult.data as Record<string, unknown> | null,
-    );
-    if (merged) return merged;
-  }
-
+  // Split tables (profile_core/*) are not present in this environment.
+  // Read directly from the legacy `profiles` table. If split tables are
+  // reintroduced later, restore the merge path here.
   return getLegacyProfile(userId);
 }
 

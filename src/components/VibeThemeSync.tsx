@@ -37,37 +37,8 @@ export function VibeThemeSync() {
   const { setTheme } = useTheme();
 
   useEffect(() => {
-    // 1. Apply local cached vibe immediately to avoid flash
-    applyVibe(getStoredVibe(), setTheme);
-
-    // 2. Reconcile with server when signed in
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user || cancelled) return;
-        const { data } = await supabase
-          .from("profiles")
-          .select("ui_vibe")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        const v = (data as any)?.ui_vibe;
-        if (isVibe(v) && !cancelled) applyVibe(v, setTheme);
-      } catch (err) {
-        console.warn("[VibeThemeSync] failed to load profile vibe", err);
-      }
-    })();
-
-    // 3. React to in-app changes from picker
-    const onChange = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (isVibe(detail)) applyVibe(detail, setTheme);
-    };
-    window.addEventListener("ui-vibe:change", onChange);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("ui-vibe:change", onChange);
-    };
+    // V1: Midnight locked. Ignore stored/profile vibe until picker returns post-launch.
+    applyVibe("midnight", setTheme);
   }, [setTheme]);
 
   return null;

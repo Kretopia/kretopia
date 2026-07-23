@@ -34,6 +34,7 @@ import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
+import { KretoTip } from "@/components/agent/KretoTip";
 import { PassportOverview } from "@/components/passport/PassportOverview";
 import { PassportMomentum } from "@/components/passport/PassportMomentum";
 import { ThriveRemembersChip } from "@/components/passport/ThriveRemembersChip";
@@ -395,8 +396,8 @@ const ProfileContent = () => {
           </div>
         </header>
 
-        {/* Thrive proactive nudges (Passport surface) */}
-        <SurfaceProactiveCards surface="passport" className="px-0 mb-4" />
+        {/* Kreto whisper — Passport surface */}
+        <KretoTip surface="passport" compact className="mb-4" />
 
         {/* Identity section — who you are */}
         <section id="identity" className="scroll-mt-20">

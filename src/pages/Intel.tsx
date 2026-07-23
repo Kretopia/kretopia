@@ -134,7 +134,7 @@ const Intel = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO title="Your Intel Brief — ThriveIN" description="Daily matches, sponsor radar, EPK refresh, and Izzy-drafted outreach." />
+      <SEO title="Your Intel Brief — ThriveIN" description="Daily matches, sponsor radar, EPK refresh, and Kreto-drafted outreach." />
       <div className="border-b border-border/50 pt-[env(safe-area-inset-top)]">
         <div className="container max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button>
@@ -250,13 +250,13 @@ const Intel = () => {
           </TabsContent>
 
           <TabsContent value="outbox" className="mt-4 space-y-3">
-            <p className="text-xs text-muted-foreground">Drafts Izzy prepared on your behalf. Edit, then approve to send.</p>
+            <p className="text-xs text-muted-foreground">Drafts Kreto prepared on your behalf. Edit, then approve to send.</p>
             {loading && <p className="text-sm text-muted-foreground text-center py-8">Loading…</p>}
             {!loading && drafts.length === 0 && (
               <Card className="p-6 text-center space-y-2">
                 <Inbox className="h-8 w-8 mx-auto text-muted-foreground" />
                 <p className="text-sm font-semibold">Outbox is empty</p>
-                <p className="text-xs text-muted-foreground">Tap "Draft pitch" on a sponsor lead, or wait for Izzy's next scan.</p>
+                <p className="text-xs text-muted-foreground">Tap "Draft pitch" on a sponsor lead, or wait for Kreto's next scan.</p>
               </Card>
             )}
             {pendingDrafts.map((d) => {

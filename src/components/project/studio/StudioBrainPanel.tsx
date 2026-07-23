@@ -131,7 +131,7 @@ export function StudioBrainPanel({ projectId, isOwner }: Props) {
       <SheetTrigger asChild>
         <button
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-card hover:border-primary/50 transition text-[11px] group"
-          title="What Izzy remembers about this Studio"
+          title="What Kreto remembers about this Studio"
         >
           <Brain className="h-3 w-3 text-primary" />
           <span className="font-medium">Brain</span>
@@ -146,7 +146,7 @@ export function StudioBrainPanel({ projectId, isOwner }: Props) {
             <Brain className="h-4 w-4 text-primary" /> Studio Brain
           </SheetTitle>
           <p className="text-xs text-muted-foreground text-left">
-            Everything Izzy remembers from what you've dropped here. Used automatically when you ask for decks, proposals, invoices.
+            Everything Kreto remembers from what you've dropped here. Used automatically when you ask for decks, proposals, invoices.
           </p>
         </SheetHeader>
 

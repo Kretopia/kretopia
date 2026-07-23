@@ -47,7 +47,7 @@ export default function BrandVault() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <SEO title="Brand Vault · ThriveIN" description="Your persistent brand. Every deck, proposal and treatment Izzy generates inherits it." />
+      <SEO title="Brand Vault · ThriveIN" description="Your persistent brand. Every deck, proposal and treatment Kreto generates inherits it." />
 
       <header className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -67,7 +67,7 @@ export default function BrandVault() {
         <Card className="p-4 bg-gradient-to-br from-primary/5 via-card to-card border-primary/20">
           <p className="text-sm leading-relaxed text-foreground/85">
             Set your logo, colours, fonts and voice once. Every deck, proposal,
-            treatment and rate card Izzy generates uses it automatically —
+            treatment and rate card Kreto generates uses it automatically —
             so you stop starting from scratch.
           </p>
         </Card>

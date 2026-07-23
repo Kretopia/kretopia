@@ -262,7 +262,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
       <FirstTimeHint
         storageKey="gigs.scouted-explainer"
         title="How scouting works"
-        description="Every morning Izzy scans gig boards, LinkedIn, Instagram and ATS pages, then ranks them by fit. Tap a card to read the full brief inside the app."
+        description="Every morning Kreto scans gig boards, LinkedIn, Instagram and ATS pages, then ranks them by fit. Tap a card to read the full brief inside the app."
         tone="energy"
       />
 
@@ -446,7 +446,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                     {!coverLetter && (
                       <Button size="sm" variant="outline" onClick={draftLetter} disabled={drafting}>
                         {drafting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
-                        Draft with Izzy
+                        Draft with Kreto
                       </Button>
                     )}
                   </div>
@@ -455,7 +455,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                   ) : coverLetter ? (
                     <Textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} rows={8} className="text-sm" />
                   ) : (
-                    <p className="text-xs text-muted-foreground italic">Tap "Draft with Izzy" to generate a tailored cover letter.</p>
+                    <p className="text-xs text-muted-foreground italic">Tap "Draft with Kreto" to generate a tailored cover letter.</p>
                   )}
                 </div>
 

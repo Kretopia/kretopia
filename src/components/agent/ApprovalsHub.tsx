@@ -72,7 +72,7 @@ export const ApprovalsHub = ({ limit = 4 }: { limit?: number }) => {
     try {
       const { error } = await supabase.functions.invoke("send-outreach-draft", { body: { draft_id: id } });
       if (error) throw error;
-      toast({ title: "Sent", description: "Izzy sent the email." });
+      toast({ title: "Sent", description: "Kreto sent the email." });
       setDrafts((p) => p.filter((d) => d.id !== id));
     } catch (e: any) {
       toast({ title: "Couldn't send", description: e?.message || "Try again", variant: "destructive" });
@@ -105,14 +105,14 @@ export const ApprovalsHub = ({ limit = 4 }: { limit?: number }) => {
           <div className="flex items-center gap-1.5">
             <ThriveMark size="sm" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
-              Izzy · Waiting on you
+              Kreto · Waiting on you
             </h3>
             <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
               {total}
             </Badge>
           </div>
           <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-            Drafts Izzy prepared. You approve before anything sends.
+            Drafts Kreto prepared. You approve before anything sends.
           </p>
         </div>
         {total > limit && (

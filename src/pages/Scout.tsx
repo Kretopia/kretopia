@@ -44,7 +44,7 @@ const Scout = () => {
     <div className="accent-scout min-h-screen bg-background pb-24">
       <SEO
         title="Scout — Find your next gig & collaborator | ThriveIN"
-        description="One feed for the gigs and people that fit your work — scouted from across the web and curated by Izzy."
+        description="One feed for the gigs and people that fit your work — scouted from across the web and curated by Kreto."
       />
 
       {/* Calm header */}

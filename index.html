@@ -89,23 +89,15 @@
     <meta name="twitter:description" content="The Creative Economy OS. Build your Creative Passport, find opportunities, collaborate, and get paid." />
     <meta name="twitter:image" content="https://www.thrivein.io/og-image.png" />
     <script>
-      // Boot vibe — honor stored choice before paint to avoid theme flash.
-      // Default = midnight (Brand System v1.0 — near-black #05070D canvas).
+      // V1: Midnight locked platform-wide. Vibe picker disabled until post-launch.
       (function () {
         try {
-          var v = localStorage.getItem("ui_vibe");
-          if (v !== "daylight" && v !== "midnight" && v !== "neon") v = "midnight";
           var html = document.documentElement;
-          html.setAttribute("data-vibe", v);
-          if (v === "daylight") {
-            html.classList.remove("dark");
-            html.style.colorScheme = "light";
-            html.style.backgroundColor = "hsl(40 30% 97%)";
-          } else {
-            html.classList.add("dark");
-            html.style.colorScheme = "dark";
-            html.style.backgroundColor = "#0B0B10";
-          }
+          html.setAttribute("data-vibe", "midnight");
+          html.classList.add("dark");
+          html.style.colorScheme = "dark";
+          html.style.backgroundColor = "#0B0B10";
+          localStorage.setItem("ui_vibe", "midnight");
         } catch (_) {}
       })();
     </script>

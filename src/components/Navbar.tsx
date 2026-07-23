@@ -128,7 +128,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/60 bg-background" role="navigation" aria-label="Main navigation">
+    <nav
+      className={cn(
+        "sticky top-0 z-50",
+        isLandingPage
+          ? "border-b border-white/10 bg-[#05070D] text-white"
+          : "border-b border-border/60 bg-background",
+      )}
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className="container mx-auto flex items-center justify-between gap-1 px-2 sm:px-4 py-2.5">
         <div className="shrink-0">
           <BrandLogo size="md" showBeta linkToHome />

@@ -1,22 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, Compass, BadgeCheck, Sparkles, Briefcase, UserSearch, Wallet, LayoutGrid } from "lucide-react";
+import { Home, BadgeCheck, Briefcase, LayoutGrid, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
 /**
- * Kretopia V1 bottom nav — Home · Search · Scout · Passport · Kreto.
+ * Kretopia V1 bottom nav — Home · Passport · Opportunities · Studio.
  *
+ * Kreto is a persistent bar/FAB layer, NOT a nav tab.
  * Company/business accounts keep their existing B2B nav unchanged.
- * KrePay and Studio Lite are intentionally NOT in nav — they're surfaced
- * contextually inside opportunities, Passport, and Kreto insights.
  */
 const CREATIVE_ITEMS = [
   { path: "/", icon: Home, label: "Home", hint: "Today, insights, and Kreto's brief" },
-  { path: "/search", icon: Search, label: "Search", hint: "Search the Creative Universe" },
-  { path: "/scout", icon: Compass, label: "Scout", hint: "Opportunities matched to you" },
   { path: "/profile", icon: BadgeCheck, label: "Passport", hint: "Your verified creative identity" },
-  { path: "/kreto", icon: Sparkles, label: "Kreto", hint: "Your Executive Producer" },
+  { path: "/opportunities", icon: Briefcase, label: "Opportunities", hint: "Scouted gigs matched to you" },
+  { path: "/desk", icon: LayoutGrid, label: "Studio", hint: "Projects, files, and collaborators" },
 ];
 
 const COMPANY_ITEMS = [
@@ -60,12 +58,11 @@ const KretopiaBottomNav = memo(() => {
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    if (path === "/search") return location.pathname.startsWith("/search");
-    if (path === "/scout") {
+    if (path === "/opportunities") {
       return (
-        location.pathname.startsWith("/scout") ||
-        location.pathname === "/opportunities" ||
-        location.pathname === "/opportunity-dashboard"
+        location.pathname.startsWith("/opportunities") ||
+        location.pathname.startsWith("/opportunity") ||
+        location.pathname.startsWith("/scout")
       );
     }
     if (path === "/profile") {
@@ -77,7 +74,6 @@ const KretopiaBottomNav = memo(() => {
         location.pathname.startsWith("/credits")
       );
     }
-    if (path === "/kreto") return location.pathname.startsWith("/kreto");
     if (path === "/desk") return location.pathname.startsWith("/desk");
     return location.pathname === path;
   };

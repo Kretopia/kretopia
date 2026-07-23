@@ -72,6 +72,8 @@ const DisputeManage = lazy(() => import("./pages/DisputeManage"));
 
 const Circle = lazy(() => import("./pages/Circle"));
 const Discover = lazy(() => import("./pages/Discover"));
+const Match = lazy(() => import("./pages/Match"));
+const SoundStages = lazy(() => import("./pages/SoundStages"));
 const SpeedSession = lazy(() => import("./pages/SpeedSession"));
 const SpeedIndex = lazy(() => import("./pages/SpeedIndex"));
 const SpeedRecap = lazy(() => import("./pages/SpeedRecap"));
@@ -501,6 +503,9 @@ const AppContent = () => {
             <Route path="/verify-credit" element={<BrandVerify />} />
             <Route path="/directory" element={<Navigate to="/search" replace />} />
             <Route path="/discover" element={<Discover />} />
+            <Route path="/match" element={<Match />} />
+            <Route path="/soundstages" element={<SoundStages />} />
+            <Route path="/sound-stages" element={<Navigate to="/soundstages" replace />} />
             <Route path="/opportunities" element={<Opportunities />} />
             <Route path="/scout" element={<Scout />} />
 

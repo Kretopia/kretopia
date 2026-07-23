@@ -140,7 +140,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
     >
       <div className="container mx-auto flex items-center justify-between gap-1 px-2 sm:px-4 py-2.5">
         <div className="shrink-0">
-          <BrandLogo size="md" showBeta linkToHome />
+          <BrandLogo size="md" showBeta linkToHome onDark={isLandingPage} />
         </div>
 
         {/* Search lives in Thrive bar — top nav is bell + menu only */}
@@ -153,8 +153,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 key={path}
                 to={path}
                 className={cn(
-                  "px-3 py-2 rounded-lg text-sm font-medium hover:text-foreground hover:bg-accent/50 transition-all whitespace-nowrap",
-                  location.pathname === path ? "text-foreground bg-accent/30" : "text-muted-foreground"
+                  "px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                  isLandingPage
+                    ? "text-white/70 hover:text-white hover:bg-white/5"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                  location.pathname === path && (isLandingPage ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
                 )}
               >
                 {label}

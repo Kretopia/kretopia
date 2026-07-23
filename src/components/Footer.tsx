@@ -103,7 +103,7 @@ export const Footer = () => {
         <Separator className="my-6" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© {currentYear} ThriveIN. {t("footer.allRightsReserved")}</p>
+          <p>© {currentYear} Kretopia by Thrive Collective. {t("footer.allRightsReserved")}</p>
           <div className="flex items-center gap-3">
             
             <a 

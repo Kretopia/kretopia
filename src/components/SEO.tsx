@@ -97,7 +97,7 @@ export const SEO = ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
-      <meta property="og:site_name" content="ThriveIN" />
+      <meta property="og:site_name" content="Kretopia" />
       
       {/* Profile-specific OG tags */}
       {profile && (

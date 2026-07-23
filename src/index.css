@@ -760,3 +760,10 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 
 .font-display { font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif; }
+
+/* Kretopia v1 — Satoshi is the OS typeface. Neutralize any leftover
+   `font-serif` usage so headlines don't render in Instrument Serif. */
+.font-serif {
+  font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif !important;
+  font-style: normal !important;
+}

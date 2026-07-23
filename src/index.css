@@ -42,9 +42,9 @@ All colors MUST be HSL.
     --accent: 36 22% 92%;
     --accent-foreground: 240 11% 8%;
 
-    /* Energy = teal signal (the one spectrum color promoted to a token). */
-    --energy: 174 73% 47%;
-    --energy-foreground: 240 17% 7%;
+    /* Energy = Kretopia Magenta (primary highlight/CTA signal). */
+    --energy: 327 100% 59%;
+    --energy-foreground: 0 0% 100%;
 
     --destructive: 0 70% 52%;
     --destructive-foreground: 0 0% 100%;
@@ -149,9 +149,9 @@ All colors MUST be HSL.
     --cream: 38 35% 92%;
     --cream-foreground: 225 44% 4%;
 
-    /* Energy = teal credibility */
-    --energy: 178 80% 47%;
-    --energy-foreground: 225 44% 4%;
+    /* Energy = Kretopia Magenta credibility */
+    --energy: 327 100% 59%;
+    --energy-foreground: 0 0% 100%;
 
     --destructive: 0 75% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -162,17 +162,17 @@ All colors MUST be HSL.
 
     --success: 141 71% 42%;          /* #1DB954 */
     --success-foreground: 0 0% 100%;
-    --warning: 43 100% 58%;          /* Thrive Yellow */
+    --warning: 33 100% 62%;          /* Kretopia Warm Orange */
     --warning-foreground: 225 44% 4%;
 
-    /* Single-hue brand gradient (was rainbow tri-stop). Teal energy only. */
-    --gradient-primary: linear-gradient(135deg, hsl(178 80% 47%), hsl(178 75% 38%));
-    --gradient-secondary: linear-gradient(135deg, hsl(178 80% 47% / 0.18), hsl(178 80% 47% / 0.04));
+    /* Kretopia brand gradient — violet → magenta */
+    --gradient-primary: linear-gradient(135deg, hsl(252 100% 60%), hsl(327 100% 59%));
+    --gradient-secondary: linear-gradient(135deg, hsl(327 100% 59% / 0.18), hsl(252 100% 60% / 0.04));
     --gradient-accent: linear-gradient(180deg, hsl(225 44% 4%), hsl(222 24% 9%));
-    --gradient-subtle: linear-gradient(180deg, hsl(178 80% 47% / 0.06), transparent);
+    --gradient-subtle: linear-gradient(180deg, hsl(327 100% 59% / 0.06), transparent);
     --gradient-glass: linear-gradient(135deg, hsl(222 24% 9% / 0.92), hsl(222 22% 13% / 0.78));
-    --gradient-gold: linear-gradient(135deg, hsl(43 100% 58%), hsl(36 96% 52%));
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(178 80% 47% / 0.14), transparent 70%);
+    --gradient-gold: linear-gradient(135deg, hsl(33 100% 62%), hsl(15 100% 62%));
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(252 100% 60% / 0.18), transparent 70%);
 
     /* ============================================================
        KRETOPIA v1 BRAND SHEET — palette + signature gradients.
@@ -238,16 +238,16 @@ All colors MUST be HSL.
     --primary-foreground: 225 44% 4%;
     --accent: 222 22% 13%;
     --accent-foreground: 0 0% 100%;
-    --energy: 178 80% 47%;
-    --energy-foreground: 225 44% 4%;
+    --energy: 327 100% 59%;
+    --energy-foreground: 0 0% 100%;
     --ring: 0 0% 100%;
-    --gradient-secondary: linear-gradient(135deg, hsl(178 80% 47% / 0.18), hsl(178 80% 47% / 0.04));
-    --gradient-subtle: linear-gradient(180deg, hsl(178 80% 47% / 0.08), transparent);
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(178 80% 47% / 0.14), transparent 70%);
-    --shadow-glow: 0 0 32px hsl(178 80% 47% / 0.35);
-    --mode-accent: 178 80% 47%;
-    --mode-accent-foreground: 225 44% 4%;
-    --mode-glow: 0 0 32px hsl(178 80% 47% / 0.35);
+    --gradient-secondary: linear-gradient(135deg, hsl(327 100% 59% / 0.18), hsl(252 100% 60% / 0.04));
+    --gradient-subtle: linear-gradient(180deg, hsl(327 100% 59% / 0.08), transparent);
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(252 100% 60% / 0.18), transparent 70%);
+    --shadow-glow: 0 0 32px hsl(327 100% 59% / 0.35);
+    --mode-accent: 327 100% 59%;
+    --mode-accent-foreground: 0 0% 100%;
+    --mode-glow: 0 0 32px hsl(327 100% 59% / 0.35);
   }
 
   /* ============================================================
@@ -760,3 +760,10 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 
 .font-display { font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif; }
+
+/* Kretopia v1 — Satoshi is the OS typeface. Neutralize any leftover
+   `font-serif` usage so headlines don't render in Instrument Serif. */
+.font-serif {
+  font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif !important;
+  font-style: normal !important;
+}

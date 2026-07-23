@@ -163,7 +163,7 @@ export const SurfaceProactiveCards = ({ surface, className, limit = 2 }: Props) 
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[9px] font-bold uppercase tracking-[0.22em] mb-0.5 text-primary flex items-center gap-1">
-                <Sparkles className="h-2.5 w-2.5" /> Thrive Suggests
+                <Sparkles className="h-2.5 w-2.5" /> Kreto Suggests
               </p>
               <p className="text-sm font-bold leading-tight text-foreground">
                 {p.title}

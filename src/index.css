@@ -42,9 +42,9 @@ All colors MUST be HSL.
     --accent: 36 22% 92%;
     --accent-foreground: 240 11% 8%;
 
-    /* Energy = teal signal (the one spectrum color promoted to a token). */
-    --energy: 174 73% 47%;
-    --energy-foreground: 240 17% 7%;
+    /* Energy = Kretopia Magenta (primary highlight/CTA signal). */
+    --energy: 327 100% 59%;
+    --energy-foreground: 0 0% 100%;
 
     --destructive: 0 70% 52%;
     --destructive-foreground: 0 0% 100%;

@@ -26,8 +26,8 @@ interface SEOProps {
 }
 
 export const SEO = ({
-  title = "ThriveIN — Search Your Name. Claim Your Credits. Get Paid.",
-  description = "Search your name, claim your verified credits, and get discovered. ThriveIN is the creative platform to build your career record and get paid.",
+  title = "Kretopia — Where Creativity Lives. Passport · Scout · Kreto.",
+  description = "Kretopia is the Creative Economy OS. Build your Creative Passport, claim verified credits, find opportunities with Scout, and act with Kreto — your AI Executive Producer.",
   type = "website",
   image = "https://www.thrivein.io/og-image.png",
   url,

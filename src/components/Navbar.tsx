@@ -405,13 +405,29 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </Sheet>
 
               <Link to="/post-opportunity" className="hidden sm:inline-flex">
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "gap-2",
+                    isLandingPage && "border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white",
+                  )}
+                >
                   <Briefcase className="h-4 w-4" />
                   Hire Talent
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4">Sign In</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "text-xs sm:text-sm px-2 sm:px-4",
+                    isLandingPage && "text-white hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  Sign In
+                </Button>
               </Link>
               <Link to="/auth">
                 <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>

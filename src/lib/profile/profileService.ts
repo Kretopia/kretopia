@@ -333,14 +333,7 @@ export async function updateProfile(userId: string, data: ProfileUpdate): Promis
 
   const legacyPayload = { ...data };
 
-  const [legacyResult] = await Promise.all([
-    supabase.from("profiles").update(legacyPayload).eq("user_id", userId),
-    upsertSplitRow("profile_core", userId, anchor.id, corePayload),
-    upsertSplitRow("profile_creative", userId, anchor.id, creativePayload),
-    upsertSplitRow("profile_business", userId, anchor.id, businessPayload),
-    upsertSplitRow("profile_media", userId, anchor.id, mediaPayload),
-    upsertSplitRow("profile_account", userId, anchor.id, accountPayload),
-  ]);
+  const legacyResult = await supabase.from("profiles").update(legacyPayload).eq("user_id", userId);
 
   if (legacyResult.error) throw legacyResult.error;
 

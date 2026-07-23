@@ -18,7 +18,7 @@ interface Stats {
 }
 
 interface Props {
-  /** "hero" = full 4-tile dashboard for ThrivePay page; "compact" = Home widget */
+  /** "hero" = full 4-tile dashboard for KrePay page; "compact" = Home widget */
   variant?: "hero" | "compact";
   className?: string;
 }
@@ -111,7 +111,7 @@ export function MoneyBrief({ variant = "hero", className }: Props) {
             </div>
             <div>
               <p className="text-sm font-semibold">Money this month</p>
-              <p className="text-[11px] text-muted-foreground">Tap to open ThrivePay</p>
+              <p className="text-[11px] text-muted-foreground">Tap to open KrePay</p>
             </div>
           </div>
           <MoneyStreakChip />
@@ -121,7 +121,7 @@ export function MoneyBrief({ variant = "hero", className }: Props) {
           <Tile label="Owed to you" value={fmt(stats.owedToYou)} tone={stats.overdueCount ? "warn" : "neutral"} subtitle={stats.overdueCount ? `${stats.overdueCount} overdue` : undefined} />
         </div>
         <div className="mt-3 flex items-center justify-end text-xs text-primary font-medium">
-          Open ThrivePay <ArrowRight className="h-3.5 w-3.5 ml-1" />
+          Open KrePay <ArrowRight className="h-3.5 w-3.5 ml-1" />
         </div>
       </Card>
     );

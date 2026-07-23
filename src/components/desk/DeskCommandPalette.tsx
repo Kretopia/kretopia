@@ -124,7 +124,7 @@ export const DeskCommandPalette = ({
           </CommandItem>
           <CommandItem onSelect={() => go("/thrivepay")}>
             <Wallet className="h-4 w-4 mr-2" />
-            ThrivePay — money home
+            KrePay — money home
           </CommandItem>
           <CommandItem onSelect={() => go("/thrivepay?tab=invoices")}>
             <DollarSign className="h-4 w-4 mr-2" />

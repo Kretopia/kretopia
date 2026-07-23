@@ -38,7 +38,7 @@ interface RecapResponse {
  * Aggregates the user's last 7 days of completed tasks, files delivered,
  * notes, and messages, then asks Gemini to draft a warm client update
  * email + an invoice line-item suggestion. The user can edit, copy, or
- * push the invoice draft into ThrivePay.
+ * push the invoice draft into KrePay.
  *
  * This is THE differentiating feature — no other PM tool turns a week of
  * work into a ready-to-send client email + invoice in one tap.
@@ -113,7 +113,7 @@ export const WrapMyWeekSheet = ({ open, onOpenChange, projectId }: WrapMyWeekShe
       toast({ title: "Nothing billable to invoice this week" });
       return;
     }
-    // Stash a draft in sessionStorage that ThrivePay can pick up
+    // Stash a draft in sessionStorage that KrePay can pick up
     try {
       sessionStorage.setItem(
         "thrivepay:invoice-draft",
@@ -277,7 +277,7 @@ export const WrapMyWeekSheet = ({ open, onOpenChange, projectId }: WrapMyWeekShe
                   onClick={goCreateInvoice}
                   className="col-span-2 gap-1.5"
                 >
-                  <FileText className="h-4 w-4" /> Open invoice in ThrivePay
+                  <FileText className="h-4 w-4" /> Open invoice in KrePay
                 </Button>
               )}
             </div>

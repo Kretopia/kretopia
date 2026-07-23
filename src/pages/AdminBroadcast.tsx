@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 const AdminBroadcast = () => {
-  const [title, setTitle] = useState("New on Kretopia: Voice tasks, video calls & ThrivePay");
+  const [title, setTitle] = useState("New on Kretopia: Voice tasks, video calls & KrePay");
   const [message, setMessage] = useState(`Hey Creator,
 
 We shipped a lot this week — here's what's new in your Studio:
@@ -22,9 +22,9 @@ We shipped a lot this week — here's what's new in your Studio:
 
 📞 Video Calls — One-tap from any chat or project. Group calls live in your Circles. Missed-call history in Messages.
 
-🤖 Thrive Copilot — A proactive operator inside Desk that can draft invoices, start calls, and log credits for you.
+🤖 Kreto — A proactive operator inside Desk that can draft invoices, start calls, and log credits for you.
 
-💸 ThrivePay — New Pay tab in the bottom nav. Money Streak rewards you for invoicing, logging expenses, and scanning receipts.
+💸 KrePay — New Pay tab in the bottom nav. Money Streak rewards you for invoicing, logging expenses, and scanning receipts.
 
 📋 Smart Brief & The Vault — Voice or text → deliverables, moodboard, and tasks. The Vault keeps every project file in one place.
 

@@ -199,7 +199,7 @@ export function InvoicePreview({
             </div>
             {payment.payment_method === "thrivepay" && (
               <p className="text-xs font-medium" style={{ color: brandColor }}>
-                Pay securely via ThrivePay — a payment link will be included in the email
+                Pay securely via KrePay — a payment link will be included in the email
               </p>
             )}
             {payment.payment_method === "bank_transfer" && (

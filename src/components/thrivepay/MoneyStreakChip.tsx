@@ -11,7 +11,7 @@ interface Props {
 }
 
 /**
- * Tiny streak indicator for ThrivePay header / Home widget.
+ * Tiny streak indicator for KrePay header / Home widget.
  * Shows current daily streak of any money action.
  */
 export function MoneyStreakChip({ className, variant = "chip" }: Props) {

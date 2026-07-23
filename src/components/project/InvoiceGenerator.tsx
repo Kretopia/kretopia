@@ -162,7 +162,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     }
   }, [showCreateDialog, editingInvoiceId]);
 
-  // Listen for global open events (from ThrivePay quick-add menu)
+  // Listen for global open events (from KrePay quick-add menu)
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as { type?: DocumentType } | undefined;
@@ -768,7 +768,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         doc.text(termLines, 20, payY + 4);
       }
 
-      // Clickable "Pay with ThrivePay" link (only for unpaid invoices, not quotes)
+      // Clickable "Pay with KrePay" link (only for unpaid invoices, not quotes)
       if (!isQuoteDoc && invoice.status !== "paid") {
         const payUrl = `https://www.thrivein.io/pay/invoice/${invoice.id}`;
         doc.setFillColor(rgb[0], rgb[1], rgb[2]);
@@ -776,7 +776,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(10);
         doc.setFont(undefined!, "bold");
-        doc.textWithLink("Pay with ThrivePay", 27, 277, { url: payUrl });
+        doc.textWithLink("Pay with KrePay", 27, 277, { url: payUrl });
         doc.setFont(undefined!, "normal");
         doc.setFontSize(8);
         doc.setTextColor(120, 120, 120);

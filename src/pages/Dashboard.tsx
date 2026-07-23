@@ -46,7 +46,7 @@ import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
  * Dashboard — private "behind the scenes" hub for the owner.
  *
  * Houses everything the public Passport (/profile) should NOT show:
- *   • ThrivePay shortcut
+ *   • KrePay shortcut
  *   • Profile health (completion, strength, visibility)
  *   • Discoveries inbox (auto-found credits)
  *   • Trust & verification controls
@@ -154,7 +154,7 @@ const DashboardContent = () => {
                 <DollarSign className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">ThrivePay</p>
+                <p className="text-sm font-semibold">KrePay</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Invoices, wallet, earnings & receipts</p>
               </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-[hsl(var(--signal-teal))] group-hover:translate-x-0.5 transition-all" />

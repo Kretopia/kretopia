@@ -90,7 +90,7 @@ export const ProductSectionThrive = () => (
             <span className="text-energy-glow">It shows up done.</span>
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-5 max-w-md">
-            Thrive is your always-on operator. It scouts gigs that fit your rate, drafts intros, builds workspaces, and proposes the next move — every morning, while you're shooting.
+            Kreto is your always-on operator. It scouts gigs that fit your rate, drafts intros, builds workspaces, and proposes the next move — every morning, while you're shooting.
           </p>
           <ul className="space-y-2 mb-6">
             {[

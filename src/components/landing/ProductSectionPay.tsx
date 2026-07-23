@@ -11,7 +11,7 @@ export const ProductSectionPay = () => (
         {/* Copy */}
         <div>
           <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-4 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
-            <Receipt className="h-3 w-3" /> ThrivePay · Get paid
+            <Receipt className="h-3 w-3" /> KrePay · Get paid
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-[-0.03em] leading-[1.05] text-foreground mb-4">
             Quote, invoice, paid —<br />

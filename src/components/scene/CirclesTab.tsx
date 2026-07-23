@@ -278,7 +278,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
 
   const joinCircle = async () => {
     if (!user) return;
-    // For paid circles, redirect to Stripe checkout via ThrivePay
+    // For paid circles, redirect to Stripe checkout via KrePay
     if (circle.is_paid && circle.price_monthly > 0) {
       try {
         toast({ title: "Redirecting to payment...", description: `$${circle.price_monthly}/mo for ${circle.title}` });
@@ -293,7 +293,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
         const msg = err?.message || "Payment failed";
         toast({
           title: "Payment Error",
-          description: msg.includes("ThrivePay") ? msg : "Could not start payment. Please try again.",
+          description: msg.includes("KrePay") ? msg : "Could not start payment. Please try again.",
           variant: "destructive",
         });
       }

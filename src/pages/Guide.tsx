@@ -186,7 +186,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
       {
         emoji: "",
         title: "Use milestone payments",
-        description: "For paid work, set up milestone payments through ThrivePay. Both parties are protected."
+        description: "For paid work, set up milestone payments through KrePay. Both parties are protected."
       }
     ],
     proTip: "Projects with clear milestones and deadlines have an 80% higher completion rate."
@@ -194,7 +194,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
   {
     id: "thrivepay",
     number: 6,
-    title: "Get Paid with ThrivePay",
+    title: "Get Paid with KrePay",
     subtitle: "Secure payments with escrow protection for both sides",
     icon: <DollarSign className="h-6 w-6" />,
     color: "from-emerald-500/20 to-teal-500/20",
@@ -216,7 +216,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         description: "Get paid via bank transfer, WiPay, or other supported methods. Fast and reliable."
       }
     ],
-    proTip: "Always use ThrivePay for paid work — it protects both you and your collaborator."
+    proTip: "Always use KrePay for paid work — it protects both you and your collaborator."
   },
   {
     id: "credits",

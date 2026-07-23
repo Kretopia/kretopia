@@ -9,7 +9,7 @@ const TIERS = [
     period: "forever",
     popular: false,
     features: [
-      "💬 Thrive Talk — 15 min/day (chat + voice)",
+      "💬 Kreto Talk — 15 min/day (chat + voice)",
       "🛰️ Smart Gig Scout — preview (1/week)",
       "Unlimited credit claiming",
       "20 swipes/day · Direct messaging",
@@ -26,7 +26,7 @@ const TIERS = [
     period: "/mo",
     popular: true,
     features: [
-      "💬 Thrive Talk — 2 hrs/day (chat + voice + memory)",
+      "💬 Kreto Talk — 2 hrs/day (chat + voice + memory)",
       "🛰️ Smart Gig Scout — daily, full feed + auto-drafted applications",
       "🤝 Project Copilot proposals (accept on-tap)",
       "Unlimited swipes, invoicing & milestone payments",
@@ -44,7 +44,7 @@ const TIERS = [
     popular: false,
     features: [
       "Everything in Creator, plus:",
-      "💬 Thrive Talk — 10 hrs/day (long-term memory)",
+      "💬 Kreto Talk — 10 hrs/day (long-term memory)",
       "⚙️ Autonomous Agent — runs your studio in the background",
       "🛰️ Priority Scout queue + auto-saved shortlists",
       "Custom domain · Custom invoice/EPK branding · Analytics",

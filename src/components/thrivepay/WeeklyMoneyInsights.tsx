@@ -12,7 +12,7 @@ interface Insight {
 }
 
 /**
- * Weekly money insights — shown on ThrivePay home + Home page.
+ * Weekly money insights — shown on KrePay home + Home page.
  * Generated locally from invoice/expense data, no LLM call needed.
  */
 export function WeeklyMoneyInsights() {

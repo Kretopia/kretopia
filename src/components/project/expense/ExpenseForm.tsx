@@ -119,7 +119,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     }, 15000);
   };
 
-  // Listen for global "open expense" event (from ThrivePay quick-add menu / Snap FAB)
+  // Listen for global "open expense" event (from KrePay quick-add menu / Snap FAB)
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;

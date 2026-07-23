@@ -5,7 +5,7 @@ import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, LayoutDashboard, Radar, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
   MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox,
-  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database
+  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database, Heart
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 // UnifiedSearchDropdown removed from top nav — Thrive bar owns search
@@ -301,6 +301,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       )}
 
 
+                      <Separator className="my-3" />
+
+                      {/* PILLARS — live surfaces not in bottom nav */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
+                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
+                      <MenuButton icon={Theater} label="Sound Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
 
                       <Separator className="my-3" />
 

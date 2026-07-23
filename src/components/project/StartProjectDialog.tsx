@@ -287,7 +287,7 @@ export function StartProjectDialog({
           body: {
             projectTitle: validationResult.data.title,
             projectId: project.id,
-            inviterName: userProfile?.full_name || 'A ThriveIN creator',
+            inviterName: userProfile?.full_name || 'A Kretopia creator',
             inviteeUserId: collaborator.id,
           }
         });

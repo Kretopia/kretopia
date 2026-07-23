@@ -192,7 +192,7 @@ export const ArtistShowcaseTemplate = ({ data }: { data: CreatorSiteData }) => {
       )}
       <footer className="px-6 md:px-12 py-6 border-t border-white/5 flex justify-between items-center text-[10px] text-white/20 uppercase tracking-widest" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
         <span>© {new Date().getFullYear()} {profile.full_name}</span>
-        <span>Powered by ThriveIN</span>
+        <span>Powered by Kretopia</span>
       </footer>
 
       <CustomProjectRequestDialog

@@ -175,7 +175,7 @@ const Unsubscribe = () => {
           </div>
           <CardTitle>Email Preferences</CardTitle>
           <CardDescription>
-            Manage what emails you receive from ThriveIN
+            Manage what emails you receive from Kretopia
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

@@ -28,7 +28,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
   const inviteLink = `https://www.thrivein.io/circle/${circleId}`;
 
   const copyLink = async () => {
-    const text = `Join "${circleTitle}" on ThriveIN\n${inviteLink}`;
+    const text = `Join "${circleTitle}" on Kretopia\n${inviteLink}`;
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -39,7 +39,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
     if (navigator.share) {
       await navigator.share({
         title: circleTitle,
-        text: `Join "${circleTitle}" on ThriveIN — where creatives connect and collaborate`,
+        text: `Join "${circleTitle}" on Kretopia — where creatives connect and collaborate`,
         url: inviteLink,
       });
     } else {

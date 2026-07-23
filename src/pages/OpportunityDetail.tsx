@@ -110,10 +110,10 @@ const OpportunityDetail = () => {
       }
 
       const claimUrl = `${APP_URL}/claim-gig/${claimToken}`;
-      const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
+      const shareText = `Hey! I listed your gig on Kretopia so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
 
       if (navigator.share) {
-        await navigator.share({ title: "Claim your gig on ThriveIN", text: shareText, url: claimUrl });
+        await navigator.share({ title: "Claim your gig on Kretopia", text: shareText, url: claimUrl });
         return;
       }
 
@@ -124,7 +124,7 @@ const OpportunityDetail = () => {
         if (!opportunity?.claim_token) throw new Error('missing claim token');
 
         const claimUrl = `${APP_URL}/claim-gig/${opportunity.claim_token}`;
-        const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
+        const shareText = `Hey! I listed your gig on Kretopia so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
         await navigator.clipboard.writeText(shareText);
         toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
       } catch {
@@ -134,7 +134,7 @@ const OpportunityDetail = () => {
         }
 
         const claimUrl = `${APP_URL}/claim-gig/${opportunity.claim_token}`;
-        const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
+        const shareText = `Hey! I listed your gig on Kretopia so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
         const textarea = document.createElement('textarea');
         textarea.value = shareText;
         textarea.style.position = 'fixed';
@@ -415,7 +415,7 @@ const OpportunityDetail = () => {
   return (
     <div className="min-h-screen p-4 md:p-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-32">
       <SEO
-        title={`${opportunity.title} — Gig on ThriveIN`}
+        title={`${opportunity.title} — Gig on Kretopia`}
         description={opportunity.description?.slice(0, 155) || `${opportunity.type} gig: ${opportunity.title}`}
         type="article"
         image={opportunity.image_url || undefined}
@@ -433,7 +433,7 @@ const OpportunityDetail = () => {
             "employmentType": opportunity.type === "Paid" ? "CONTRACTOR" : "VOLUNTEER",
             "hiringOrganization": {
               "@type": "Organization",
-              "name": "ThriveIN",
+              "name": "Kretopia",
               "sameAs": "https://www.thrivein.io"
             },
             ...(opportunity.location ? { "jobLocation": { "@type": "Place", "address": opportunity.location } } : {}),
@@ -507,7 +507,7 @@ const OpportunityDetail = () => {
             <SocialShareButtons
               url={`/opportunity/${opportunity.id}`}
               socialUrl={`/share/gig/${opportunity.id}/`}
-              title={`${opportunity.title} — ${opportunity.type} gig on ThriveIN`}
+              title={`${opportunity.title} — ${opportunity.type} gig on Kretopia`}
               description={opportunity.description?.slice(0, 100)}
             />
           </div>
@@ -886,7 +886,7 @@ const OpportunityDetail = () => {
             image_url: opportunity.image_url,
           }}
           externalUrl={`${APP_URL}/share/gig/${opportunity.id}/`}
-          externalText={`🎯 ${opportunity.title}\n\nApply now on ThriveIN — the Creative OS 👇\n${APP_URL}/share/gig/${opportunity.id}/`}
+          externalText={`🎯 ${opportunity.title}\n\nApply now on Kretopia — the Creative OS 👇\n${APP_URL}/share/gig/${opportunity.id}/`}
         />
       )}
     </div>

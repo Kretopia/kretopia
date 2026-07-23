@@ -156,7 +156,7 @@ const CircleDetail = () => {
   const shareCircle = async () => {
     if (!circle) return;
     const url = `https://www.thrivein.io/circle/${circle.id}`;
-    const shareText = `Join "${circle.title}" on ThriveIN — your creative circle.\n\n${url}`;
+    const shareText = `Join "${circle.title}" on Kretopia — your creative circle.\n\n${url}`;
     try {
       await navigator.clipboard.writeText(shareText);
       setCopied(true);
@@ -193,8 +193,8 @@ const CircleDetail = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <Helmet>
-        <title>{circle.title} · Crew | ThriveIN</title>
-        <meta name="description" content={circle.tagline || circle.description?.slice(0, 150) || `${circle.title} — a private Crew on ThriveIN.`} />
+        <title>{circle.title} · Crew | Kretopia</title>
+        <meta name="description" content={circle.tagline || circle.description?.slice(0, 150) || `${circle.title} — a private Crew on Kretopia.`} />
       </Helmet>
 
 

@@ -70,7 +70,7 @@ export default function CompCard() {
           contact={null}
         />
         <div className="mt-3 text-center text-xs text-muted-foreground">
-          Powered by ThriveIN
+          Powered by Kretopia
         </div>
       </div>
     </div>

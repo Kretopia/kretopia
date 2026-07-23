@@ -204,7 +204,7 @@ export const ProducerTemplate = ({ data }: { data: CreatorSiteData }) => {
       )}
       <footer className="px-6 md:px-16 py-6 flex justify-between items-center text-xs text-[#bbb] max-w-7xl mx-auto">
         <span>© {new Date().getFullYear()} {profile.full_name}</span>
-        <span>Powered by ThriveIN</span>
+        <span>Powered by Kretopia</span>
       </footer>
 
       <CustomProjectRequestDialog

@@ -159,7 +159,7 @@ export default function TalentManager() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl pb-24 md:pb-6">
-      <SEO title="Talent Manager | ThriveIN" description="Manage your talent network, post jobs for clients, and earn commissions on bookings." />
+      <SEO title="Talent Manager | Kretopia" description="Manage your talent network, post jobs for clients, and earn commissions on bookings." />
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Talent Manager</h1>

@@ -68,7 +68,7 @@ export function WalletTopUpDialog({ open, onOpenChange }: WalletTopUpDialogProps
             Add Funds to Wallet
           </DialogTitle>
           <DialogDescription>
-            Top up your ThriveIN wallet to send payments and make purchases
+            Top up your Kretopia wallet to send payments and make purchases
           </DialogDescription>
         </DialogHeader>
 

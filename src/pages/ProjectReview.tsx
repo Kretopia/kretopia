@@ -345,7 +345,7 @@ export default function ProjectReview() {
         )}
 
         <p className="text-[10px] text-center text-muted-foreground pt-4">
-          Powered by ThriveIN — private review link
+          Powered by Kretopia — private review link
         </p>
       </main>
 

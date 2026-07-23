@@ -56,7 +56,7 @@ export const InviteDialog = ({ open, onOpenChange }: InviteDialogProps) => {
     try {
       const inviteMessage = `Stop cold DMing strangers for collabs.
 
-ThriveIN matches you with verified creatives who actually fit your style — portfolio-first, style-aware.
+Kretopia matches you with verified creatives who actually fit your style — portfolio-first, style-aware.
 
 I'm already on. Join me 👇
 ${personalLink}`;
@@ -141,7 +141,7 @@ ${personalLink}`;
                         />
                       </div>
                       <p className="text-xs text-center text-muted-foreground">
-                        Scan to join ThriveIN via your link
+                        Scan to join Kretopia via your link
                       </p>
                     </div>
                   )}

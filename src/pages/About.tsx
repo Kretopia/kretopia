@@ -8,16 +8,16 @@ import {
 import { Link } from "react-router-dom";
 
 const timeline = [
-  { year: "2013", location: "Dubai", icon: Building2, title: "The Beginning", desc: "ThriveIN begins as Industry Night, a weekly after-work gathering for creatives at Holiday Inn Internet City. A space designed for connection, collaboration, and community." },
+  { year: "2013", location: "Dubai", icon: Building2, title: "The Beginning", desc: "Kretopia begins as Industry Night, a weekly after-work gathering for creatives at Holiday Inn Internet City. A space designed for connection, collaboration, and community." },
   { year: "2014", location: "Los Angeles", icon: Plane, title: "International Expansion", desc: "The community expands into Los Angeles, connecting creatives internationally and building bridges between industries and markets." },
-  { year: "2015", location: "Trinidad & Tobago", icon: Music, title: "Caribbean Launch", desc: "ThriveIN launches in Trinidad, creating a platform for Caribbean creatives to connect, showcase their work, and access new opportunities." },
+  { year: "2015", location: "Trinidad & Tobago", icon: Music, title: "Caribbean Launch", desc: "Kretopia launches in Trinidad, creating a platform for Caribbean creatives to connect, showcase their work, and access new opportunities." },
   { year: "2016", location: "Global", icon: Globe, title: "Global Impact", desc: "Real opportunities begin to emerge — including facilitating a global distribution pathway for Caribbean artist Kalpee with Sony Music." },
-  { year: "2017", location: "Geneva", icon: MapPin, title: "European Expansion", desc: "ThriveIN expands into Europe, continuing its mission of connecting creatives across borders and cultures." },
+  { year: "2017", location: "Geneva", icon: MapPin, title: "European Expansion", desc: "Kretopia expands into Europe, continuing its mission of connecting creatives across borders and cultures." },
   { year: "2018", location: "Worldwide", icon: Users, title: "Community Growth", desc: "The network grows across regions, hosting showcases, fashion shows, live art, music performances, and creative networking experiences." },
-  { year: "2019", location: "Bali", icon: Sparkles, title: "ThriveXchange", desc: "ThriveIN launches in Bali and introduces ThriveXchange, a 12-day creative experience bringing together global creatives for collaboration and cultural exchange." },
-  { year: "2020", location: "Digital", icon: Wifi, title: "First Digital Step", desc: "ThriveIN begins its transition into the digital space with the first version of the platform, extending the community beyond physical events." },
+  { year: "2019", location: "Bali", icon: Sparkles, title: "ThriveXchange", desc: "Kretopia launches in Bali and introduces ThriveXchange, a 12-day creative experience bringing together global creatives for collaboration and cultural exchange." },
+  { year: "2020", location: "Digital", icon: Wifi, title: "First Digital Step", desc: "Kretopia begins its transition into the digital space with the first version of the platform, extending the community beyond physical events." },
   { year: "2022", location: "Platform", icon: RefreshCw, title: "Rebuild & Evolution", desc: "The platform is reimagined and rebuilt, supported by early-stage funding and experimentation, setting the foundation for a more powerful ecosystem." },
-  { year: "2026", location: "ThriveIN.io", icon: Zap, title: "The Platform Era", desc: "ThriveIN evolves into a global creative platform — bringing together community, collaboration, verified credits, and real opportunities in one place." },
+  { year: "2026", location: "Kretopia.io", icon: Zap, title: "The Platform Era", desc: "Kretopia evolves into a global creative platform — bringing together community, collaboration, verified credits, and real opportunities in one place." },
 ];
 
 const communityMembers = [
@@ -39,8 +39,8 @@ const About = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="About ThriveIN — A Global Creative Community Since 2013"
-        description="From a weekly gathering in Dubai to a global creative platform — ThriveIN connects creatives across music, film, fashion, art, content, and culture worldwide."
+        title="About Kretopia — A Global Creative Community Since 2013"
+        description="From a weekly gathering in Dubai to a global creative platform — Kretopia connects creatives across music, film, fashion, art, content, and culture worldwide."
       />
 
       {/* Hero — cinematic editorial */}
@@ -90,12 +90,12 @@ const About = () => {
             </div>
             <div className="space-y-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
               <p>
-                From intimate meetups to large-scale showcases, ThriveIN has brought together thousands of creatives
+                From intimate meetups to large-scale showcases, Kretopia has brought together thousands of creatives
                 across <strong className="text-foreground">Los Angeles, Geneva, Trinidad, and Bali</strong> — creating
                 spaces where real relationships, collaborations, and opportunities are formed.
               </p>
               <p className="text-foreground font-medium border-l-2 border-primary pl-4 my-6">
-                At its core, ThriveIN has always been about one thing: bringing the right people into the same room
+                At its core, Kretopia has always been about one thing: bringing the right people into the same room
                 and creating the environment for them to connect, create, and grow.
               </p>
               <p>
@@ -104,7 +104,7 @@ const About = () => {
                 launched projects, secured opportunities, and built lasting careers.
               </p>
               <p>
-                Today, ThriveIN continues to evolve — bringing the same community-driven energy into a new era where
+                Today, Kretopia continues to evolve — bringing the same community-driven energy into a new era where
                 creatives can not only connect, but also <strong className="text-foreground">build, showcase, and grow</strong> their
                 work in a more structured and visible way.
               </p>
@@ -187,7 +187,7 @@ const About = () => {
               </div>
             </div>
             <blockquote className="text-base sm:text-lg text-foreground leading-relaxed italic mb-6">
-              "ThriveIN started as a simple idea — bringing creatives into the same space and seeing what could happen.
+              "Kretopia started as a simple idea — bringing creatives into the same space and seeing what could happen.
               Over time, it became clear that the real value wasn't just the events, it was the relationships, the collaborations,
               and the opportunities that came from them. Everything we're building today is about scaling that experience
               and making it accessible to creatives everywhere."
@@ -280,7 +280,7 @@ const About = () => {
           to="/auth"
           className="inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-lg"
         >
-          Join ThriveIN <ArrowRight className="h-4 w-4" />
+          Join Kretopia <ArrowRight className="h-4 w-4" />
         </Link>
       </section>
     </div>

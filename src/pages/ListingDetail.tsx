@@ -134,7 +134,7 @@ const ListingDetail = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <SEO title={listing.title} description={listing.description || "View listing on ThriveIN Market"} />
+      <SEO title={listing.title} description={listing.description || "View listing on Kretopia Market"} />
 
       <div className="container mx-auto max-w-5xl px-4 py-6 space-y-6">
         {/* Back Button */}
@@ -418,13 +418,13 @@ const ListingDetail = () => {
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Marketplace Disclaimer</p>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      ThriveIN is a peer-to-peer marketplace. All transactions are between buyers and sellers directly. 
-                      ThriveIN does not verify listings, guarantee quality, or take responsibility for any transaction outcomes. 
+                      Kretopia is a peer-to-peer marketplace. All transactions are between buyers and sellers directly. 
+                      Kretopia does not verify listings, guarantee quality, or take responsibility for any transaction outcomes. 
                       Buyers should conduct their own due diligence before making any purchase. 
                       We strongly recommend communicating through the platform and verifying the seller's identity and reputation before proceeding.
                     </p>
                     <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
-                      By using this marketplace, you agree that ThriveIN and Thrive Collective are not liable for any disputes, 
+                      By using this marketplace, you agree that Kretopia and Thrive Collective are not liable for any disputes, 
                       damages, losses, or issues arising from marketplace transactions.
                     </p>
                   </div>

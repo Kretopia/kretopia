@@ -3,7 +3,7 @@ import { BRAND } from "@/lib/brandLexicon";
 
 /**
  * V1 /thrivein — desktop community hub landing.
- * Phase 11 will replace this with the full ThriveIN experience
+ * Phase 11 will replace this with the full Kretopia experience
  * (OG badge, Founding Circle, perks, events, magazine, podcast, dinners).
  */
 export default function ThriveINTab() {

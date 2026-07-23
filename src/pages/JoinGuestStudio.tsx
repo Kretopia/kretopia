@@ -50,7 +50,7 @@ const JoinGuestStudio = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <SEO title="Join Studio · ThriveIN" description="Join a creative Studio as a guest" />
+      <SEO title="Join Studio · Kretopia" description="Join a creative Studio as a guest" />
       <div className="max-w-sm w-full text-center space-y-4">
         <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
           <Users className="h-7 w-7" />

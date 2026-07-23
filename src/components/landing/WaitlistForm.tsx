@@ -258,7 +258,7 @@ export const WaitlistForm = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="whyJoin">Why do you want to join ThriveIN?</Label>
+          <Label htmlFor="whyJoin">Why do you want to join Kretopia?</Label>
           <Textarea
             id="whyJoin"
             value={formData.whyJoin}

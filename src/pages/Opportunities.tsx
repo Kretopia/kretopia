@@ -13,7 +13,7 @@ const Opportunities = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <SEO
-        title="Gigs — Find Creative Work | ThriveIN"
+        title="Gigs — Find Creative Work | Kretopia"
         description="Browse and apply for creative gigs — paid jobs, collaborations, and barter opportunities across film, music, fashion, events and more."
       />
 
@@ -32,7 +32,7 @@ const Opportunities = () => {
                 <span className="text-energy-glow">Find your next one.</span>
               </h1>
               <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md">
-                Real gigs scouted from across the web, plus the ThriveIN marketplace.
+                Real gigs scouted from across the web, plus the Kretopia marketplace.
               </p>
             </div>
             <div className="hidden sm:flex items-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-3 py-2">

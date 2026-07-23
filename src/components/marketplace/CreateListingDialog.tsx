@@ -358,9 +358,9 @@ const CreateListingDialog = ({ onCreated, open: controlledOpen, onOpenChange: co
                   <div className="flex items-start gap-2">
                     <ShieldAlert className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      By listing on ThriveIN Market, you confirm that you own or have the right to sell this item/service, 
+                      By listing on Kretopia Market, you confirm that you own or have the right to sell this item/service, 
                       that your listing is accurate and not misleading, and that you will fulfill orders in good faith.
-                      ThriveIN is not responsible for transaction disputes, shipping issues, or service quality.
+                      Kretopia is not responsible for transaction disputes, shipping issues, or service quality.
                       Fraudulent or misleading listings will result in account suspension.
                     </p>
                   </div>
@@ -374,7 +374,7 @@ const CreateListingDialog = ({ onCreated, open: controlledOpen, onOpenChange: co
                     className="mt-0.5"
                   />
                   <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                    I agree to the marketplace terms. I understand ThriveIN acts as a platform only and is not liable for 
+                    I agree to the marketplace terms. I understand Kretopia acts as a platform only and is not liable for 
                     any transactions, disputes, or outcomes arising from this listing.
                   </label>
                 </div>

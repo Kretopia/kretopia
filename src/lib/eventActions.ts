@@ -176,7 +176,7 @@ export const downloadIcs = (event: IcsEvent) => {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//ThriveIN//Events//EN",
+    "PRODID:-//Kretopia//Events//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",

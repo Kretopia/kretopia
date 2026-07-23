@@ -42,7 +42,7 @@ export const LiveCreatorPreview = () => {
           Real creators, real profiles
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold mb-8">
-          They're already <span className="text-primary">building</span> on ThriveIN
+          They're already <span className="text-primary">building</span> on Kretopia
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto">
           {creators.map((creator, i) => (

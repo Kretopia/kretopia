@@ -321,5 +321,5 @@ export const PILLAR_MOCKUPS: Record<string, React.FC> = {
   SoundStages: SoundStagesMockup,
   KrePay: KrePayMockup,
   Kreto: KretoMockup,
-  ThriveIN: ThriveINMockup,
+  Kretopia: ThriveINMockup,
 };

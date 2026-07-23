@@ -67,7 +67,7 @@ export const ScoutGigDialog = ({ trigger }: ScoutGigDialogProps) => {
 
   const handleCopyClaimLink = () => {
     const url = getClaimUrl();
-    const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${url}`;
+    const shareText = `Hey! I listed your gig on Kretopia so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${url}`;
     navigator.clipboard.writeText(shareText);
     toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
   };
@@ -76,7 +76,7 @@ export const ScoutGigDialog = ({ trigger }: ScoutGigDialogProps) => {
     const url = getClaimUrl();
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Your gig is live on ThriveIN", text: "I listed your gig so creatives can apply directly. Claim it to manage applicants and fill the role faster.", url });
+        await navigator.share({ title: "Your gig is live on Kretopia", text: "I listed your gig so creatives can apply directly. Claim it to manage applicants and fill the role faster.", url });
       } catch { }
     } else {
       handleCopyClaimLink();

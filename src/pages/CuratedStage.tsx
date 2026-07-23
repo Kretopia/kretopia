@@ -224,7 +224,7 @@ const CuratedStage = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO title={`${stage.title} | Sound Stages`} description={stage.blurb ?? "Curated live stage on ThriveIN."} />
+      <SEO title={`${stage.title} | Sound Stages`} description={stage.blurb ?? "Curated live stage on Kretopia."} />
 
       <header className="border-b border-border/60 sticky top-0 bg-background z-20 pt-[env(safe-area-inset-top)]">
         <div className="container max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">

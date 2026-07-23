@@ -226,7 +226,7 @@ const DisputeCredit = () => {
   return (
     <>
       <Helmet>
-        <title>Dispute credit — ThriveIN</title>
+        <title>Dispute credit — Kretopia</title>
         <meta name="description" content="Challenge a credit you believe belongs to you. Upload evidence and submit your claim for review." />
       </Helmet>
 

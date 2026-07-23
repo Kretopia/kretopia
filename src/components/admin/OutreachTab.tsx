@@ -94,7 +94,7 @@ export function OutreachTab() {
 
   const copyOutreachMessage = (profile: UnclaimedProfile) => {
     const message = `Hey ${profile.full_name?.split(' ')[0] || 'there'}! 
-I found your profile while building ThriveIN - a new platform for creatives to connect and collaborate.
+I found your profile while building Kretopia - a new platform for creatives to connect and collaborate.
 
 We've already started building out your professional profile: https://www.thrivein.io/profile/${profile.user_id}
 

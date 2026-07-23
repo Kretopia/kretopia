@@ -188,7 +188,7 @@ export const PhotographerTemplate = ({ data }: { data: CreatorSiteData }) => {
       )}
       <footer className="px-6 py-6 flex justify-between items-center text-[10px] text-white/15 uppercase tracking-widest">
         <span>© {new Date().getFullYear()} {profile.full_name}</span>
-        <span>Powered by ThriveIN</span>
+        <span>Powered by Kretopia</span>
       </footer>
 
       {/* Lightbox */}

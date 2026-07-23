@@ -256,7 +256,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
             className="text-[10px] text-[#bbb] hover:text-[#888] transition-colors uppercase tracking-[0.3em]"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            Powered by ThriveIN
+            Powered by Kretopia
           </a>
         </div>
       </footer>

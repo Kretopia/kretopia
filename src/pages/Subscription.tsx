@@ -261,7 +261,7 @@ export default function Subscription() {
         <p className="text-base sm:text-lg text-muted-foreground mb-6">
           {viewMode === "brand"
             ? "Find, hire & manage top creative talent"
-            : "Unlock the full potential of ThriveIN"}
+            : "Unlock the full potential of Kretopia"}
         </p>
 
         {/* View mode is derived from account_type — companies see Brand tiers, creators see Creator tiers.

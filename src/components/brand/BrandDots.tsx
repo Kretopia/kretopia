@@ -1,5 +1,5 @@
 /**
- * BrandDots — the three ThriveIN signal dots (pink · amber · teal).
+ * BrandDots — the three Kretopia signal dots (pink · amber · teal).
  *
  * Use as:
  *   <BrandDots />                                  // static brand mark

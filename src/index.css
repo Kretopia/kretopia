@@ -445,7 +445,7 @@ All colors MUST be HSL.
      PRODUCT ACCENT UTILITIES — Brand System v1.0
      One dominant accent per surface. Apply at the page/section root.
      Subtle references to the other two colors should appear elsewhere
-     so the experience always feels like one ThriveIN ecosystem.
+     so the experience always feels like one Kretopia ecosystem.
      ============================================================ */
   .accent-passport { --surface-accent: var(--accent-passport); }
   .accent-scout    { --surface-accent: var(--accent-scout); }

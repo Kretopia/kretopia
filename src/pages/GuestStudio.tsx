@@ -211,7 +211,7 @@ export default function GuestStudio() {
         <p className="text-sm text-muted-foreground mt-2 max-w-sm">
           Ask your collaborator to send you a fresh Studio link.
         </p>
-        <Button className="mt-5" onClick={() => navigate("/")}>Go to ThriveIN</Button>
+        <Button className="mt-5" onClick={() => navigate("/")}>Go to Kretopia</Button>
       </div>
     );
   }
@@ -220,7 +220,7 @@ export default function GuestStudio() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <SEO
-          title={`Join "${project.title}" on ThriveIN`}
+          title={`Join "${project.title}" on Kretopia`}
           description={`You've been invited to the "${project.title}" Studio — view the brief, share references and chat with the team.`}
         />
         <Card className="w-full max-w-sm">
@@ -234,7 +234,7 @@ export default function GuestStudio() {
               </p>
               <h1 className="text-xl font-black tracking-tight leading-tight">{project.title}</h1>
               <p className="text-xs text-muted-foreground">
-                A private Studio on ThriveIN — brief, files, references and chat in one place.
+                A private Studio on Kretopia — brief, files, references and chat in one place.
               </p>
             </div>
 
@@ -473,7 +473,7 @@ export default function GuestStudio() {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold leading-tight">Get full Studio access</p>
             <p className="text-[11px] text-muted-foreground leading-tight">
-              Sign in or create your free ThriveIN account to collaborate.
+              Sign in or create your free Kretopia account to collaborate.
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">

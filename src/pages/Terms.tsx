@@ -7,8 +7,8 @@ const Terms = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <SEO 
-        title="Terms of Service - ThriveIN"
-        description="Terms and conditions for using ThriveIN platform"
+        title="Terms of Service - Kretopia"
+        description="Terms and conditions for using Kretopia platform"
       />
 
       {/* Legal notice - professional version */}
@@ -22,14 +22,14 @@ const Terms = () => {
           <section>
             <h2>1. Acceptance of Terms</h2>
             <p>
-              By accessing and using ThriveIN ("the Platform"), you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to these Terms of Service, please do not use the Platform.
+              By accessing and using Kretopia ("the Platform"), you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to these Terms of Service, please do not use the Platform.
             </p>
           </section>
 
           <section>
             <h2>2. Description of Service</h2>
             <p>
-              ThriveIN is a professional networking and collaboration platform for creators, offering features including:
+              Kretopia is a professional networking and collaboration platform for creators, offering features including:
             </p>
             <ul>
               <li>Profile creation and portfolio showcase</li>
@@ -56,7 +56,7 @@ const Terms = () => {
             <h2>4. User Content</h2>
             <h3>4.1 Content Ownership</h3>
             <p>
-              You retain all rights to the content you upload, post, or display on the Platform. By posting content, you grant ThriveIN a worldwide, non-exclusive, royalty-free license to use, reproduce, and display your content solely for operating and improving the Platform.
+              You retain all rights to the content you upload, post, or display on the Platform. By posting content, you grant Kretopia a worldwide, non-exclusive, royalty-free license to use, reproduce, and display your content solely for operating and improving the Platform.
             </p>
             <h3>4.2 Content Guidelines</h3>
             <p>
@@ -75,7 +75,7 @@ const Terms = () => {
             <h2>5. Payments and Subscriptions</h2>
             <h3>5.1 Subscription Tiers</h3>
             <p>
-              ThriveIN offers various subscription tiers with different features and pricing. All payments are processed securely through Stripe.
+              Kretopia offers various subscription tiers with different features and pricing. All payments are processed securely through Stripe.
             </p>
             <h3>5.2 Billing</h3>
             <p>
@@ -87,7 +87,7 @@ const Terms = () => {
             </p>
             <h3>5.4 Platform Fees</h3>
             <p>
-              ThriveIN charges a platform fee on certain transactions between users. Fee structures are clearly disclosed before transactions.
+              Kretopia charges a platform fee on certain transactions between users. Fee structures are clearly disclosed before transactions.
             </p>
           </section>
 
@@ -107,7 +107,7 @@ const Terms = () => {
           <section>
             <h2>7. Intellectual Property</h2>
             <p>
-              The Platform and its original content, features, and functionality are owned by ThriveIN and are protected by international copyright, trademark, and other intellectual property laws.
+              The Platform and its original content, features, and functionality are owned by Kretopia and are protected by international copyright, trademark, and other intellectual property laws.
             </p>
           </section>
 
@@ -121,7 +121,7 @@ const Terms = () => {
           <section>
             <h2>9. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by law, ThriveIN shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the Platform.
+              To the maximum extent permitted by law, Kretopia shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the Platform.
             </p>
           </section>
 

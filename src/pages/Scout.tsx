@@ -13,7 +13,7 @@ type Tab = "scouted" | "shortlist" | "marketplace" | "talent";
 const TABS: { id: Tab; label: string; icon: typeof Radar; hint: string }[] = [
   { id: "scouted", label: "For You", icon: Radar, hint: "Real gigs scouted from across the web" },
   { id: "shortlist", label: "Shortlist", icon: Bookmark, hint: "Gigs you saved for later" },
-  { id: "marketplace", label: "Open Gigs", icon: Store, hint: "All open gigs on ThriveIN" },
+  { id: "marketplace", label: "Open Gigs", icon: Store, hint: "All open gigs on Kretopia" },
   { id: "talent", label: "Hire Talent", icon: UserSearch, hint: "Open Talent Scout" },
 ];
 
@@ -43,7 +43,7 @@ const Scout = () => {
   return (
     <div className="accent-scout min-h-screen bg-background pb-24">
       <SEO
-        title="Scout — Find your next gig & collaborator | ThriveIN"
+        title="Scout — Find your next gig & collaborator | Kretopia"
         description="One feed for the gigs and people that fit your work — scouted from across the web and curated by Kreto."
       />
 

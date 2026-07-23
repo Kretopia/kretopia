@@ -84,8 +84,8 @@ const CirclesPage = () => {
   return (
     <>
       <Helmet>
-        <title>My Crews | ThriveIN</title>
-        <meta name="description" content="Your private Crews on ThriveIN — invite-only spaces to run with your people." />
+        <title>My Crews | Kretopia</title>
+        <meta name="description" content="Your private Crews on Kretopia — invite-only spaces to run with your people." />
       </Helmet>
 
       <div className="min-h-screen bg-background">

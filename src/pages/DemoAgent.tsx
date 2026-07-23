@@ -76,8 +76,8 @@ export default function DemoAgent() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-10">
       <Helmet>
-        <title>Agent Demo · ThriveIN</title>
-        <meta name="description" content="Public, no-auth demo of ThriveIN's agentic tool-calling for accelerator reviewers." />
+        <title>Agent Demo · Kretopia</title>
+        <meta name="description" content="Public, no-auth demo of Kretopia's agentic tool-calling for accelerator reviewers." />
       </Helmet>
 
       <header className="mb-6">

@@ -172,7 +172,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           email: emailToInvite.toLowerCase(),
           projectTitle: project?.title || 'Untitled Project',
           projectId,
-          inviterName: profile?.full_name || 'A ThriveIN user',
+          inviterName: profile?.full_name || 'A Kretopia user',
         }
       });
 
@@ -229,7 +229,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
               email,
               projectTitle: project?.title || 'Untitled Project',
               projectId,
-              inviterName: profile?.full_name || 'A ThriveIN user',
+              inviterName: profile?.full_name || 'A Kretopia user',
             },
           }).catch((e) => console.warn('email send failed', email, e));
           ok++;
@@ -293,7 +293,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         body: {
           projectTitle: project?.title || 'Untitled Project',
           projectId,
-          inviterName: profile?.full_name || 'A ThriveIN user',
+          inviterName: profile?.full_name || 'A Kretopia user',
           inviteeUserId: userId, // This triggers in-app notification
         }
       });
@@ -634,7 +634,7 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
     const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
     if (nav.share) {
       try {
-        await nav.share({ title: "Join my Studio on ThriveIN", text: "I'm bringing you into a studio — tap to see the brief, vault & chat.", url });
+        await nav.share({ title: "Join my Studio on Kretopia", text: "I'm bringing you into a studio — tap to see the brief, vault & chat.", url });
         return;
       } catch { /* user cancelled */ }
     }

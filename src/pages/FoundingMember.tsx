@@ -27,7 +27,7 @@ export default function FoundingMember() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Founding Member — ThriveIN"
+        title="Founding Member — Kretopia"
         description="Earn one of 100 Founding Member badges by completing 3 short milestones."
       />
 
@@ -52,7 +52,7 @@ export default function FoundingMember() {
               </p>
               <h1 className="text-2xl font-bold leading-tight">Founding Member</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Earn a permanent badge for shaping ThriveIN early. Active members only.
+                Earn a permanent badge for shaping Kretopia early. Active members only.
               </p>
               <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-background/60 border border-border rounded-full px-2.5 py-1">
                 <Calendar className="h-3 w-3" />

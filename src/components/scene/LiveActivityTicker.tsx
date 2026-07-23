@@ -101,7 +101,7 @@ export const LiveActivityTicker = () => {
     <div className="mb-4">
       <div className="flex items-center gap-2 mb-2">
         <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-        <span className="text-xs font-medium text-muted-foreground">Live on ThriveIN</span>
+        <span className="text-xs font-medium text-muted-foreground">Live on Kretopia</span>
       </div>
       <div className="space-y-1.5">
         {items.slice(0, 4).map((item, i) => {

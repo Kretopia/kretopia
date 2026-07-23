@@ -134,7 +134,7 @@ const Meetup = () => {
   return (
     <div className="min-h-screen bg-background pb-24 accent-scout">
       <Helmet>
-        <title>Events — Meetups, Workshops & Creative Gatherings | ThriveIN</title>
+        <title>Events — Meetups, Workshops & Creative Gatherings | Kretopia</title>
         <meta name="description" content="Discover creative events, meetups, workshops and gatherings near you. Host your own event and reach thousands of creators." />
         <link rel="canonical" href="https://thrivein.io/meetup" />
       </Helmet>

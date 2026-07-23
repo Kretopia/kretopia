@@ -114,7 +114,7 @@ const MeetupManage = () => {
   return (
     <div className="min-h-screen bg-background pb-[calc(env(safe-area-inset-bottom)+6rem)]">
       <Helmet>
-        <title>Organizer Command Center | ThriveIN Events</title>
+        <title>Organizer Command Center | Kretopia Events</title>
         <meta name="description" content="Manage your events, attendees, blasts, tickets and analytics in one place." />
       </Helmet>
 

@@ -389,7 +389,7 @@ const Auth = () => {
         return;
       }
 
-      toast({ title: "Welcome to ThriveIN!", description: "Let's set up your profile." });
+      toast({ title: "Welcome to Kretopia!", description: "Let's set up your profile." });
       const postSignupTarget = eventId
         ? `/event/${eventId}`
         : accountType === "company" ? "/company-onboarding" : "/onboarding";
@@ -421,7 +421,7 @@ const Auth = () => {
               <BrandLogo size="lg" showBeta />
             </div>
             <h1 className="mb-2 text-2xl sm:text-3xl font-bold">
-              {isPasswordReset ? "Reset Your Password" : "Welcome to ThriveIN"}
+              {isPasswordReset ? "Reset Your Password" : "Welcome to Kretopia"}
             </h1>
             <p className="text-sm text-muted-foreground">
               {isPasswordReset ? "Enter your new password below" : "Where creators find work — and get paid"}

@@ -172,7 +172,7 @@ export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/prof
           <div className="flex items-start gap-2">
             <LogIn className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             <div className="text-xs text-foreground/90 leading-relaxed">
-              <span className="font-semibold">You already have a ThriveIN profile.</span>{" "}
+              <span className="font-semibold">You already have a Kretopia profile.</span>{" "}
               {existing.providers.length > 0 && (
                 <span className="text-muted-foreground">
                   Sign in with {existing.providers.map(providerLabel).join(" or ")}.

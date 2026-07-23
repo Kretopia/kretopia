@@ -68,7 +68,7 @@ export function PWAInstallPrompt() {
             <Download className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm">Get ThriveIN App</p>
+            <p className="font-semibold text-sm">Get Kretopia App</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {isIOS 
                 ? 'Tap the share button, then "Add to Home Screen"'

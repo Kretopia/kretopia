@@ -4,7 +4,7 @@ import { Verified, Sparkles, CheckCircle, MessageSquare, DollarSign, MapPin, Bri
 
 /**
  * HeroPhoneCarousel — single phone frame whose screen rotates between the
- * four ThriveIN product surfaces. Replaces the broken photo-overlay hero.
+ * four Kretopia product surfaces. Replaces the broken photo-overlay hero.
  * Each "screen" is a self-contained mini product mockup so the user immediately
  * understands: this is not a job board — it Matches, Runs, Pays, and Drafts for you.
  */

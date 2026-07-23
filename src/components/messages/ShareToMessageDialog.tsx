@@ -138,7 +138,7 @@ export const ShareToMessageDialog = ({
 
   const shareNative = async () => {
     const url = externalUrl || getShareUrl();
-    const title = contentMeta?.title || `ThriveIN ${LABELS[contentType]}`;
+    const title = contentMeta?.title || `Kretopia ${LABELS[contentType]}`;
     if (navigator.share) {
       try {
         await navigator.share({ title, text: buildExternalText(), url });

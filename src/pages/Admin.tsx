@@ -673,7 +673,7 @@ export default function Admin() {
                   <Label htmlFor="broadcast-subject">Subject Line</Label>
                   <Input
                     id="broadcast-subject"
-                    placeholder="e.g. 🚀 New Features on ThriveIN"
+                    placeholder="e.g. 🚀 New Features on Kretopia"
                     value={broadcastSubject}
                     onChange={(e) => setBroadcastSubject(e.target.value)}
                   />

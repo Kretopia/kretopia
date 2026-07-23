@@ -44,7 +44,7 @@ const VerifyOpportunity = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Helmet>
-        <title>Verify Opportunity | ThriveIN</title>
+        <title>Verify Opportunity | Kretopia</title>
       </Helmet>
 
       <Card className="max-w-md w-full text-center">
@@ -86,7 +86,7 @@ const VerifyOpportunity = () => {
                     <p className="text-base font-semibold">Claim Your Brand Profile</p>
                   </div>
                   <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                    We've set up a <strong>{result?.companyName}</strong> brand page on ThriveIN. 
+                    We've set up a <strong>{result?.companyName}</strong> brand page on Kretopia. 
                     Claim it to:
                   </p>
                   <ul className="text-sm text-muted-foreground space-y-1.5 pl-1">

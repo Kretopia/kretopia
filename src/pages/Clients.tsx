@@ -13,7 +13,7 @@ const Clients = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-4 pb-32">
-      <SEO title="Clients · ThriveIN" description="All your clients in one hub" />
+      <SEO title="Clients · Kretopia" description="All your clients in one hub" />
 
       <div className="flex items-center justify-between mb-4">
         <div>

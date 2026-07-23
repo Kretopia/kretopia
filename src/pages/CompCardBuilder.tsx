@@ -127,7 +127,7 @@ export default function CompCardBuilder() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      <Helmet><title>Comp Card Builder — ThriveIN</title></Helmet>
+      <Helmet><title>Comp Card Builder — Kretopia</title></Helmet>
 
       <header className="sticky top-0 z-10 bg-background border-b border-border px-3 py-3 flex items-center gap-2">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-4 w-4" /></Button>

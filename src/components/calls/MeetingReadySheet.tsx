@@ -76,7 +76,7 @@ export const MeetingReadySheet = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Join my ThriveIN call",
+          title: "Join my Kretopia call",
           text: "Tap to join — no signup needed:",
           url: shareUrl,
         });

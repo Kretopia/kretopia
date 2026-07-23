@@ -219,7 +219,7 @@ export const CreativeDirectorTemplate = ({ data }: { data: CreatorSiteData }) =>
       )}
       <footer className="px-8 md:px-16 py-8 border-t border-white/5 flex justify-between items-center text-[10px] text-[#444] uppercase tracking-[0.3em]">
         <span>© {new Date().getFullYear()} {profile.full_name}</span>
-        <span>Powered by ThriveIN</span>
+        <span>Powered by Kretopia</span>
       </footer>
 
       <CustomProjectRequestDialog

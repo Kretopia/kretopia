@@ -143,7 +143,7 @@ export function GmailSettings() {
                     <li>Go to <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="text-primary underline inline-flex items-center gap-0.5">Google Account Security <ExternalLink className="h-2.5 w-2.5" /></a></li>
                     <li>Enable 2-Factor Authentication (if not already)</li>
                     <li>Search "App passwords" in the search bar</li>
-                    <li>Create a new app password for "ThriveIN"</li>
+                    <li>Create a new app password for "Kretopia"</li>
                     <li>Copy the 16-character password</li>
                   </ol>
                 </div>

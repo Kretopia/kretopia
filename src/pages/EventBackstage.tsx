@@ -731,7 +731,7 @@ const EventBackstage = () => {
   return (
     <>
       <Helmet>
-        <title>Backstage · Host Dashboard | ThriveIN</title>
+        <title>Backstage · Host Dashboard | Kretopia</title>
         <meta
           name="description"
           content="Manage your events, guests, check-ins, and promo from one backstage dashboard."

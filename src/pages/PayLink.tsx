@@ -114,7 +114,7 @@ export default function PayLink() {
             <CheckCircle2 className="h-14 w-14 text-[hsl(var(--energy-lime))] mx-auto" />
             <h1 className="text-2xl font-serif">Payment received</h1>
             <p className="text-muted-foreground">Thanks — {recipient?.full_name || "the recipient"} will be notified.</p>
-            <Button asChild className="w-full"><Link to="/">Back to ThriveIN</Link></Button>
+            <Button asChild className="w-full"><Link to="/">Back to Kretopia</Link></Button>
           </CardContent>
         </Card>
       </div>
@@ -147,7 +147,7 @@ export default function PayLink() {
               <img src={recipient.avatar_url} alt="" className="h-16 w-16 rounded-full mx-auto object-cover" />
             )}
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Paying</p>
-            <p className="font-semibold">{recipient?.full_name || "ThriveIN creator"}</p>
+            <p className="font-semibold">{recipient?.full_name || "Kretopia creator"}</p>
             <h1 className="text-2xl font-serif">{link.title}</h1>
             {link.description && <p className="text-sm text-muted-foreground">{link.description}</p>}
           </div>

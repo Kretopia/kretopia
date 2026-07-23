@@ -207,7 +207,7 @@ export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
       if (navigator.share) {
         try {
           await navigator.share({
-            title: `Join "${callContext.projectName}" on ThriveIN`,
+            title: `Join "${callContext.projectName}" on Kretopia`,
             text: `${callContext.callerName} is inviting you to a video call`,
             url,
           });

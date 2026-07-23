@@ -216,7 +216,7 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-background pb-28">
       <SEO
-        title={`Book a call with ${owner.full_name || handle} — ThriveIN`}
+        title={`Book a call with ${owner.full_name || handle} — Kretopia`}
         description={`Pick a slot. ${owner.full_name || handle} confirms instantly.`}
       />
       <div className="max-w-md mx-auto px-4 pt-8">

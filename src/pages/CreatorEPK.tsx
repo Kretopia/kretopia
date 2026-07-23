@@ -324,7 +324,7 @@ const CreatorEPK = () => {
           <h1 className="text-2xl font-bold">Profile Not Found</h1>
           <p className="text-muted-foreground">This creator profile doesn't exist or is not public.</p>
           <Button onClick={() => navigate('/')} variant="default">
-            Visit ThriveIN
+            Visit Kretopia
           </Button>
         </div>
       </div>
@@ -360,8 +360,8 @@ const CreatorEPK = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <SEO 
-        title={`${profile.full_name} - ${profile.role || 'Creator'} | ThriveIN`}
-        description={profile.bio || `${profile.full_name} is a ${profile.role || 'creative professional'}${profile.location ? ` based in ${profile.location}` : ''}. View portfolio, work history, and connect on ThriveIN.`}
+        title={`${profile.full_name} - ${profile.role || 'Creator'} | Kretopia`}
+        description={profile.bio || `${profile.full_name} is a ${profile.role || 'creative professional'}${profile.location ? ` based in ${profile.location}` : ''}. View portfolio, work history, and connect on Kretopia.`}
         type="profile"
         image={profile.avatar_url || undefined}
         url={canonicalUrl}
@@ -432,7 +432,7 @@ const CreatorEPK = () => {
               </p>
             )}
             <p className="text-xs text-muted-foreground/90 max-w-xs mx-auto pt-1">
-              One link. Replaces résumé, IMDb, EPK, and business card — credits verified by collaborators on ThriveIN.
+              One link. Replaces résumé, IMDb, EPK, and business card — credits verified by collaborators on Kretopia.
             </p>
           </div>
 
@@ -559,7 +559,7 @@ const CreatorEPK = () => {
               <span className="font-semibold">Is this you?</span>
             </div>
             <p className="text-sm text-muted-foreground mb-3">
-              Claim this profile to unlock all features, connect with other creators, and manage your presence on ThriveIN.
+              Claim this profile to unlock all features, connect with other creators, and manage your presence on Kretopia.
             </p>
             <Button 
               onClick={() => setShowClaimDialog(true)}

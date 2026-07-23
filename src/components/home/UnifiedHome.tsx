@@ -75,7 +75,7 @@ const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Produc
 const ACTIVITY_TEMPLATES = [
   (n: string) => `${n} just claimed a credit on a new production`,
   (n: string) => `${n} got verified as a professional creator`,
-  (n: string) => `${n} landed a gig through ThriveIN`,
+  (n: string) => `${n} landed a gig through Kretopia`,
   (n: string) => `${n} joined the creative community`,
 ];
 
@@ -348,7 +348,7 @@ export const UnifiedHome = () => {
               (sharedSkill && `Shares your ${sharedSkill} skills`) ||
               (sameCity && `Based in ${(c.location || "").split(",")[0]}`) ||
               (cRole && `${c.role} you may want to collab with`) ||
-              "Active creator on ThriveIN";
+              "Active creator on Kretopia";
             const score = Math.min(95, 60 + relevance * 4);
             return { ...c, _relevance: relevance, _intentReason: reason, match_score: score, reason: fallbackReason };
           })

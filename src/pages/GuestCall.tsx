@@ -144,7 +144,7 @@ export default function GuestCall() {
 
   return (
     <div className="fixed inset-0 bg-[#0b0b0f] flex flex-col text-white">
-      <SEO title="Join the call · ThriveIN" description="Join a live ThriveIN room." />
+      <SEO title="Join the call · Kretopia" description="Join a live Kretopia room." />
 
       {/* Name entry lobby */}
       {phase === "name" && (
@@ -173,7 +173,7 @@ export default function GuestCall() {
               Join call
             </Button>
             <p className="text-[11px] text-white/40">
-              Powered by ThriveIN. Camera & mic permission required.
+              Powered by Kretopia. Camera & mic permission required.
             </p>
           </div>
         </div>
@@ -207,7 +207,7 @@ export default function GuestCall() {
                 <span className="text-base">📹</span>
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-semibold truncate leading-tight">ThriveIN call</p>
+                <p className="text-sm font-semibold truncate leading-tight">Kretopia call</p>
                 <p className="text-[11px] text-white/50 leading-tight flex items-center gap-1.5">
                   {recording ? (
                     <>

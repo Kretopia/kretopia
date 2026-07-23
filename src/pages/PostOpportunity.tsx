@@ -178,7 +178,7 @@ const PostOpportunity = () => {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Helmet>
-          <title>Check Your Email | ThriveIN</title>
+          <title>Check Your Email | Kretopia</title>
         </Helmet>
         <Card className="max-w-md w-full text-center">
           <CardHeader>
@@ -207,8 +207,8 @@ const PostOpportunity = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Post an Opportunity | ThriveIN</title>
-        <meta name="description" content="Post a job, collaboration, or gig opportunity on ThriveIN and connect with thousands of creative professionals. No account needed." />
+        <title>Post an Opportunity | Kretopia</title>
+        <meta name="description" content="Post a job, collaboration, or gig opportunity on Kretopia and connect with thousands of creative professionals. No account needed." />
       </Helmet>
 
       <div className="max-w-2xl mx-auto p-4 py-8 space-y-6">

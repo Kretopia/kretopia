@@ -87,7 +87,7 @@ const HandleResolver = ({ mode }: { mode: Mode }) => {
   return (
     <div className="accent-passport min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
       <SEO
-        title={`${displayed} — Claim this Passport | ThriveIN`}
+        title={`${displayed} — Claim this Passport | Kretopia`}
         description={BRAND.passportHeadline}
         url={`${APP_URL}/${mode === "handle" ? raw : `passport/${raw}`}`}
       />

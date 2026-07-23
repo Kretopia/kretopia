@@ -12,8 +12,8 @@ export default function FounderKitOnePager() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-10 print:py-4">
       <Helmet>
-        <title>ThriveIN · One-pager</title>
-        <meta name="description" content="ThriveIN at a glance — agentic OS for the creator economy." />
+        <title>Kretopia · One-pager</title>
+        <meta name="description" content="Kretopia at a glance — agentic OS for the creator economy." />
         <meta name="robots" content="noindex" />
       </Helmet>
 
@@ -36,7 +36,7 @@ export default function FounderKitOnePager() {
         </Section>
 
         <Section title="Solution — an Agentic Creative OS">
-          ThriveIN is one product with five always-on agents on top of a verified Creative Passport:
+          Kretopia is one product with five always-on agents on top of a verified Creative Passport:
           <ul className="list-disc pl-5 mt-2 space-y-1">
             <li><b>Desk-Agent</b> watches every project and proposes the next step.</li>
             <li><b>Smart Gig Scout</b> finds and drafts real gigs across web, LinkedIn, IG, ATS.</li>
@@ -48,7 +48,7 @@ export default function FounderKitOnePager() {
 
         <Section title="Why agentic, why now">
           LLM tool-calling is the first technology that absorbs the creator's operational tax at solo-proprietor
-          unit economics. ThriveIN runs on Lovable AI Gateway across Gemini Pro / 2.5 Flash / 2.5 Flash Lite, with a
+          unit economics. Kretopia runs on Lovable AI Gateway across Gemini Pro / 2.5 Flash / 2.5 Flash Lite, with a
           per-tool registry, daily caps, and tool-calling memory.
         </Section>
 

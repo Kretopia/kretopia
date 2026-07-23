@@ -74,7 +74,7 @@ export const EPKFooterCTA = ({ isOwner, isUnclaimed, profileName, onClaimClick, 
             onClick={() => navigate('/')}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            About ThriveIN
+            About Kretopia
           </button>
           <span className="text-muted-foreground">•</span>
           <button
@@ -88,7 +88,7 @@ export const EPKFooterCTA = ({ isOwner, isUnclaimed, profileName, onClaimClick, 
         {/* Branding */}
         <div className="text-center pt-1">
           <p className="text-xs text-muted-foreground">
-            Powered by <span className="font-semibold text-primary">ThriveIN</span>
+            Powered by <span className="font-semibold text-primary">Kretopia</span>
           </p>
         </div>
       </div>

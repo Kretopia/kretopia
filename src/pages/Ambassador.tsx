@@ -132,7 +132,7 @@ export default function Ambassador() {
 
     return (
       <div className="container max-w-3xl mx-auto py-8 px-4 pb-24 space-y-6">
-        <SEO title="Ambassador Dashboard · ThriveIN" description="Track your ambassador signups and rewards." />
+        <SEO title="Ambassador Dashboard · Kretopia" description="Track your ambassador signups and rewards." />
 
         <div className="text-center space-y-2">
           <Badge variant="secondary" className="gap-1.5"><Sparkles className="h-3.5 w-3.5" /> Ambassador</Badge>
@@ -235,7 +235,7 @@ export default function Ambassador() {
   if (application) {
     return (
       <div className="container max-w-2xl mx-auto py-12 px-4 pb-24">
-        <SEO title="Ambassador Application · ThriveIN" description="Your ambassador application status." />
+        <SEO title="Ambassador Application · Kretopia" description="Your ambassador application status." />
         <Card>
           <CardContent className="p-8 text-center space-y-4">
             <Badge variant={application.status === "rejected" ? "destructive" : "secondary"} className="capitalize">
@@ -258,7 +258,7 @@ export default function Ambassador() {
   // Application form
   return (
     <div className="container max-w-2xl mx-auto py-8 px-4 pb-24 space-y-6">
-      <SEO title="Become a ThriveIN Ambassador" description="Bring creators to ThriveIN. Earn ThriveCoins, free Pro, and a share of the revenue." />
+      <SEO title="Become a Kretopia Ambassador" description="Bring creators to Kretopia. Earn ThriveCoins, free Pro, and a share of the revenue." />
 
       <div className="text-center space-y-3">
         <Badge variant="secondary" className="gap-1.5"><Sparkles className="h-3.5 w-3.5" /> Ambassador Program</Badge>
@@ -307,7 +307,7 @@ export default function Ambassador() {
             </div>
             <div>
               <Label htmlFor="pitch">Why you'd be a great ambassador *</Label>
-              <Textarea id="pitch" rows={4} placeholder="Tell us about the creators you'd bring on and how you'd promote ThriveIN." value={pitch} onChange={(e) => setPitch(e.target.value)} required />
+              <Textarea id="pitch" rows={4} placeholder="Tell us about the creators you'd bring on and how you'd promote Kretopia." value={pitch} onChange={(e) => setPitch(e.target.value)} required />
             </div>
             <Button type="submit" disabled={submitting} className="w-full">
               {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}

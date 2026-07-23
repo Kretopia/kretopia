@@ -102,7 +102,7 @@ export const InviteByEmailDialog = ({ open, onOpenChange, eventId, eventTitle }:
           </DialogTitle>
           <DialogDescription>
             Send a branded invitation to <span className="font-medium text-foreground">{eventTitle}</span>.
-            Recipients don't need a ThriveIN account — they'll get a link to RSVP.
+            Recipients don't need a Kretopia account — they'll get a link to RSVP.
           </DialogDescription>
         </DialogHeader>
 

@@ -67,7 +67,7 @@ export const FeeCalculator = ({ subscriptionTier = 'free' }: FeeCalculatorProps)
           
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              ThriveIN Service Fee ({getFeeDisplayText(subscriptionTier)})
+              Kretopia Service Fee ({getFeeDisplayText(subscriptionTier)})
             </span>
             <span className="font-medium">+${breakdown.platformFee.toFixed(2)}</span>
           </div>

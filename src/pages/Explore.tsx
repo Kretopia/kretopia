@@ -34,7 +34,7 @@ const Explore = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Explore | ThriveIN</title>
+        <title>Explore | Kretopia</title>
         <meta name="description" content="Discover trending credits, open gigs, and upcoming events in the creative industry." />
       </Helmet>
 

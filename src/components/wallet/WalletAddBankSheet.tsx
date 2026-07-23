@@ -111,7 +111,7 @@ export function WalletAddBankSheet({ open, onOpenChange, onAdded }: Props) {
 
           <div className="flex items-start gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-            <p>Bank details are encrypted and processed by our payment partner. ThriveIN never stores your full account number.</p>
+            <p>Bank details are encrypted and processed by our payment partner. Kretopia never stores your full account number.</p>
           </div>
 
           <Button className="w-full" onClick={submit} disabled={loading}>

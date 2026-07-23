@@ -25,7 +25,7 @@ interface OnboardingStep {
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "audience",
-    title: "Who's using ThriveIN?",
+    title: "Who's using Kretopia?",
     description: "We'll tune the language and what shows up first. You can switch anytime in Settings.",
     icon: <Sparkles className="h-6 w-6" />,
     route: "/circle",
@@ -43,7 +43,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     id: "welcome",
-    title: "Welcome to ThriveIN",
+    title: "Welcome to Kretopia",
     description: "Your creative network awaits. Let's get you set up in under 2 minutes.",
     icon: <Sparkles className="h-6 w-6" />,
     route: "/circle",

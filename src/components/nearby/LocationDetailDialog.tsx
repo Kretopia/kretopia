@@ -164,7 +164,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
 
   const handleShare = async () => {
     if (!location) return;
-    const text = `Check out ${location.name} on ThriveIN Nearby!`;
+    const text = `Check out ${location.name} on Kretopia Nearby!`;
     if (navigator.share) {
       try {
         await navigator.share({ title: location.name, text });
@@ -334,7 +334,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                   <BadgeCheck className="h-4 w-4 text-primary" />
                   <div>
                     <p className="text-sm font-medium">Verified Business</p>
-                    <p className="text-xs text-muted-foreground">This spot is managed by a ThriveIN business</p>
+                    <p className="text-xs text-muted-foreground">This spot is managed by a Kretopia business</p>
                   </div>
                 </div>
                 <Button size="sm" variant="outline" className="text-xs gap-1" asChild>

@@ -10,7 +10,7 @@ interface LoadingSpinnerProps {
 }
 
 /**
- * Unified ThriveIN loader: rotating real-creator avatars orbiting a hero
+ * Unified Kretopia loader: rotating real-creator avatars orbiting a hero
  * portrait. Same API as before — drop-in replacement for the previous
  * CreativeLoader-backed spinner.
  */

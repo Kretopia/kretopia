@@ -55,7 +55,7 @@ export function buildIcsString(e: CalendarEventInput): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//ThriveIN//Meeting//EN",
+    "PRODID:-//Kretopia//Meeting//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",

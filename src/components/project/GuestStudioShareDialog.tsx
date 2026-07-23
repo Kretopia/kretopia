@@ -141,7 +141,7 @@ export const GuestStudioShareDialog = ({
     const url = buildUrl(link.token);
     const title = projectTitle || "my Studio";
     const text =
-`You're invited to "${title}" on ThriveIN 🎬
+`You're invited to "${title}" on Kretopia 🎬
 
 I've set up a private Studio for this project — brief, files, references and chat all in one place.
 
@@ -150,7 +150,7 @@ Tap the link, drop your name + email, and you're in. No password, no app to down
 ${url}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: `Join "${title}" on ThriveIN`, text, url });
+        await navigator.share({ title: `Join "${title}" on Kretopia`, text, url });
         return;
       } catch {
         // fall through to copy
@@ -174,7 +174,7 @@ ${url}`;
           </DialogTitle>
           <DialogDescription>
             Send a single link to partners or investors — they can view, comment, upload, and join calls.
-            They'll need a free ThriveIN account to join.
+            They'll need a free Kretopia account to join.
           </DialogDescription>
         </DialogHeader>
 

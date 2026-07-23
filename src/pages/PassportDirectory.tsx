@@ -64,7 +64,7 @@ const PassportDirectory = () => {
   return (
     <div className="accent-passport min-h-screen bg-background pb-24">
       <SEO
-        title="Passport Directory — The verified creative record | ThriveIN"
+        title="Passport Directory — The verified creative record | Kretopia"
         description={BRAND.passportHeadline + " " + BRAND.passportSubline}
         url={`${APP_URL}/passport`}
       />

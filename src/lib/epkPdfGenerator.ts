@@ -184,7 +184,7 @@ const PAGE_H = 190;
 const MARGIN = 18;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
-// Brand palette — Electric Violet + Lime (ThriveIN 2026)
+// Brand palette — Electric Violet + Lime (Kretopia 2026)
 const BRAND = {
   bg: [11, 10, 20] as [number, number, number],
   surface: [21, 19, 42] as [number, number, number],

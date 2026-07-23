@@ -100,7 +100,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   const isCompany = accountType === "company";
 
-  // ThriveIN 2.0 Daily Driver — desktop nav mirrors mobile bottom nav
+  // Kretopia 2.0 Daily Driver — desktop nav mirrors mobile bottom nav
   const desktopNavItems = isCompany
     ? [
         { path: "/desk", icon: LayoutDashboard, label: "Studios" },

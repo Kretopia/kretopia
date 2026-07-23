@@ -465,7 +465,7 @@ export default function SpeedSession() {
       title: session.title,
       description: [
         session.theme,
-        "Speed networking for creators on ThriveIN. Show up 2 min early.",
+        "Speed networking for creators on Kretopia. Show up 2 min early.",
         `${APP_URL}/circle/speed/${id}`,
       ].filter(Boolean).join("\n\n"),
       location: `${APP_URL}/circle/speed/${id}`,

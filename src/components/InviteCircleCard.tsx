@@ -77,7 +77,7 @@ export const InviteCircleCard = ({ variant = "home", className }: InviteCircleCa
       if (reward.commissionRate) bits.push(`${reward.commissionRate}% commission`);
       return bits.length ? `Unlock: ${bits.join(" · ")}` : "Keep building your network.";
     }
-    return "You've built one of the strongest networks on ThriveIN.";
+    return "You've built one of the strongest networks on Kretopia.";
   })();
 
   const Icon = referralCount === 0 ? Sparkles : next ? Users : Crown;

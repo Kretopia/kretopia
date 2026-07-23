@@ -274,7 +274,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
             rel="noopener noreferrer"
             className="text-[10px] text-zinc-300 hover:text-zinc-500 transition-colors uppercase tracking-[0.3em] font-medium"
           >
-            Powered by ThriveIN
+            Powered by Kretopia
           </a>
         </div>
       </footer>

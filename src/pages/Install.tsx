@@ -99,7 +99,7 @@ const Install = () => {
         ctx.fillStyle = "#000000";
         ctx.font = "bold 48px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("Join ThriveIN", canvas.width / 2, 80);
+        ctx.fillText("Join Kretopia", canvas.width / 2, 80);
         
         ctx.font = "28px Arial";
         ctx.fillStyle = "#666666";
@@ -109,7 +109,7 @@ const Install = () => {
 
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = "ThriveIN-Invite-QR.png";
+      downloadLink.download = "Kretopia-Invite-QR.png";
       downloadLink.href = pngFile;
       downloadLink.click();
 
@@ -126,8 +126,8 @@ const Install = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Join ThriveIN",
-          text: `Join ThriveIN with invite code ${defaultInviteCode}`,
+          title: "Join Kretopia",
+          text: `Join Kretopia with invite code ${defaultInviteCode}`,
           url: joinUrl,
         });
       } catch (error) {
@@ -164,7 +164,7 @@ const Install = () => {
             </div>
             <h1 className="text-2xl font-bold">Already Installed!</h1>
             <p className="text-muted-foreground">
-              ThriveIN is installed on your device. You can find it on your home screen.
+              Kretopia is installed on your device. You can find it on your home screen.
             </p>
             <Button onClick={() => navigate("/circle")} className="w-full">
               Open App <ArrowRight className="ml-2 h-4 w-4" />
@@ -183,9 +183,9 @@ const Install = () => {
             <div className="w-20 h-20 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Smartphone className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold">Install ThriveIN</h1>
+            <h1 className="text-2xl font-bold">Install Kretopia</h1>
             <p className="text-muted-foreground">
-              Add ThriveIN to your home screen for the best experience
+              Add Kretopia to your home screen for the best experience
             </p>
           </div>
 

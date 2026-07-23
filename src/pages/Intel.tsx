@@ -134,7 +134,7 @@ const Intel = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO title="Your Intel Brief — ThriveIN" description="Daily matches, sponsor radar, EPK refresh, and Kreto-drafted outreach." />
+      <SEO title="Your Intel Brief — Kretopia" description="Daily matches, sponsor radar, EPK refresh, and Kreto-drafted outreach." />
       <div className="border-b border-border/50 pt-[env(safe-area-inset-top)]">
         <div className="container max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button>

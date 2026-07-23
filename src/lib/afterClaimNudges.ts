@@ -135,7 +135,7 @@ export async function seedAfterClaimNudges(userId: string, opts: {
           category: "after_claim",
           priority: "high",
           title: "🧑‍💼 Post your first gig",
-          message: "Reach verified creators in minutes. The top profiles are already on ThriveIN.",
+          message: "Reach verified creators in minutes. The top profiles are already on Kretopia.",
           action_text: "Post opportunity",
           action_url: "/post-opportunity",
           read: false,

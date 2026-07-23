@@ -85,7 +85,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
       if (verifyLink && endorserEmail) {
         setGuestVerifyLink(verifyLink);
         await navigator.clipboard.writeText(
-          `Can you verify my ${credit.role} credit on "${credit.project_name}" on ThriveIN?\n\n${verifyLink}`
+          `Can you verify my ${credit.role} credit on "${credit.project_name}" on Kretopia?\n\n${verifyLink}`
         ).catch(() => undefined);
         toast.success('Verification link ready', {
           description: 'Copy it into WhatsApp, email, or DM to that person.',
@@ -248,7 +248,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
                     size="sm"
                     className="w-full"
                     onClick={() => {
-                      navigator.clipboard.writeText(`Can you verify my ${credit.role} credit on "${credit.project_name}" on ThriveIN?\n\n${guestVerifyLink}`);
+                      navigator.clipboard.writeText(`Can you verify my ${credit.role} credit on "${credit.project_name}" on Kretopia?\n\n${guestVerifyLink}`);
                       toast.success('Copied verification message');
                     }}
                   >

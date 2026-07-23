@@ -182,8 +182,8 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
     }
     const url = getShareUrl(`/messages?groupInvite=${group.invite_code}`);
     const shareData = {
-      title: `Join "${group.title}" on ThriveIN`,
-      text: `You're invited to join the "${group.title}" group chat on ThriveIN.`,
+      title: `Join "${group.title}" on Kretopia`,
+      text: `You're invited to join the "${group.title}" group chat on Kretopia.`,
       url,
     };
     try {

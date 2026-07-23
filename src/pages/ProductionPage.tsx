@@ -191,7 +191,7 @@ const ProductionPage = () => {
   const buildProductionShare = () => {
     const sharePath = `/production?name=${encodeURIComponent(projectName)}`;
     const shareUrl = getShareUrl(sharePath);
-    const shareText = `${projectName} on ThriveIN — the verified credits platform for creatives. See the roll call, search your name, and claim or verify the credit if you worked on it.`;
+    const shareText = `${projectName} on Kretopia — the verified credits platform for creatives. See the roll call, search your name, and claim or verify the credit if you worked on it.`;
     return { shareUrl, shareText };
   };
 
@@ -199,13 +199,13 @@ const ProductionPage = () => {
     const { shareUrl, shareText } = buildProductionShare();
     if (typeof navigator !== "undefined" && (navigator as any).share) {
       try {
-        await (navigator as any).share({ title: `${projectName} on ThriveIN`, text: shareText, url: shareUrl });
+        await (navigator as any).share({ title: `${projectName} on Kretopia`, text: shareText, url: shareUrl });
         return;
       } catch { /* user dismissed */ }
     }
     try {
       await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-      toast.success("ThriveIN share message copied");
+      toast.success("Kretopia share message copied");
     } catch {
       toast.error("Couldn't copy link");
     }
@@ -239,16 +239,16 @@ const ProductionPage = () => {
   return (
     <>
       <Helmet>
-        <title>{projectName} — ThriveCredits | ThriveIN</title>
+        <title>{projectName} — ThriveCredits | Kretopia</title>
         <meta name="description" content={production.description || `${projectName} — production credits on ThriveCredits. See the full roll call and claim your credit.`} />
         <meta property="og:title" content={`${projectName} — ThriveCredits`} />
-        <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on ThriveIN`} />
+        <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on Kretopia`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={getShareUrl(`/production?name=${encodeURIComponent(projectName)}`)} />
         {production.image_url && <meta property="og:image" content={production.image_url} />}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${projectName} — ThriveCredits`} />
-        <meta name="twitter:description" content={`${production.total_roles} roles · ${totalClaimed} claimed on ThriveIN`} />
+        <meta name="twitter:description" content={`${production.total_roles} roles · ${totalClaimed} claimed on Kretopia`} />
       </Helmet>
 
       <div className="min-h-screen bg-background text-foreground pb-24">
@@ -368,7 +368,7 @@ const ProductionPage = () => {
           <div className="container mx-auto max-w-3xl px-4 pt-6">
             <div className="flex items-center gap-2 mb-3">
               <ShieldCheck className="h-4 w-4 text-success" />
-              <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Verified on ThriveIN</h2>
+              <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Verified on Kretopia</h2>
             </div>
             {platformRoles.some(r => user?.id === r.user_id) && (
               <div className="mb-3 rounded-xl border border-primary/25 bg-primary/10 p-3">

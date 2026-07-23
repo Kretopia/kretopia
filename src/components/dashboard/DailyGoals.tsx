@@ -97,7 +97,7 @@ export function DailyGoals() {
         {
           id: "login",
           title: "Daily Login",
-          description: "Log in to ThriveIN",
+          description: "Log in to Kretopia",
           icon: <Flame className="h-4 w-4" />,
           xpReward: 5,
           completed: profile?.last_active_date === today,

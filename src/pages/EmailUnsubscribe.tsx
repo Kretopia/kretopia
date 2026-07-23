@@ -48,7 +48,7 @@ const EmailUnsubscribe = () => {
             <>
               <MailX className="h-12 w-12 text-destructive" />
               <h1 className="text-xl font-bold">Unsubscribe from emails?</h1>
-              <p className="text-sm text-muted-foreground">You'll stop receiving app emails from ThriveIN. Authentication emails (password resets, etc.) will still be sent.</p>
+              <p className="text-sm text-muted-foreground">You'll stop receiving app emails from Kretopia. Authentication emails (password resets, etc.) will still be sent.</p>
               <Button onClick={handleUnsubscribe} disabled={processing} variant="destructive" className="mt-2">
                 {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Confirm Unsubscribe
@@ -60,7 +60,7 @@ const EmailUnsubscribe = () => {
             <>
               <CheckCircle2 className="h-12 w-12 text-green-500" />
               <h1 className="text-xl font-bold">You've been unsubscribed</h1>
-              <p className="text-sm text-muted-foreground">You won't receive app emails from ThriveIN anymore.</p>
+              <p className="text-sm text-muted-foreground">You won't receive app emails from Kretopia anymore.</p>
             </>
           )}
 

@@ -42,7 +42,7 @@ export function AIJobDescriptionGenerator({ onGenerated, isPro }: AIJobDescripti
 
     setGenerating(true);
     try {
-      const systemPrompt = `You are a professional opportunity posting writer for a creative industry platform called ThriveIN. 
+      const systemPrompt = `You are a professional opportunity posting writer for a creative industry platform called Kretopia. 
 Given a rough brief from a company, generate a polished, compelling opportunity posting.
 
 IMPORTANT: Respond ONLY with valid JSON, no markdown, no code fences. Use this exact format:

@@ -64,7 +64,7 @@ export const DigitalMembershipCard = ({
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-white/60 text-xs mb-1">ThriveIN Network</p>
+            <p className="text-white/60 text-xs mb-1">Kretopia Network</p>
             <p className="text-sm font-semibold">Global Access</p>
           </div>
           {tier !== "free" && onShowQR && (

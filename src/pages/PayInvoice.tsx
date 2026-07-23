@@ -63,7 +63,7 @@ export default function PayInvoice() {
           <CheckCircle2 className="h-14 w-14 text-[hsl(var(--energy-lime))] mx-auto" />
           <h1 className="text-2xl font-serif">Invoice paid</h1>
           <p className="text-muted-foreground">Thanks — the sender has been notified.</p>
-          <Button asChild className="w-full"><Link to="/">Back to ThriveIN</Link></Button>
+          <Button asChild className="w-full"><Link to="/">Back to Kretopia</Link></Button>
         </CardContent></Card>
       </div>
     );
@@ -86,13 +86,13 @@ export default function PayInvoice() {
 
   return (
     <div className="min-h-screen bg-muted/30 px-4 py-8 flex items-center justify-center">
-      <SEO title={`Pay invoice ${invoice.invoice_number}`} description={`Invoice from ${invoice.brand_name || "ThriveIN"}`} />
+      <SEO title={`Pay invoice ${invoice.invoice_number}`} description={`Invoice from ${invoice.brand_name || "Kretopia"}`} />
       <Card className="max-w-md w-full shadow-lg">
         <CardContent className="p-6 sm:p-8 space-y-6">
           <div className="text-center space-y-1">
             {invoice.brand_logo_url && <img src={invoice.brand_logo_url} alt="" className="h-12 mx-auto object-contain" />}
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Invoice from</p>
-            <p className="font-semibold">{invoice.brand_name || "ThriveIN creator"}</p>
+            <p className="font-semibold">{invoice.brand_name || "Kretopia creator"}</p>
           </div>
 
           <div className="text-center py-4 border-y space-y-1">

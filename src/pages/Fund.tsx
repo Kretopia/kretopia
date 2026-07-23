@@ -15,7 +15,7 @@ const Fund = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>ThriveFund — Crowdfunding for Verified Creatives | ThriveIN</title>
+        <title>ThriveFund — Crowdfunding for Verified Creatives | Kretopia</title>
         <meta
           name="description"
           content="Fund creatives you can verify. ThriveFund is crowdfunding built on top of verified credits, vouches, and proven work — not promises."
@@ -65,7 +65,7 @@ const Fund = () => {
             <Pillar
               icon={ShieldCheck}
               title="Verified creators only"
-              body="Every campaign is backed by a real ThriveIN profile with verified credits."
+              body="Every campaign is backed by a real Kretopia profile with verified credits."
             />
             <Pillar
               icon={Sparkles}

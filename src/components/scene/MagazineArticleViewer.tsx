@@ -224,7 +224,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
               </div>
               <div>
                 <h3 className="font-bold text-sm text-foreground">
-                  Join ThriveIN — The Creative Economy Platform
+                  Join Kretopia — The Creative Economy Platform
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                   Connect with creatives worldwide, discover collaboration opportunities, manage projects,
@@ -237,7 +237,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
                 <Link to="/auth">Get Started Free</Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="flex-1">
-                <Link to="/">Learn more about ThriveIN</Link>
+                <Link to="/">Learn more about Kretopia</Link>
               </Button>
             </div>
           </div>

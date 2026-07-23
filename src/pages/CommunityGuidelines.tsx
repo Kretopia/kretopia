@@ -6,8 +6,8 @@ const CommunityGuidelines = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <SEO 
-        title="Community Guidelines - ThriveIN"
-        description="Guidelines for maintaining a respectful and productive community on ThriveIN"
+        title="Community Guidelines - Kretopia"
+        description="Guidelines for maintaining a respectful and productive community on Kretopia"
       />
 
       <Card>
@@ -22,7 +22,7 @@ const CommunityGuidelines = () => {
               Our Values
             </h2>
             <p>
-              ThriveIN is a community of creators, collaborators, and innovators. We're committed to fostering a respectful, inclusive, and productive environment where everyone can thrive.
+              Kretopia is a community of creators, collaborators, and innovators. We're committed to fostering a respectful, inclusive, and productive environment where everyone can thrive.
             </p>
           </section>
 

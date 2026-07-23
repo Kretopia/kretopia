@@ -65,7 +65,7 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
   const profileUrl = `${APP_URL}/profile/${profile.user_id}`;
   const shareableUrl = `${APP_URL}/share/profile/${profile.user_id}/`;
   
-  const shareText = `${profile.full_name} | ${profile.role} — Verified Creative Portfolio on ThriveIN
+  const shareText = `${profile.full_name} | ${profile.role} — Verified Creative Portfolio on Kretopia
 
 ${profile.bio ? profile.bio.slice(0, 100) + (profile.bio.length > 100 ? '...' : '') : ''}
 
@@ -110,7 +110,7 @@ ${shareableUrl}`;
         shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
         break;
       case 'email':
-        shareUrl = `mailto:?subject=${encodeURIComponent(profile.full_name + "'s Creative Portfolio on ThriveIN")}&body=${encodeURIComponent(shareText)}`;
+        shareUrl = `mailto:?subject=${encodeURIComponent(profile.full_name + "'s Creative Portfolio on Kretopia")}&body=${encodeURIComponent(shareText)}`;
         break;
     }
     

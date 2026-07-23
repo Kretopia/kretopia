@@ -156,7 +156,7 @@ const CreatorSite = () => {
         <h1 className="text-2xl font-bold">Site Not Found</h1>
         <p className="text-zinc-400">This creator hasn't set up their site yet.</p>
         <button onClick={() => navigate('/')} className="text-[#ff00ff] hover:underline">
-          Go to ThriveIN →
+          Go to Kretopia →
         </button>
       </div>
     );
@@ -168,7 +168,7 @@ const CreatorSite = () => {
     <>
       <SEO 
         title={`${data.profile.full_name} — ${data.profile.role || 'Creator'}`}
-        description={data.profile.bio?.slice(0, 160) || `${data.profile.full_name}'s professional site powered by ThriveIN`}
+        description={data.profile.bio?.slice(0, 160) || `${data.profile.full_name}'s professional site powered by Kretopia`}
       />
       {template === 'bold-electric' && <BoldElectricTemplate data={data} />}
       {template === 'minimal-editorial' && <MinimalEditorialTemplate data={data} />}

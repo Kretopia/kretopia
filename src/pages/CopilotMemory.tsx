@@ -126,7 +126,7 @@ export default function CopilotMemory() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO title="Copilot Memory · ThriveIN" description="Manage what Kreto remembers about you." />
+      <SEO title="Copilot Memory · Kretopia" description="Manage what Kreto remembers about you." />
       <div className="mx-auto max-w-2xl px-4 py-6">
         <Button
           variant="ghost"

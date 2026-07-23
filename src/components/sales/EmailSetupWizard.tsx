@@ -145,7 +145,7 @@ export function EmailSetupWizard({ onComplete }: { onComplete?: () => void }) {
             <div className="p-3 rounded-lg bg-accent/50 border border-accent flex items-start gap-2">
               <Lock className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
               <p className="text-xs text-muted-foreground">
-                We use a <strong>Google App Password</strong> — a special 16-character code that only works for ThriveIN. Your actual Google password is never shared or stored.
+                We use a <strong>Google App Password</strong> — a special 16-character code that only works for Kretopia. Your actual Google password is never shared or stored.
               </p>
             </div>
 
@@ -209,7 +209,7 @@ export function EmailSetupWizard({ onComplete }: { onComplete?: () => void }) {
               <Badge variant="outline" className="mb-2 text-xs">Step 2 of 3</Badge>
               <h3 className="font-semibold text-base">Create an App Password</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Now create a special password just for ThriveIN. This keeps your main password safe.
+                Now create a special password just for Kretopia. This keeps your main password safe.
               </p>
             </div>
 
@@ -231,7 +231,7 @@ export function EmailSetupWizard({ onComplete }: { onComplete?: () => void }) {
               <div className="flex items-start gap-3">
                 <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">2</span>
                 <div className="text-sm">
-                  <p>In the "App name" field, type <strong>ThriveIN</strong> and click <strong>Create</strong></p>
+                  <p>In the "App name" field, type <strong>Kretopia</strong> and click <strong>Create</strong></p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -271,7 +271,7 @@ export function EmailSetupWizard({ onComplete }: { onComplete?: () => void }) {
                 </div>
                 <h3 className="font-semibold text-lg">You're all set!</h3>
                 <p className="text-sm text-muted-foreground">
-                  Your Gmail is connected. You can now send outreach emails directly from ThriveIN.
+                  Your Gmail is connected. You can now send outreach emails directly from Kretopia.
                 </p>
               </div>
             ) : (

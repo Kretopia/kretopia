@@ -242,7 +242,7 @@ const Search = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      <SEO title={`Search${searchParams.get("q") ? ` "${searchParams.get("q")}"` : ""} — ThriveIN`} description="Search creators, productions & opportunities across the creative economy." />
+      <SEO title={`Search${searchParams.get("q") ? ` "${searchParams.get("q")}"` : ""} — Kretopia`} description="Search creators, productions & opportunities across the creative economy." />
 
       <div className="container mx-auto max-w-3xl px-4 sm:px-6 py-6">
         {/* Search bar */}
@@ -530,7 +530,7 @@ const Search = () => {
                     </div>
                     <p className="text-xs font-semibold text-foreground">{ec.project}</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">{ec.role}{ec.year ? ` · ${ec.year}` : ""}</p>
-                    <p className="text-[9px] text-primary mt-1.5">Not yet on ThriveIN — Claim this credit →</p>
+                    <p className="text-[9px] text-primary mt-1.5">Not yet on Kretopia — Claim this credit →</p>
                   </button>
                 );
               }

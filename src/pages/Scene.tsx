@@ -58,7 +58,7 @@ const Scene = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>{t("scene.title")} | ThriveIN</title>
+        <title>{t("scene.title")} | Kretopia</title>
         <meta name="description" content="Your creative community hub — browse events, discover work, and join conversations." />
       </Helmet>
 

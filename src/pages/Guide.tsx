@@ -276,7 +276,7 @@ export default function Guide() {
             Your Guide to Success
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-            How to Win with ThriveIN
+            How to Win with Kretopia
           </h1>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">
             Everything you need to know to find collaborators, land gigs, and build your creative career — step by step.

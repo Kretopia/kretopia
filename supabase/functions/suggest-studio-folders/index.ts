@@ -1,4 +1,4 @@
-// Izzy clusters a user's Studio projects into 2-5 themed folders.
+// Kreto clusters a user's Studio projects into 2-5 themed folders.
 // Returns: { suggestions: [{ name, color, project_ids[], reason }] }
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -68,7 +68,7 @@ serve(async (req) => {
           {
             role: "system",
             content:
-              "You are Izzy, the Executive Producer inside ThriveIN. Cluster the user's creative Studio projects into 2-5 short, human folder names a creative would actually use (e.g. 'Client Work', '2026 Campaigns', 'Music Releases', 'Personal Films', 'Brand Partners', 'Wedding Season'). Prefer client/brand groupings, work-type, or season/year if obvious. Avoid generic 'Misc'. Each project belongs to exactly one folder. Skip projects that don't fit anywhere. Reuse an existing folder name if it clearly fits.",
+              "You are Kreto, the Executive Producer inside ThriveIN. Cluster the user's creative Studio projects into 2-5 short, human folder names a creative would actually use (e.g. 'Client Work', '2026 Campaigns', 'Music Releases', 'Personal Films', 'Brand Partners', 'Wedding Season'). Prefer client/brand groupings, work-type, or season/year if obvious. Avoid generic 'Misc'. Each project belongs to exactly one folder. Skip projects that don't fit anywhere. Reuse an existing folder name if it clearly fits.",
           },
           {
             role: "user",

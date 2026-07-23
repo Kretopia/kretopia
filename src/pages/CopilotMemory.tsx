@@ -114,7 +114,7 @@ export default function CopilotMemory() {
   };
 
   const deleteMemory = async (id: string) => {
-    if (!confirm("Delete this memory? Izzy will forget it.")) return;
+    if (!confirm("Delete this memory? Kreto will forget it.")) return;
     const { error } = await supabase.from("copilot_memories").delete().eq("id", id);
     if (error) {
       toast.error("Couldn't delete");
@@ -126,7 +126,7 @@ export default function CopilotMemory() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO title="Copilot Memory · ThriveIN" description="Manage what Izzy remembers about you." />
+      <SEO title="Copilot Memory · ThriveIN" description="Manage what Kreto remembers about you." />
       <div className="mx-auto max-w-2xl px-4 py-6">
         <Button
           variant="ghost"
@@ -144,7 +144,7 @@ export default function CopilotMemory() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Copilot Memory</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Things Izzy has learned about you. She uses these to give better,
+              Things Kreto has learned about you. She uses these to give better,
               more personal answers across the platform. You're in control — edit or delete anything.
             </p>
           </div>
@@ -206,7 +206,7 @@ export default function CopilotMemory() {
           <Card>
             <CardContent className="py-10 text-center text-sm text-muted-foreground">
               <Brain className="h-8 w-8 mx-auto mb-2 opacity-40" />
-              No memories yet. Have a few real conversations with Izzy —
+              No memories yet. Have a few real conversations with Kreto —
               it'll learn the things that matter and they'll show up here.
             </CardContent>
           </Card>

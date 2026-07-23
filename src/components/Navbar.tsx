@@ -128,10 +128,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/60 bg-background" role="navigation" aria-label="Main navigation">
+    <nav
+      className={cn(
+        "sticky top-0 z-50",
+        isLandingPage
+          ? "dark-surface border-b border-white/10 bg-[#05070D] text-white"
+          : "border-b border-border/60 bg-background",
+      )}
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className="container mx-auto flex items-center justify-between gap-1 px-2 sm:px-4 py-2.5">
         <div className="shrink-0">
-          <BrandLogo size="md" showBeta linkToHome />
+          <BrandLogo size="md" showBeta linkToHome onDark={isLandingPage} />
         </div>
 
         {/* Search lives in Thrive bar — top nav is bell + menu only */}
@@ -144,8 +153,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 key={path}
                 to={path}
                 className={cn(
-                  "px-3 py-2 rounded-lg text-sm font-medium hover:text-foreground hover:bg-accent/50 transition-all whitespace-nowrap",
-                  location.pathname === path ? "text-foreground bg-accent/30" : "text-muted-foreground"
+                  "px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                  isLandingPage
+                    ? "text-white/70 hover:text-white hover:bg-white/5"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                  location.pathname === path && (isLandingPage ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
                 )}
               >
                 {label}
@@ -393,13 +405,29 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </Sheet>
 
               <Link to="/post-opportunity" className="hidden sm:inline-flex">
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "gap-2",
+                    isLandingPage && "border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white",
+                  )}
+                >
                   <Briefcase className="h-4 w-4" />
                   Hire Talent
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4">Sign In</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "text-xs sm:text-sm px-2 sm:px-4",
+                    isLandingPage && "text-white hover:bg-white/10 hover:text-white",
+                  )}
+                >
+                  Sign In
+                </Button>
               </Link>
               <Link to="/auth">
                 <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>

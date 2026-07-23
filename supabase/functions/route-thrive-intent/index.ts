@@ -8,7 +8,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM = `You are Izzy's intent router. A creator types or speaks one short request. You decide what surface or workflow it maps to and reply by calling the route_intent tool.
+const SYSTEM = `You are Kreto's intent router. A creator types or speaks one short request. You decide what surface or workflow it maps to and reply by calling the route_intent tool.
 
 Intents you can return:
 - create_workspace : the user wants to start something (podcast, event, masterclass, content shoot, brand campaign, music release, client project, hiring, EPK). Pick workspace_type from: podcast, event, masterclass, content, campaign, music, client, general.

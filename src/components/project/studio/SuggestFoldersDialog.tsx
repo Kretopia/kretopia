@@ -59,7 +59,7 @@ export const SuggestFoldersDialog = ({ userId, open, onOpenChange, onApplied }: 
       }
     } catch (e: any) {
       toast({
-        title: "Izzy couldn't suggest folders",
+        title: "Kreto couldn't suggest folders",
         description: e?.message || "Try again in a moment.",
         variant: "destructive",
       });
@@ -160,7 +160,7 @@ export const SuggestFoldersDialog = ({ userId, open, onOpenChange, onApplied }: 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
-            Izzy suggests folders
+            Kreto suggests folders
           </DialogTitle>
           <DialogDescription>
             Based on your projects, here's how I'd group them. Untick anything you don't want.

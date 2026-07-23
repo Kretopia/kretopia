@@ -274,7 +274,7 @@ export function ThrivePromptHero() {
       setText("");
     } catch (e: any) {
       console.error(e);
-      toast({ title: "Izzy couldn't read that", description: e?.message || "Try again", variant: "destructive" });
+      toast({ title: "Kreto couldn't read that", description: e?.message || "Try again", variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -310,7 +310,7 @@ export function ThrivePromptHero() {
       rec.start();
       setRecording(true);
     } catch {
-      toast({ title: "Mic blocked", description: "Allow microphone access to speak to Izzy.", variant: "destructive" });
+      toast({ title: "Mic blocked", description: "Allow microphone access to speak to Kreto.", variant: "destructive" });
     }
   }
 
@@ -338,7 +338,7 @@ export function ThrivePromptHero() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void submit(text); }
             }}
-            placeholder="Ask Izzy anything…"
+            placeholder="Ask Kreto anything…"
             rows={1}
             className="flex-1 resize-none bg-transparent px-3 py-2 text-[15px] outline-none placeholder:text-muted-foreground/70 max-h-32 leading-snug"
             disabled={busy}
@@ -346,7 +346,7 @@ export function ThrivePromptHero() {
           <button
             type="button"
             onClick={startVoice}
-            aria-label={recording ? "Stop recording" : "Speak to Izzy"}
+            aria-label={recording ? "Stop recording" : "Speak to Kreto"}
             className={cn(
               "h-9 w-9 flex items-center justify-center rounded-xl transition-colors shrink-0",
               recording ? "bg-destructive text-destructive-foreground animate-pulse" : "text-foreground/70 hover:bg-foreground/5",
@@ -357,7 +357,7 @@ export function ThrivePromptHero() {
           <button
             type="submit"
             disabled={busy || !text.trim()}
-            aria-label="Send to Izzy"
+            aria-label="Send to Kreto"
             className="h-9 w-9 flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:scale-105 shrink-0"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" strokeWidth={2.5} />}
@@ -381,7 +381,7 @@ export function ThrivePromptHero() {
             type="button"
             onClick={() => setPlanMode((v) => !v)}
             aria-pressed={planMode}
-            title="Plan mode — Izzy drafts an ordered plan you approve before anything runs."
+            title="Plan mode — Kreto drafts an ordered plan you approve before anything runs."
             className={cn(
               "ml-auto inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full border transition-colors",
               planMode

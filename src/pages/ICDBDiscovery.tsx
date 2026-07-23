@@ -239,7 +239,7 @@ const ICDBDiscovery = () => {
               <div>
                 <h3 className="font-semibold text-lg mb-2">Smart Creator Matching</h3>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                  Describe what you need and Izzy will match you with creators based on their 
+                  Describe what you need and Kreto will match you with creators based on their 
                   <span className="text-foreground font-medium"> verified work history</span> — not just buzzwords.
                 </p>
               </div>

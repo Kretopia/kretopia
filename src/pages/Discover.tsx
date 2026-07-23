@@ -200,7 +200,7 @@ export default function Discover() {
 
           {/* Helper strip — explains what lives where */}
           <p className="text-[11px] text-muted-foreground px-1">
-            {oppsMode === "scouted" && "Real gigs Izzy found for you across the web."}
+            {oppsMode === "scouted" && "Real gigs Kreto found for you across the web."}
             {oppsMode === "open" && "Collabs, barters and freelance gigs posted by the community."}
             {oppsMode === "leads" && "Brands, sponsors and clients that fit your work."}
           </p>
@@ -216,7 +216,7 @@ export default function Discover() {
                     <p className="font-semibold text-sm">Sponsor & client leads</p>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Brands and clients that fit your work — surfaced by Izzy. No Studio required.
+                    Brands and clients that fit your work — surfaced by Kreto. No Studio required.
                   </p>
                   <Link to="/intel" className="inline-block text-xs font-semibold text-[hsl(var(--signal-amber))] hover:underline">
                     Open Opportunity Intel →
@@ -225,9 +225,9 @@ export default function Discover() {
               </Card>
               <Card>
                 <CardContent className="p-4 space-y-2">
-                  <p className="font-semibold text-sm">Ask Izzy to find leads</p>
+                  <p className="font-semibold text-sm">Ask Kreto to find leads</p>
                   <p className="text-xs text-muted-foreground">
-                    Tell Izzy who you want to work with — sponsors, brands, agencies — and she scouts in the background.
+                    Tell Kreto who you want to work with — sponsors, brands, agencies — and she scouts in the background.
                   </p>
                   <Link to="/intel?focus=sponsors" className="inline-block text-xs font-semibold text-primary hover:underline">
                     Set sponsor radar →

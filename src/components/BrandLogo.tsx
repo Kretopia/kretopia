@@ -14,6 +14,8 @@ interface BrandLogoProps {
   iconOnly?: boolean;
   /** Use the full official lockup PNG (K + kretopia wordmark together). Overrides icon/textOnly. */
   lockup?: boolean;
+  /** Render for dark backgrounds (white wordmark) */
+  onDark?: boolean;
 }
 
 const sizeConfig = {
@@ -30,6 +32,7 @@ export function BrandLogo({
   textOnly = false,
   iconOnly = false,
   lockup = false,
+  onDark = false,
 }: BrandLogoProps) {
   const cfg = sizeConfig[size];
 
@@ -56,7 +59,8 @@ export function BrandLogo({
             <span
               className={cn(
                 cfg.text,
-                "font-display font-black tracking-tight text-foreground select-none lowercase"
+                "font-display font-black tracking-tight select-none lowercase",
+                onDark ? "text-white" : "text-foreground",
               )}
               style={{ letterSpacing: "-0.035em" }}
             >

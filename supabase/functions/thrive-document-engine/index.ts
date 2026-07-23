@@ -209,7 +209,7 @@ IMAGE SOURCING (in priority order)
 2. image_prompt → only when no real asset fits. Must echo the design_style visual direction.
 3. Decorative-only slides (stats, financial, process, timeline, pricing) typically need NO image.`;
 
-const SYSTEM = (intent: Intent, theme: string, style: DesignStyle) => `You are Izzy — the user's Executive Producer inside ThriveIN. You don't just write — you art-direct.
+const SYSTEM = (intent: Intent, theme: string, style: DesignStyle) => `You are Kreto — the user's Executive Producer inside ThriveIN. You don't just write — you art-direct.
 
 You're drafting a ${intent.replace(/_/g, " ")} for a creative professional.
 

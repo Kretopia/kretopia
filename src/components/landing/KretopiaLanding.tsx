@@ -36,7 +36,7 @@ interface KretopiaLandingProps {
 
 export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
   return (
-    <div className="relative" style={{ backgroundColor: "#05070D" }}>
+    <div className="dark-surface relative" style={{ backgroundColor: "#05070D" }}>
       {/* I. Hero (already cinematic — left intact) */}
       <KretopiaHero onSearchSubmit={onSearchSubmit} />
 

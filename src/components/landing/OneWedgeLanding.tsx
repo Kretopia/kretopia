@@ -211,7 +211,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
         <div className="grid md:grid-cols-2 gap-10 items-start">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-[hsl(var(--signal-teal))] font-semibold">
-              Meet Izzy
+              Meet Kreto
             </p>
             <h2 className="mt-3 font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
               Your Creative
@@ -219,7 +219,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
               <span className="italic text-[hsl(var(--signal-teal))]">Executive Producer.</span>
             </h2>
             <p className="mt-5 text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed">
-              Izzy helps move work forward. From the first hello to the final payment.
+              Kreto helps move work forward. From the first hello to the final payment.
             </p>
           </div>
 

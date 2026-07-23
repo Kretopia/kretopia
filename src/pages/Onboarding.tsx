@@ -672,7 +672,7 @@ export default function Onboarding() {
                   Let's find the work you've already done.
                 </h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                  Drop your name (and a portfolio link if you have one) — Izzy will search the web and turn it into verified {BRAND.stamps.toLowerCase()} on your {BRAND.passport}. Then we'll get you matched and earning.
+                  Drop your name (and a portfolio link if you have one) — Kreto will search the web and turn it into verified {BRAND.stamps.toLowerCase()} on your {BRAND.passport}. Then we'll get you matched and earning.
                 </p>
               </div>
 
@@ -1019,7 +1019,7 @@ export default function Onboarding() {
                 {/* Discovered Credits */}
                 {discoveredCredits.length > 0 && (
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Izzy found these {BRAND.stamps.toLowerCase()} — tap to claim yours ({selectedCredits.size} selected)</Label>
+                    <Label className="text-xs text-muted-foreground">Kreto found these {BRAND.stamps.toLowerCase()} — tap to claim yours ({selectedCredits.size} selected)</Label>
                     <div className="space-y-1.5 max-h-40 overflow-y-auto">
                       {discoveredCredits.map((credit, i) => (
                         <button
@@ -1131,7 +1131,7 @@ export default function Onboarding() {
           pendingConnect={pendingConnectForCelebration}
         />
 
-        {/* First-Stamp reveal — between Discover and Review when Izzy finds work */}
+        {/* First-Stamp reveal — between Discover and Review when Kreto finds work */}
         <FirstStampReveal
           open={showFirstStamp}
           credit={discoveredCredits[0] || null}

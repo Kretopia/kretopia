@@ -170,7 +170,7 @@ export const CallRecapSheet = ({ open, onOpenChange, transcriptId }: Props) => {
         ) : isProcessing ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center">
             <Loader2 className="h-7 w-7 animate-spin text-primary" />
-            <p className="text-sm font-medium">Thrive Copilot is listening…</p>
+            <p className="text-sm font-medium">Kreto is listening…</p>
             <p className="text-xs text-muted-foreground max-w-xs">
               Transcribing the call and pulling out action items. This usually takes 1–3 minutes after the call ends.
             </p>

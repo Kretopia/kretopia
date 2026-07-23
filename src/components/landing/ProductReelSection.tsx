@@ -42,7 +42,7 @@ const TILES: Tile[] = [
   },
   {
     icon: MessageSquare,
-    eyebrow: "Thrive Copilot",
+    eyebrow: "Kreto",
     title: "Drafts intros, quotes, and gig replies — while you sleep.",
     body: "Tell Thrive what you want to make. It plans the project, finds the people, and writes the first draft.",
     chip: "Pro",
@@ -52,7 +52,7 @@ const TILES: Tile[] = [
   },
   {
     icon: DollarSign,
-    eyebrow: "ThrivePay",
+    eyebrow: "KrePay",
     title: "Quotes, invoices, milestone payments — get paid in your currency.",
     body: "Send a quote in two taps. Track expenses with a photo. Get paid in USD, TTD, or your local currency.",
     chip: "Free + Pro",

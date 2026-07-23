@@ -519,7 +519,7 @@ const Settings = () => {
                 Manage Subscription
               </Button>
               <Button variant="outline" className="w-full" onClick={() => navigate("/wallet")}>
-                ThrivePay Wallet & Payouts
+                KrePay Wallet & Payouts
               </Button>
             </CardContent>
           </Card>

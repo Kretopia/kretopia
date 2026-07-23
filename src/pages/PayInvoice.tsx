@@ -120,7 +120,7 @@ export default function PayInvoice() {
 
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Powered by ThrivePay · Card, Apple Pay, Google Pay
+            Powered by KrePay · Card, Apple Pay, Google Pay
           </div>
         </CardContent>
       </Card>

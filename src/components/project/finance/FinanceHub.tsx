@@ -240,7 +240,7 @@ export function FinanceHub({
             className="gap-2 shrink-0"
           >
             <Wallet className="h-3.5 w-3.5" />
-            ThrivePay P&L
+            KrePay P&L
             <ArrowRight className="h-3 w-3" />
           </Button>
         </div>
@@ -284,7 +284,7 @@ export function FinanceHub({
 
         <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1.5">
           <Link2 className="h-3 w-3" />
-          Every paid milestone & invoice automatically syncs to your ThrivePay P&L.
+          Every paid milestone & invoice automatically syncs to your KrePay P&L.
         </p>
       </Card>
 

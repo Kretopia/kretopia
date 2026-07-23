@@ -293,7 +293,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       {/* WORKSPACE — daily shortcuts only. Today/Desk live in bottom nav; Pay in Passport. */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
-                      <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
+                      <MenuButton icon={DollarSign} label="KrePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
                       <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
                       {/* Crews hidden from UI — data preserved, deep links still work via /crews. Group chat lives in Messages. */}
                       {isManagerMode && (

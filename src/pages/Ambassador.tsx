@@ -223,7 +223,7 @@ export default function Ambassador() {
           <CardContent className="p-4 text-xs text-muted-foreground space-y-1">
             <p className="flex items-center gap-1.5 text-foreground font-semibold"><Coins className="h-3.5 w-3.5" /> How rewards pay out</p>
             <p>• Tier badges and Pro time apply automatically when you hit a threshold.</p>
-            <p>• Revenue share (5%) on referred users' platform fees pays monthly to your ThrivePay wallet once you reach Catalyst.</p>
+            <p>• Revenue share (5%) on referred users' platform fees pays monthly to your KrePay wallet once you reach Catalyst.</p>
             <p>• ThriveCoins can be spent on Copilot top-ups, profile boosts, and more in the XP shop.</p>
           </CardContent>
         </Card>

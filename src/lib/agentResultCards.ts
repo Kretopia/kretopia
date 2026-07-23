@@ -99,7 +99,7 @@ export function deriveResultCards(steps: PlanStepLike[]): AgentResultCardData[] 
         cards.push({
           id, icon: "invoice",
           title: amount ? `Invoice drafted · ${currency} ${amount}` : "Invoice drafted",
-          subtitle: "Review and send from ThrivePay.",
+          subtitle: "Review and send from KrePay.",
           href: r.action_url ?? "/thrivepay",
         });
         break;

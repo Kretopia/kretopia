@@ -155,7 +155,7 @@ export async function stopAndSend(): Promise<VoiceTurnResult | VoiceTurnError> {
       message: data?.error === "rate_limited"
         ? "Slow down a sec — try again in a moment."
         : data?.error === "ai_credits_exhausted"
-          ? "Thrive Voice is out of credits this month."
+          ? "Kreto Voice is out of credits this month."
           : "Voice turn failed. Try again.",
       transcript: data?.transcript,
     };

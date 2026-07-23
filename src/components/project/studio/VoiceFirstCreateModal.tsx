@@ -570,7 +570,7 @@ export const VoiceFirstCreateModal = ({
                 Money involved?
               </p>
               <p className="text-xs text-muted-foreground">
-                If yes, we'll wire ThrivePay into the room — quotes, invoices, escrow.
+                If yes, we'll wire KrePay into the room — quotes, invoices, escrow.
                 If no, we keep it clean.
               </p>
               <div className="flex gap-2">

@@ -247,7 +247,7 @@ const QuickActionFab = () => {
     {
       id: "thrivepay",
       label: "Send / request payment",
-      sub: "ThrivePay",
+      sub: "KrePay",
       icon: Wallet,
       tone: "muted",
       onSelect: () => go("/thrivepay"),

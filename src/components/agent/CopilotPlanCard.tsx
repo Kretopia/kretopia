@@ -132,7 +132,7 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
   const resultCards = plan.status === "completed" ? deriveResultCards(plan.steps) : [];
 
   const headerLabel = isRunning
-    ? "Thrive is working"
+    ? "Kreto is working"
     : isProposed
       ? (plan.summary ?? "Multi-step plan")
       : (plan.summary ?? "Plan");

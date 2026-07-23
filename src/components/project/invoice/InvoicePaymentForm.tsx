@@ -50,26 +50,26 @@ const DEFAULT_TERMS = `Payment Terms:
 export function InvoicePaymentForm({ config, onChange }: InvoicePaymentFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [hasThrivePay, setHasThrivePay] = useState(false);
+  const [hasKrePay, setHasKrePay] = useState(false);
   const [savedBanks, setSavedBanks] = useState<SavedBank[]>([]);
   const [selectedBankId, setSelectedBankId] = useState<string>("");
   const [savingBank, setSavingBank] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
-      checkThrivePay();
+      checkKrePay();
       loadSavedBanks();
     }
   }, [user?.id]);
 
-  const checkThrivePay = async () => {
+  const checkKrePay = async () => {
     if (!user?.id) return;
     const { data } = await supabase
       .from("profiles")
       .select("stripe_account_id, stripe_account_status")
       .eq("user_id", user.id)
       .single();
-    setHasThrivePay(data?.stripe_account_status === "active");
+    setHasKrePay(data?.stripe_account_status === "active");
   };
 
   const loadSavedBanks = async () => {
@@ -160,22 +160,22 @@ export function InvoicePaymentForm({ config, onChange }: InvoicePaymentFormProps
         }}
         className="grid grid-cols-2 gap-2"
       >
-        {/* ThrivePay */}
+        {/* KrePay */}
         <Label
           htmlFor="pay-thrivepay"
           className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
             config.payment_method === "thrivepay" ? "border-primary bg-primary/5" : "border-muted hover:border-primary/30"
-          } ${!hasThrivePay ? "opacity-50" : ""}`}
+          } ${!hasKrePay ? "opacity-50" : ""}`}
         >
-          <RadioGroupItem value="thrivepay" id="pay-thrivepay" disabled={!hasThrivePay} />
+          <RadioGroupItem value="thrivepay" id="pay-thrivepay" disabled={!hasKrePay} />
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
               <Wallet className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-medium">ThrivePay</span>
-              {hasThrivePay && <CheckCircle2 className="h-3 w-3 text-green-500" />}
+              <span className="text-xs font-medium">KrePay</span>
+              {hasKrePay && <CheckCircle2 className="h-3 w-3 text-green-500" />}
             </div>
             <p className="text-[10px] text-muted-foreground">
-              {hasThrivePay ? "Instant secure payments" : "Set up in ThrivePay"}
+              {hasKrePay ? "Instant secure payments" : "Set up in KrePay"}
             </p>
           </div>
         </Label>

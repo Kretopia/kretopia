@@ -407,7 +407,7 @@ export function ThrivePromptHero() {
               exit={{ opacity: 0 }}
               className="mt-3 text-xs text-muted-foreground inline-flex items-center gap-1.5"
             >
-              <Loader2 className="h-3 w-3 animate-spin" /> Thrive is figuring out the right move…
+              <Loader2 className="h-3 w-3 animate-spin" /> Kreto is figuring out the right move…
             </motion.p>
           )}
         </AnimatePresence>

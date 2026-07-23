@@ -304,7 +304,7 @@ const AIChatTab = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask ThriveAI anything..."
+            placeholder="Ask KretoAI anything..."
             className="min-h-[44px] max-h-[120px] resize-none"
             rows={1}
             disabled={isLoading}

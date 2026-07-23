@@ -332,7 +332,7 @@ const ThriveDesk = () => {
         </div>
       </div>
 
-      {/* Thrive Copilot is mounted globally via ThriveAgentFab — no per-page launcher needed. */}
+      {/* Kreto is mounted globally via ThriveAgentFab — no per-page launcher needed. */}
 
       {/* Global ⌘K palette + voice command — available across the workspace */}
       <DeskCommandPalette

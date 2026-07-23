@@ -45,7 +45,7 @@ import { resultCardForAction } from "@/lib/agentActionPresentation";
  * - Persistent thread across surfaces (Desk, Pay, Match, Credits, Events, Profile…)
  *   — server stores both turns in ai_messages so reopening anywhere shows full history.
  * - Surface chip tells the model where the user opened it from, so replies stay
- *   relevant to the page in front of them ("On: ThrivePay · Invoice #1042").
+ *   relevant to the page in front of them ("On: KrePay · Invoice #1042").
  * - Greets the user by first name on every reply (server-side prompt).
  *
  * Hidden on auth, landing, and other unauthenticated/full-screen surfaces.
@@ -121,7 +121,7 @@ export const ThriveAgentFab = () => {
   const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
   // Map message index -> safe auto-executed result cards for that assistant turn.
   const [resultCardsByMsg, setResultCardsByMsg] = useState<Record<number, AgentResultCardData[]>>({});
-  // Map message index -> visible "what Thrive is doing" activity rows.
+  // Map message index -> visible "what Kreto is doing" activity rows.
   const [activityByMsg, setActivityByMsg] = useState<Record<number, AgentActivity[]>>({});
   // Map message index -> multi-step plans proposed for that assistant turn.
   const [plansByMsg, setPlansByMsg] = useState<Record<number, CopilotPlan[]>>({});
@@ -851,7 +851,7 @@ export const ThriveAgentFab = () => {
                     <div className="whitespace-pre-wrap">{m.content}</div>
                   )}
                 </div>
-                {/* Visible activity rows so users can see what Thrive is doing before a card appears */}
+                {/* Visible activity rows so users can see what Kreto is doing before a card appears */}
                 {m.role === "assistant" && activityByMsg[i]?.length ? (
                   <div className="space-y-1.5 max-w-[95%]">
                     {activityByMsg[i].map((item) => {

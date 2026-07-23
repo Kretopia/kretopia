@@ -132,7 +132,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
       className={cn(
         "sticky top-0 z-50",
         isLandingPage
-          ? "border-b border-white/10 bg-[#05070D] text-white"
+          ? "dark-surface border-b border-white/10 bg-[#05070D] text-white"
           : "border-b border-border/60 bg-background",
       )}
       role="navigation"

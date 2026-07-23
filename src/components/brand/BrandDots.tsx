@@ -44,16 +44,17 @@ export const BrandDots = ({
       aria-label={animated ? ariaLabel ?? "Loading" : undefined}
       aria-hidden={animated ? undefined : true}
     >
+      {/* Kretopia signature — Violet · Magenta · Amber (echoes the K-mark gradient) */}
       <span
-        className={cn(dot, "rounded-full bg-[#FF0A78]", animated && "animate-brand-dot")}
+        className={cn(dot, "rounded-full bg-[#9413D2]", animated && "animate-brand-dot")}
         style={animated ? { animationDelay: "0ms" } : undefined}
       />
       <span
-        className={cn(dot, "rounded-full bg-[#FFC72C]", animated && "animate-brand-dot")}
+        className={cn(dot, "rounded-full bg-[#E0179C]", animated && "animate-brand-dot")}
         style={animated ? { animationDelay: "150ms" } : undefined}
       />
       <span
-        className={cn(dot, "rounded-full bg-[#17D9D4]", animated && "animate-brand-dot")}
+        className={cn(dot, "rounded-full bg-[#FEA61A]", animated && "animate-brand-dot")}
         style={animated ? { animationDelay: "300ms" } : undefined}
       />
     </div>

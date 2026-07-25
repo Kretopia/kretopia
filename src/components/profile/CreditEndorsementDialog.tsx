@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { UserPlus, Send, Search, Loader2, ShieldCheck, Mail } from "lucide-react";
+import { UserPlus, Send, Search, Loader2, ShieldCheck, Mail, MessageCircle, Copy } from "lucide-react";
 import { getShareUrl } from "@/lib/constants";
 
 interface Credit {

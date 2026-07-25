@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { UserPlus, Send, Search, Loader2, ShieldCheck, Mail } from "lucide-react";
+import { UserPlus, Send, Search, Loader2, ShieldCheck, Mail, MessageCircle, Copy } from "lucide-react";
 import { getShareUrl } from "@/lib/constants";
 
 interface Credit {
@@ -239,23 +239,45 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
                 {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                 Create Verify Link
               </Button>
-              {guestVerifyLink && (
-                <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 space-y-2">
-                  <p className="text-xs font-semibold text-foreground">Send this private verify link</p>
-                  <p className="break-all text-[11px] text-muted-foreground">{guestVerifyLink}</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => {
-                      navigator.clipboard.writeText(`Can you verify my ${credit.role} credit on "${credit.project_name}" on Kretopia?\n\n${guestVerifyLink}`);
-                      toast.success('Copied verification message');
-                    }}
-                  >
-                    Copy message
-                  </Button>
-                </div>
-              )}
+              {guestVerifyLink && (() => {
+                const msg = `Can you verify my ${credit.role} credit on "${credit.project_name}" on Kretopia?\n\n${guestVerifyLink}`;
+                const encoded = encodeURIComponent(msg);
+                const emailSubject = encodeURIComponent(`Quick verify: my ${credit.role} on ${credit.project_name}`);
+                return (
+                  <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 space-y-2">
+                    <p className="text-xs font-semibold text-foreground">Send this private verify link</p>
+                    <p className="break-all text-[11px] text-muted-foreground">{guestVerifyLink}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        size="sm"
+                        className="w-full bg-[#25D366] hover:bg-[#25D366]/90 text-white"
+                        onClick={() => window.open(`https://wa.me/?text=${encoded}`, '_blank', 'noopener')}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => window.open(`mailto:${email || ''}?subject=${emailSubject}&body=${encoded}`, '_self')}
+                      >
+                        <Mail className="h-4 w-4 mr-1" /> Email
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          navigator.clipboard.writeText(msg);
+                          toast.success('Copied verification message');
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-1" /> Copy
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>

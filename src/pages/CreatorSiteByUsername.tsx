@@ -22,15 +22,11 @@ import type { CreatorSiteData } from "@/pages/CreatorSite";
  */
 const CreatorSiteByUsername = () => {
   const { username } = useParams<{ username: string }>();
+  const isHandle = !!username && username.startsWith("@");
   const navigate = useNavigate();
   const [data, setData] = useState<CreatorSiteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSite, setIsSite] = useState(false);
-
-  // @-prefixed URLs are creator handles, not vanity site slugs — delegate.
-  if (username && username.startsWith("@")) {
-    return <HandleResolver mode="handle" />;
-  }
 
   useSiteViewTracker(!loading && data ? data.profile.user_id : undefined);
 

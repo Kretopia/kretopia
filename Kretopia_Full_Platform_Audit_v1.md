@@ -314,3 +314,86 @@ _Scope: every pillar, every surface, current build state._
 ---
 
 _This document supersedes `Kretopia_Product_Bible_v0.1`, `Kretopia_Technical_Snapshot_v0.1`, and the older ThriveIN roadmap. Use this for YC W27 and all AI board briefings._
+
+---
+
+## Appendix: Unique Features Cheat Sheet (nothing left out)
+
+A tight, scannable list of the things no other creator platform has stitched together the way Kretopia does. Use this for YC, the AI board, and Kaen's onboarding.
+
+### Studio (workspace that morphs and remembers)
+- **Adaptive workspace** — `projects.workspace_type` (`general | content | campaign | music | podcast | event | brand_campaign`) rewrites the Studio Room to the shape of the work: Shotlist/Script/Calendar/Approve for Content; Brief/Matrix/Approve for Campaign; Release/Tracks/Splits/Checklist for Music; Episodes/Questions for Podcast.
+- **Studio Brain (EP 2.0)** — `studio-ingest` edge fn (Gemini 2.5 flash, tool-call `record_studio_brain`) is the unified router for every drop (PDF, image, voice note, email, link, deck, contract, budget, brief). Facts land in `studio_facts` + `studio_entities` per project.
+- **Brief drop zone** — "Feed the Studio Brain" surface at the top of every Studio, mobile + desktop.
+- **Smart Brief Builder** — text/voice → `elevate-brief` edge fn → review sheet with assignee dropdowns → auto-creates deliverables + tasks + notes + notifications.
+- **Voice-to-task** — mic FAB on Hub + Tasks composer → `voice-to-task` (Gemini 2.5 flash) extracts title/due/assignee with a review sheet.
+- **Scroll-native task feed** on mobile (Kanban on desktop) — blocking tasks pinned, done auto-collapses into a "Completed (X)" folder.
+- **The Vault + The Pad + Moodboards** — versioned files, notes, and moodboards with paste-link import (`fetch-link-metadata` OG scrape + YouTube oEmbed).
+- **Deliverables Board** with moodboard thumbnails on cards, WIP uploads to `project-files` bucket, quota charged to owner via `resolve_storage_owner`.
+- **Guest access + magic-link invites** — clients/collaborators land in the real Studio; `useStudioRole` gates Money (owner-only) and Kreto (no clients/guests).
+- **Live presence + typing** (Realtime broadcast) + @mention standout in Studio chat.
+- **Public Studio Recap** share pages.
+- **Desk Agent Watch** — `desk-agent-watch` edge fn reads chat + state and inserts `agent_proposals` (5 kinds) owners see as ProactiveCards with Accept/Dismiss and Realtime auto-injection.
+- **EP Document Engine** — `thrive-document-engine` (Gemini 2.5 Pro) writes decks/proposals/treatments/rate cards/moodboards grounded in Studio Brain memory. Public share `/deck/:token`.
+
+### Kreto (the agent with a brain and tools)
+- **9-tool tool-calling agent**: `draft_invoice`, `start_video_call`, `add_credit`, `send_dm`, `rsvp_event`, `vouch_credit`, `remember_memory`, `recall_memory`, `forget_memory` (Phase 4 memory tools registered in `orch_tool_registry`).
+- **Grounded long-term memory** — `thrive_memory` (vendors, sponsors, clients, rates) + `copilot_memories` (extracted stable preferences with pgvector dedupe via `match_copilot_memories`) injected into every reply.
+- **Studio Brain-aware EP** — Kreto writes docs using project facts + entities, not just prompts.
+- **Cross-surface Copilot** — one thread persists across Home, Desk, Pay, Match, Gigs, Profile, Credits, Events. Server hydrates history; client only sends the latest turn.
+- **Push-to-talk voice** — `thrive-voice-turn` edge fn (ElevenLabs STT → Lovable AI → ElevenLabs TTS) with tier-gated daily seconds via `consume_voice_seconds` RPC.
+- **Pricing Co-Pilot** — `ai-pricing-copilot` injects `thrive_memory` into the system prompt. "Scan Brief" button (camera/file → compressed JPEG → Gemini vision) drafts quotes as `draft_quote` tool.
+- **Community Call Brief pipeline** — `daily-recording-webhook` → `transcribe-call` (Gemini 2.5 flash tool-call) → posts brief to Circle chat, DMs attendees, suggests "Create a Studio" when ≥2 collaborators detected.
+- **Proactive nudges** — `desk-daily-nudge` cron at 14:00 UTC sends one consolidated push per user; ProactiveCards render pending proposals in-feed.
+- **Sponsor Radar + Opportunity Intel** — daily digest (08:00 UTC), Gemini 2.5 Pro tool-calling for sponsor leads, Auto-EPK refresh suggestions.
+- **Tier-gated daily caps** — `consume_copilot_message` RPC enforces Spark 20 / Pro 150 / Creator+ 500 / Founder 1000.
+
+### Scout (real gigs, not a job board)
+- `scout-gigs` (Firecrawl + Gemini) crawls web, LinkedIn, IG, ATSes for **real** creative gigs.
+- `draft-gig-application` writes tailored cover letters grounded in the user's Passport.
+- Daily cron 07:00 UTC. Scout Funnel instrumentation: scouted → opened → drafted → apply_clicked → applied → outcome (won/lost/ghosted).
+
+### Passport (the Creative Record)
+- `/@handle` public résumé + portfolio + press kit + rate cards + video intros.
+- **Stamps** (credits) — verified via **magic-link co-signs** (WhatsApp/Email/clipboard, no account required to verify).
+- **Vouches** (Gold/Amber ShieldCheck), Collab Graph, ThriveIN Verified badge.
+- Native Web Share API, EPK → PDF export (jsPDF multi-page), embeddable widget (HTML/Markdown/Shield.io).
+- Anchor Strip surfaces Standing/Stamps/Co-signs/Press Kit/Receipts/Wallet/Recent work/Verification across /profile, /thrivepay, /credits.
+
+### KrePay (frictionless money)
+- **ThriveIN Wallet (Phase 0)** — Stripe Connect controller with `stripe_dashboard='none'` → creators never leave Kretopia to onboard. Inline `<WalletAddBankSheet>`, no Stripe redirect.
+- **Pricing Co-Pilot** drafts quotes/invoices from a photographed brief.
+- **AI Receipt Scanner** (Gemini vision, client-side compression).
+- **Money Streaks** — `record_money_action` RPC tracks daily streak from invoice/expense/receipt actions.
+- **MoneyBrief** hero + `WeeklyMoneyInsights`, compact MoneyBrief on Home.
+- PowerTranz SPI for TTD/USD (Caribbean payment rails).
+
+### Sound Stages (spontaneous + scheduled rooms)
+- **Open Stage** — spontaneous video/audio, 1:1/group/audience.
+- **Speed Session** — admin-scheduled Hi-Right-Now-style 5-min rotating pairs, greedy matcher avoiding repeats.
+- Daily.co room prefixes `ss-` / `sp-`. Live captions (3-line rolling), highlight extraction, co-sign suggestions from transcripts.
+
+### Video Calls
+- Daily.co — project rooms (10p), 1:1 from chat, guest links (`/call/:token`), global ringer via Realtime broadcast.
+- Missed-call history (Calls tab in Messages), bandwidth fallback to audio, screen-share/recording toasts, Circle group calls.
+
+### Booking + Personal Rooms
+- Available times/days → client books → auto-provisions a Daily.co room with cloud recording + transcription on by default → Kreto processes the brief post-call and can propose a Studio.
+
+### Retention loops
+- **Unified Daily Streaks** (`daily_streaks` + `bump_streak` RPC: login/copilot/profile_update).
+- **Founding Member Quest Board** (locked at 135 OGs, live progress).
+- **Ambassador Program** (`?amb=CODE` attribution, tier rewards at 5/25/100/500).
+- **Frictionless content import** — paste-link to Vault (`project_files.is_link`, OG scrape).
+
+### Tone + surface polish
+- `useAccountTone` (creative | business) drives copy + variants across nav, empty states, profile actions.
+- `useTrinidadVoice` — geo + tone + opt-in — warm Caribbean voice on non-B2B surfaces only.
+- Signal Triad brand system (Magenta · Yellow · Teal), Midnight vibe locked, `<BrandDots>` loader, `<KretoAvatar>` with halo.
+
+### Infrastructure moat
+- **MCP server** — external agents can call `search-creators`, `get-my-passport`, `list-my-studios`, `list-scouted-gigs`, `list-my-credits` via Supabase OAuth (`OAuthConsent.tsx`).
+- **Dynamic OG image pipeline** for profiles/events/campaigns/gigs/decks.
+- **Sanitized staging export** (`scripts/sanitized-export.sh`) — hashes user IDs, scrubs PII across 20 core tables.
+- ~340 tables, 299 edge functions, Realtime + pgvector + RLS everywhere.
+

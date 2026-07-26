@@ -12,6 +12,7 @@ import { ProducerTemplate } from "@/components/creator-site/ProducerTemplate";
 import { AgencyTemplate } from "@/components/creator-site/AgencyTemplate";
 import { MinimalCleanTemplate } from "@/components/creator-site/MinimalCleanTemplate";
 import { PhotographerTemplate } from "@/components/creator-site/PhotographerTemplate";
+import HandleResolver from "@/pages/HandleResolver";
 import { useSiteViewTracker } from "@/hooks/useSiteAnalytics";
 import type { CreatorSiteData } from "@/pages/CreatorSite";
 
@@ -21,6 +22,7 @@ import type { CreatorSiteData } from "@/pages/CreatorSite";
  */
 const CreatorSiteByUsername = () => {
   const { username } = useParams<{ username: string }>();
+  const isHandle = !!username && username.startsWith("@");
   const navigate = useNavigate();
   const [data, setData] = useState<CreatorSiteData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,8 +40,8 @@ const CreatorSiteByUsername = () => {
 
   useEffect(() => {
     const resolve = async () => {
-      if (!username) {
-        navigate("/", { replace: true });
+      if (!username || isHandle) {
+        if (!username) navigate("/", { replace: true });
         return;
       }
 
@@ -125,6 +127,10 @@ const CreatorSiteByUsername = () => {
 
     resolve();
   }, [username, navigate]);
+
+  if (isHandle) {
+    return <HandleResolver mode="handle" />;
+  }
 
   if (loading) {
     return (

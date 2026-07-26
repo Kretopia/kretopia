@@ -357,9 +357,10 @@ const AppContent = () => {
             <Route path="/passport" element={<PassportDirectory />} />
             <Route path="/passport/comp-card" element={<ProtectedRoute><CompCardBuilder /></ProtectedRoute>} />
             <Route path="/passport/:passportId" element={<HandleResolver mode="passportId" />} />
-            <Route path="/@:handle/room" element={<PersonalRoom />} />
-            <Route path="/@:handle/book" element={<BookingPage />} />
-            <Route path="/@:handle" element={<HandleResolver mode="handle" />} />
+            {/* React Router v6 doesn't support literal-prefix param segments like "/@:handle"
+                — capture the full segment (which includes "@") and strip inside the component. */}
+            <Route path="/:handle/room" element={<PersonalRoom />} />
+            <Route path="/:handle/book" element={<BookingPage />} />
             <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />
 

@@ -12,6 +12,7 @@ import { ProducerTemplate } from "@/components/creator-site/ProducerTemplate";
 import { AgencyTemplate } from "@/components/creator-site/AgencyTemplate";
 import { MinimalCleanTemplate } from "@/components/creator-site/MinimalCleanTemplate";
 import { PhotographerTemplate } from "@/components/creator-site/PhotographerTemplate";
+import HandleResolver from "@/pages/HandleResolver";
 import { useSiteViewTracker } from "@/hooks/useSiteAnalytics";
 import type { CreatorSiteData } from "@/pages/CreatorSite";
 

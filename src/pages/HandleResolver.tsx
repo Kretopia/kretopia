@@ -12,7 +12,7 @@ type Mode = "handle" | "passportId";
 
 const HandleResolver = ({ mode }: { mode: Mode }) => {
   const params = useParams();
-  const raw = mode === "handle" ? params.handle : params.passportId;
+  const raw = mode === "handle" ? (params.handle ?? params.username) : params.passportId;
   const [status, setStatus] = useState<"loading" | "found" | "notfound">("loading");
   const [userId, setUserId] = useState<string | null>(null);
 

@@ -42,6 +42,7 @@ export default function BookingPage() {
   const [email, setEmail] = useState("");
   const [brief, setBrief] = useState("");
   const [booking, setBooking] = useState(false);
+  const [recordConsent, setRecordConsent] = useState(true);
   const [confirmed, setConfirmed] = useState<{ shareUrl: string; start: Date; durationMin: number } | null>(null);
 
   useEffect(() => {

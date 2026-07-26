@@ -20,6 +20,7 @@ interface Body {
   guest_name: string;
   guest_email: string;
   brief?: string;
+  record_consent?: boolean; // guest agrees to recording + Kreto transcription
 }
 
 serve(async (req) => {

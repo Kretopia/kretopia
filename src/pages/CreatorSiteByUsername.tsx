@@ -27,6 +27,11 @@ const CreatorSiteByUsername = () => {
   const [loading, setLoading] = useState(true);
   const [isSite, setIsSite] = useState(false);
 
+  // @-prefixed URLs are creator handles, not vanity site slugs — delegate.
+  if (username && username.startsWith("@")) {
+    return <HandleResolver mode="handle" />;
+  }
+
   useSiteViewTracker(!loading && data ? data.profile.user_id : undefined);
 
   // Hide platform nav when rendering a creator site

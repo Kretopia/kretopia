@@ -253,6 +253,17 @@ export default function BookingPage() {
             <Input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="h-11" />
             <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
             <Textarea placeholder="What's this about? (optional)" rows={3} value={brief} onChange={(e) => setBrief(e.target.value)} maxLength={400} />
+            <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={recordConsent}
+                onChange={(e) => setRecordConsent(e.target.checked)}
+                className="mt-0.5 h-3.5 w-3.5 accent-[hsl(var(--signal-teal))]"
+              />
+              <span>
+                Record this call so Kreto can transcribe it, pull action items, and suggest a Studio to keep the work moving. You can turn this off.
+              </span>
+            </label>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setSelectedSlot(null)} className="flex-1">Back</Button>
               <Button variant="hero" onClick={book} disabled={booking} className="flex-1">

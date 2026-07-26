@@ -128,6 +128,10 @@ const CreatorSiteByUsername = () => {
     resolve();
   }, [username, navigate]);
 
+  if (isHandle) {
+    return <HandleResolver mode="handle" />;
+  }
+
   if (loading) {
     return (
       <div className="min-h-dvh bg-background flex items-center justify-center">

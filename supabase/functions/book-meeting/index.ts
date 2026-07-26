@@ -100,6 +100,7 @@ serve(async (req) => {
     if (!DAILY_API_KEY) throw new Error("DAILY_API_KEY not configured");
     const exp = Math.floor(end.getTime() / 1000) + 30 * 60;
     const roomName = `book-${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
+    const recordConsent = body.record_consent !== false; // default ON
     const roomRes = await fetch(`${DAILY_API}/rooms`, {
       method: "POST",
       headers: {
@@ -116,6 +117,9 @@ serve(async (req) => {
           enable_screenshare: true,
           enable_knocking: true,
           enable_prejoin_ui: false,
+          ...(recordConsent
+            ? { enable_recording: "cloud", enable_transcription_storage: true }
+            : {}),
         },
       }),
     });
@@ -127,14 +131,14 @@ serve(async (req) => {
       .from("meetings")
       .insert({
         host_id: ownerId,
-        source: "profile",
+        source: "booking",
         title,
         room_name: roomName,
         room_url: room.url,
         scheduled_for: start.toISOString(),
         max_participants: 6,
-        recording_enabled: false,
-        transcript_enabled: false,
+        recording_enabled: recordConsent,
+        transcript_enabled: recordConsent,
         knocking_enabled: true,
       })
       .select("id, share_token")

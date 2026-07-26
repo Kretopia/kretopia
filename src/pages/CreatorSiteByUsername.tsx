@@ -40,8 +40,8 @@ const CreatorSiteByUsername = () => {
 
   useEffect(() => {
     const resolve = async () => {
-      if (!username) {
-        navigate("/", { replace: true });
+      if (!username || isHandle) {
+        if (!username) navigate("/", { replace: true });
         return;
       }
 

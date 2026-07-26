@@ -141,6 +141,7 @@ export default function BookingPage() {
           guest_name: name.trim(),
           guest_email: email.trim(),
           brief: brief.trim() || undefined,
+          record_consent: recordConsent,
         },
       });
       if (error || data?.error) throw new Error(data?.error || error?.message);

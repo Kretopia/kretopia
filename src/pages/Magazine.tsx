@@ -25,7 +25,7 @@ const Magazine = () => {
         <meta property="og:image" content="https://www.kretopia.com/og-image.png" />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@thrivein_io" />
+        <meta name="twitter:site" content="@kretopia" />
         <meta name="twitter:title" content="Creative Industry Magazine | Kretopia" />
         <meta name="twitter:description" content="Read stories, interviews and features from creatives shaping the industry." />
         <meta name="twitter:image" content="https://www.kretopia.com/og-image.png" />

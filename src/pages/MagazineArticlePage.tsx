@@ -115,7 +115,7 @@ const MagazineArticlePage = () => {
               "@type": "Organization",
               name: "Kretopia",
               url: "https://kretopia.com",
-              logo: { "@type": "ImageObject", url: "https://kretopia.com/lovable-uploads/thrivein-logo.png" },
+              logo: { "@type": "ImageObject", url: "https://kretopia.com/og-image.png" },
             },
             datePublished: article.created_at,
             dateModified: article.updated_at,

@@ -2,26 +2,27 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import kMarkAsset from "@/assets/brand/kretopia-k-mark.png.asset.json";
 import wordmarkAsset from "@/assets/brand/kretopia-wordmark.png.asset.json";
+import lockupAsset from "@/assets/brand/kretopia-lockup.png.asset.json";
 
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg";
   showBeta?: boolean;
   linkToHome?: boolean;
   className?: string;
-  /** Show only the text wordmark (uses full lockup image) */
+  /** Show only the wordmark image ("kretopia") */
   textOnly?: boolean;
   /** Show only the K mark icon */
   iconOnly?: boolean;
-  /** Use the full official lockup PNG (K + kretopia wordmark together). Overrides icon/textOnly. */
+  /** Use the full official lockup PNG (K + kretopia together). Overrides icon/textOnly. */
   lockup?: boolean;
-  /** Render for dark backgrounds (white wordmark) */
+  /** Kept for API back-compat; the official assets read correctly on light + dark. */
   onDark?: boolean;
 }
 
 const sizeConfig = {
-  sm: { mark: "h-7 w-7",  text: "text-lg",  gap: "gap-2",   lockup: "h-7"  },
-  md: { mark: "h-9 w-9",  text: "text-xl",  gap: "gap-2.5", lockup: "h-9"  },
-  lg: { mark: "h-12 w-12", text: "text-3xl", gap: "gap-3",   lockup: "h-12" },
+  sm: { mark: "h-7 w-7",   text: "h-5",  gap: "gap-2",   lockup: "h-7"  },
+  md: { mark: "h-9 w-9",   text: "h-6",  gap: "gap-2.5", lockup: "h-9"  },
+  lg: { mark: "h-12 w-12", text: "h-9",  gap: "gap-3",   lockup: "h-12" },
 } as const;
 
 export function BrandLogo({
@@ -32,7 +33,6 @@ export function BrandLogo({
   textOnly = false,
   iconOnly = false,
   lockup = false,
-  onDark = false,
 }: BrandLogoProps) {
   const cfg = sizeConfig[size];
 
@@ -40,9 +40,9 @@ export function BrandLogo({
     <span className={cn("flex items-center shrink-0", cfg.gap, className)}>
       {lockup ? (
         <img
-          src={wordmarkAsset.url}
+          src={lockupAsset.url}
           alt="Kretopia"
-          className={cn(cfg.lockup, "w-auto select-none")}
+          className={cn(cfg.lockup, "w-auto select-none object-contain")}
           draggable={false}
         />
       ) : (
@@ -56,16 +56,12 @@ export function BrandLogo({
             />
           )}
           {!iconOnly && (
-            <span
-              className={cn(
-                cfg.text,
-                "font-display font-black tracking-tight select-none lowercase",
-                onDark ? "text-white" : "text-foreground",
-              )}
-              style={{ letterSpacing: "-0.035em" }}
-            >
-              kretopia
-            </span>
+            <img
+              src={wordmarkAsset.url}
+              alt="kretopia"
+              className={cn(cfg.text, "w-auto select-none object-contain")}
+              draggable={false}
+            />
           )}
         </>
       )}

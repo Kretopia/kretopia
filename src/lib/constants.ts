@@ -6,7 +6,7 @@
 export const APP_URL = "https://www.kretopia.com";
 
 /**
- * Returns a canonical thrivein.io URL for the given path or absolute URL.
+ * Returns a canonical kretopia.com URL for the given path or absolute URL.
  * - Strips preview/staging hosts (lovable.app, lovableproject.com).
  * - Preserves search and hash.
  * - Use this for ANY link that will be shared OUTSIDE the platform

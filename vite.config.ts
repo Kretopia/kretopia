@@ -104,9 +104,9 @@ export default defineConfig(({ mode }) => {
           ],
         },
         manifest: {
-          name: "ThriveIN - Creative Collaboration",
-          short_name: "ThriveIN",
-          description: "Swipe to find your next creative collaborator",
+          name: "Kretopia — Where Creativity Lives",
+          short_name: "Kretopia",
+          description: "The Creative Economy OS. Passport · Scout · Kreto.",
           theme_color: "#7c3aed",
           background_color: "#0a0a0a",
           display: "standalone",

@@ -124,7 +124,7 @@ export const ShareableProfileCard = ({
     if (!canvas) return;
 
     const link = document.createElement("a");
-    link.download = `thrivein-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`;
+    link.download = `kretopia-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
     toast.success("Card downloaded!");
@@ -157,7 +157,7 @@ export const ShareableProfileCard = ({
         return;
       }
 
-      const file = new File([blob], `thrivein-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`, { type: "image/png" });
+      const file = new File([blob], `kretopia-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`, { type: "image/png" });
       const shareText = mode === "invite"
         ? `Join me on Kretopia! \n${qrUrl}`
         : `Check out my creative profile on Kretopia! \n${qrUrl}`;

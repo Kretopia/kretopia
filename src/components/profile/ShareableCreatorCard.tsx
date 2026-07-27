@@ -82,7 +82,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
         logging: false,
       });
       const link = document.createElement("a");
-      link.download = `${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}-thrivein.png`;
+      link.download = `${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}-kretopia.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
       toast({ title: "Card downloaded!", description: "Share it on your socials" });

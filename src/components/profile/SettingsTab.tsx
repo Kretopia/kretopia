@@ -151,7 +151,7 @@ export const SettingsTab = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `thrivein-data-${Date.now()}.json`;
+      a.download = `kretopia-data-${Date.now()}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

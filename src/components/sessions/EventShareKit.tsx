@@ -116,7 +116,7 @@ export const EventShareKit = ({ event, hostFirstName, attendeeCount, open, onOpe
 
   const downloadQR = () => {
     qrCode.current?.download({ 
-      name: `thrivein-event-${event.id.slice(0, 8)}`, 
+      name: `kretopia-event-${event.id.slice(0, 8)}`, 
       extension: "png" 
     });
     track("qr");

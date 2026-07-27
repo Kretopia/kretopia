@@ -129,7 +129,7 @@ Let me know if you have any questions 🙌`;
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `thrivein-unclaimed-profiles-${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `kretopia-unclaimed-profiles-${new Date().toISOString().split('T')[0]}.csv`);
     link.click();
     
     toast.success(`Exported ${filteredProfiles.length} profiles to CSV`);
@@ -244,7 +244,7 @@ Let me know if you have any questions 🙌`;
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = `thrivein-outreach-targets-${new Date().toISOString().split('T')[0]}.csv`;
+                link.download = `kretopia-outreach-targets-${new Date().toISOString().split('T')[0]}.csv`;
                 link.click();
                 toast.success(`Exported ${withSocial.length} profiles with social links`);
               }}

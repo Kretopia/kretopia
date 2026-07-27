@@ -265,7 +265,7 @@ const LeadsTab = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "thrivein-leads.csv";
+    a.download = "kretopia-leads.csv";
     a.click();
     URL.revokeObjectURL(url);
   };

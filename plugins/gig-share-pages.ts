@@ -18,7 +18,7 @@ interface GigRow {
   image_url: string | null;
 }
 
-const FALLBACK_OG_IMAGE = "https://www.thrivein.io/og-image.png";
+const FALLBACK_OG_IMAGE = "https://www.kretopia.com/og-image.png";
 
 export function gigSharePagesPlugin(options: GigSharePagesPluginOptions): Plugin {
   return {

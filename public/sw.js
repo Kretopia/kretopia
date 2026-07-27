@@ -25,7 +25,7 @@ self.addEventListener('push', function(event) {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'ThriveIN', options)
+    self.registration.showNotification(data.title || 'Kretopia', options)
   );
 });
 

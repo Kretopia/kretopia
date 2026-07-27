@@ -104,9 +104,9 @@ export default defineConfig(({ mode }) => {
           ],
         },
         manifest: {
-          name: "ThriveIN - Creative Collaboration",
-          short_name: "ThriveIN",
-          description: "Swipe to find your next creative collaborator",
+          name: "Kretopia — Where Creativity Lives",
+          short_name: "Kretopia",
+          description: "The Creative Economy OS. Passport · Scout · Kreto.",
           theme_color: "#7c3aed",
           background_color: "#0a0a0a",
           display: "standalone",
@@ -141,32 +141,32 @@ export default defineConfig(({ mode }) => {
       generateStaticSocialPages && magazineSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && profileSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && gigSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && eventSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && campaignSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && seoPagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
     ].filter(Boolean),
     resolve: {

@@ -23,7 +23,7 @@ interface CampaignRow {
   status: string;
 }
 
-const FALLBACK_OG_IMAGE = "https://www.thrivein.io/og-image.png";
+const FALLBACK_OG_IMAGE = "https://www.kretopia.com/og-image.png";
 
 export function campaignSharePagesPlugin(options: CampaignSharePagesPluginOptions): Plugin {
   return {

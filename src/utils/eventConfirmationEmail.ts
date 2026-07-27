@@ -77,7 +77,7 @@ export const sendEventConfirmationEmail = async ({
           eventDate,
           eventTime,
           eventVenue: venue,
-          eventUrl: `https://thrivein.io/event/${eventId}`,
+          eventUrl: `https://www.kretopia.com/event/${eventId}`,
           checkInToken: participant.check_in_token,
           isTicketed: !!isTicketed,
         },

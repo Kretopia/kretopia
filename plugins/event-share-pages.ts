@@ -23,7 +23,7 @@ interface EventRow {
   ticket_currency: string | null;
 }
 
-const FALLBACK_OG_IMAGE = "https://www.thrivein.io/og-image.png";
+const FALLBACK_OG_IMAGE = "https://www.kretopia.com/og-image.png";
 
 export function eventSharePagesPlugin(options: EventSharePagesPluginOptions): Plugin {
   return {

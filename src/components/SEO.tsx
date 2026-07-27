@@ -29,7 +29,7 @@ export const SEO = ({
   title = "Kretopia — Where Creativity Lives. Passport · Scout · Kreto.",
   description = "Kretopia is the Creative Economy OS. Build your Creative Passport, claim verified credits, find opportunities with Scout, and act with Kreto — your AI Executive Producer.",
   type = "website",
-  image = "https://www.thrivein.io/og-image.png",
+  image = "https://www.kretopia.com/og-image.png",
   url,
   profile
 }: SEOProps) => {
@@ -111,7 +111,7 @@ export const SEO = ({
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:site" content="@thrivein_io" />
+      <meta name="twitter:site" content="@kretopia" />
       <meta name="twitter:url" content={url || getShareUrl()} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />

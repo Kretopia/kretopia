@@ -3,12 +3,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { UserPlus, Send, Search, Loader2, ShieldCheck, Mail, MessageCircle, Copy } from "lucide-react";
+import { Send, Search, Loader2, ShieldCheck, Mail, MessageCircle, Copy, Check, UserPlus } from "lucide-react";
 import { getShareUrl } from "@/lib/constants";
 
 interface Credit {
@@ -23,18 +21,19 @@ interface CreditEndorsementDialogProps {
   onOpenChange: (open: boolean) => void;
   credit: Credit;
   userId: string;
+  requesterName?: string;
 }
 
-export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: CreditEndorsementDialogProps) {
-  const [method, setMethod] = useState<'platform' | 'email'>('platform');
+export function CreditEndorsementDialog({ open, onOpenChange, credit, userId, requesterName }: CreditEndorsementDialogProps) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [relationship, setRelationship] = useState('collaborator');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [relationship, setRelationship] = useState('');
   const [sending, setSending] = useState(false);
-  const [guestVerifyLink, setGuestVerifyLink] = useState('');
+  const [verifyLink, setVerifyLink] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const searchUsers = async (query: string) => {
     setSearchQuery(query);
@@ -49,7 +48,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
         .select('user_id, full_name, avatar_url, primary_role, username')
         .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
         .neq('user_id', userId)
-        .limit(5);
+        .limit(4);
       setSearchResults(data || []);
     } catch (e) {
       console.error(e);
@@ -58,7 +57,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
     }
   };
 
-  const sendEndorsementRequest = async (endorserId?: string, endorserEmail?: string, endorserName?: string) => {
+  const createLink = async (endorserId?: string, endorserEmail?: string, endorserName?: string) => {
     setSending(true);
     try {
       const { data, error } = await supabase.from('credit_endorsements').insert({
@@ -73,34 +72,27 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
 
       if (error) {
         if (error.code === '23505') {
-          toast.error('An endorsement request already exists for this person');
+          toast.error('You already sent a request to this person');
         } else {
           throw error;
         }
         return;
       }
 
-      const verifyLink = data?.token ? getShareUrl(`/credit-verify?token=${encodeURIComponent(data.token)}`) : '';
+      const link = data?.token ? getShareUrl(`/credit-verify?token=${encodeURIComponent(data.token)}`) : '';
 
-      if (verifyLink && endorserEmail) {
-        setGuestVerifyLink(verifyLink);
-        await navigator.clipboard.writeText(
-          `Can you verify my ${credit.role} credit on "${credit.project_name}" on Kretopia?\n\n${verifyLink}`
-        ).catch(() => undefined);
-        toast.success('Verification link ready', {
-          description: 'Copy it into WhatsApp, email, or DM to that person.',
-        });
+      if (endorserId && !endorserEmail) {
+        toast.success('Request sent!', { description: `${endorserName || 'They'} will see it in their inbox.` });
+        onOpenChange(false);
+        resetForm();
         return;
       }
 
-      toast.success('Verification request sent!', {
-        description: endorserName || endorserEmail || 'User will be notified',
-      });
-      onOpenChange(false);
-      resetForm();
-    } catch (error: any) {
-      console.error('Error sending endorsement request:', error);
-      toast.error('Failed to send request');
+      setVerifyLink(link);
+      toast.success('Verify link ready — share it now');
+    } catch (e: any) {
+      console.error('Error creating verify link:', e);
+      toast.error('Failed to create link');
     } finally {
       setSending(false);
     }
@@ -111,176 +103,176 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
     setSearchResults([]);
     setEmail('');
     setName('');
-    setRelationship('');
-    setGuestVerifyLink('');
+    setRelationship('collaborator');
+    setVerifyLink('');
+    setCopied(false);
+  };
+
+  const buildMessage = () => {
+    const who = requesterName || 'I';
+    const target = name.trim() ? `Hey ${name.trim().split(' ')[0]}, ` : '';
+    return `${target}${who === 'I' ? 'I' : who} added you to my "${credit.project_name}" project on Kretopia (${credit.role}). Can you take 5 seconds to confirm we worked together?\n\n${verifyLink}\n\n(No account needed — one tap.)`;
+  };
+
+  const shareTargets = () => {
+    if (!verifyLink) return null;
+    const msg = buildMessage();
+    const encoded = encodeURIComponent(msg);
+    const emailSubject = encodeURIComponent(`Quick confirm: ${credit.project_name}`);
+    return (
+      <div className="space-y-3">
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1.5">Send now</p>
+          <p className="text-xs text-muted-foreground break-all leading-relaxed">{msg}</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            className="w-full bg-[#25D366] hover:bg-[#25D366]/90 text-white h-11"
+            onClick={() => window.open(`https://wa.me/?text=${encoded}`, '_blank', 'noopener')}
+          >
+            <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full h-11"
+            onClick={() => window.open(`mailto:${email || ''}?subject=${emailSubject}&body=${encoded}`, '_self')}
+          >
+            <Mail className="h-4 w-4 mr-2" /> Email
+          </Button>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full"
+          onClick={() => {
+            navigator.clipboard.writeText(msg);
+            setCopied(true);
+            toast.success('Copied — paste anywhere');
+            setTimeout(() => setCopied(false), 1500);
+          }}
+        >
+          {copied ? <Check className="h-4 w-4 mr-2 text-primary" /> : <Copy className="h-4 w-4 mr-2" />}
+          {copied ? 'Copied' : 'Copy message + link'}
+        </Button>
+
+        <button
+          className="text-[11px] text-muted-foreground w-full text-center underline"
+          onClick={resetForm}
+        >
+          Send to someone else
+        </button>
+      </div>
+    );
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) resetForm(); }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            Request Verification
+            Get this verified
           </DialogTitle>
           <DialogDescription>
-            Ask a collaborator, client, guest, producer, or supervisor to confirm your role on <strong>{credit.project_name}</strong> ({credit.role}).
+            One tap for them to confirm your <strong>{credit.role}</strong> on <strong>{credit.project_name}</strong>. No account required.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <Button
-              variant={method === 'platform' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setMethod('platform')}
-              className="flex-1"
-            >
-              <UserPlus className="h-4 w-4 mr-1" />
-              Platform User
-            </Button>
-            <Button
-              variant={method === 'email' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setMethod('email')}
-              className="flex-1"
-            >
-              <Mail className="h-4 w-4 mr-1" />
-              Via Email
-            </Button>
-          </div>
-
-          {method === 'platform' ? (
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Label>Search for collaborator</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    className="pl-9"
-                    placeholder="Search by name or username..."
-                    value={searchQuery}
-                    onChange={(e) => searchUsers(e.target.value)}
-                  />
-                </div>
+        {verifyLink ? (
+          shareTargets()
+        ) : (
+          <div className="space-y-4">
+            {/* Quick search — existing Kretopia users */}
+            <div className="space-y-2">
+              <Label className="text-xs">Search Kretopia users</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  className="pl-9 h-10"
+                  placeholder="Name or @username"
+                  value={searchQuery}
+                  onChange={(e) => searchUsers(e.target.value)}
+                />
               </div>
-
               {searching && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Searching...
+                <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Searching...
                 </div>
               )}
-
               {searchResults.length > 0 && (
-                <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {searchResults.map((user) => (
+                <div className="space-y-1 max-h-40 overflow-y-auto rounded-lg border border-border/60 p-1">
+                  {searchResults.map((u) => (
                     <button
-                      key={user.user_id}
-                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors text-left"
-                      onClick={() => sendEndorsementRequest(user.user_id, undefined, user.full_name)}
+                      key={u.user_id}
+                      className="w-full flex items-center gap-2 p-2 rounded hover:bg-muted/60 text-left"
+                      onClick={() => createLink(u.user_id, undefined, u.full_name)}
                       disabled={sending}
                     >
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                        {user.avatar_url ? (
-                          <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                        {u.avatar_url ? (
+                          <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xs font-medium">{user.full_name?.[0]}</span>
+                          <span className="text-[10px] font-medium">{u.full_name?.[0]}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{user.full_name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user.primary_role || user.username}</p>
+                        <p className="text-xs font-medium truncate">{u.full_name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{u.primary_role || u.username}</p>
                       </div>
-                      <Send className="h-4 w-4 text-muted-foreground" />
+                      <Send className="h-3 w-3 text-muted-foreground" />
                     </button>
                   ))}
                 </div>
               )}
             </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Label>Their name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., John Smith" />
-              </div>
-              <div className="space-y-2">
-                <Label>Their email</Label>
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="colleague@example.com" />
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/50" /></div>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
+                <span className="bg-background px-2 text-muted-foreground">Or send outside Kretopia</span>
               </div>
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label>Their relationship to the project</Label>
-            <Select value={relationship} onValueChange={setRelationship}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select relationship" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="collaborator">Collaborator / Co-worker</SelectItem>
-                <SelectItem value="client">Client</SelectItem>
-                <SelectItem value="guest">Guest / Attendee</SelectItem>
-                <SelectItem value="supervisor">Supervisor / Director</SelectItem>
-                <SelectItem value="producer">Producer</SelectItem>
-                <SelectItem value="vendor">Vendor / Contractor</SelectItem>
-                <SelectItem value="audience">Audience / Attendee</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Guest — share to anyone */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Their name</Label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className="h-9" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Email <span className="text-muted-foreground">(optional)</span></Label>
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="them@..." className="h-9" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">How they know you</Label>
+              <Select value={relationship} onValueChange={setRelationship}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="collaborator">Collaborator / Co-worker</SelectItem>
+                  <SelectItem value="client">Client / Hired me</SelectItem>
+                  <SelectItem value="supervisor">Supervisor / Director</SelectItem>
+                  <SelectItem value="producer">Producer</SelectItem>
+                  <SelectItem value="guest">Guest / Attendee</SelectItem>
+                  <SelectItem value="vendor">Vendor / Contractor</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button
+              className="w-full h-10"
+              onClick={() => createLink(undefined, email || undefined, name)}
+              disabled={sending || !name.trim()}
+            >
+              {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserPlus className="h-4 w-4 mr-2" />}
+              Create verify link
+            </Button>
           </div>
-
-          {method === 'email' && (
-            <div className="space-y-3">
-              <Button
-                className="w-full"
-                onClick={() => sendEndorsementRequest(undefined, email, name)}
-                disabled={sending || !email}
-              >
-                {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                Create Verify Link
-              </Button>
-              {guestVerifyLink && (() => {
-                const msg = `Can you verify my ${credit.role} credit on "${credit.project_name}" on Kretopia?\n\n${guestVerifyLink}`;
-                const encoded = encodeURIComponent(msg);
-                const emailSubject = encodeURIComponent(`Quick verify: my ${credit.role} on ${credit.project_name}`);
-                return (
-                  <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 space-y-2">
-                    <p className="text-xs font-semibold text-foreground">Send this private verify link</p>
-                    <p className="break-all text-[11px] text-muted-foreground">{guestVerifyLink}</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Button
-                        size="sm"
-                        className="w-full bg-[#25D366] hover:bg-[#25D366]/90 text-white"
-                        onClick={() => window.open(`https://wa.me/?text=${encoded}`, '_blank', 'noopener')}
-                      >
-                        <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => window.open(`mailto:${email || ''}?subject=${emailSubject}&body=${encoded}`, '_self')}
-                      >
-                        <Mail className="h-4 w-4 mr-1" /> Email
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => {
-                          navigator.clipboard.writeText(msg);
-                          toast.success('Copied verification message');
-                        }}
-                      >
-                        <Copy className="h-4 w-4 mr-1" /> Copy
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );

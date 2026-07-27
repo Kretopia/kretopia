@@ -116,7 +116,7 @@ const FundCampaign = () => {
         {campaign.cover_image_url && (
           <meta property="og:image" content={campaign.cover_image_url} />
         )}
-        <link rel="canonical" href={`https://www.thrivein.io/fund/${campaign.slug}`} />
+        <link rel="canonical" href={`https://www.kretopia.com/fund/${campaign.slug}`} />
       </Helmet>
 
       {params.get("pledge") === "success" && (

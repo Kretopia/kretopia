@@ -16,7 +16,7 @@ const RESERVED = new Set([
   "site", "profile", "notifications", "messages", "discover", "circle",
   "wallet", "subscription", "spotlight", "magazine", "podcast", "fund",
   "ambassadors", "claim", "verify", "share", "support", "terms", "privacy",
-  "thrive", "thrivein", "www", "app", "root", "system",
+  "thrive", "thrivein", "kretopia", "www", "app", "root", "system",
 ]);
 
 const USERNAME_RE = /^[a-z0-9_-]{3,30}$/;

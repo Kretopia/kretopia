@@ -269,7 +269,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
         </div>
         <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-zinc-100 text-center">
           <a
-            href="https://www.thrivein.io"
+            href="https://www.kretopia.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] text-zinc-300 hover:text-zinc-500 transition-colors uppercase tracking-[0.3em] font-medium"

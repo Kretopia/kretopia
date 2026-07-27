@@ -429,7 +429,7 @@ export default function ClaimProfile() {
           <Card className="bg-muted/30">
             <CardContent className="py-4">
               <p className="text-sm text-muted-foreground text-center">
-                Don't recognize this profile? <a href="mailto:support@thrivein.io" className="text-primary hover:underline">Report an issue</a>
+                Don't recognize this profile? <a href="mailto:support@kretopia.com" className="text-primary hover:underline">Report an issue</a>
               </p>
             </CardContent>
           </Card>

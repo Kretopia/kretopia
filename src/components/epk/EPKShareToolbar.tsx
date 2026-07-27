@@ -22,7 +22,7 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId, epkPdfData }
 
   // Use the static OG-tagged share path so previews show avatar + name + role.
   // The page redirects instantly to /epk/:userId after the crawler reads meta.
-  const epkUrl = `https://www.thrivein.io/share/epk/${userId}/`;
+  const epkUrl = `https://www.kretopia.com/share/epk/${userId}/`;
   const shareText = `${profileName} — ${profileRole}\nCreative Passport · Verified on Kretopia\n\n`;
   const shortShareText = `${profileName} — ${profileRole} · Creative Passport on Kretopia`;
 

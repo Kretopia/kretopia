@@ -16,7 +16,7 @@ const FAQS = [
       "Kretopia.io is the Creative OS — an all-in-one professional network, portfolio builder, and workspace for artists, musicians, filmmakers, producers, and models.",
     points: [
       "A verified credit registry for every creative industry (film, music, fashion, events, design)",
-      "An auto-generated industry EPK at a custom URL (thrivein.io/your-name)",
+      "An auto-generated industry EPK at a custom URL (kretopia.com/your-name)",
       "ThriveDesk — a collaborative workspace with task boards, files, chat, and calls",
       "Built-in milestone payments and escrow so creatives get paid safely",
     ],
@@ -38,7 +38,7 @@ const FAQS = [
     intro:
       "An Industry EPK (Electronic Press Kit) is a professional, link-ready profile that Kretopia generates automatically from your account:",
     points: [
-      "Custom URL — thrivein.io/your-name — ready to share with clients, agents, labels, festivals, or casting directors",
+      "Custom URL — kretopia.com/your-name — ready to share with clients, agents, labels, festivals, or casting directors",
       "Pulls in your verified credits, portfolio media, rate card, reviews, and contact info",
       "Always up to date — when you add a new credit or project, your EPK updates instantly",
       "Mobile-first design that looks professional whether opened on phone, desktop, or shared in DMs",

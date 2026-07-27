@@ -78,7 +78,7 @@ const MagazineArticlePage = () => {
     );
   }
 
-  const canonicalUrl = `https://thrivein.io/magazine/${slug}`;
+  const canonicalUrl = `https://kretopia.com/magazine/${slug}`;
   const description = article.subtitle || article.content?.slice(0, 155).replace(/[#*>\n]/g, "") + "...";
 
   return (
@@ -114,8 +114,8 @@ const MagazineArticlePage = () => {
             publisher: {
               "@type": "Organization",
               name: "Kretopia",
-              url: "https://thrivein.io",
-              logo: { "@type": "ImageObject", url: "https://thrivein.io/lovable-uploads/thrivein-logo.png" },
+              url: "https://kretopia.com",
+              logo: { "@type": "ImageObject", url: "https://kretopia.com/og-image.png" },
             },
             datePublished: article.created_at,
             dateModified: article.updated_at,

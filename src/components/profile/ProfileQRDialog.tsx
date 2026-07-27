@@ -20,7 +20,7 @@ export const ProfileQRDialog = ({
   userAvatar,
 }: ProfileQRDialogProps) => {
   const { toast } = useToast();
-  const connectUrl = `https://www.thrivein.io/profile/${userId}`;
+  const connectUrl = `https://www.kretopia.com/profile/${userId}`;
 
   const handleCopyLink = async () => {
     try {
@@ -71,7 +71,7 @@ export const ProfileQRDialog = ({
 
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = `thrivein-${userName.replace(/\s+/g, "-")}.png`;
+      downloadLink.download = `kretopia-${userName.replace(/\s+/g, "-")}.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
     };

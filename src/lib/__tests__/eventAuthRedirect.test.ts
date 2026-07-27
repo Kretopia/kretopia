@@ -18,7 +18,7 @@ describe("event RSVP auth round-trip", () => {
 
   it("Auth returns guest to the event page after signup", () => {
     // Simulate Auth.tsx parsing the URL produced by buildEventAuthUrl
-    const url = new URL("https://thrivein.io" + buildEventAuthUrl(EVENT_ID));
+    const url = new URL("https://kretopia.com" + buildEventAuthUrl(EVENT_ID));
     const eventId = url.searchParams.get("event");
     expect(eventId).toBe(EVENT_ID);
 

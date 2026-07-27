@@ -365,7 +365,7 @@ const Settings = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `thrivein-data-${Date.now()}.json`;
+      a.download = `kretopia-data-${Date.now()}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -964,7 +964,7 @@ const Settings = () => {
                 </Link>
                 
                 <a 
-                  href="mailto:info@thrivein.io" 
+                  href="mailto:info@kretopia.com" 
                   className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
                   <Mail className="h-4 w-4" />
@@ -972,7 +972,7 @@ const Settings = () => {
                 </a>
                 
                 <a 
-                  href="mailto:support@thrivein.io" 
+                  href="mailto:support@kretopia.com" 
                   className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
                   <Mail className="h-4 w-4" />
@@ -1014,7 +1014,7 @@ const Settings = () => {
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">Follow us:</p>
                 <a 
-                  href="https://instagram.com/thrivein.io" 
+                  href="https://instagram.com/kretopia" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-foreground transition-colors"

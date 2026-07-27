@@ -63,7 +63,7 @@ export const DripCampaignTab = () => {
   const [campaignSubject, setCampaignSubject] = useState("");
   const [campaignBody, setCampaignBody] = useState("");
   const [campaignCta, setCampaignCta] = useState("Visit Kretopia →");
-  const [campaignCtaUrl, setCampaignCtaUrl] = useState("https://www.thrivein.io");
+  const [campaignCtaUrl, setCampaignCtaUrl] = useState("https://www.kretopia.com");
   const [campaignDailyLimit, setCampaignDailyLimit] = useState("95");
   const [creatingCampaign, setCreatingCampaign] = useState(false);
 

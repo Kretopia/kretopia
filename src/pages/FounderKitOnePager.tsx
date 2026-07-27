@@ -69,7 +69,7 @@ export default function FounderKitOnePager() {
       </Card>
 
       <div className="text-xs text-muted-foreground mt-6 flex justify-between">
-        <span>thrivein.io</span>
+        <span>kretopia.com</span>
         <span>Built for Future Caribbean · Bridge for Billions · Founder Institute</span>
       </div>
     </div>

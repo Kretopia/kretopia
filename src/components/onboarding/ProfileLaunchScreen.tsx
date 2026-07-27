@@ -53,7 +53,7 @@ export function ProfileLaunchScreen({
   const [copied, setCopied] = useState(false);
 
   const profileUrl = useMemo(
-    () => `https://www.thrivein.io/profile/${userId}`,
+    () => `https://www.kretopia.com/profile/${userId}`,
     [userId]
   );
 

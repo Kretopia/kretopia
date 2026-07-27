@@ -87,7 +87,7 @@ export function OutreachTab() {
   );
 
   const copyProfileLink = (userId: string) => {
-    const url = `https://www.thrivein.io/profile/${userId}`;
+    const url = `https://www.kretopia.com/profile/${userId}`;
     navigator.clipboard.writeText(url);
     toast.success("Profile link copied!");
   };
@@ -96,7 +96,7 @@ export function OutreachTab() {
     const message = `Hey ${profile.full_name?.split(' ')[0] || 'there'}! 
 I found your profile while building Kretopia - a new platform for creatives to connect and collaborate.
 
-We've already started building out your professional profile: https://www.thrivein.io/profile/${profile.user_id}
+We've already started building out your professional profile: https://www.kretopia.com/profile/${profile.user_id}
 
 Would love for you to claim it and join our community of ${profiles.length}+ creatives!
 
@@ -116,7 +116,7 @@ Let me know if you have any questions 🙌`;
       p.instagram_url || "",
       p.twitter_url || "",
       p.linkedin_url || "",
-      `https://www.thrivein.io/profile/${p.user_id}`,
+      `https://www.kretopia.com/profile/${p.user_id}`,
       p.profile_source || ""
     ]);
 
@@ -129,7 +129,7 @@ Let me know if you have any questions 🙌`;
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `thrivein-unclaimed-profiles-${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `kretopia-unclaimed-profiles-${new Date().toISOString().split('T')[0]}.csv`);
     link.click();
     
     toast.success(`Exported ${filteredProfiles.length} profiles to CSV`);
@@ -236,7 +236,7 @@ Let me know if you have any questions 🙌`;
                     `"${p.instagram_url || ""}"`,
                     `"${p.twitter_url || ""}"`,
                     `"${p.linkedin_url || ""}"`,
-                    `"https://www.thrivein.io/profile/${p.user_id}"`
+                    `"https://www.kretopia.com/profile/${p.user_id}"`
                   ].join(","))
                 ].join("\n");
 
@@ -244,7 +244,7 @@ Let me know if you have any questions 🙌`;
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = `thrivein-outreach-targets-${new Date().toISOString().split('T')[0]}.csv`;
+                link.download = `kretopia-outreach-targets-${new Date().toISOString().split('T')[0]}.csv`;
                 link.click();
                 toast.success(`Exported ${withSocial.length} profiles with social links`);
               }}
@@ -332,7 +332,7 @@ Let me know if you have any questions 🙌`;
                         <MessageSquare className="h-4 w-4" />
                       </Button>
                       <a 
-                        href={`https://www.thrivein.io/profile/${profile.user_id}`}
+                        href={`https://www.kretopia.com/profile/${profile.user_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

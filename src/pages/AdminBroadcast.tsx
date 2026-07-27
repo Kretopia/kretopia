@@ -78,7 +78,7 @@ Founder, Kretopia`);
             userName: 'Test User',
             notificationTitle: title,
             notificationMessage: message,
-            actionUrl: link.startsWith('/') ? `https://thrivein.io${link}` : (link || 'https://thrivein.io')
+            actionUrl: link.startsWith('/') ? `https://kretopia.com${link}` : (link || 'https://kretopia.com')
           }
         }
       });
@@ -152,7 +152,7 @@ Founder, Kretopia`);
                   userName: profile.full_name || 'Creator',
                   notificationTitle: title,
                   notificationMessage: message,
-                  actionUrl: link.startsWith('/') ? `https://thrivein.io${link}` : (link || 'https://thrivein.io')
+                  actionUrl: link.startsWith('/') ? `https://kretopia.com${link}` : (link || 'https://kretopia.com')
                 }
               }
             });

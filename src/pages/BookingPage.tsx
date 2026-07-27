@@ -189,7 +189,7 @@ export default function BookingPage() {
                 {confirmed.start.toLocaleString(undefined, { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · {confirmed.durationMin}m
               </p>
               <div className="grid grid-cols-2 gap-2 pt-2">
-                <Button variant="outline" onClick={() => downloadIcs(cal, "thrivein-call.ics")}>
+                <Button variant="outline" onClick={() => downloadIcs(cal, "kretopia-call.ics")}>
                   <CalendarDays className="h-3.5 w-3.5" /> .ics
                 </Button>
                 <a href={buildGoogleCalendarUrl(cal)} target="_blank" rel="noopener">

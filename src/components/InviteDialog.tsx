@@ -26,7 +26,7 @@ export const InviteDialog = ({ open, onOpenChange }: InviteDialogProps) => {
   const { toast } = useToast();
 
   const primaryInvite = inviteCodes.find(i => i.current_uses < i.max_uses) || inviteCodes[0];
-  const personalLink = primaryInvite ? `https://www.thrivein.io/join/${primaryInvite.invite_code}` : null;
+  const personalLink = primaryInvite ? `https://www.kretopia.com/join/${primaryInvite.invite_code}` : null;
   const totalUsed = inviteCodes.reduce((sum: number, i: any) => sum + (i.current_uses || 0), 0);
   const totalSlots = inviteCodes.reduce((sum: number, i: any) => sum + (i.max_uses || 0), 0);
 

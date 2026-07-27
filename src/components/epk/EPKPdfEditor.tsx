@@ -668,7 +668,7 @@ const EPKPreview = ({
 
       {/* Footer */}
       <div className="py-2 text-center text-[9px]" style={{ background: primary, color: "#fff" }}>
-        {branding?.tagline || `${profile.full_name} — EPK • thrivein.io`}
+        {branding?.tagline || `${profile.full_name} — EPK • kretopia.com`}
       </div>
     </div>
   );

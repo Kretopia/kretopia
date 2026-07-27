@@ -257,7 +257,7 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
         {/* Powered by Kretopia */}
         <div className="mt-12 md:mt-20 pt-8 border-t border-zinc-900 text-center">
           <a
-            href="https://www.thrivein.io"
+            href="https://www.kretopia.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-zinc-600 hover:text-[#ff00ff] transition-colors uppercase tracking-widest"

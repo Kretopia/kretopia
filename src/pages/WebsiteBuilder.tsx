@@ -583,7 +583,7 @@ const WebsiteBuilder = () => {
                     maxLength={30}
                   />
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                    thrivein.io/
+                    kretopia.com/
                   </span>
                 </div>
                 {usernameInput !== username && (

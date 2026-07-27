@@ -35,14 +35,14 @@ const CreativeCircle = () => {
       .limit(1)
       .then(({ data }) => {
         if (data?.[0]) {
-          setPersonalLink(`https://www.thrivein.io/join/${data[0].invite_code}`);
+          setPersonalLink(`https://www.kretopia.com/join/${data[0].invite_code}`);
         }
       }, () => {});
   }, [user]);
 
   const copyLink = async () => {
     if (!personalLink) return;
-    const msg = `Stop cold DMing strangers for collabs.\n\nThriveIN matches you with verified creatives who actually fit your style — portfolio-first, credits-verified.\n\nI'm already on. Join me:\n${personalLink}`;
+    const msg = `Stop cold DMing strangers for collabs.\n\nKretopia matches you with verified creatives who fit your style — portfolio-first, credits-verified.\n\nI'm already on. Join me:\n${personalLink}`;
     await navigator.clipboard.writeText(msg);
     setCopied(true);
     toast({ title: "Copied!", description: "Your invite link is ready to share" });

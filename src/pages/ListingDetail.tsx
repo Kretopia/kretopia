@@ -108,7 +108,7 @@ const ListingDetail = () => {
 
   const handleShare = async () => {
     const path = window.location.pathname;
-    const url = `https://www.thrivein.io${path}`;
+    const url = `https://www.kretopia.com${path}`;
     try {
       await navigator.share({ title: listing.title, url });
     } catch {

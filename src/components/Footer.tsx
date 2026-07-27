@@ -60,7 +60,7 @@ export const Footer = () => {
               </li>
               <li>
                 <a 
-                  href="mailto:info@thrivein.io" 
+                  href="mailto:info@kretopia.com" 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {t("footer.contactUs")}
@@ -68,7 +68,7 @@ export const Footer = () => {
               </li>
               <li>
                 <a 
-                  href="mailto:support@thrivein.io" 
+                  href="mailto:support@kretopia.com" 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {t("footer.support")}
@@ -107,7 +107,7 @@ export const Footer = () => {
           <div className="flex items-center gap-3">
             
             <a 
-              href="https://instagram.com/thrivein.io" 
+              href="https://instagram.com/kretopia" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 hover:text-foreground transition-colors"

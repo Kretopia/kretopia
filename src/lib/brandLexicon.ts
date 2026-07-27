@@ -7,7 +7,7 @@
  * Ecosystem:
  *   Thrive Collective  → parent company (legal / footer)
  *   Kretopia           → the platform (the Creative Economy OS)
- *   ThriveIN           → community, events, magazine, IRL pillar (sub-brand)
+ *   Community          → events, magazine, IRL pillar (lives inside Kretopia)
  *   Kreto              → the AI Executive Producer (the agent)
  *
  * Routes, tables, edge functions still use thrive_* / izzy_* / etc.
@@ -20,8 +20,8 @@ export const BRAND = {
   name: "Kretopia",
   parent: "Thrive Collective",
   parentLine: "Kretopia by Thrive Collective",
-  poweredByLine: "Kretopia — powered by ThriveIN",
-  community: "ThriveIN", // events, magazine, IRL, meetups, dinners
+  poweredByLine: "Kretopia",
+  community: "Community", // events, magazine, IRL, meetups, dinners
   domain: "kretopia.com",
 
   // ── Category & positioning ──────────────────────────────────────────────
@@ -31,7 +31,7 @@ export const BRAND = {
   headline: "Your Creative Career Starts Here.",
   searchPhrase: "Search the Creative Universe",
   investorPhrase: "The operating system for the global creative economy.",
-  taglineArchitecture: "Kretopia — powered by ThriveIN",
+  taglineArchitecture: "Kretopia by Thrive Collective",
   welcomeLine: "Welcome to Kretopia. Where Creativity Lives.",
   promise: "Build your Passport. Find opportunities. Collaborate. Get paid. Prove it.",
   futurePromise: "Get discovered. Get stamped. Get booked.",
@@ -110,7 +110,7 @@ export const BRAND = {
     soundstages: "SoundStages",  // live virtual rooms
     pay: "KrePay",
     kreto: "Kreto",
-    community: "ThriveIN",       // events, magazine, IRL
+    community: "Community",      // events, magazine, IRL
   },
 } as const;
 

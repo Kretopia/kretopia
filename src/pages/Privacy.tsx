@@ -163,7 +163,7 @@ const Privacy = () => {
               For questions about this Privacy Policy or to exercise your rights, contact us at:
             </p>
             <p>
-              Email: privacy@thrivein.io<br />
+              Email: privacy@kretopia.com<br />
               Address: [Your Business Address]
             </p>
           </section>
@@ -171,7 +171,7 @@ const Privacy = () => {
           <section>
             <h2>14. Data Protection Officer</h2>
             <p>
-              If you have concerns about our data practices, you can contact our Data Protection Officer at: dpo@thrivein.io
+              If you have concerns about our data practices, you can contact our Data Protection Officer at: dpo@kretopia.com
             </p>
           </section>
         </CardContent>

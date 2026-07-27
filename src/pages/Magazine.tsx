@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const Magazine = () => {
   const navigate = useNavigate();
-  const canonicalUrl = "https://thrivein.io/magazine";
+  const canonicalUrl = "https://kretopia.com/magazine";
 
   return (
     <PageTransition>
@@ -22,13 +22,13 @@ const Magazine = () => {
         <meta property="og:description" content="Read stories, interviews and features from creatives shaping the industry." />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Kretopia" />
-        <meta property="og:image" content="https://www.thrivein.io/og-image.png" />
+        <meta property="og:image" content="https://www.kretopia.com/og-image.png" />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@thrivein_io" />
+        <meta name="twitter:site" content="@kretopia" />
         <meta name="twitter:title" content="Creative Industry Magazine | Kretopia" />
         <meta name="twitter:description" content="Read stories, interviews and features from creatives shaping the industry." />
-        <meta name="twitter:image" content="https://www.thrivein.io/og-image.png" />
+        <meta name="twitter:image" content="https://www.kretopia.com/og-image.png" />
 
         <script type="application/ld+json">
           {JSON.stringify({
@@ -40,7 +40,7 @@ const Magazine = () => {
             "publisher": {
               "@type": "Organization",
               "name": "Kretopia",
-              "url": "https://thrivein.io"
+              "url": "https://kretopia.com"
             }
           })}
         </script>

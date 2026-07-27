@@ -65,10 +65,10 @@ export const ShareableProfileCard = ({
 
   // Profile mode: QR goes to profile page
   // Invite mode: QR goes to signup with invite code
-  const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
+  const profileUrl = `https://www.kretopia.com/profile/${profile.user_id}`;
   const signupUrl = inviteCode 
-    ? `https://www.thrivein.io/?code=${inviteCode}`
-    : `https://www.thrivein.io/`;
+    ? `https://www.kretopia.com/?code=${inviteCode}`
+    : `https://www.kretopia.com/`;
   
   const qrUrl = mode === "profile" ? profileUrl : signupUrl;
   
@@ -124,7 +124,7 @@ export const ShareableProfileCard = ({
     if (!canvas) return;
 
     const link = document.createElement("a");
-    link.download = `thrivein-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`;
+    link.download = `kretopia-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
     toast.success("Card downloaded!");
@@ -157,7 +157,7 @@ export const ShareableProfileCard = ({
         return;
       }
 
-      const file = new File([blob], `thrivein-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`, { type: "image/png" });
+      const file = new File([blob], `kretopia-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`, { type: "image/png" });
       const shareText = mode === "invite"
         ? `Join me on Kretopia! \n${qrUrl}`
         : `Check out my creative profile on Kretopia! \n${qrUrl}`;
@@ -310,7 +310,7 @@ export const ShareableProfileCard = ({
                       <span className="font-bold text-base tracking-tight text-primary">IN</span>
                     </div>
                     <p className="text-white/40 text-[8px]">
-                      thrivein.io
+                      kretopia.com
                     </p>
                     {mode === "invite" && inviteCode && (
                       <p className="text-white/50 text-[9px] mt-0.5">

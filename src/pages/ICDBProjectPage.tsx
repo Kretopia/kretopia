@@ -154,9 +154,9 @@ const ICDBProjectPage = () => {
       <Helmet>
         <title>{project.title}{project.year ? ` (${project.year})` : ""} — Verified Credits | Kretopia</title>
         <meta name="description" content={project.description || `${project.title} — ${formatType(project.type)}${project.year ? `, ${project.year}` : ""}. Full verified credits on Kretopia.`} />
-        <link rel="canonical" href={`https://www.thrivein.io/credits/project/${project.id}`} />
+        <link rel="canonical" href={`https://www.kretopia.com/credits/project/${project.id}`} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://www.thrivein.io/credits/project/${project.id}`} />
+        <meta property="og:url" content={`https://www.kretopia.com/credits/project/${project.id}`} />
         <meta property="og:title" content={`${project.title} — Verified Credits`} />
         <meta property="og:description" content={project.description || `${formatType(project.type)}${project.year ? ` · ${project.year}` : ""}${project.client_brand ? ` · ${project.client_brand}` : ""}`} />
         <script type="application/ld+json">{JSON.stringify({
@@ -167,13 +167,13 @@ const ICDBProjectPage = () => {
           genre: formatType(project.type),
           contentLocation: project.location || undefined,
           publisher: project.client_brand || project.platform || undefined,
-          url: `https://www.thrivein.io/credits/project/${project.id}`,
+          url: `https://www.kretopia.com/credits/project/${project.id}`,
           description: project.description || undefined,
           contributor: roles.map(r => ({
             "@type": "Person",
             name: r.is_claimed && r.profile ? r.profile.full_name : (r.person_name || "Unknown"),
             jobTitle: r.role_title,
-            url: r.is_claimed && r.claimed_by ? `https://www.thrivein.io/profile/${r.claimed_by}` : undefined,
+            url: r.is_claimed && r.claimed_by ? `https://www.kretopia.com/profile/${r.claimed_by}` : undefined,
           })),
         })}</script>
       </Helmet>

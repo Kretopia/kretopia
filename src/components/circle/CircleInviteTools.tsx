@@ -25,7 +25,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
 
-  const inviteLink = `https://www.thrivein.io/circle/${circleId}`;
+  const inviteLink = `https://www.kretopia.com/circle/${circleId}`;
 
   const copyLink = async () => {
     const text = `Join "${circleTitle}" on Kretopia\n${inviteLink}`;

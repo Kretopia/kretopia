@@ -44,7 +44,7 @@ const ROLE_PRESETS: Record<GuestRole, { label: string; hint: string; perms: { co
   contributor: { label: "Contributor", hint: "Full guest seat — comment, upload, calls.", perms: { comment: true, upload: true, call: true } },
 };
 
-const APP_URL = "https://www.thrivein.io";
+const APP_URL = "https://www.kretopia.com";
 
 const generateToken = () =>
   // 24 url-safe chars

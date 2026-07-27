@@ -119,7 +119,7 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
     "🧠 Unlimited Smart Briefs, Templates & Pricing Co-Pilot",
     "📊 Unlimited Invoicing & Milestone Payments + full P&L",
     "🔓 Unlimited Workspace & Project Tools",
-    "🌐 Creator Site — yourname.thrivein.app subdomain",
+    "🌐 Creator Site — yourname.kretopia.com subdomain",
     "🎨 3 premium site templates",
     "📄 EPK-to-PDF deck export",
     "Smart Match explanations · Verified badge · Advanced filters",

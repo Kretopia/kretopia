@@ -82,7 +82,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
         logging: false,
       });
       const link = document.createElement("a");
-      link.download = `${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}-thrivein.png`;
+      link.download = `${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}-kretopia.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
       toast({ title: "Card downloaded!", description: "Share it on your socials" });
@@ -272,7 +272,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
 
               <div className="mt-4 pt-3 border-t border-white/5">
                 <p className="text-white/30 text-[9px] tracking-widest">JOIN THE CREATIVE NETWORK</p>
-                <p className="text-primary text-[10px] font-medium mt-0.5">thrivein.io</p>
+                <p className="text-primary text-[10px] font-medium mt-0.5">kretopia.com</p>
               </div>
             </div>
           </div>

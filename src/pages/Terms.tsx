@@ -142,7 +142,7 @@ const Terms = () => {
           <section>
             <h2>12. Contact Information</h2>
             <p>
-              For questions about these Terms, please contact us at: legal@thrivein.io
+              For questions about these Terms, please contact us at: legal@kretopia.com
             </p>
           </section>
         </CardContent>

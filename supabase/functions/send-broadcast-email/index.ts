@@ -7,7 +7,7 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = adminGuardCorsHeaders;
 
-const baseUrl = 'https://www.thrivein.io';
+const baseUrl = 'https://www.kretopia.com';
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -25,9 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
     // Parse custom email content from request body
     const body = await req.json().catch(() => ({}));
     const {
-      subject = '📢 Update from ThriveIN',
+      subject = '📢 Update from Kretopia',
       body: emailBody = '',
-      ctaText = 'Visit ThriveIN →',
+      ctaText = 'Visit Kretopia →',
       ctaUrl = baseUrl,
     } = body;
 
@@ -74,7 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
         const emailHtml = `
           <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #ffffff; padding: 40px; border-radius: 16px;">
             <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #4338CA; font-size: 28px; margin: 0;">ThriveIN</h1>
+              <h1 style="color: #4338CA; font-size: 28px; margin: 0;">Kretopia</h1>
               <p style="color: #a0a0a0; font-size: 12px; margin-top: 4px;">Verified Credits · Real Gigs · Get Paid</p>
             </div>
             
@@ -90,7 +90,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <p style="margin-top: 30px; color: #a0a0a0;">
               — Ethan Auguste<br>
-              <strong style="color: #4338CA;">Founder, ThriveIN</strong>
+              <strong style="color: #4338CA;">Founder, Kretopia</strong>
             </p>
             
             <div style="border-top: 1px solid #333; margin-top: 30px; padding-top: 20px; text-align: center;">
@@ -102,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const { error: emailError } = await resend.emails.send({
-          from: "ThriveIN <noreply@thrivein.io>",
+          from: "Kretopia <noreply@thrivein.io>",
           to: [email],
           subject: subject,
           html: emailHtml,

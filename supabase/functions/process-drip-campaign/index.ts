@@ -5,7 +5,7 @@ import { requireAdminOrCron, adminGuardCorsHeaders } from "../_shared/admin-guar
 
 const corsHeaders = adminGuardCorsHeaders;
 
-const baseUrl = 'https://www.thrivein.io';
+const baseUrl = 'https://www.kretopia.com';
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -118,7 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
           segment_id,
           subject,
           body: email_body,
-          cta_text: cta_text || 'Visit ThriveIN →',
+          cta_text: cta_text || 'Visit Kretopia →',
           cta_url: cta_url || baseUrl,
           daily_limit: daily_limit || 95,
           total_contacts: count || 0,
@@ -212,7 +212,7 @@ const handler = async (req: Request): Promise<Response> => {
             const emailHtml = `
               <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #ffffff; padding: 40px; border-radius: 16px;">
                 <div style="text-align: center; margin-bottom: 30px;">
-                  <h1 style="color: #4338CA; font-size: 28px; margin: 0;">ThriveIN</h1>
+                  <h1 style="color: #4338CA; font-size: 28px; margin: 0;">Kretopia</h1>
                   <p style="color: #a0a0a0; font-size: 12px; margin-top: 4px;">Verified Credits · Real Gigs · Get Paid</p>
                 </div>
                 <p style="font-size: 18px; line-height: 1.6; margin-bottom: 20px;">Hi ${contact.name || 'Creative'},</p>
@@ -224,7 +224,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 <p style="margin-top: 30px; color: #a0a0a0;">
                   — Ethan Auguste<br>
-                  <strong style="color: #4338CA;">Founder, ThriveIN</strong>
+                  <strong style="color: #4338CA;">Founder, Kretopia</strong>
                 </p>
                 <div style="border-top: 1px solid #333; margin-top: 30px; padding-top: 20px; text-align: center;">
                   <p style="color: #666; font-size: 12px; margin: 0;">
@@ -235,7 +235,7 @@ const handler = async (req: Request): Promise<Response> => {
             `;
 
             const { error: emailError } = await resend.emails.send({
-              from: "ThriveIN <noreply@thrivein.io>",
+              from: "Kretopia <noreply@thrivein.io>",
               to: [contact.email],
               subject: campaign.subject,
               html: emailHtml,

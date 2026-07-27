@@ -67,19 +67,19 @@ interface EmailRequest {
 }
 
 const generateEmailContent = (type: string, data: any, unsubscribeToken?: string) => {
-  const baseUrl = 'https://thrivein.io';
+  const baseUrl = 'https://www.kretopia.com';
   const unsubscribeUrl = unsubscribeToken ? `${baseUrl}/unsubscribe?token=${unsubscribeToken}` : `${baseUrl}/notification-settings`;
   const unsubscribeFooter = `<p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #E5E7EB; padding-top: 15px;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #4338CA;">Unsubscribe</a> or manage your <a href="${baseUrl}/notification-settings" style="color: #4338CA;">notification preferences</a>.</p>`;
   
   const emailWrapper = (content: string) => `
     <div style="font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #ffffff;">
       <div style="padding: 32px 28px 0;">
-        <img src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png" width="48" height="48" alt="ThriveIN" style="margin-bottom: 24px;" />
+        <img src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png" width="48" height="48" alt="Kretopia" style="margin-bottom: 24px;" />
       </div>
       ${content}
       <div style="padding: 20px 28px; text-align: center;">
         <p style="color: #9CA3AF; font-size: 12px; margin: 0;">Verified Credits · Real Gigs · Get Paid</p>
-        <p style="color: #9CA3AF; font-size: 12px; margin: 5px 0 0 0;">© ThriveIN</p>
+        <p style="color: #9CA3AF; font-size: 12px; margin: 5px 0 0 0;">© Kretopia</p>
       </div>
       <div style="padding: 0 28px 20px;">
         ${unsubscribeFooter}
@@ -90,11 +90,11 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
   switch (type) {
     case 'welcome':
       return {
-        subject: "Welcome to ThriveIN — Here's How to Get Started",
+        subject: "Welcome to Kretopia — Here's How to Get Started",
         html: emailWrapper(`
           <div style="padding: 0 28px 28px;">
             <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">Welcome, ${data.userName}</h1>
-            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 24px;">You're now part of the professional creative network. Here's how to make the most of ThriveIN.</p>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 24px;">You're now part of the professional creative network. Here's how to make the most of Kretopia.</p>
             
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
               <tr><td style="padding: 12px 0; border-bottom: 1px solid #F3F4F6;">
@@ -190,7 +190,7 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
         subject: `Your weekly roundup`,
         html: emailWrapper(`
           <div style="padding: 0 28px 28px;">
-            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">This week on ThriveIN</h1>
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">This week on Kretopia</h1>
             <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName}, here's what's been happening:</p>
             ${opportunitiesList ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">${opportunitiesList}</table>` : '<p style="color: #606068; font-size: 14px;">Check out new creators and gigs this week.</p>'}
             <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Explore</a>
@@ -262,7 +262,7 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
         html: emailWrapper(`
           <div style="padding: 0 28px 28px;">
             <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">You're almost there</h1>
-            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName || 'there'}, ${data.stepMessage || "you started setting up your ThriveIN profile but haven't finished yet."}</p>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName || 'there'}, ${data.stepMessage || "you started setting up your Kretopia profile but haven't finished yet."}</p>
             <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px; margin: 0 0 24px; border-radius: 0 8px 8px 0;">
               <p style="margin: 0; color: #92400E; font-size: 14px;">Complete profiles get <strong>5x more visibility</strong>. Creatives are searching for talent like you right now.</p>
             </div>
@@ -273,11 +273,11 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
     
     case 'general':
       return {
-        subject: data.notificationTitle || "Update from ThriveIN",
+        subject: data.notificationTitle || "Update from Kretopia",
         html: `
           <div style="font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0B0D14; color: #E5E7EB;">
             <div style="padding: 32px 28px 8px;">
-              <img src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png" width="44" height="44" alt="ThriveIN" style="display:block; margin-bottom: 20px;" />
+              <img src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png" width="44" height="44" alt="Kretopia" style="display:block; margin-bottom: 20px;" />
               <div style="display:inline-block; padding: 4px 10px; background: rgba(217,255,0,0.12); color: #D9FF00; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 999px; margin-bottom: 16px;">What's new</div>
               <h1 style="font-size: 28px; line-height: 1.2; font-weight: 800; color: #ffffff; margin: 0 0 24px;">${data.notificationTitle || "Platform Update"}</h1>
             </div>
@@ -286,11 +286,11 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
             </div>
             ${data.actionUrl ? `
             <div style="padding: 24px 28px 8px;">
-              <a href="${data.actionUrl}" style="display: inline-block; padding: 14px 28px; background: #D9FF00; color: #0B0D14; text-decoration: none; border-radius: 999px; font-weight: 700; font-size: 15px;">Open ThriveIN →</a>
+              <a href="${data.actionUrl}" style="display: inline-block; padding: 14px 28px; background: #D9FF00; color: #0B0D14; text-decoration: none; border-radius: 999px; font-weight: 700; font-size: 15px;">Open Kretopia →</a>
             </div>` : ''}
             <div style="padding: 32px 28px 16px; border-top: 1px solid #1F2937; margin-top: 32px;">
               <p style="color: #6B7280; font-size: 12px; margin: 0;">Verified Credits · Real Gigs · Get Paid</p>
-              <p style="color: #6B7280; font-size: 12px; margin: 6px 0 0 0;">© ThriveIN</p>
+              <p style="color: #6B7280; font-size: 12px; margin: 6px 0 0 0;">© Kretopia</p>
               <p style="color: #6B7280; font-size: 12px; margin-top: 14px;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #D9FF00;">Unsubscribe</a> or manage your <a href="${baseUrl}/notification-settings" style="color: #D9FF00;">preferences</a>.</p>
             </div>
           </div>
@@ -299,7 +299,7 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
 
     default:
       return {
-        subject: "Notification from ThriveIN",
+        subject: "Notification from Kretopia",
         html: emailWrapper(`
           <div style="padding: 0 28px 28px;">
             <p style="font-size: 15px; color: #606068;">You have a new notification.</p>
@@ -408,7 +408,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending ${type} email to ${to}`);
 
     const emailResponse = await resend.emails.send({
-      from: "ThriveIN <noreply@thrivein.io>",
+      from: "Kretopia <noreply@thrivein.io>",
       to: [to],
       subject,
       html,

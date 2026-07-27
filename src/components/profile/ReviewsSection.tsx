@@ -54,7 +54,7 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
 
       if (error) throw error;
 
-      const reviewLink = `https://www.thrivein.io/submit-review?token=${data.share_token}`;
+      const reviewLink = `https://www.kretopia.com/submit-review?token=${data.share_token}`;
       
       const copyMessage = `Hi there,
 

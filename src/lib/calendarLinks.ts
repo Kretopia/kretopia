@@ -51,7 +51,7 @@ function icsEscape(s: string): string {
 /** Build a minimal valid .ics file body. Works with Apple Calendar, Outlook, etc. */
 export function buildIcsString(e: CalendarEventInput): string {
   const mins = e.durationMinutes ?? 60;
-  const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}@thrivein.io`;
+  const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}@kretopia.com`;
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",

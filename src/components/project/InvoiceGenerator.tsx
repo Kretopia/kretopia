@@ -770,7 +770,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
 
       // Clickable "Pay with KrePay" link (only for unpaid invoices, not quotes)
       if (!isQuoteDoc && invoice.status !== "paid") {
-        const payUrl = `https://www.thrivein.io/pay/invoice/${invoice.id}`;
+        const payUrl = `https://www.kretopia.com/pay/invoice/${invoice.id}`;
         doc.setFillColor(rgb[0], rgb[1], rgb[2]);
         doc.roundedRect(20, 270, 75, 10, 2, 2, "F");
         doc.setTextColor(255, 255, 255);

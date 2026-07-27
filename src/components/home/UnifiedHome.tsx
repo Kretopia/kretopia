@@ -444,7 +444,7 @@ export const UnifiedHome = () => {
       <SEO
         title="Kretopia — Where Creativity Lives. The Creative Economy OS."
         description="Kretopia is the Creative Economy OS. Build your Creative Passport, find opportunities, meet collaborators, and get paid — with Kreto, your AI Executive Producer."
-        url="https://www.thrivein.io/"
+        url="https://www.kretopia.com/"
       />
 
       {/* ═══════════ GUEST LANDING — Kretopia v1 (now canonical) ═══════════ */}

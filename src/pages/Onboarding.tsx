@@ -718,7 +718,7 @@ export default function Onboarding() {
                   )}
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-snug">
-                  Your permanent Passport URL: <span className="font-mono text-foreground">thrivein.io/{username || "your-handle"}</span>
+                  Your permanent Passport URL: <span className="font-mono text-foreground">kretopia.com/{username || "your-handle"}</span>
                 </p>
               </div>
 

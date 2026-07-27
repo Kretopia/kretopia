@@ -339,7 +339,7 @@ const EventPage = () => {
         description={event.description?.slice(0, 155) || `Join ${creator?.full_name || 'a creator'} for ${event.title} on Kretopia`}
         type="article"
         image={event.cover_image_url || undefined}
-        url={`https://thrivein.io/event/${eventId}`}
+        url={`https://kretopia.com/event/${eventId}`}
       />
       {/* JSON-LD Event Schema */}
       <Helmet>

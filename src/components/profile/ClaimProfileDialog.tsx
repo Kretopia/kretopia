@@ -604,7 +604,7 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                 </p>
               </div>
               <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-                <p>Need help? Email us at <a href="mailto:support@thrivein.io" className="text-primary hover:underline">support@thrivein.io</a> with proof of identity for manual review.</p>
+                <p>Need help? Email us at <a href="mailto:support@kretopia.com" className="text-primary hover:underline">support@kretopia.com</a> with proof of identity for manual review.</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleClose} className="flex-1">

@@ -337,7 +337,7 @@ export function UnclaimedProfilesTab() {
   };
 
   const copyProfileLink = (userId: string) => {
-    const link = `https://www.thrivein.io/profile/${userId}`;
+    const link = `https://www.kretopia.com/profile/${userId}`;
     navigator.clipboard.writeText(link);
     toast.success('Profile link copied!');
   };

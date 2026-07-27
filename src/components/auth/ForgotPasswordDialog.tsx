@@ -31,7 +31,7 @@ export const ForgotPasswordDialog = ({ open, onOpenChange }: ForgotPasswordDialo
     }
 
     setResetLoading(true);
-    const siteUrl = import.meta.env.VITE_SITE_URL || 'https://thrivein.io';
+    const siteUrl = import.meta.env.VITE_SITE_URL || 'https://kretopia.com';
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
       redirectTo: `${siteUrl}/auth?reset=true`,
     });

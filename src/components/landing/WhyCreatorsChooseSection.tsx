@@ -4,7 +4,7 @@ import { ArrowRight, Award, Brain, MessageSquare, Verified, DollarSign, Crown, G
 export const WhyCreatorsChooseSection = () => {
   const features = [
     { icon: <Award className="h-5 w-5" />, title: "ThriveCredits", text: "Claim your work on any project — AI + peer verification builds a portable reputation that lasts" },
-    { icon: <Globe className="h-5 w-5" />, title: "Creator Websites", text: "Launch your own landing page at yourname.thrivein.io — no coding, premium templates included" },
+    { icon: <Globe className="h-5 w-5" />, title: "Creator Websites", text: "Launch your own landing page at yourname.kretopia.com — no coding, premium templates included" },
     { icon: <Brain className="h-5 w-5" />, title: "Smart Match", text: "Swipe through portfolios, get matched by style, skills & location" },
     { icon: <FolderKanban className="h-5 w-5" />, title: "Project Management", text: "Tasks, files, milestones & team chat in one workspace — your creative Slack + Trello" },
     { icon: <DollarSign className="h-5 w-5" />, title: "Invoicing & Payments", text: "Send invoices, set milestone payments, track expenses, P&L reports & get paid securely via escrow" },

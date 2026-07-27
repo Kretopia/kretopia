@@ -69,7 +69,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
   }
 
   const articleSlugOrId = article.slug || article.id;
-  const shareUrl = `https://www.thrivein.io/magazine/${articleSlugOrId}`;
+  const shareUrl = `https://www.kretopia.com/magazine/${articleSlugOrId}`;
   // Use the live edge function for social shares — always fresh OG tags, no rebuild needed.
   const socialShareUrl = `https://kwmcocsitwssrtzkdojh.supabase.co/functions/v1/og-magazine?slug=${encodeURIComponent(articleSlugOrId)}`;
   const shareTitle = article.title;

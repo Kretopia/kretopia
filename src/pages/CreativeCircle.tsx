@@ -35,7 +35,7 @@ const CreativeCircle = () => {
       .limit(1)
       .then(({ data }) => {
         if (data?.[0]) {
-          setPersonalLink(`https://www.thrivein.io/join/${data[0].invite_code}`);
+          setPersonalLink(`https://www.kretopia.com/join/${data[0].invite_code}`);
         }
       }, () => {});
   }, [user]);

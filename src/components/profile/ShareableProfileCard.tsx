@@ -65,10 +65,10 @@ export const ShareableProfileCard = ({
 
   // Profile mode: QR goes to profile page
   // Invite mode: QR goes to signup with invite code
-  const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
+  const profileUrl = `https://www.kretopia.com/profile/${profile.user_id}`;
   const signupUrl = inviteCode 
-    ? `https://www.thrivein.io/?code=${inviteCode}`
-    : `https://www.thrivein.io/`;
+    ? `https://www.kretopia.com/?code=${inviteCode}`
+    : `https://www.kretopia.com/`;
   
   const qrUrl = mode === "profile" ? profileUrl : signupUrl;
   
@@ -310,7 +310,7 @@ export const ShareableProfileCard = ({
                       <span className="font-bold text-base tracking-tight text-primary">IN</span>
                     </div>
                     <p className="text-white/40 text-[8px]">
-                      thrivein.io
+                      kretopia.com
                     </p>
                     {mode === "invite" && inviteCode && (
                       <p className="text-white/50 text-[9px] mt-0.5">

@@ -274,7 +274,7 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
     doc.setFontSize(6.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...C.dimmed);
-    doc.text('thrivein.io', MARGIN, PAGE_H - 3.5);
+    doc.text('kretopia.com', MARGIN, PAGE_H - 3.5);
     // Page number
     doc.text(`${num} / ${total}`, PAGE_W - MARGIN, PAGE_H - 3.5, { align: 'right' });
   };
@@ -798,7 +798,7 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
   }
 
   // EPK link as clickable button
-  const epkUrl = `https://thrivein.io/epk/${encodeURIComponent(profile.full_name?.toLowerCase().replace(/\s+/g, '-') || 'creator')}`;
+  const epkUrl = `https://kretopia.com/epk/${encodeURIComponent(profile.full_name?.toLowerCase().replace(/\s+/g, '-') || 'creator')}`;
   const btnW = 70;
   const btnH = 10;
   const btnX = PAGE_W / 2 - btnW / 2;

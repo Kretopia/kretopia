@@ -207,7 +207,7 @@ export const SiteSetupWizard = ({ open, onOpenChange, onComplete }: SiteSetupWiz
                 maxLength={30}
               />
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                thrivein.io/
+                kretopia.com/
               </span>
             </div>
             {username.length >= 3 && (
@@ -232,7 +232,7 @@ export const SiteSetupWizard = ({ open, onOpenChange, onComplete }: SiteSetupWiz
           <div className="p-4 rounded-lg bg-muted/50 border border-border">
             <p className="text-xs text-muted-foreground mb-1">Your site will be live at:</p>
             <p className="text-sm font-mono font-medium">
-              thrivein.io/{username || "your-username"}
+              kretopia.com/{username || "your-username"}
             </p>
           </div>
 
@@ -276,7 +276,7 @@ export const SiteSetupWizard = ({ open, onOpenChange, onComplete }: SiteSetupWiz
             </div>
             <div className="flex justify-between py-2 border-b border-border">
               <span className="text-muted-foreground">URL</span>
-              <span className="font-mono text-xs">thrivein.io/{username}</span>
+              <span className="font-mono text-xs">kretopia.com/{username}</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="text-muted-foreground">Status</span>

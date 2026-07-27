@@ -180,7 +180,7 @@ export const downloadIcs = (event: IcsEvent) => {
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${event.id}@thrivein.io`,
+    `UID:${event.id}@kretopia.com`,
     `DTSTAMP:${dtStamp}`,
     `DTSTART:${dtStart}`,
     `DTEND:${dtEnd}`,

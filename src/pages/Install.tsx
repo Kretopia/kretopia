@@ -23,7 +23,7 @@ const Install = () => {
   // Default invite code for OG users
   const defaultInviteCode = "THRIVEOGS";
   // Use custom domain
-  const baseUrl = "https://thrivein.io";
+  const baseUrl = "https://kretopia.com";
   const joinUrl = `${baseUrl}/join/${defaultInviteCode}`;
   useEffect(() => {
     // Track install page view

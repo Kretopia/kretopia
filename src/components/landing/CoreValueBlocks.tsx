@@ -22,7 +22,7 @@ export const CoreValueBlocks = () => {
       icon: FileText,
       eyebrow: "Pillar 2",
       title: "Instant Industry EPK Portfolios",
-      body: "Every Kretopia profile auto-generates a professional Electronic Press Kit (EPK) at a custom URL — thrivein.io/your-name. Your verified credits, portfolio media, rates, reviews, and contact info ship in one link, ready to send to clients, agents, festivals, or labels.",
+      body: "Every Kretopia profile auto-generates a professional Electronic Press Kit (EPK) at a custom URL — kretopia.com/your-name. Your verified credits, portfolio media, rates, reviews, and contact info ship in one link, ready to send to clients, agents, festivals, or labels.",
       bullets: [
         "Auto-generated EPK with custom, sharable URL",
         "Portfolio media, rate card, reviews, and verified credits in one place",

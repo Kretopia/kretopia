@@ -17,7 +17,7 @@ interface Props {
   visibility?: "public" | "unlisted" | "private";
 }
 
-const APP_URL = "https://www.thrivein.io";
+const APP_URL = "https://www.kretopia.com";
 
 /**
  * Host-only — invite people to a private/unlisted curated stage by email

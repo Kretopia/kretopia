@@ -72,7 +72,7 @@ const EventConfirmed = () => {
     const ics = [
       "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Kretopia//Event//EN",
       "BEGIN:VEVENT",
-      `UID:${event.id}@thrivein.io`,
+      `UID:${event.id}@kretopia.com`,
       `DTSTAMP:${dt(new Date().toISOString())}`,
       `DTSTART:${dt(event.start_time)}`,
       `DTEND:${dt(end)}`,

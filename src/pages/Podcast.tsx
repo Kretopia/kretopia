@@ -23,13 +23,13 @@ const Podcast = () => {
         <meta property="og:description" content="Stories, insights and conversations with creatives shaping the industry." />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Kretopia" />
-        <meta property="og:image" content="https://www.thrivein.io/og-image.png" />
+        <meta property="og:image" content="https://www.kretopia.com/og-image.png" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@thrivein_io" />
         <meta name="twitter:title" content="Discover A Thriver Podcast | Kretopia" />
         <meta name="twitter:description" content="Stories, insights and conversations with creatives shaping the industry." />
-        <meta name="twitter:image" content="https://www.thrivein.io/og-image.png" />
+        <meta name="twitter:image" content="https://www.kretopia.com/og-image.png" />
 
         <script type="application/ld+json">
           {JSON.stringify({

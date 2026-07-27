@@ -559,7 +559,7 @@ const ProductionPage = () => {
               <Link2 className="h-3.5 w-3.5" /> Share Production Page
             </Button>
             <p className="mt-2 text-[10px] text-muted-foreground max-w-sm mx-auto">
-              Shares use thrivein.io and invite collaborators to search their name, claim their credit, or verify yours.
+              Shares use kretopia.com and invite collaborators to search their name, claim their credit, or verify yours.
             </p>
           </div>
         </div>

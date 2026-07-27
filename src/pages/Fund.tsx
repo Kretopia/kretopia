@@ -20,7 +20,7 @@ const Fund = () => {
           name="description"
           content="Fund creatives you can verify. ThriveFund is crowdfunding built on top of verified credits, vouches, and proven work — not promises."
         />
-        <link rel="canonical" href="https://www.thrivein.io/fund" />
+        <link rel="canonical" href="https://www.kretopia.com/fund" />
       </Helmet>
 
       {/* Hero */}

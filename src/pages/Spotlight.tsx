@@ -28,11 +28,11 @@ const Spotlight = () => {
         <meta property="og:description" content="Creative stories, interviews, features and podcast episodes to inspire and motivate." />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Kretopia" />
-        <meta property="og:image" content="https://www.thrivein.io/og-image.png" />
+        <meta property="og:image" content="https://www.kretopia.com/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Spotlight — Stories, Features & Sounds | Kretopia" />
         <meta name="twitter:description" content="Creative stories, interviews, features and podcast episodes to inspire and motivate." />
-        <meta name="twitter:image" content="https://www.thrivein.io/og-image.png" />
+        <meta name="twitter:image" content="https://www.kretopia.com/og-image.png" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

@@ -17,11 +17,11 @@ interface SocialShareButtonsProps {
 }
 
 export function SocialShareButtons({ url, title, description, socialUrl, variant = "icon" }: SocialShareButtonsProps) {
-  const fullUrl = url.startsWith("http") ? url : `https://www.thrivein.io${url}`;
+  const fullUrl = url.startsWith("http") ? url : `https://www.kretopia.com${url}`;
   const networkUrl = socialUrl?.startsWith("http")
     ? socialUrl
     : socialUrl
-      ? `https://www.thrivein.io${socialUrl}`
+      ? `https://www.kretopia.com${socialUrl}`
       : fullUrl;
   const text = `${title}${description ? ` — ${description}` : ""}`;
   const encodedUrl = encodeURIComponent(fullUrl);

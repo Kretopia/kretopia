@@ -53,7 +53,7 @@ export const InviteCodesCard = () => {
 
   const copyToClipboard = async (code: string) => {
     try {
-      const inviteUrl = `https://www.thrivein.io/auth?invite=${code}`;
+      const inviteUrl = `https://www.kretopia.com/auth?invite=${code}`;
       const inviteMessage = `Stop cold DMing strangers for collabs.
 
 Kretopia matches you with verified creatives who actually fit your style — portfolio-first, style-aware.
@@ -204,7 +204,7 @@ ${inviteUrl}`;
                   <div className="flex flex-col items-center gap-3 pt-3 border-t border-border">
                     <div className="bg-white p-4 rounded-lg">
                       <QRCodeSVG
-                        value={`https://www.thrivein.io/auth?invite=${invite.invite_code}`}
+                        value={`https://www.kretopia.com/auth?invite=${invite.invite_code}`}
                         size={200}
                         level="H"
                         includeMargin

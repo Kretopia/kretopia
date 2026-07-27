@@ -33,7 +33,7 @@ export const InviteCard = () => {
   const network = useReferralNetwork();
 
   const primaryInvite = inviteCodes.find(i => i.current_uses < i.max_uses) || inviteCodes[0];
-  const personalLink = primaryInvite ? `https://www.thrivein.io/join/${primaryInvite.invite_code}` : null;
+  const personalLink = primaryInvite ? `https://www.kretopia.com/join/${primaryInvite.invite_code}` : null;
 
   useEffect(() => {
     if (user) fetchInviteCodes();

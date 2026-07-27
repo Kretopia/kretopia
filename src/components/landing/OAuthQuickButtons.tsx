@@ -44,7 +44,7 @@ export const OAuthQuickButtons = ({
       const { analytics } = await import("@/lib/analytics");
       analytics.featureUsed(`${provider}_signin_attempt_${analyticsSuffix}`);
 
-      const siteUrl = import.meta.env.VITE_SITE_URL || "https://thrivein.io";
+      const siteUrl = import.meta.env.VITE_SITE_URL || "https://kretopia.com";
       const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: siteUrl });
 
       if ("redirected" in result && result.redirected) return;

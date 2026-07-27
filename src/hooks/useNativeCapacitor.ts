@@ -26,7 +26,7 @@ export function useNativeCapacitor() {
 
         const listener = await App.addListener("appUrlOpen", (event) => {
           // Parse the URL and navigate to the right route
-          // e.g. https://thrivein.io/profile/abc123 → /profile/abc123
+          // e.g. https://kretopia.com/profile/abc123 → /profile/abc123
           const url = new URL(event.url);
           const path = url.pathname + url.search + url.hash;
           if (path && path !== "/") {

@@ -112,7 +112,7 @@ export function OnboardingCelebration({
                   <span className="text-[10px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">PRO</span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Turn your profile into a beautiful, standalone website — perfect for link-in-bio. Get your own yourname.thrivein.app URL.
+                  Turn your profile into a beautiful, standalone website — perfect for link-in-bio. Get your own yourname.kretopia.com URL.
                 </p>
                 {/* Mini preview */}
                 <div className="relative rounded-lg overflow-hidden border border-border/50 bg-gradient-to-br from-[#0a0a0c] to-[#1a1a2e] p-3 mb-3">
@@ -126,7 +126,7 @@ export function OnboardingCelebration({
                     </div>
                   </div>
                   <div className="absolute top-1.5 right-1.5 text-[8px] text-white/40 font-mono">
-                    {firstName.toLowerCase()}.thrivein.app
+                    {firstName.toLowerCase()}.kretopia.com
                   </div>
                 </div>
                 <Button size="sm" onClick={handleUpgrade} className="w-full gap-1.5 text-xs h-8">

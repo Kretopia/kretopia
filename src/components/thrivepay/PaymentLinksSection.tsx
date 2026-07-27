@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Link as LinkIcon, Copy, Plus, ExternalLink, Power } from "lucide-react";
 
-const APP_URL = "https://www.thrivein.io";
+const APP_URL = "https://www.kretopia.com";
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40)

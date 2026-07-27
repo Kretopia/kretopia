@@ -124,8 +124,8 @@ const CommunityGuidelines = () => {
             </p>
             <ul>
               <li>Use the "Report" button on profiles, posts, or messages</li>
-              <li>Contact support at: support@thrivein.io</li>
-              <li>For urgent safety concerns, email: safety@thrivein.io</li>
+              <li>Contact support at: support@kretopia.com</li>
+              <li>For urgent safety concerns, email: safety@kretopia.com</li>
             </ul>
 
             <h3>What We Review</h3>
@@ -148,7 +148,7 @@ const CommunityGuidelines = () => {
 
             <h3>Appeals</h3>
             <p>
-              If you believe a moderation decision was made in error, you can appeal by contacting appeals@thrivein.io within 30 days.
+              If you believe a moderation decision was made in error, you can appeal by contacting appeals@kretopia.com within 30 days.
             </p>
           </section>
 
@@ -218,7 +218,7 @@ const CommunityGuidelines = () => {
           <section>
             <h2>Questions?</h2>
             <p>
-              If you have questions about these guidelines, contact us at: community@thrivein.io
+              If you have questions about these guidelines, contact us at: community@kretopia.com
             </p>
           </section>
         </CardContent>

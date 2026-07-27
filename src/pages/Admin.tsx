@@ -69,7 +69,7 @@ export default function Admin() {
   const [broadcastSubject, setBroadcastSubject] = useState('');
   const [broadcastBody, setBroadcastBody] = useState('');
   const [broadcastCta, setBroadcastCta] = useState('Check It Out →');
-  const [broadcastCtaUrl, setBroadcastCtaUrl] = useState('https://www.thrivein.io');
+  const [broadcastCtaUrl, setBroadcastCtaUrl] = useState('https://www.kretopia.com');
   const [importingOdos, setImportingOdos] = useState(false);
   const [odosResults, setOdosResults] = useState<OdosImportResult[] | null>(null);
   const [odosSummary, setOdosSummary] = useState<OdosImportSummary | null>(null);
@@ -702,7 +702,7 @@ export default function Admin() {
                     <Label htmlFor="broadcast-cta-url">Button URL</Label>
                     <Input
                       id="broadcast-cta-url"
-                      placeholder="https://www.thrivein.io"
+                      placeholder="https://www.kretopia.com"
                       value={broadcastCtaUrl}
                       onChange={(e) => setBroadcastCtaUrl(e.target.value)}
                     />

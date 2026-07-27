@@ -148,7 +148,7 @@ const StudioRecap = () => {
         <meta property="og:title" content={`${project.title} — Studio Recap`} />
         <meta property="og:description" content={project.recap_summary || project.description || "Built in a Kretopia Studio."} />
         {project.cover_url && <meta property="og:image" content={project.cover_url} />}
-        <link rel="canonical" href={`https://www.thrivein.io/studio/${token}`} />
+        <link rel="canonical" href={`https://www.kretopia.com/studio/${token}`} />
       </Helmet>
 
       {/* Top bar */}

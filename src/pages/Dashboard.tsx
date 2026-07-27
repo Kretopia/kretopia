@@ -101,7 +101,7 @@ const DashboardContent = () => {
     { label: "QR Code", icon: QrCode, onClick: () => setIsQROpen(true), hint: "Scan to view passport" },
     { label: "Share Passport", icon: IdCard, onClick: () => setIsShareOpen(true), hint: "Copy & share link" },
     ...(profile?.site_enabled
-      ? [{ label: "My Website", icon: Globe, onClick: () => navigate('/website-builder'), hint: profile?.username ? `thrivein.io/${profile.username}` : 'Open builder' }]
+      ? [{ label: "My Website", icon: Globe, onClick: () => navigate('/website-builder'), hint: profile?.username ? `kretopia.com/${profile.username}` : 'Open builder' }]
       : []),
   ];
 

@@ -155,7 +155,7 @@ const CircleDetail = () => {
 
   const shareCircle = async () => {
     if (!circle) return;
-    const url = `https://www.thrivein.io/circle/${circle.id}`;
+    const url = `https://www.kretopia.com/circle/${circle.id}`;
     const shareText = `Join "${circle.title}" on Kretopia — your creative circle.\n\n${url}`;
     try {
       await navigator.clipboard.writeText(shareText);

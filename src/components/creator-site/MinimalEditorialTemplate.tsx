@@ -250,7 +250,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
         )}
         <div className="mt-16 pt-8 border-t border-[#e5e3df] text-center">
           <a
-            href="https://www.thrivein.io"
+            href="https://www.kretopia.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] text-[#bbb] hover:text-[#888] transition-colors uppercase tracking-[0.3em]"

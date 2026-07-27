@@ -125,7 +125,7 @@ export function AmbassadorsTab() {
   };
 
   const copyLink = (code: string) => {
-    const url = `https://www.thrivein.io/?amb=${code}`;
+    const url = `https://www.kretopia.com/?amb=${code}`;
     navigator.clipboard.writeText(url);
     toast({ title: "Link copied", description: url });
   };

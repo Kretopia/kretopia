@@ -419,10 +419,10 @@ const OpportunityDetail = () => {
         description={opportunity.description?.slice(0, 155) || `${opportunity.type} gig: ${opportunity.title}`}
         type="article"
         image={opportunity.image_url || undefined}
-        url={`https://www.thrivein.io/opportunity/${opportunity.id}`}
+        url={`https://www.kretopia.com/opportunity/${opportunity.id}`}
       />
       <Helmet>
-        <link rel="canonical" href={`https://www.thrivein.io/opportunity/${opportunity.id}`} />
+        <link rel="canonical" href={`https://www.kretopia.com/opportunity/${opportunity.id}`} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -434,12 +434,12 @@ const OpportunityDetail = () => {
             "hiringOrganization": {
               "@type": "Organization",
               "name": "Kretopia",
-              "sameAs": "https://www.thrivein.io"
+              "sameAs": "https://www.kretopia.com"
             },
             ...(opportunity.location ? { "jobLocation": { "@type": "Place", "address": opportunity.location } } : {}),
             ...(opportunity.compensation ? { "baseSalary": { "@type": "MonetaryAmount", "currency": "USD", "value": opportunity.compensation } } : {}),
             "industry": "Creative Industries",
-            "url": `https://www.thrivein.io/opportunity/${opportunity.id}`,
+            "url": `https://www.kretopia.com/opportunity/${opportunity.id}`,
             ...(opportunity.image_url ? { "image": opportunity.image_url } : {})
           })}
         </script>

@@ -4,9 +4,9 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
-const APP_URL = 'https://www.thrivein.io'
+const APP_URL = 'https://www.kretopia.com'
 
 interface Props {
   name?: string
@@ -59,7 +59,7 @@ const UniverseScanFindingsEmail = ({
             Accept what's yours, dismiss what isn't. Takes about a minute.
           </Text>
           <Text style={footer}>The {SITE_NAME} Team</Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
         </Container>
       </Body>
@@ -71,7 +71,7 @@ export const template = {
   component: UniverseScanFindingsEmail,
   subject: (data: Record<string, any>) => {
     const total = (data.newCredits || 0) + (data.newPress || 0) + (data.newAwards || 0) + (data.newUploads || 0)
-    return `${total} new item${total === 1 ? '' : 's'} ready to review on ThriveIN`
+    return `${total} new item${total === 1 ? '' : 's'} ready to review on Kretopia`
   },
   displayName: 'Universe scan findings',
   previewData: { name: 'Marlon', newCredits: 2, newPress: 1, newAwards: 0, newUploads: 3 },

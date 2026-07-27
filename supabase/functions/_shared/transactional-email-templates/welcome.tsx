@@ -4,9 +4,9 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
-const APP_URL = 'https://www.thrivein.io'
+const APP_URL = 'https://www.kretopia.com'
 
 interface Props {
   name?: string
@@ -21,7 +21,7 @@ const WelcomeEmail = ({ name }: Props) => (
         <Img src={LOGO_URL} width="48" height="48" alt={SITE_NAME} style={{ marginBottom: '24px' }} />
 
         <Heading style={h1}>
-          {name ? `Welcome, ${name}` : 'Welcome to ThriveIN'}
+          {name ? `Welcome, ${name}` : 'Welcome to Kretopia'}
         </Heading>
 
         <Text style={text}>
@@ -40,13 +40,13 @@ const WelcomeEmail = ({ name }: Props) => (
         </Section>
 
         <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-          <Button href={APP_URL} style={button}>Open ThriveIN</Button>
+          <Button href={APP_URL} style={button}>Open Kretopia</Button>
         </Section>
 
         <Hr style={hr} />
         <Text style={footer}>
           Questions? Just reply to this email — a real human reads every one.
-          <br />— The ThriveIN team
+          <br />— The Kretopia team
         </Text>
       </Container>
     </Body>
@@ -55,7 +55,7 @@ const WelcomeEmail = ({ name }: Props) => (
 
 export const template = {
   component: WelcomeEmail,
-  subject: 'Welcome to ThriveIN — your creative OS is ready',
+  subject: 'Welcome to Kretopia — your creative OS is ready',
   displayName: 'Welcome',
   previewData: { name: 'Jane' },
 } satisfies TemplateEntry

@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
 interface Props {
@@ -88,7 +88,7 @@ const EventReminderEmail = ({
           <Text style={footer}>
             Make sure you've added this to your calendar. See you there! 🎶
           </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
         </Container>
       </Body>
@@ -107,7 +107,7 @@ export const template = {
     eventDate: 'Saturday, January 25, 2025',
     eventTime: '4:00 PM AST',
     eventVenue: 'The Creative Hub, Brooklyn',
-    eventUrl: 'https://thrivein.io/event/123',
+    eventUrl: 'https://www.kretopia.com/event/123',
     checkInToken: 'abc123preview',
     isTicketed: false,
   },

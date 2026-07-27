@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
 interface Props {
@@ -28,7 +28,7 @@ const RsvpConfirmed = ({
   slotMinutes = 5,
   mode = 'video',
   theme,
-  sessionUrl = 'https://www.thrivein.io/circle/speed',
+  sessionUrl = 'https://www.kretopia.com/circle/speed',
   googleCalendarUrl,
 }: Props) => (
   <Html lang="en" dir="ltr">
@@ -78,7 +78,7 @@ const RsvpConfirmed = ({
         <Text style={footer}>
           Can't make it? <Link href={sessionUrl} style={footerLink}>Cancel your RSVP</Link> so we can match someone else.
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>
@@ -96,7 +96,7 @@ export const template = {
     slotMinutes: 5,
     mode: 'video' as const,
     theme: 'Anyone with a creative bone',
-    sessionUrl: 'https://www.thrivein.io/circle/speed/123',
+    sessionUrl: 'https://www.kretopia.com/circle/speed/123',
     googleCalendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Speed',
   },
 } satisfies TemplateEntry

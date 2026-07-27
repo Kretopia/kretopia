@@ -4,9 +4,9 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
-const APP_URL = 'https://www.thrivein.io'
+const APP_URL = 'https://www.kretopia.com'
 
 interface Props {
   name?: string
@@ -21,7 +21,7 @@ const Day2EngagementEmail = ({ name, gigCount = 0, profileViews = 0, role }: Pro
     <Preview>
       {gigCount > 0
         ? `${gigCount} new opportunities match your profile`
-        : `Your profile is gaining traction on ThriveIN`}
+        : `Your profile is gaining traction on Kretopia`}
     </Preview>
     <Body style={main}>
       <Container style={container}>
@@ -32,7 +32,7 @@ const Day2EngagementEmail = ({ name, gigCount = 0, profileViews = 0, role }: Pro
         </Heading>
 
         <Text style={text}>
-          You joined ThriveIN a couple of days ago. Here's the snapshot of your network so far.
+          You joined Kretopia a couple of days ago. Here's the snapshot of your network so far.
         </Text>
 
         <Section style={statsBox}>
@@ -54,7 +54,7 @@ const Day2EngagementEmail = ({ name, gigCount = 0, profileViews = 0, role }: Pro
         </Section>
 
         <Button style={button} href={`${APP_URL}/?utm_source=lifecycle&utm_campaign=day2`}>
-          {gigCount > 0 ? 'See matching gigs' : 'Open ThriveIN'}
+          {gigCount > 0 ? 'See matching gigs' : 'Open Kretopia'}
         </Button>
 
         <Text style={subtext}>
@@ -62,9 +62,9 @@ const Day2EngagementEmail = ({ name, gigCount = 0, profileViews = 0, role }: Pro
         </Text>
 
         <Text style={footer}>
-          The ThriveIN Team
+          The Kretopia Team
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
       </Container>
     </Body>
@@ -76,7 +76,7 @@ export const template = {
   subject: (data: Record<string, any>) =>
     data.gigCount > 0
       ? `${data.gigCount} gig${data.gigCount === 1 ? '' : 's'} match your profile`
-      : `Your week on ThriveIN`,
+      : `Your week on Kretopia`,
   displayName: 'Day-2 engagement nudge',
   previewData: { name: 'Marlon', gigCount: 3, profileViews: 12, role: 'Photographer' },
 } satisfies TemplateEntry

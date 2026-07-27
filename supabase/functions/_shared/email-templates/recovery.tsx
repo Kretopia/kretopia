@@ -14,14 +14,14 @@ interface RecoveryEmailProps {
 export const RecoveryEmail = ({ confirmationUrl }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your ThriveIN password</Preview>
+    <Preview>Reset your Kretopia password</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} width="48" height="48" alt="ThriveIN" style={{ marginBottom: '24px', borderRadius: '12px' }} />
+        <Img src={LOGO_URL} width="48" height="48" alt="Kretopia" style={{ marginBottom: '24px', borderRadius: '12px' }} />
         <Heading style={h1}>Reset your password</Heading>
         <Text style={eyebrow}>The Creative OS</Text>
         <Text style={text}>
-          We got a request to reset your ThriveIN password. Tap below to choose a new one — takes 30 seconds.
+          We got a request to reset your Kretopia password. Tap below to choose a new one — takes 30 seconds.
         </Text>
         <Section style={{ textAlign: 'center', margin: '8px 0 32px' }}>
           <Button style={button} href={confirmationUrl}>Reset password</Button>
@@ -29,7 +29,7 @@ export const RecoveryEmail = ({ confirmationUrl }: RecoveryEmailProps) => (
         <Text style={footer}>
           Didn't request this? Your password stays the same — just ignore this email.
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>

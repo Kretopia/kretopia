@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
 type Status = 'accepted' | 'rejected' | 'shortlisted'
@@ -50,7 +50,7 @@ const ApplicationStatusUpdateEmail = ({
   status = 'shortlisted',
 }: Props) => {
   const copy = COPY[status] || COPY.shortlisted
-  const ctaUrl = status === 'accepted' && projectUrl ? projectUrl : (gigUrl || 'https://thrivein.io/opportunities')
+  const ctaUrl = status === 'accepted' && projectUrl ? projectUrl : (gigUrl || 'https://www.kretopia.com/opportunities')
 
   return (
     <Html lang="en" dir="ltr">
@@ -68,7 +68,7 @@ const ApplicationStatusUpdateEmail = ({
           <Text style={footer}>
             Track all your applications anytime in your Gig Manager.
           </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
         </Container>
       </Body>
@@ -85,7 +85,7 @@ export const template = {
     return `Update on your application: ${data.gigTitle || 'New Gig'}`
   },
   displayName: 'Application status update',
-  previewData: { applicantName: 'Dee', gigTitle: 'AI Image Creator for Fashion E-commerce', gigUrl: 'https://thrivein.io/opportunity/123', status: 'accepted', projectUrl: 'https://thrivein.io/desk/abc' },
+  previewData: { applicantName: 'Dee', gigTitle: 'AI Image Creator for Fashion E-commerce', gigUrl: 'https://www.kretopia.com/opportunity/123', status: 'accepted', projectUrl: 'https://www.kretopia.com/desk/abc' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }

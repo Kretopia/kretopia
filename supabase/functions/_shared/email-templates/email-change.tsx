@@ -16,14 +16,14 @@ interface EmailChangeEmailProps {
 export const EmailChangeEmail = ({ email, newEmail, confirmationUrl }: EmailChangeEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your new email for ThriveIN</Preview>
+    <Preview>Confirm your new email for Kretopia</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} width="48" height="48" alt="ThriveIN" style={{ marginBottom: '24px', borderRadius: '12px' }} />
+        <Img src={LOGO_URL} width="48" height="48" alt="Kretopia" style={{ marginBottom: '24px', borderRadius: '12px' }} />
         <Heading style={h1}>Confirm your new email</Heading>
         <Text style={eyebrow}>The Creative OS</Text>
         <Text style={text}>
-          You requested to change your ThriveIN email from{' '}
+          You requested to change your Kretopia email from{' '}
           <Link href={`mailto:${email}`} style={link}>{email}</Link>
           {' '}to{' '}
           <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>. Tap below to confirm.
@@ -34,7 +34,7 @@ export const EmailChangeEmail = ({ email, newEmail, confirmationUrl }: EmailChan
         <Text style={footer}>
           Didn't request this? Please secure your account immediately.
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>

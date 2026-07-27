@@ -15,14 +15,14 @@ interface InviteEmailProps {
 export const InviteEmail = ({ siteUrl, confirmationUrl }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to ThriveIN</Preview>
+    <Preview>You've been invited to Kretopia</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} width="48" height="48" alt="ThriveIN" style={{ marginBottom: '24px', borderRadius: '12px' }} />
+        <Img src={LOGO_URL} width="48" height="48" alt="Kretopia" style={{ marginBottom: '24px', borderRadius: '12px' }} />
         <Heading style={h1}>You're invited</Heading>
         <Text style={eyebrow}>The Creative OS</Text>
         <Text style={text}>
-          Someone on <Link href={siteUrl} style={link}><strong>ThriveIN</strong></Link> thinks you'd be a great addition to the professional creative network. Accept to claim your credits, set up your profile, and start getting booked.
+          Someone on <Link href={siteUrl} style={link}><strong>Kretopia</strong></Link> thinks you'd be a great addition to the professional creative network. Accept to claim your credits, set up your profile, and start getting booked.
         </Text>
         <Section style={{ textAlign: 'center', margin: '8px 0 32px' }}>
           <Button style={button} href={confirmationUrl}>Accept invitation</Button>
@@ -30,7 +30,7 @@ export const InviteEmail = ({ siteUrl, confirmationUrl }: InviteEmailProps) => (
         <Text style={footer}>
           Wasn't expecting this? Just ignore this email.
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>

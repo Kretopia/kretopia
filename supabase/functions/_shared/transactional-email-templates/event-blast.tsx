@@ -27,7 +27,7 @@ const EventBlastEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
-          <Heading style={brand}>ThriveIN</Heading>
+          <Heading style={brand}>Kretopia</Heading>
           <Text style={eyebrow}>EVENT UPDATE</Text>
         </Section>
         <Heading style={h1}>{eventTitle}</Heading>
@@ -48,7 +48,7 @@ const EventBlastEmail = ({
             </Text>
           </>
         )}
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
       </Container>
     </Body>
@@ -63,9 +63,9 @@ export const template = {
     subject: 'Reminder: doors open at 7pm',
     eventTitle: 'Studio Session w/ Local Producers',
     bodyHtml: '<p>Hey! Quick reminder that our event starts soon. See you there.</p>',
-    eventUrl: 'https://thrivein.io/event/sample',
+    eventUrl: 'https://www.kretopia.com/event/sample',
     ctaText: 'View Event',
-    ctaUrl: 'https://thrivein.io/event/sample',
+    ctaUrl: 'https://www.kretopia.com/event/sample',
   },
 } satisfies TemplateEntry
 

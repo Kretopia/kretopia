@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
 interface Props {
@@ -33,8 +33,8 @@ const EventRegistrationConfirmationEmail = ({
   isGuest,
 }: Props) => {
   const claimUrl = attendeeEmail
-    ? `https://thrivein.io/auth?mode=signup&email=${encodeURIComponent(attendeeEmail)}&intent=claim_rsvp`
-    : 'https://thrivein.io/auth?mode=signup&intent=claim_rsvp'
+    ? `https://www.kretopia.com/auth?mode=signup&email=${encodeURIComponent(attendeeEmail)}&intent=claim_rsvp`
+    : 'https://www.kretopia.com/auth?mode=signup&intent=claim_rsvp'
   const qrUrl = checkInToken
     ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(checkInToken)}`
     : null
@@ -108,7 +108,7 @@ const EventRegistrationConfirmationEmail = ({
           <Text style={footer}>
             Add this to your calendar so you don't miss it! See you there. 🎶
           </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
         </Container>
       </Body>
@@ -130,7 +130,7 @@ export const template = {
     eventDate: 'Saturday, January 25, 2025',
     eventTime: '7:00 PM EST',
     eventVenue: 'The Creative Hub, Brooklyn',
-    eventUrl: 'https://thrivein.io/event/123',
+    eventUrl: 'https://www.kretopia.com/event/123',
     checkInToken: 'abc123preview',
     isTicketed: false,
     isGuest: true,

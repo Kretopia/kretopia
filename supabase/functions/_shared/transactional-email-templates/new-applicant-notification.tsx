@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
 interface Props {
@@ -36,7 +36,7 @@ const NewApplicantNotificationEmail = ({ ownerName, applicantName, gigTitle, gig
         <Text style={footer}>
           Manage all your gigs and applicants from your Gig Manager anytime.
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>
@@ -46,7 +46,7 @@ export const template = {
   component: NewApplicantNotificationEmail,
   subject: (data: Record<string, any>) => `New application: ${data.gigTitle || 'Your Gig'}`,
   displayName: 'New applicant notification',
-  previewData: { ownerName: 'Ethan', applicantName: 'Dee McRae', gigTitle: 'AI Image Creator for Fashion E-commerce', gigUrl: 'https://thrivein.io/opportunity/123' },
+  previewData: { ownerName: 'Ethan', applicantName: 'Dee McRae', gigTitle: 'AI Image Creator for Fashion E-commerce', gigUrl: 'https://www.kretopia.com/opportunity/123' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }

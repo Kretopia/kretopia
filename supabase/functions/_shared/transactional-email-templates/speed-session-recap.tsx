@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
 interface PersonCard {
@@ -45,7 +45,7 @@ const SpeedRecapEmail = ({
   connected = [],
   savedYou = [],
   met = [],
-  browseUrl = 'https://www.thrivein.io/circle/speed',
+  browseUrl = 'https://www.kretopia.com/circle/speed',
 }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -100,7 +100,7 @@ const SpeedRecapEmail = ({
         <Text style={footer}>
           Speed Sessions run weekly. Bring a friend — the more creators in the room, the better the matches.
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>
@@ -122,7 +122,7 @@ export const template = {
       { name: 'Jordan Ali', role: 'Music Producer' },
       { name: 'Sasha P.', role: 'Photographer' },
     ],
-    browseUrl: 'https://www.thrivein.io/circle/speed',
+    browseUrl: 'https://www.kretopia.com/circle/speed',
   },
 } satisfies TemplateEntry
 

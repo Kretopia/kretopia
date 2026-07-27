@@ -4,9 +4,9 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
-const APP_URL = 'https://www.thrivein.io'
+const APP_URL = 'https://www.kretopia.com'
 
 interface Props {
   name?: string
@@ -25,7 +25,7 @@ const OnboardingReminderEmail = ({ name }: Props) => (
         </Heading>
         
         <Text style={text}>
-          You started setting up your ThriveIN profile yesterday — and we saved your progress. Just a couple more steps and you'll be visible to creators, brands, and collaborators worldwide.
+          You started setting up your Kretopia profile yesterday — and we saved your progress. Just a couple more steps and you'll be visible to creators, brands, and collaborators worldwide.
         </Text>
 
         <Section style={highlightBox}>
@@ -49,9 +49,9 @@ const OnboardingReminderEmail = ({ name }: Props) => (
 
         <Text style={footer}>
           See you on the other side,{'\n'}
-          The ThriveIN Team
+          The Kretopia Team
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
       </Container>
     </Body>

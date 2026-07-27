@@ -35,7 +35,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "thrivein-new-beta"
+const SITE_NAME = "Kretopia"
 const SENDER_DOMAIN = "notify.thrivein.io"
 const ROOT_DOMAIN = "thrivein.io"
 const FROM_DOMAIN = "thrivein.io" // Domain shown in From address (may be root or sender subdomain)

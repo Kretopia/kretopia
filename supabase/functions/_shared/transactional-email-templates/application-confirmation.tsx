@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
 interface Props {
@@ -35,7 +35,7 @@ const ApplicationConfirmationEmail = ({ applicantName, gigTitle, gigUrl }: Props
         <Text style={footer}>
           Keep building your portfolio — verified credits and reviews help you stand out. ✨
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
       </Container>
     </Body>
@@ -46,7 +46,7 @@ export const template = {
   component: ApplicationConfirmationEmail,
   subject: (data: Record<string, any>) => `Application submitted: ${data.gigTitle || 'New Gig'}`,
   displayName: 'Application confirmation',
-  previewData: { applicantName: 'Dee', gigTitle: 'AI Image Creator for Fashion E-commerce', gigUrl: 'https://thrivein.io/opportunity/123' },
+  previewData: { applicantName: 'Dee', gigTitle: 'AI Image Creator for Fashion E-commerce', gigUrl: 'https://www.kretopia.com/opportunity/123' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }

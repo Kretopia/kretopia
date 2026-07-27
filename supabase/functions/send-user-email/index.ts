@@ -9,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const baseUrl = 'https://thrivein.io';
+const baseUrl = 'https://www.kretopia.com';
 
 type EmailType = 'welcome' | 'match' | 'message' | 'connection_request' | 'project_invite';
 
@@ -25,15 +25,15 @@ const generateEmailContent = (type: EmailType, data: any) => {
   switch (type) {
     case 'welcome':
       return {
-        subject: "Welcome to ThriveIN – Your Step-by-Step Guide 🎉",
+        subject: "Welcome to Kretopia – Your Step-by-Step Guide 🎉",
         html: `
           <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
             <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to ThriveIN 🎉</h1>
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to Kretopia 🎉</h1>
               <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${data.userName}, you're officially in.</p>
             </div>
             <div style="padding: 30px; background: #ffffff;">
-              <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Here's exactly how to get the most out of ThriveIN — step by step. No guesswork needed.</p>
+              <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Here's exactly how to get the most out of Kretopia — step by step. No guesswork needed.</p>
               
               <!-- Step 1 -->
               <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
@@ -105,7 +105,7 @@ const generateEmailContent = (type: EmailType, data: any) => {
             </div>
             <div style="padding: 20px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
               <p style="color: #9CA3AF; font-size: 12px; margin: 0;">Connect, Collaborate & Create</p>
-              <p style="color: #9CA3AF; font-size: 12px; margin: 5px 0 0 0;">© ThriveIN</p>
+              <p style="color: #9CA3AF; font-size: 12px; margin: 5px 0 0 0;">© Kretopia</p>
             </div>
           </div>
         `
@@ -121,7 +121,7 @@ const generateEmailContent = (type: EmailType, data: any) => {
             <p>Great news! You've matched with <strong>${data.matchName}</strong>${data.matchRole ? ` (${data.matchRole})` : ''}.</p>
             <p>This is a great opportunity to start a collaboration!</p>
             <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Connection</a>
-            <p style="color: #666; margin-top: 30px;">Happy collaborating!<br>The ThriveIN Team</p>
+            <p style="color: #666; margin-top: 30px;">Happy collaborating!<br>The Kretopia Team</p>
             ${unsubscribeFooter}
           </div>
         `
@@ -146,7 +146,7 @@ const generateEmailContent = (type: EmailType, data: any) => {
               </div>
             </div>
             <div style="padding: 15px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
-              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">© ThriveIN – Connect, Collaborate & Create</p>
+              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">© Kretopia – Connect, Collaborate & Create</p>
             </div>
             ${unsubscribeFooter}
           </div>
@@ -163,14 +163,14 @@ const generateEmailContent = (type: EmailType, data: any) => {
             </div>
             <div style="padding: 30px; background: #ffffff;">
               <p style="color: #333; font-size: 16px;">Hi ${data.recipientName},</p>
-              <p style="color: #6B7280; font-size: 16px;"><strong>${data.senderName}</strong>${data.senderRole ? ` (${data.senderRole})` : ''} wants to connect with you on ThriveIN!</p>
+              <p style="color: #6B7280; font-size: 16px;"><strong>${data.senderName}</strong>${data.senderRole ? ` (${data.senderRole})` : ''} wants to connect with you on Kretopia!</p>
               <div style="text-align: center; margin: 25px 0;">
                 <a href="${baseUrl}/circle?tab=network" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">View Request</a>
               </div>
               <p style="color: #9CA3AF; font-size: 14px; text-align: center;">Don't miss out on potential collaborations!</p>
             </div>
             <div style="padding: 15px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
-              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">© ThriveIN – Connect, Collaborate & Create</p>
+              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">© Kretopia – Connect, Collaborate & Create</p>
             </div>
             ${unsubscribeFooter}
           </div>
@@ -197,7 +197,7 @@ const generateEmailContent = (type: EmailType, data: any) => {
               <p style="color: #9CA3AF; font-size: 14px; text-align: center;">Great things happen when creatives collaborate!</p>
             </div>
             <div style="padding: 15px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
-              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">© ThriveIN – Connect, Collaborate & Create</p>
+              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">© Kretopia – Connect, Collaborate & Create</p>
             </div>
             ${unsubscribeFooter}
           </div>
@@ -206,7 +206,7 @@ const generateEmailContent = (type: EmailType, data: any) => {
     
     default:
       return {
-        subject: "Notification from ThriveIN",
+        subject: "Notification from Kretopia",
         html: "<p>You have a new notification.</p>"
       };
   }
@@ -288,7 +288,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Helper: send email
     const sendEmail = async (to: string, subject: string, html: string) => {
       const response = await resend.emails.send({
-        from: "ThriveIN <noreply@thrivein.io>",
+        from: "Kretopia <noreply@thrivein.io>",
         to: [to],
         subject,
         html,

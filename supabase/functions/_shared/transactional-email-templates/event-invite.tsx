@@ -15,8 +15,8 @@ interface EventInviteProps {
 }
 
 const EventInviteEmail = ({
-  eventTitle = 'A ThriveIN event',
-  eventUrl = 'https://thrivein.io',
+  eventTitle = 'A Kretopia event',
+  eventUrl = 'https://www.kretopia.com',
   hostName = 'Your host',
   startTimeFormatted,
   venue,
@@ -29,7 +29,7 @@ const EventInviteEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
-          <Heading style={brand}>ThriveIN</Heading>
+          <Heading style={brand}>Kretopia</Heading>
           <Text style={eyebrow}>YOU'RE INVITED</Text>
         </Section>
 
@@ -63,7 +63,7 @@ const EventInviteEmail = ({
         <Text style={footer}>
           Or open this link: <a href={eventUrl} style={link}>{eventUrl}</a>
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>
@@ -74,14 +74,14 @@ export const template = {
   subject: (data: Record<string, any>) =>
     data?.hostName
       ? `${data.hostName} invited you to ${data?.eventTitle ?? 'an event'}`
-      : `You're invited: ${data?.eventTitle ?? 'a ThriveIN event'}`,
+      : `You're invited: ${data?.eventTitle ?? 'a Kretopia event'}`,
   displayName: 'Event Invite',
   previewData: {
     eventTitle: 'Studio Session w/ Local Producers',
-    hostName: 'Maya from ThriveIN',
+    hostName: 'Maya from Kretopia',
     startTimeFormatted: 'Sat, May 4 · 7:00 PM',
     venue: 'Soho Loft, NYC',
-    eventUrl: 'https://thrivein.io/event/sample',
+    eventUrl: 'https://www.kretopia.com/event/sample',
     personalNote: 'Would love to have you in the room.',
   },
 } satisfies TemplateEntry

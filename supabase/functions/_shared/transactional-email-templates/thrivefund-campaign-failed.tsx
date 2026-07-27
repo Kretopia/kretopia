@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
 interface Props {
@@ -36,7 +36,7 @@ const CampaignFailedEmail = ({ recipientName, campaignTitle, isCreator, exploreU
           </Button>
         )}
         <Text style={footer}>Thanks for being part of ThriveFund.</Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
 
       </Container>
     </Body>
@@ -54,7 +54,7 @@ export const template = {
     recipientName: 'Dee',
     campaignTitle: 'Short Film: Brooklyn Tides',
     isCreator: false,
-    exploreUrl: 'https://thrivein.io/fund',
+    exploreUrl: 'https://www.kretopia.com/fund',
   },
 } satisfies TemplateEntry
 

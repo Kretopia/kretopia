@@ -4,9 +4,9 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = 'ThriveIN'
+const SITE_NAME = 'Kretopia'
 const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
-const APP_URL = 'https://www.thrivein.io'
+const APP_URL = 'https://www.kretopia.com'
 
 interface Props {
   name?: string
@@ -17,18 +17,18 @@ interface Props {
 const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>A quick note from Ethan, founder of ThriveIN</Preview>
+    <Preview>A quick note from Ethan, founder of Kretopia</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img src={LOGO_URL} width="48" height="48" alt={SITE_NAME} style={{ marginBottom: '24px', borderRadius: '12px' }} />
 
         <Heading style={h1}>
-          {name ? `${name}, here's what's new` : "Here's what's new on ThriveIN"}
+          {name ? `${name}, here's what's new` : "Here's what's new on Kretopia"}
         </Heading>
         <Text style={eyebrow}>The Creative OS</Text>
 
         <Text style={text}>
-          I'm Ethan, founder of ThriveIN. You're one of our early creators — wanted to share what's live since you last stopped by.
+          I'm Ethan, founder of Kretopia. You're one of our early creators — wanted to share what's live since you last stopped by.
         </Text>
 
         <Section style={highlightBox}>
@@ -60,10 +60,10 @@ const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
         <Text style={signature}>
           Thanks for being early.<br /><br />
           Ethan Auguste<br />
-          <span style={{ color: '#7B61FF' }}>Founder, ThriveIN</span>
+          <span style={{ color: '#7B61FF' }}>Founder, Kretopia</span>
         </Text>
 
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>
@@ -71,7 +71,7 @@ const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
 
 export const template = {
   component: ReEngagementEmail,
-  subject: 'A quick note from Ethan, founder of ThriveIN',
+  subject: 'A quick note from Ethan, founder of Kretopia',
   displayName: 'Re-engagement (dormant users)',
   previewData: { name: 'Jane', daysInactive: 14, activeGigsCount: 14 },
 } satisfies TemplateEntry

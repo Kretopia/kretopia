@@ -14,14 +14,14 @@ interface MagicLinkEmailProps {
 export const MagicLinkEmail = ({ confirmationUrl }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your ThriveIN sign-in link</Preview>
+    <Preview>Your Kretopia sign-in link</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} width="48" height="48" alt="ThriveIN" style={{ marginBottom: '24px', borderRadius: '12px' }} />
+        <Img src={LOGO_URL} width="48" height="48" alt="Kretopia" style={{ marginBottom: '24px', borderRadius: '12px' }} />
         <Heading style={h1}>Your sign-in link</Heading>
         <Text style={eyebrow}>The Creative OS</Text>
         <Text style={text}>
-          Tap below to sign in to ThriveIN. This link expires shortly, so don't wait too long.
+          Tap below to sign in to Kretopia. This link expires shortly, so don't wait too long.
         </Text>
         <Section style={{ textAlign: 'center', margin: '8px 0 32px' }}>
           <Button style={button} href={confirmationUrl}>Sign in</Button>
@@ -29,7 +29,7 @@ export const MagicLinkEmail = ({ confirmationUrl }: MagicLinkEmailProps) => (
         <Text style={footer}>
           Didn't request this? You can safely ignore this email.
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>

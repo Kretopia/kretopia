@@ -29,14 +29,14 @@ export const SignupEmail = ({
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Verify your email to get started on ThriveIN</Preview>
+    <Preview>Verify your email to get started on Kretopia</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
-          <Img src={LOGO_URL} width="48" height="48" alt="ThriveIN" style={{ borderRadius: '12px' }} />
+          <Img src={LOGO_URL} width="48" height="48" alt="Kretopia" style={{ borderRadius: '12px' }} />
         </Section>
 
-        <Heading style={h1}>Welcome to ThriveIN</Heading>
+        <Heading style={h1}>Welcome to Kretopia</Heading>
         <Text style={eyebrow}>The Creative OS</Text>
 
         <Text style={text}>
@@ -52,9 +52,9 @@ export const SignupEmail = ({
         </Section>
 
         <Text style={footer}>
-          If you didn't sign up for ThriveIN, you can safely ignore this email.
+          If you didn't sign up for Kretopia, you can safely ignore this email.
         </Text>
-        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>
   </Html>

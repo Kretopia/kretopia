@@ -50,7 +50,7 @@ interface CreditRow {
 
 
 const PROJECT_REF = "kwmcocsitwssrtzkdojh";
-const FALLBACK_OG = "https://www.thrivein.io/og-image.png";
+const FALLBACK_OG = "https://www.kretopia.com/og-image.png";
 
 export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
   return {

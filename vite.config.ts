@@ -141,32 +141,32 @@ export default defineConfig(({ mode }) => {
       generateStaticSocialPages && magazineSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && profileSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && gigSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && eventSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && campaignSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
       generateStaticSocialPages && seoPagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        siteUrl: "https://www.thrivein.io",
+        siteUrl: "https://www.kretopia.com",
       }),
     ].filter(Boolean),
     resolve: {

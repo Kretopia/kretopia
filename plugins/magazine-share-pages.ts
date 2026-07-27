@@ -19,7 +19,7 @@ interface MagazineArticle {
   created_at: string;
 }
 
-const FALLBACK_OG_IMAGE = "https://www.thrivein.io/og-image.png";
+const FALLBACK_OG_IMAGE = "https://www.kretopia.com/og-image.png";
 
 export function magazineSharePagesPlugin(options: MagazineSharePagesPluginOptions): Plugin {
   return {

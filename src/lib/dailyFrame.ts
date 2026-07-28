@@ -50,3 +50,25 @@ export function createDailyFrame(
     throw err;
   }
 }
+
+/** Async variant — awaits the stale singleton's destroy before creating the
+ *  new frame. Prevents the "postMessage on null" crash that happens when
+ *  React StrictMode / HMR double-mounts the effect and Daily's async destroy
+ *  hasn't finished tearing down the previous iframe. */
+export async function createDailyFrameAsync(
+  container: HTMLElement,
+  props: Record<string, any>,
+): Promise<DailyCall> {
+  await destroyExistingDailyFrameAsync();
+  while (container.firstChild) container.removeChild(container.firstChild);
+  try {
+    return (DailyIframe as any).createFrame(container, props);
+  } catch (err: any) {
+    if (String(err?.message || "").includes("Duplicate")) {
+      try { await getStaleInstance()?.destroy?.(); } catch {}
+      while (container.firstChild) container.removeChild(container.firstChild);
+      return (DailyIframe as any).createFrame(container, props);
+    }
+    throw err;
+  }
+}

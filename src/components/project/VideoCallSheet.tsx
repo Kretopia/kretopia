@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReportBlockDialog } from "@/components/user/ReportBlockDialog";
 import { type DailyCall } from "@daily-co/daily-js";
-import { createDailyFrame } from "@/lib/dailyFrame";
+import { createDailyFrameAsync, destroyExistingDailyFrameAsync } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PreCallLobby } from "./PreCallLobby";

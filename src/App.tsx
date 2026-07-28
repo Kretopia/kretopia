@@ -171,6 +171,7 @@ const FundNew = lazy(() => import("./pages/FundNew"));
 const FundCampaign = lazy(() => import("./pages/FundCampaign"));
 const FundManage = lazy(() => import("./pages/FundManage"));
 const ManageHub = lazy(() => import("./pages/ManageHub"));
+const Recordings = lazy(() => import("./pages/Recordings"));
 const ShareEventRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareEventRedirect })));
 const ShareMagazineRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareMagazineRedirect })));
 const ShareCampaignRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareCampaignRedirect })));
@@ -384,6 +385,7 @@ const AppContent = () => {
             {/* Client Hub — group projects per client */}
             <Route path="/manage" element={<ProtectedRoute><ManageHub /></ProtectedRoute>} />
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+            <Route path="/recordings" element={<ProtectedRoute><Recordings /></ProtectedRoute>} />
             <Route path="/clients/:clientId" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
 
             {/* ThriveFund — Crowdfunding */}

@@ -115,28 +115,54 @@ serve(async (req) => {
       });
     }
 
-    // Insert a pending transcript row — this is the user-facing breadcrumb.
-    const { data: tRow, error: tErr } = await admin
+    // Idempotency: Daily can fire both `recording.finished` and
+    // `recording.ready-to-download` for the same recording. Reuse the existing
+    // row if we've already logged this recording_id.
+    const { data: existing } = await admin
       .from("call_transcripts")
-      .insert({
-        call_kind: callContext.kind,
-        call_id: callContext.id,
-        project_id: callContext.project_id ?? null,
-        circle_id: callContext.circle_id ?? null,
-        recording_id: recordingId,
-        recording_url: downloadUrl ?? null,
-        duration_seconds: duration ?? null,
-        participants: callContext.participants ?? [],
-        status: "pending",
-        created_by: callContext.host_id,
-      })
-      .select("id")
-      .single();
+      .select("id, status")
+      .eq("recording_id", recordingId)
+      .maybeSingle();
 
-    if (tErr) {
-      console.error("[daily-recording-webhook] insert transcript failed", tErr);
-      throw tErr;
+    let tRow: { id: string };
+    if (existing) {
+      if (downloadUrl) {
+        await admin
+          .from("call_transcripts")
+          .update({ recording_url: downloadUrl, duration_seconds: duration ?? null })
+          .eq("id", existing.id);
+      }
+      tRow = { id: existing.id };
+      // Only re-kick transcription if the previous attempt hasn't succeeded.
+      if (existing.status === "ready") {
+        return new Response(JSON.stringify({ ok: true, transcript_id: tRow.id, dedup: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      const { data: inserted, error: tErr } = await admin
+        .from("call_transcripts")
+        .insert({
+          call_kind: callContext.kind,
+          call_id: callContext.id,
+          project_id: callContext.project_id ?? null,
+          circle_id: callContext.circle_id ?? null,
+          recording_id: recordingId,
+          recording_url: downloadUrl ?? null,
+          duration_seconds: duration ?? null,
+          participants: callContext.participants ?? [],
+          status: "pending",
+          created_by: callContext.host_id,
+        })
+        .select("id")
+        .single();
+      if (tErr) {
+        console.error("[daily-recording-webhook] insert transcript failed", tErr);
+        throw tErr;
+      }
+      tRow = inserted;
     }
+
 
     // Fire-and-forget the heavy transcription job. We respond to Daily fast.
     const fnUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/transcribe-call`;

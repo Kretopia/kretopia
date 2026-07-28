@@ -266,6 +266,16 @@ export const VideoCallSheet = ({
               onClick: () => navigate("/messages?tab=calls"),
             },
           });
+          // Poll Daily directly for the finished recording (doesn't rely on
+          // the Daily → Supabase webhook being configured). Daily needs
+          // 30-60s after leave() to finalize; try a couple of times.
+          const derived = roomName ?? roomUrl?.split("/").pop() ?? undefined;
+          const sync = () =>
+            supabase.functions
+              .invoke("sync-daily-recordings", { body: { room_name: derived } })
+              .catch((e) => console.warn("[VideoCallSheet] sync failed", e));
+          setTimeout(sync, 45_000);
+          setTimeout(sync, 120_000);
         } else {
           sonnerToast("Want a recap next time?", {
             description: "Tap Record during a call and we'll auto-summarize action items + decisions.",
@@ -273,6 +283,7 @@ export const VideoCallSheet = ({
           });
         }
       }
+
 
       const f = frame ?? callRef.current;
       callRef.current = null;

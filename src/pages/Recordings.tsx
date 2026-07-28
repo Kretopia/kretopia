@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { WatchReplayButton } from "@/components/calls/WatchReplayButton";
 import { CallRecapSheet } from "@/components/calls/CallRecapSheet";
 import { formatDistanceToNow } from "date-fns";
-import { Video, Sparkles, Clock, ArrowLeft, FileVideo } from "lucide-react";
+import { Video, Sparkles, Clock, ArrowLeft, FileVideo, RefreshCw } from "lucide-react";
+import { toast as sonnerToast } from "sonner";
 
 type Row = {
   id: string;
@@ -44,33 +45,52 @@ export default function Recordings() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [recapId, setRecapId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = async () => {
     if (!user?.id) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      // RLS on call_transcripts already scopes to host/participant/project member.
-      const { data, error } = await supabase
-        .from("call_transcripts")
-        .select("id, call_kind, status, duration_seconds, created_at, recording_id, project_id, summary")
-        .not("recording_id", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (!cancelled) {
-        if (error) console.error("[Recordings]", error);
-        setRows((data as Row[]) ?? []);
-        setLoading(false);
-      }
-    })().catch((e) => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("call_transcripts")
+      .select("id, call_kind, status, duration_seconds, created_at, recording_id, project_id, summary")
+      .not("recording_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) console.error("[Recordings]", error);
+    setRows((data as Row[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load().catch((e) => {
       console.error("[Recordings]", e);
-      if (!cancelled) setLoading(false);
+      setLoading(false);
     });
-    return () => {
-      cancelled = true;
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-daily-recordings", {
+        body: { limit: 50 },
+      });
+      if (error) throw error;
+      const results = (data as any)?.results ?? [];
+      const added = results.filter((r: any) => r.transcript_id && !r.skipped).length;
+      sonnerToast.success(
+        added > 0 ? `Pulled ${added} new recording${added === 1 ? "" : "s"}` : "All caught up",
+        { description: `Scanned ${(data as any)?.scanned ?? 0} recent recordings from Daily.` },
+      );
+      await load();
+    } catch (e: any) {
+      sonnerToast.error("Couldn't sync", { description: e?.message || "Try again in a moment." });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
 
   return (
     <div className="min-h-dvh bg-background pb-24">
@@ -83,11 +103,23 @@ export default function Recordings() {
         <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-2">
           <ArrowLeft className="h-3 w-3" /> Back
         </Link>
-        <h1 className="font-serif text-2xl md:text-3xl">Recordings</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Replays, transcripts and Kreto-extracted actions from every recorded call.
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="font-serif text-2xl md:text-3xl">Recordings</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Replays, transcripts and Kreto-extracted actions from every recorded call.
+            </p>
+          </div>
+          <Button type="button" size="sm" variant="outline" onClick={handleSync} disabled={syncing} className="gap-1.5 shrink-0">
+            <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Syncing…" : "Sync now"}
+          </Button>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-2">
+          Recordings finalize ~1 min after a call ends. Tap Sync now to pull the latest.
         </p>
       </header>
+
 
       <div className="px-4 py-4 space-y-3">
         {loading ? (

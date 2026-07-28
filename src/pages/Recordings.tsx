@@ -103,11 +103,23 @@ export default function Recordings() {
         <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-2">
           <ArrowLeft className="h-3 w-3" /> Back
         </Link>
-        <h1 className="font-serif text-2xl md:text-3xl">Recordings</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Replays, transcripts and Kreto-extracted actions from every recorded call.
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="font-serif text-2xl md:text-3xl">Recordings</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Replays, transcripts and Kreto-extracted actions from every recorded call.
+            </p>
+          </div>
+          <Button type="button" size="sm" variant="outline" onClick={handleSync} disabled={syncing} className="gap-1.5 shrink-0">
+            <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Syncing…" : "Sync now"}
+          </Button>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-2">
+          Recordings finalize ~1 min after a call ends. Tap Sync now to pull the latest.
         </p>
       </header>
+
 
       <div className="px-4 py-4 space-y-3">
         {loading ? (

@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { WatchReplayButton } from "@/components/calls/WatchReplayButton";
 import { CallRecapSheet } from "@/components/calls/CallRecapSheet";
 import { formatDistanceToNow } from "date-fns";
-import { Video, Sparkles, Clock, ArrowLeft, FileVideo } from "lucide-react";
+import { Video, Sparkles, Clock, ArrowLeft, FileVideo, RefreshCw } from "lucide-react";
+import { toast as sonnerToast } from "sonner";
 
 type Row = {
   id: string;

@@ -45,33 +45,52 @@ export default function Recordings() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [recapId, setRecapId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = async () => {
     if (!user?.id) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      // RLS on call_transcripts already scopes to host/participant/project member.
-      const { data, error } = await supabase
-        .from("call_transcripts")
-        .select("id, call_kind, status, duration_seconds, created_at, recording_id, project_id, summary")
-        .not("recording_id", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (!cancelled) {
-        if (error) console.error("[Recordings]", error);
-        setRows((data as Row[]) ?? []);
-        setLoading(false);
-      }
-    })().catch((e) => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("call_transcripts")
+      .select("id, call_kind, status, duration_seconds, created_at, recording_id, project_id, summary")
+      .not("recording_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) console.error("[Recordings]", error);
+    setRows((data as Row[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load().catch((e) => {
       console.error("[Recordings]", e);
-      if (!cancelled) setLoading(false);
+      setLoading(false);
     });
-    return () => {
-      cancelled = true;
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-daily-recordings", {
+        body: { limit: 50 },
+      });
+      if (error) throw error;
+      const results = (data as any)?.results ?? [];
+      const added = results.filter((r: any) => r.transcript_id && !r.skipped).length;
+      sonnerToast.success(
+        added > 0 ? `Pulled ${added} new recording${added === 1 ? "" : "s"}` : "All caught up",
+        { description: `Scanned ${(data as any)?.scanned ?? 0} recent recordings from Daily.` },
+      );
+      await load();
+    } catch (e: any) {
+      sonnerToast.error("Couldn't sync", { description: e?.message || "Try again in a moment." });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
 
   return (
     <div className="min-h-dvh bg-background pb-24">

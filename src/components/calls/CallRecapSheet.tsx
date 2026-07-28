@@ -148,7 +148,7 @@ export const CallRecapSheet = ({ open, onOpenChange, transcriptId }: Props) => {
             <span className="h-7 w-7 rounded-lg bg-primary/15 flex items-center justify-center">
               <Brain className="h-4 w-4 text-primary" />
             </span>
-            <div className="min-w-0 text-left">
+            <div className="min-w-0 text-left flex-1">
               <SheetTitle className="text-sm font-semibold truncate">Call Recap</SheetTitle>
               <p className="text-[11px] text-muted-foreground">
                 {t?.created_at ? formatDistanceToNow(new Date(t.created_at), { addSuffix: true }) : ""}
@@ -156,8 +156,12 @@ export const CallRecapSheet = ({ open, onOpenChange, transcriptId }: Props) => {
                 {pendingCount > 0 ? ` · ${pendingCount} to review` : ""}
               </p>
             </div>
+            {transcriptId && (
+              <WatchReplayButton transcriptId={transcriptId} />
+            )}
           </div>
         </SheetHeader>
+
 
         {loading && !t ? (
           <div className="flex-1 flex items-center justify-center">

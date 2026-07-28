@@ -385,6 +385,7 @@ const AppContent = () => {
             {/* Client Hub — group projects per client */}
             <Route path="/manage" element={<ProtectedRoute><ManageHub /></ProtectedRoute>} />
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+            <Route path="/recordings" element={<ProtectedRoute><Recordings /></ProtectedRoute>} />
             <Route path="/clients/:clientId" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
 
             {/* ThriveFund — Crowdfunding */}

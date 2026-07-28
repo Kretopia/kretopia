@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReportBlockDialog } from "@/components/user/ReportBlockDialog";
 import { type DailyCall } from "@daily-co/daily-js";
-import { createDailyFrame } from "@/lib/dailyFrame";
+import { createDailyFrameAsync, destroyExistingDailyFrameAsync } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PreCallLobby } from "./PreCallLobby";
@@ -115,27 +115,106 @@ export const VideoCallSheet = ({
     if (phase !== "live" || !roomUrl || !containerRef.current) return;
 
     let cancelled = false;
+    let frame: DailyCall | null = null;
+    const container = containerRef.current;
     setJoining(true);
     startedAtRef.current = Date.now();
 
-    const frame = createDailyFrame(containerRef.current, {
-      iframeStyle: { width: "100%", height: "100%", border: "0", borderRadius: "0" },
-      showLeaveButton: false,
-      showFullscreenButton: true,
-    });
-    callRef.current = frame;
+    // Track network-quality fallback state outside the async block so the
+    // event handler closes over the right variables.
+    let lowSince: number | null = null;
+    let fellBack = false;
 
-    frame
-      .join({
-        url: roomUrl,
-        token: token || undefined,
-        userName,
-        startVideoOff: !joinPrefs.cam,
-        startAudioOff: !joinPrefs.mic,
-      })
-      .then(() => {
+    (async () => {
+      try {
+        frame = await createDailyFrameAsync(container, {
+          iframeStyle: { width: "100%", height: "100%", border: "0", borderRadius: "0" },
+          showLeaveButton: false,
+          showFullscreenButton: true,
+        });
+      } catch (err: any) {
+        console.error("[VideoCallSheet] createFrame failed", err);
+        if (!cancelled) {
+          setJoining(false);
+          toast({
+            title: "Couldn't start the call",
+            description: err?.message || "Please refresh and try again.",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      if (cancelled) {
+        try { await frame.destroy(); } catch {}
+        return;
+      }
+      callRef.current = frame;
+
+      frame.on("left-meeting", () => onOpenChange(false));
+      frame.on("recording-started", (ev: any) => {
+        setRecording(true);
+        didRecordRef.current = true;
+        const startedByMe = ev?.local;
+        if (!startedByMe) {
+          toast({
+            title: "🔴 This call is being recorded",
+            description: "The host has started recording.",
+          });
+        }
+      });
+      frame.on("recording-stopped", () => setRecording(false));
+      frame.on("local-screen-share-started", () => setSharing(true));
+      frame.on("local-screen-share-stopped", () => setSharing(false));
+
+      frame.on("network-quality-change", (ev: any) => {
+        const q = ev?.threshold ?? ev?.quality;
+        const isLow = q === "low" || q === "very-low" || (typeof q === "number" && q < 25);
+        const now = Date.now();
+        if (isLow) {
+          if (lowSince === null) lowSince = now;
+          if (!fellBack && now - lowSince > 5_000) {
+            fellBack = true;
+            try {
+              void frame!.setLocalVideo(false);
+              toast({
+                title: "Switched to audio-only",
+                description: "Your connection looks weak — video is off so the call stays clear.",
+              });
+            } catch (e) {
+              console.warn("[VideoCallSheet] fallback failed", e);
+            }
+          }
+        } else {
+          lowSince = null;
+        }
+      });
+
+      frame.on("participant-updated", (ev: any) => {
+        const p = ev?.participant;
+        if (p && !p.local && p.screen) {
+          const key = `__screenSharedShown_${p.session_id}`;
+          if (!(frame as any)[key]) {
+            (frame as any)[key] = true;
+            toast({
+              title: "Screen sharing started",
+              description: `${p.user_name || "Someone"} is sharing their screen.`,
+            });
+          }
+        } else if (p && !p.local && !p.screen) {
+          delete (frame as any)[`__screenSharedShown_${p.session_id}`];
+        }
+      });
+
+      try {
+        await frame.join({
+          url: roomUrl,
+          token: token || undefined,
+          userName,
+          startVideoOff: !joinPrefs.cam,
+          startAudioOff: !joinPrefs.mic,
+        });
         if (!cancelled) setJoining(false);
-        // Auto-start recording on host's join when stage opted in pre-show.
         if (!cancelled && isHost && autoStartRecording && !backstage) {
           try {
             void frame.startRecording();
@@ -143,82 +222,18 @@ export const VideoCallSheet = ({
             console.warn("[VideoCallSheet] auto-record failed", e);
           }
         }
-      })
-      .catch((err) => {
+      } catch (err: any) {
         console.error("[VideoCallSheet] join failed", err);
-        setJoining(false);
-        toast({
-          title: "Couldn't join the call",
-          description: err?.message || "Please try again.",
-          variant: "destructive",
-        });
-      });
-
-    frame.on("left-meeting", () => onOpenChange(false));
-    frame.on("recording-started", (ev: any) => {
-      setRecording(true);
-      didRecordRef.current = true;
-      // Notify everyone in the room that recording is on (besides the
-      // person who started it). Daily already shows a small system badge,
-      // but we add an explicit toast so non-hosts see it clearly.
-      const startedByMe = ev?.local;
-      if (!startedByMe) {
-        toast({
-          title: "🔴 This call is being recorded",
-          description: "The host has started recording.",
-        });
-      }
-    });
-    frame.on("recording-stopped", () => setRecording(false));
-    frame.on("local-screen-share-started", () => setSharing(true));
-    frame.on("local-screen-share-stopped", () => setSharing(false));
-
-    // Auto-fallback to audio-only when network quality drops to low for
-    // 5+ seconds. Daily emits "network-quality-change" with quality 0-100;
-    // <25 is "low". We only auto-disable video, never re-enable.
-    let lowSince: number | null = null;
-    let fellBack = false;
-    frame.on("network-quality-change", (ev: any) => {
-      const q = ev?.threshold ?? ev?.quality;
-      // Daily's `threshold` is "good" | "low" | "very-low"
-      const isLow = q === "low" || q === "very-low" || (typeof q === "number" && q < 25);
-      const now = Date.now();
-      if (isLow) {
-        if (lowSince === null) lowSince = now;
-        if (!fellBack && now - lowSince > 5_000) {
-          fellBack = true;
-          try {
-            void frame.setLocalVideo(false);
-            toast({
-              title: "Switched to audio-only",
-              description: "Your connection looks weak — video is off so the call stays clear.",
-            });
-          } catch (e) {
-            console.warn("[VideoCallSheet] fallback failed", e);
-          }
-        }
-      } else {
-        lowSince = null;
-      }
-    });
-
-    // Notify viewers when someone shares their screen.
-    frame.on("participant-updated", (ev: any) => {
-      const p = ev?.participant;
-      if (p && !p.local && p.screen) {
-        // Only fire once per share by checking a per-participant marker.
-        const key = `__screenSharedShown_${p.session_id}`;
-        if (!(frame as any)[key]) {
-          (frame as any)[key] = true;
+        if (!cancelled) {
+          setJoining(false);
           toast({
-            title: "Screen sharing started",
-            description: `${p.user_name || "Someone"} is sharing their screen.`,
+            title: "Couldn't join the call",
+            description: err?.message || "Please try again.",
+            variant: "destructive",
           });
         }
-      } else if (p && !p.local && !p.screen) {
-        delete (frame as any)[`__screenSharedShown_${p.session_id}`];
       }
-    });
+    })();
 
     return () => {
       cancelled = true;
@@ -241,7 +256,6 @@ export const VideoCallSheet = ({
           });
       }
 
-      // Post-call recap nudge — only meaningful for calls > 30s
       if (duration > 30) {
         if (didRecordRef.current) {
           sonnerToast.success("Recap is being prepared", {
@@ -260,11 +274,19 @@ export const VideoCallSheet = ({
         }
       }
 
-      try { frame.leave(); } catch {}
-      try { frame.destroy(); } catch {}
+      const f = frame ?? callRef.current;
       callRef.current = null;
+      // Fire-and-forget async teardown; awaiting destroy prevents the next
+      // mount from crashing on a half-torn-down singleton.
+      void (async () => {
+        try { await f?.leave(); } catch {}
+        try { await f?.destroy(); } catch {}
+        // Belt-and-braces: ensure the singleton slot is empty for the next call.
+        try { await destroyExistingDailyFrameAsync(); } catch {}
+      })();
     };
-  }, [phase, roomUrl, token, callId, userName, directCallId, onOpenChange, joinPrefs, toast, navigate]);
+  }, [phase, roomUrl, token, callId, userName, directCallId, onOpenChange, joinPrefs, toast, navigate, isHost, autoStartRecording, backstage]);
+
 
   const handleEnd = async () => {
     try { await callRef.current?.leave(); } catch {}

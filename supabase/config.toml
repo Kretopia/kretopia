@@ -1,5 +1,10 @@
 project_id = "kwmcocsitwssrtzkdojh"
 
+[functions.integration-oauth-callback]
+verify_jwt = false
+
+
+
 [functions.thrive-voice-turn]
 verify_jwt = false
 

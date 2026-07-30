@@ -172,6 +172,7 @@ const FundCampaign = lazy(() => import("./pages/FundCampaign"));
 const FundManage = lazy(() => import("./pages/FundManage"));
 const ManageHub = lazy(() => import("./pages/ManageHub"));
 const Recordings = lazy(() => import("./pages/Recordings"));
+const StudioImport = lazy(() => import("./pages/StudioImport"));
 const ShareEventRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareEventRedirect })));
 const ShareMagazineRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareMagazineRedirect })));
 const ShareCampaignRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareCampaignRedirect })));
@@ -374,6 +375,7 @@ const AppContent = () => {
             {/* ThriveDesk - Lightweight Project Workspace */}
             <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
             <Route path="/desk/projects" element={<Navigate to="/desk" replace />} />
+            <Route path="/studio/import" element={<ProtectedRoute><StudioImport /></ProtectedRoute>} />
             <Route path="/shortlists" element={<ProtectedRoute><Shortlists /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             <Route path="/desk/:id/thrive/generate" element={<ProtectedRoute><ThriveGenerate /></ProtectedRoute>} />

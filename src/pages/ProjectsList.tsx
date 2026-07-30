@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, MoreHorizontal, FolderKanban, Plus, Search, X } from "lucide-react";
+import { Loader2, MoreHorizontal, FolderKanban, Plus, Search, X, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -199,16 +199,27 @@ const ProjectsList = () => {
             </span>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowWizard(true)}
-          className="h-8 w-8 text-muted-foreground"
-          title="Advanced setup"
-          aria-label="Advanced setup"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/studio/import")}
+            className="h-8 gap-1.5 rounded-full text-xs"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Import
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowWizard(true)}
+            className="h-8 w-8 text-muted-foreground"
+            title="Advanced setup"
+            aria-label="Advanced setup"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </div>
       </header>
 
       {/* Pending Invitations (only if any) */}

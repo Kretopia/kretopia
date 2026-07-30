@@ -27,15 +27,16 @@ export const ImportedSourcesCard = ({ projectId }: { projectId: string }) => {
   const [rows, setRows] = useState<Row[]>([]);
 
   useEffect(() => {
-    supabase
-      .from("import_jobs")
-      .select("id, provider, source_name, successful_items, completed_at, status")
-      .eq("project_id", projectId)
-      .eq("status", "completed")
-      .order("completed_at", { ascending: false })
-      .limit(4)
-      .then(({ data }) => setRows((data ?? []) as Row[]))
-      .catch(() => undefined);
+    (async () => {
+      const { data } = await supabase
+        .from("import_jobs")
+        .select("id, provider, source_name, successful_items, completed_at, status")
+        .eq("project_id", projectId)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false })
+        .limit(4);
+      setRows((data ?? []) as Row[]);
+    })().catch(() => undefined);
   }, [projectId]);
 
   if (rows.length === 0) return null;

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { partnerSubmissionSchema, validateInput, checkContentLength } from '../_shared/validation.ts';
+import { partnerSubmissionSchema, validateInput } from '../_shared/validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +18,47 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
     
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const submissionData = await req.json();
+
+    // --- Authorization: submissions require an authenticated user ---
+    const authHeader = req.headers.get('Authorization') || '';
+    const jwt = authHeader.replace('Bearer ', '').trim();
+    const { data: authData } = jwt
+      ? await supabase.auth.getUser(jwt)
+      : { data: { user: null } as any };
+    const user = authData?.user;
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    const rawBody = await req.json();
+    const validation = validateInput(partnerSubmissionSchema, {
+      company_name: rawBody.company_name,
+      contact_name: rawBody.contact_name,
+      contact_email: rawBody.contact_email,
+      contact_phone: rawBody.contact_phone,
+      website_url: rawBody.website_url,
+      description: rawBody.description,
+      category: rawBody.category,
+      discount_type: rawBody.discount_type,
+      discount_value: rawBody.discount_value,
+      terms: rawBody.terms,
+      tier_required: rawBody.tier_required ?? 'free',
+    });
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    const submissionData: any = {
+      ...validation.data,
+      logo_url: typeof rawBody.logo_url === 'string' ? rawBody.logo_url.slice(0, 2048) : null,
+      redemption_url: typeof rawBody.redemption_url === 'string' ? rawBody.redemption_url.slice(0, 2048) : null,
+      redemption_code: typeof rawBody.redemption_code === 'string' ? rawBody.redemption_code.slice(0, 200) : null,
+    };
 
     console.log('Processing partner submission:', submissionData.company_name);
 
@@ -39,22 +79,15 @@ Return ONLY the category name (lowercase, one word). Examples: "cafe", "coworkin
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'user',
-            content: aiPrompt
-          }
-        ],
+        messages: [{ role: 'user', content: aiPrompt }],
       }),
     });
 
     let aiCategory = submissionData.category; // fallback to user-selected
-    
+
     if (aiResponse.ok) {
       const aiData = await aiResponse.json();
       const suggestedCategory = aiData.choices[0]?.message?.content?.trim().toLowerCase();
-      
-      // Validate AI response
       const validCategories = ['coworking', 'software', 'equipment', 'services', 'wellness', 'education', 'cafe', 'other'];
       if (validCategories.includes(suggestedCategory)) {
         aiCategory = suggestedCategory;
@@ -62,52 +95,30 @@ Return ONLY the category name (lowercase, one word). Examples: "cafe", "coworkin
       }
     }
 
-    // Auto-approve: Insert directly into partner_discounts
-    const { data: discount, error: discountError } = await supabase
-      .from('partner_discounts')
-      .insert({
-        partner_name: submissionData.company_name,
-        partner_logo_url: submissionData.logo_url,
-        discount_type: submissionData.discount_type,
-        discount_value: submissionData.discount_value,
-        description: submissionData.description,
-        terms: submissionData.terms,
-        category: aiCategory,
-        tier_required: submissionData.tier_required,
-        redemption_url: submissionData.redemption_url,
-        redemption_code: submissionData.redemption_code,
-        is_active: true
-      })
-      .select()
-      .single();
-
-    if (discountError) {
-      console.error('Error creating discount:', discountError);
-      throw discountError;
-    }
-
-    // Record in submissions table as approved
-    const { error: submissionError } = await supabase
+    // Record submission as PENDING — publishing happens only via the admin review flow.
+    const { data: submission, error: submissionError } = await supabase
       .from('partner_submissions')
       .insert({
         ...submissionData,
         category: aiCategory,
-        status: 'approved',
-        reviewed_at: new Date().toISOString()
-      });
+        status: 'pending',
+      })
+      .select('id')
+      .single();
 
     if (submissionError) {
       console.error('Error recording submission:', submissionError);
-      // Don't throw - discount already created
+      throw submissionError;
     }
 
-    console.log('Partner auto-approved successfully:', submissionData.company_name);
+    console.log('Partner submission received for review:', submissionData.company_name);
 
     return new Response(
       JSON.stringify({
         success: true,
+        status: 'pending',
         category: aiCategory,
-        discount_id: discount.id
+        submission_id: submission.id
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

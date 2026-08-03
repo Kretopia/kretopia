@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { EscrowAuthError } from "../_shared/escrowAuth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,6 +44,19 @@ serve(async (req) => {
     }
 
     logStep("Batch payout request", { projectId, count: milestoneIds.length });
+
+    // --- Authorization: only the project's paying client or owner may release funds ---
+    const { data: project } = await supabaseAdmin
+      .from('projects')
+      .select('id, created_by, client_user_id')
+      .eq('id', projectId)
+      .maybeSingle();
+    if (!project) throw new EscrowAuthError("Project not found", 404);
+    const authorizedPayers = [project.client_user_id, project.created_by].filter(Boolean);
+    if (!authorizedPayers.includes(user.id)) {
+      throw new EscrowAuthError("You are not authorized to release payments for this project");
+    }
+    logStep("Authorization passed", { userId: user.id, projectId });
 
     // Fetch all eligible milestones
     const { data: milestones, error: fetchError } = await supabaseAdmin
@@ -169,10 +183,11 @@ serve(async (req) => {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
+    const status = error instanceof EscrowAuthError ? error.status : 500;
+    logStep("ERROR", { message: errorMessage, status });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status,
     });
   }
 });

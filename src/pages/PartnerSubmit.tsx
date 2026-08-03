@@ -86,8 +86,8 @@ export default function PartnerSubmit() {
 
       setSubmitted(true);
       toast({
-        title: "Partnership activated!",
-        description: "Your discount is now live on the platform and visible to all members."
+        title: "Submission received!",
+        description: "Our team will review your partner discount before it goes live."
       });
     } catch (error: any) {
       console.error('Submission error:', error);

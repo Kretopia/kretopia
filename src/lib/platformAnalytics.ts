@@ -125,20 +125,14 @@ const beaconInsert = (row: Record<string, unknown>) => {
   const url = `${SUPABASE_URL}/rest/v1/site_analytics`;
   const body = JSON.stringify(row);
   try {
-    if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-      // PostgREST accepts apikey/Authorization via query? No — must use headers.
-      // sendBeacon can only send Blob; use a small POST via keepalive fetch instead
-      // when we need headers. Try sendBeacon w/ Blob first if the project allows
-      // public inserts, otherwise fall back to keepalive fetch.
-      const ok = navigator.sendBeacon(
-        `${url}?apikey=${encodeURIComponent(SUPABASE_ANON_KEY)}`,
-        new Blob([body], { type: "application/json" })
-      );
-      if (ok) return;
-    }
+    // NOTE: navigator.sendBeacon always sends with credentials mode "include",
+    // which CORS rejects against PostgREST's wildcard Access-Control-Allow-Origin.
+    // Use a keepalive fetch with credentials omitted instead — it also survives
+    // page unload and lets us pass the apikey as a header rather than a query param.
     void fetch(url, {
       method: "POST",
       keepalive: true,
+      credentials: "omit",
       headers: {
         "Content-Type": "application/json",
         apikey: SUPABASE_ANON_KEY,

@@ -175,17 +175,20 @@ export default function Circle() {
 
         {/* Calm header — matches Scout/About/Subscription pattern */}
         <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">
-          <div className="container mx-auto max-w-5xl px-4 pt-7 pb-4 sm:pt-9 sm:pb-6">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-2">
+          <div className="container mx-auto max-w-5xl px-4 pt-8 pb-6 sm:pt-12 sm:pb-8">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))]">
                   Stages
                 </p>
-                <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
+                <h1 className="text-3xl sm:text-[2.75rem] font-semibold tracking-tight text-foreground leading-[1.1]">
                   Where creators{" "}
                   <span className="italic text-[hsl(var(--signal-teal))]">meet</span>
                   <span className="text-foreground/60">, live.</span>
                 </h1>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Drop into a live session, match with collaborators, or browse the network.
+                </p>
               </div>
               <Button
                 variant="ghost"
@@ -199,7 +202,8 @@ export default function Circle() {
             </div>
 
             {/* Action row: Match · Browse · Network (Filters live inside each sheet) */}
-            <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-none">
+            <div className="mt-6 flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-none">
+
               <Button
                 variant="outline"
                 size="sm"

@@ -71,9 +71,15 @@ serve(async (req) => {
         .from("speed_sessions")
         .select("id, title, starts_at, slot_seconds, mode, duration_min, theme")
         .eq("id", session_id).maybeSingle();
+      // NOTE: `profiles` has no `email` column — resolve it from auth.users.
       const { data: prof } = await admin
-        .from("profiles").select("full_name, email").eq("user_id", userId).maybeSingle();
-      if (sess && prof?.email) {
+        .from("profiles").select("full_name").eq("user_id", userId).maybeSingle();
+      let rsvpEmail: string | null = null;
+      try {
+        const { data: u } = await admin.auth.admin.getUserById(userId);
+        rsvpEmail = u?.user?.email ?? null;
+      } catch (e) { console.error("[rsvp] getUserById", userId, e); }
+      if (sess && rsvpEmail) {
         const startsAt = new Date(sess.starts_at);
         const startsWhen = startsAt.toLocaleString("en-US", {
           weekday: "long", month: "short", day: "numeric",
@@ -82,7 +88,7 @@ serve(async (req) => {
         await admin.functions.invoke("send-transactional-email", {
           body: {
             templateName: "speed-session-rsvp-confirmed",
-            recipientEmail: prof.email,
+            recipientEmail: rsvpEmail,
             idempotencyKey: `ss-rsvp-${session_id}-${userId}`,
             templateData: {
               attendeeName: prof.full_name,

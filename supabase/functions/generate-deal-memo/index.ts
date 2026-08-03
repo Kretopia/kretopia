@@ -85,7 +85,8 @@ Deno.serve(async (req) => {
     // Fetch profile names
     const { data: profiles } = await admin
       .from("profiles")
-      .select("user_id, full_name, email")
+      // NOTE: `profiles` has no `email` column — selecting it errors the query.
+      .select("user_id, full_name")
       .in("user_id", [posterId, creatorId]);
 
     const posterProfile = profiles?.find((p) => p.user_id === posterId);

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import kMarkAsset from "@/assets/brand/kretopia-k-mark.png.asset.json";
 import wordmarkAsset from "@/assets/brand/kretopia-wordmark.png.asset.json";
-import lockupAsset from "@/assets/brand/kretopia-lockup.png.asset.json";
+
 
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg";

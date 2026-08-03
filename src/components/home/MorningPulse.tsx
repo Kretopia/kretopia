@@ -18,7 +18,9 @@ interface ProjectRow {
   title: string;
   status: string | null;
   updated_at: string;
-  cover_color?: string | null;
+  mood?: string | null;
+  cover_url?: string | null;
+
   workspace_type?: string | null;
 }
 

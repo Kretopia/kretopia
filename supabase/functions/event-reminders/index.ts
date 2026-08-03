@@ -133,12 +133,17 @@ async function sendReminder(
   const sentPush = new Set((alreadySent || []).filter((r: any) => r.channel === "in_app").map((r: any) => r.user_id));
 
   for (const p of participants as { user_id: string; check_in_token: string | null }[]) {
-    // Get profile for email + name
+    // Get profile for name; email lives in auth.users (profiles has no `email`).
     const { data: profile } = await admin
       .from("profiles")
-      .select("email, full_name, first_name")
+      .select("full_name, first_name")
       .eq("user_id", p.user_id)
       .maybeSingle();
+    let guestEmail: string | null = null;
+    try {
+      const { data: u } = await admin.auth.admin.getUserById(p.user_id);
+      guestEmail = u?.user?.email ?? null;
+    } catch (e) { console.error("[event-reminders] getUserById", p.user_id, e); }
 
     const startDate = new Date(ev.start_time);
 

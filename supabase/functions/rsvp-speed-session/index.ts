@@ -88,7 +88,7 @@ serve(async (req) => {
         await admin.functions.invoke("send-transactional-email", {
           body: {
             templateName: "speed-session-rsvp-confirmed",
-            recipientEmail: prof.email,
+            recipientEmail: rsvpEmail,
             idempotencyKey: `ss-rsvp-${session_id}-${userId}`,
             templateData: {
               attendeeName: prof.full_name,

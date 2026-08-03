@@ -223,7 +223,8 @@ export const UnifiedHome = () => {
       // not just themselves (profiles table RLS hides non-connected rows).
       let creatorsQuery = supabase
         .from("public_profiles_safe")
-        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills, primary_intent, primary_intents")
+        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills")
+
         .not("avatar_url", "is", null)
         .not("full_name", "is", null)
         .order("created_at", { ascending: false })

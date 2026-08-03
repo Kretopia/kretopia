@@ -12,6 +12,7 @@ import {
   AlertCircle, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 interface DiscoveredProfile {
   name: string;
@@ -205,7 +206,7 @@ export const AIProfileDiscoveryStep = ({
       // Directly merge the unclaimed profile data
       const { data: unclaimedData } = await supabase
         .from("profiles")
-        .select("*")
+        .select(PROFILE_SELECT)
         .eq("user_id", unclaimedMatch.user_id)
         .single();
 

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 interface TestResult {
   test: string;
@@ -51,7 +52,7 @@ export class EdgeCaseTests {
       // Test if user can access their own profile
       const { data: profile, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select(PROFILE_SELECT)
         .eq("user_id", user.id)
         .single();
 
@@ -180,7 +181,7 @@ export class EdgeCaseTests {
       // Test profile data completeness
       const { data: profile } = await supabase
         .from("profiles")
-        .select("*")
+        .select(PROFILE_SELECT)
         .eq("user_id", user.id)
         .single();
 
@@ -436,7 +437,7 @@ export class EdgeCaseTests {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("*")
+        .select(PROFILE_SELECT)
         .eq("user_id", user.id)
         .single();
 

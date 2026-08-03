@@ -67,6 +67,7 @@ import { GigRailCard } from "@/components/opportunity/GigRailCard";
 import { intentBoostForCreator, intentBoostForGig, intentBoostForEvent } from "@/lib/intentMatching";
 import { normalizeIntents } from "@/lib/intents";
 import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -418,7 +419,7 @@ export const UnifiedHome = () => {
     const fetchAuth = async () => {
       const [profileRes, profileFullRes, creditsCount, connectionsCount] = await Promise.all([
         supabase.from("profiles").select("full_name, avatar_url, role, verification_tier").eq("user_id", user.id).maybeSingle(),
-        supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select(PROFILE_SELECT).eq("user_id", user.id).maybeSingle(),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("connections").select("id", { count: "exact", head: true }).or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`).eq("status", "accepted"),
       ]);

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Search } from "lucide-react";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 export function UsersTab() {
   const [users, setUsers] = useState<any[]>([]);
@@ -38,7 +39,7 @@ export function UsersTab() {
       const [profilesRes, rolesRes] = await Promise.all([
         supabase
           .from("profiles")
-          .select("*")
+          .select(PROFILE_SELECT)
           .order("created_at", { ascending: false }),
         supabase.from("user_roles").select("user_id, role"),
       ]);

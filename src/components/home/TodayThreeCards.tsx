@@ -46,7 +46,7 @@ export function TodayThreeCards() {
     const approvalsP = sb
       .from("agent_proposals")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
+      .eq("owner_user_id", user.id)
       .eq("status", "pending")
       .then((r: any) => r.count ?? 0, () => 0);
 
@@ -61,10 +61,11 @@ export function TodayThreeCards() {
     const gigP = sb
       .from("scouted_gigs")
       .select("id, title, company, fit_score")
-      .eq("user_id", user.id)
+      .eq("target_user_id", user.id)
       .order("fit_score", { ascending: false })
       .limit(1)
       .then((r: any) => (r.data?.[0] ?? null), () => null);
+
 
     const invP = sb
       .from("invoices")

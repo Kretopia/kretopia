@@ -60,13 +60,25 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Load all profiles in one go
+      // NOTE: `profiles` has no `email` column — selecting it 500s the job.
+      // Resolve names from profiles and emails from auth.users via admin SDK.
       const { data: profs } = await admin
         .from("profiles")
-        .select("user_id, full_name, avatar_url, role, email")
+        .select("user_id, full_name, avatar_url, role")
         .in("user_id", allUsers);
       const profMap = new Map<string, any>();
       (profs ?? []).forEach((p) => profMap.set(p.user_id, p));
+      for (const uid of allUsers) {
+        try {
+          const { data: u } = await admin.auth.admin.getUserById(uid);
+          const email = u?.user?.email ?? null;
+          const existing = profMap.get(uid) ?? { user_id: uid };
+          profMap.set(uid, { ...existing, email });
+        } catch (e) {
+          console.error("[recap] getUserById", uid, e);
+        }
+      }
+
 
       // Pull connections + saves anchored to this session window
       const windowLo = new Date(new Date(s.starts_at).getTime() - 5 * 60_000).toISOString();

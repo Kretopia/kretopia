@@ -153,18 +153,45 @@ export default function GuestPay() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
+                    disabled={codeSent}
                     required
                   />
                 </div>
+                {codeSent && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="code">Verification code</Label>
+                    <Input
+                      id="code"
+                      inputMode="numeric"
+                      placeholder="6-digit code"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      autoComplete="one-time-code"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="text-xs text-muted-foreground underline"
+                      onClick={() => {
+                        setCodeSent(false);
+                        setCode("");
+                      }}
+                    >
+                      Use a different email
+                    </button>
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={submitting}>
                   {submitting ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Continuing…</>
+                  ) : codeSent ? (
+                    "Verify & continue"
                   ) : (
-                    "Continue"
+                    "Email me a code"
                   )}
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Your wallet stays on this device. No password needed.
+                  We email a one-time code to confirm the address is yours. No password needed.
                 </p>
               </form>
             </CardContent>

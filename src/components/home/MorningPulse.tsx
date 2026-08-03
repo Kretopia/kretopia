@@ -201,7 +201,7 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
           </div>
           <div className="flex sm:grid sm:grid-cols-3 gap-2.5 overflow-x-auto sm:overflow-visible -mx-1 px-1 pb-1 scrollbar-hide snap-x snap-mandatory">
             {projects.map((p) => {
-              const grad = moodGradient ? moodGradient(p.cover_color || p.workspace_type || "general") : null;
+              const grad = moodGradient ? moodGradient(p.mood || p.workspace_type || "general") : null;
               return (
                 <button
                   key={p.id}

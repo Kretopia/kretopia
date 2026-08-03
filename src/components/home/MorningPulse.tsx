@@ -18,7 +18,9 @@ interface ProjectRow {
   title: string;
   status: string | null;
   updated_at: string;
-  cover_color?: string | null;
+  mood?: string | null;
+  cover_url?: string | null;
+
   workspace_type?: string | null;
 }
 
@@ -62,7 +64,7 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
         safe<any[]>(
           (supabase.from("project_tasks") as any)
             .select("id, due_date, status")
-            .eq("assignee_id", user.id)
+            .eq("assigned_to", user.id)
             .neq("status", "done")
             .lte("due_date", dayEnd),
           [],
@@ -71,19 +73,20 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
         safe<any[]>(
           (supabase.from("invoices") as any)
             .select("total_amount, status")
-            .eq("user_id", user.id)
+            .eq("issued_by", user.id)
             .in("status", ["sent", "overdue"]),
           [],
         ),
         safe<any[]>(
           (supabase.from("projects") as any)
-            .select("id, title, status, updated_at, cover_color, workspace_type")
+            .select("id, title, status, updated_at, mood, cover_url, workspace_type")
             .neq("status", "completed")
             .neq("status", "archived")
             .order("updated_at", { ascending: false })
             .limit(3),
           [],
         ),
+
       ]);
 
       if (cancelled) return;
@@ -198,7 +201,7 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
           </div>
           <div className="flex sm:grid sm:grid-cols-3 gap-2.5 overflow-x-auto sm:overflow-visible -mx-1 px-1 pb-1 scrollbar-hide snap-x snap-mandatory">
             {projects.map((p) => {
-              const grad = moodGradient ? moodGradient(p.cover_color || p.workspace_type || "general") : null;
+              const grad = moodGradient ? moodGradient(p.mood || p.workspace_type || "general") : null;
               return (
                 <button
                   key={p.id}

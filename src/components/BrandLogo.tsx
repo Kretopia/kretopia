@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import kMarkAsset from "@/assets/brand/kretopia-k-mark.png.asset.json";
 import wordmarkAsset from "@/assets/brand/kretopia-wordmark.png.asset.json";
-import lockupAsset from "@/assets/brand/kretopia-lockup.png.asset.json";
+
 
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg";
@@ -36,42 +36,35 @@ export function BrandLogo({
 }: BrandLogoProps) {
   const cfg = sizeConfig[size];
 
+  const showMark = lockup || !textOnly;
+  const showWord = lockup || !iconOnly;
+
   const content = (
     <span className={cn("flex items-center shrink-0", cfg.gap, className)}>
-      {lockup ? (
+      {showMark && (
         <img
-          src={lockupAsset.url}
+          src={kMarkAsset.url}
           alt="Kretopia"
-          className={cn(cfg.lockup, "w-auto select-none object-contain")}
+          className={cn(cfg.mark, "select-none object-contain")}
           draggable={false}
         />
-      ) : (
-        <>
-          {!textOnly && (
-            <img
-              src={kMarkAsset.url}
-              alt="Kretopia"
-              className={cn(cfg.mark, "select-none object-contain")}
-              draggable={false}
-            />
-          )}
-          {!iconOnly && (
-            <img
-              src={wordmarkAsset.url}
-              alt="kretopia"
-              className={cn(cfg.text, "w-auto select-none object-contain")}
-              draggable={false}
-            />
-          )}
-        </>
+      )}
+      {showWord && (
+        <img
+          src={wordmarkAsset.url}
+          alt="kretopia"
+          className={cn(cfg.text, "w-auto select-none object-contain")}
+          draggable={false}
+        />
       )}
       {showBeta && (
-        <span className="hidden sm:inline-block text-white border-0 text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md leading-none bg-k-purple-dream">
-          BETA
+        <span className="hidden sm:inline-flex items-center border border-white/20 text-foreground/70 text-[9px] uppercase tracking-[0.18em] font-semibold px-1.5 py-0.5 rounded-md leading-none">
+          Beta
         </span>
       )}
     </span>
   );
+
 
   if (linkToHome) {
     return (

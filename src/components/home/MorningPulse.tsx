@@ -62,7 +62,7 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
         safe<any[]>(
           (supabase.from("project_tasks") as any)
             .select("id, due_date, status")
-            .eq("assignee_id", user.id)
+            .eq("assigned_to", user.id)
             .neq("status", "done")
             .lte("due_date", dayEnd),
           [],
@@ -71,19 +71,20 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
         safe<any[]>(
           (supabase.from("invoices") as any)
             .select("total_amount, status")
-            .eq("user_id", user.id)
+            .eq("issued_by", user.id)
             .in("status", ["sent", "overdue"]),
           [],
         ),
         safe<any[]>(
           (supabase.from("projects") as any)
-            .select("id, title, status, updated_at, cover_color, workspace_type")
+            .select("id, title, status, updated_at, mood, cover_url, workspace_type")
             .neq("status", "completed")
             .neq("status", "archived")
             .order("updated_at", { ascending: false })
             .limit(3),
           [],
         ),
+
       ]);
 
       if (cancelled) return;

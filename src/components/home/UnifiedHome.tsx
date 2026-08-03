@@ -449,9 +449,13 @@ export const UnifiedHome = () => {
       />
 
       {/* ═══════════ GUEST LANDING — Kretopia v1 (now canonical) ═══════════ */}
-      {!user && (
+      {/* Never show the public hero while the session is still resolving —
+          otherwise signed-in users bounce back to the landing page on refresh. */}
+      {!user && !authLoading && (
         <KretopiaLanding onSearchSubmit={handleHeroClaimSearch} />
       )}
+      {!user && authLoading && <div className="min-h-[60vh]" aria-busy="true" />}
+
 
       {/* Live gigs strip removed — Smart Gig Scout is the new front door */}
 

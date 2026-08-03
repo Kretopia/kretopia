@@ -98,7 +98,7 @@ const SoundStagesSection = () => {
 };
 
 export const UnifiedHome = () => {
-  const { user, subscriptionInfo } = useAuth();
+  const { user, subscriptionInfo, loading: authLoading } = useAuth();
   const { t } = useTranslation();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
   const navigate = useNavigate();

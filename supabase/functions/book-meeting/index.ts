@@ -131,7 +131,9 @@ serve(async (req) => {
       .from("meetings")
       .insert({
         host_id: ownerId,
-        source: "booking",
+        // meetings_source_check only allows: studio | dm | profile | event | adhoc | circle
+        source: "profile",
+
         title,
         room_name: roomName,
         room_url: room.url,

@@ -21,6 +21,7 @@ import { LiveActivityTicker } from "@/components/scene/LiveActivityTicker";
 import { useTranslation } from "react-i18next";
 import { useAccountTone } from "@/hooks/useAccountTone";
 import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 const Scene = () => {
   const location = useLocation();
@@ -38,7 +39,7 @@ const Scene = () => {
     if (!user) return;
     const check = async () => {
       const [profileRes, creditsRes, portfolioRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("profiles").select(PROFILE_SELECT).eq("user_id", user.id).single(),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("source", "portfolio"),
       ]);

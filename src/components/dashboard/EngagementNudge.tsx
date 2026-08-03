@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getRemainingSwipes } from "@/lib/subscriptionLimits";
 import { 
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
   Zap, 
   Users, 
   Briefcase, 
@@ -37,7 +38,7 @@ export const EngagementNudge = () => {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("*")
+        .select(PROFILE_SELECT)
         .eq("user_id", user.id)
         .maybeSingle();
 

@@ -7,6 +7,7 @@ import { Sparkles, TrendingUp, MapPin, Briefcase, ChevronRight, RefreshCw } from
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 interface Recommendation {
   id: string;
@@ -41,7 +42,7 @@ export const DailyRecommendations = ({ onSelect, activeTab }: DailyRecommendatio
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("*")
+        .select(PROFILE_SELECT)
         .eq("user_id", user.id)
         .single();
 

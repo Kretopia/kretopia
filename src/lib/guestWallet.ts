@@ -72,7 +72,16 @@ async function callFn<T>(name: string, init: RequestInit & { withToken?: boolean
   return json as T;
 }
 
-export async function startGuestSession(email: string) {
+/** Step 1: emails a 6-digit verification code to prove email ownership. */
+export async function requestGuestCode(email: string) {
+  return callFn<{ requiresCode: true }>("guest-wallet-session", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+/** Step 2: exchanges the emailed code for a guest wallet session. */
+export async function startGuestSession(email: string, code: string) {
   const data = await callFn<{
     token: string;
     walletId: string;
@@ -80,7 +89,7 @@ export async function startGuestSession(email: string) {
     currency: string;
   }>("guest-wallet-session", {
     method: "POST",
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, code }),
   });
   setGuestToken(data.token);
   return data;

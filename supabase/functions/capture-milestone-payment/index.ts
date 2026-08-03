@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { assertCanReleaseMilestone, EscrowAuthError, loadMilestoneForIntent } from "../_shared/escrowAuth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,6 +53,17 @@ serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
+
+    // --- Authorization: only the payer (or the project's client/owner) may release escrow ---
+    const authMilestone = await loadMilestoneForIntent(supabaseAdmin, milestoneId, paymentIntentId);
+    const intentForAuth = await stripe.paymentIntents.retrieve(paymentIntentId);
+    await assertCanReleaseMilestone(
+      supabaseAdmin,
+      authMilestone,
+      user.id,
+      (intentForAuth.metadata || {}) as Record<string, string>,
+    );
+    logStep("Authorization passed", { userId: user.id, milestoneId });
 
     let result;
     let newStatus;
@@ -333,10 +345,11 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in capture payment", { message: errorMessage });
+    const status = error instanceof EscrowAuthError ? error.status : 500;
+    logStep("ERROR in capture payment", { message: errorMessage, status });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status,
     });
   }
 });

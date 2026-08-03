@@ -8,6 +8,7 @@ import { Loader2, Wand2, CheckCircle2, ArrowRight, Globe, Sparkles } from "lucid
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 const TEMPLATE_NAMES: Record<string, string> = {
   "bold-electric": "Bold Electric",
@@ -52,7 +53,7 @@ export const AIWebsiteGenerator = ({ open, onOpenChange, onComplete }: Props) =>
     try {
       // Fetch all profile data in parallel
       const [profileRes, creditsRes, servicesRes, endorsementsRes, reviewsRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('profiles').select(PROFILE_SELECT).eq('user_id', user.id).maybeSingle(),
         supabase.from('credits').select('*').eq('user_id', user.id).order('year', { ascending: false }).limit(20),
         supabase.from('creator_services').select('*').eq('user_id', user.id).eq('is_active', true),
         supabase.from('credit_endorsements').select('*').eq('requested_by', user.id).eq('status', 'endorsed').limit(10),

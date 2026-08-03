@@ -24,7 +24,7 @@ export function useRepliesOwed(pollMs = 60_000) {
         const { data: inbound } = await (supabase as any)
           .from("messages")
           .select("sender_id, created_at")
-          .eq("recipient_id", user.id)
+          .eq("receiver_id", user.id)
           .gte("created_at", cutoff)
           .order("created_at", { ascending: false })
           .limit(200);
@@ -42,16 +42,16 @@ export function useRepliesOwed(pollMs = 60_000) {
 
         const { data: outbound } = await (supabase as any)
           .from("messages")
-          .select("recipient_id, created_at")
+          .select("receiver_id, created_at")
           .eq("sender_id", user.id)
-          .in("recipient_id", senderIds)
+          .in("receiver_id", senderIds)
           .gte("created_at", cutoff)
           .order("created_at", { ascending: false })
           .limit(400);
 
         const lastOutbound = new Map<string, string>();
         for (const m of (outbound || [])) {
-          if (!lastOutbound.has(m.recipient_id)) lastOutbound.set(m.recipient_id, m.created_at);
+          if (!lastOutbound.has(m.receiver_id)) lastOutbound.set(m.receiver_id, m.created_at);
         }
 
         let owed = 0;

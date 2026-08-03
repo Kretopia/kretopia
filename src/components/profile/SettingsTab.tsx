@@ -13,6 +13,7 @@ import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, IdCar
 import { ShareableCreatorCard } from "./ShareableCreatorCard";
 import { useProfileContext } from "@/contexts/ProfileContext";
 import { StorageUsageCard } from "./StorageUsageCard";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 export const SettingsTab = () => {
   const { toast } = useToast();
@@ -125,7 +126,7 @@ export const SettingsTab = () => {
       // Fetch user data
       const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select(PROFILE_SELECT)
         .eq('user_id', user.id)
         .single();
 

@@ -62,6 +62,7 @@ import { HireMeTrustBar } from "@/components/passport/HireMeTrustBar";
 import { PassportMomentum } from "@/components/passport/PassportMomentum";
 import { BookedThisMonthChip } from "@/components/passport/BookedThisMonthChip";
 import { ReplySLABadge } from "@/components/passport/ReplySLABadge";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 interface Profile {
   user_id: string;
@@ -151,7 +152,7 @@ const ViewProfile = () => {
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(PROFILE_SELECT)
         .eq('user_id', userId)
         .maybeSingle();
 

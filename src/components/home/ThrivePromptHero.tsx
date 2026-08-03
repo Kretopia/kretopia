@@ -162,7 +162,7 @@ export function ThrivePromptHero() {
             .maybeSingle(),
           supabase.from("profiles").select("bio,avatar_url,primary_intent,primary_intents").eq("user_id", user.id).maybeSingle(),
           supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-          supabase.from("connections").select("id", { count: "exact", head: true }).or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`).eq("status", "accepted"),
+          supabase.from("connections").select("id", { count: "exact", head: true }).or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`).eq("status", "accepted"),
         ]);
         if (cancelled) return;
         setActiveWorkspaceType((proj.data as any)?.workspace_type || null);

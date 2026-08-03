@@ -168,7 +168,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
         {/* Desktop Navigation - Mode Aware */}
         {user && !isLandingPage && (
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1 mx-6 pl-6 border-l border-border/50">
+
             {/* Mode toggle removed — single unified nav */}
 
             {desktopNavItems.map(({ path, icon: Icon, label }) => {
@@ -192,20 +193,21 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   key={path}
                   to={path}
                   className={cn(
-                    "relative flex items-center gap-2 px-4 py-2 rounded-lg transition-smooth text-sm font-medium",
-                    isActive ? "text-foreground bg-white/[0.04]" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    "relative flex items-center gap-2 h-10 px-3.5 rounded-lg transition-smooth text-sm font-medium whitespace-nowrap",
+                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
                   {label}
                   {isActive && (
                     <span
                       aria-hidden
-                      className="absolute -bottom-1 left-3 right-3 h-0.5 rounded-full"
+                      className="absolute bottom-0 left-3.5 right-3.5 h-0.5 rounded-full"
                       style={{ background: "var(--kretopia-sunset, linear-gradient(90deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
                     />
                   )}
                 </Link>
+
               );
             })}
           </div>

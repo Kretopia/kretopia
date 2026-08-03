@@ -7934,6 +7934,352 @@ export type Database = {
         }
         Relationships: []
       }
+      import_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          destination_object_id: string | null
+          destination_table: string | null
+          detail: Json
+          error: string | null
+          id: string
+          import_job_id: string
+          result: string
+          source_object_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          destination_object_id?: string | null
+          destination_table?: string | null
+          detail?: Json
+          error?: string | null
+          id?: string
+          import_job_id: string
+          result?: string
+          source_object_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          destination_object_id?: string | null
+          destination_table?: string | null
+          detail?: Json
+          error?: string | null
+          id?: string
+          import_job_id?: string
+          result?: string
+          source_object_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_audit_log_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_jobs: {
+        Row: {
+          completed_at: string | null
+          connection_id: string | null
+          created_at: string
+          error_summary: string | null
+          failed_items: number
+          id: string
+          preview: Json | null
+          processed_items: number
+          progress_percentage: number
+          project_id: string | null
+          provider: string
+          scope_selection: Json
+          skipped_items: number
+          source_name: string | null
+          source_type: string | null
+          started_at: string | null
+          status: string
+          successful_items: number
+          total_items: number
+          updated_at: string
+          upload_path: string | null
+          user_id: string
+          warnings: Json
+        }
+        Insert: {
+          completed_at?: string | null
+          connection_id?: string | null
+          created_at?: string
+          error_summary?: string | null
+          failed_items?: number
+          id?: string
+          preview?: Json | null
+          processed_items?: number
+          progress_percentage?: number
+          project_id?: string | null
+          provider: string
+          scope_selection?: Json
+          skipped_items?: number
+          source_name?: string | null
+          source_type?: string | null
+          started_at?: string | null
+          status?: string
+          successful_items?: number
+          total_items?: number
+          updated_at?: string
+          upload_path?: string | null
+          user_id: string
+          warnings?: Json
+        }
+        Update: {
+          completed_at?: string | null
+          connection_id?: string | null
+          created_at?: string
+          error_summary?: string | null
+          failed_items?: number
+          id?: string
+          preview?: Json | null
+          processed_items?: number
+          progress_percentage?: number
+          project_id?: string | null
+          provider?: string
+          scope_selection?: Json
+          skipped_items?: number
+          source_name?: string | null
+          source_type?: string | null
+          started_at?: string | null
+          status?: string
+          successful_items?: number
+          total_items?: number
+          updated_at?: string
+          upload_path?: string | null
+          user_id?: string
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_jobs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_jobs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_mappings: {
+        Row: {
+          created_at: string
+          destination_field: string | null
+          destination_type: string | null
+          enabled: boolean
+          id: string
+          import_job_id: string
+          source_field: string
+          source_type: string
+          transformation_rule: Json
+          updated_at: string
+          user_confirmed: boolean
+        }
+        Insert: {
+          created_at?: string
+          destination_field?: string | null
+          destination_type?: string | null
+          enabled?: boolean
+          id?: string
+          import_job_id: string
+          source_field: string
+          source_type: string
+          transformation_rule?: Json
+          updated_at?: string
+          user_confirmed?: boolean
+        }
+        Update: {
+          created_at?: string
+          destination_field?: string | null
+          destination_type?: string | null
+          enabled?: boolean
+          id?: string
+          import_job_id?: string
+          source_field?: string
+          source_type?: string
+          transformation_rule?: Json
+          updated_at?: string
+          user_confirmed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_mappings_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_source_objects: {
+        Row: {
+          created_at: string
+          destination_id: string | null
+          destination_table: string | null
+          error: string | null
+          external_author_id: string | null
+          external_author_name: string | null
+          external_object_id: string
+          external_object_type: string
+          external_parent_id: string | null
+          external_url: string | null
+          id: string
+          import_job_id: string
+          import_status: string
+          provider: string
+          raw_metadata: Json
+          source_created_at: string | null
+          source_updated_at: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          destination_id?: string | null
+          destination_table?: string | null
+          error?: string | null
+          external_author_id?: string | null
+          external_author_name?: string | null
+          external_object_id: string
+          external_object_type: string
+          external_parent_id?: string | null
+          external_url?: string | null
+          id?: string
+          import_job_id: string
+          import_status?: string
+          provider: string
+          raw_metadata?: Json
+          source_created_at?: string | null
+          source_updated_at?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          destination_id?: string | null
+          destination_table?: string | null
+          error?: string | null
+          external_author_id?: string | null
+          external_author_name?: string | null
+          external_object_id?: string
+          external_object_type?: string
+          external_parent_id?: string | null
+          external_url?: string | null
+          id?: string
+          import_job_id?: string
+          import_status?: string
+          provider?: string
+          raw_metadata?: Json
+          source_created_at?: string | null
+          source_updated_at?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_source_objects_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_suggestions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          confidence: number | null
+          created_at: string
+          destination_id: string | null
+          destination_table: string | null
+          detail: string | null
+          id: string
+          import_job_id: string
+          kind: string
+          payload: Json
+          project_id: string | null
+          source_object_id: string | null
+          source_url: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          confidence?: number | null
+          created_at?: string
+          destination_id?: string | null
+          destination_table?: string | null
+          detail?: string | null
+          id?: string
+          import_job_id: string
+          kind: string
+          payload?: Json
+          project_id?: string | null
+          source_object_id?: string | null
+          source_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          confidence?: number | null
+          created_at?: string
+          destination_id?: string | null
+          destination_table?: string | null
+          detail?: string | null
+          id?: string
+          import_job_id?: string
+          kind?: string
+          payload?: Json
+          project_id?: string | null
+          source_object_id?: string | null
+          source_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_suggestions_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_suggestions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_suggestions_source_object_id_fkey"
+            columns: ["source_object_id"]
+            isOneToOne: false
+            referencedRelation: "import_source_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inbox_triage_classifications: {
         Row: {
           acted_at: string | null
@@ -8126,6 +8472,57 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      integration_connections: {
+        Row: {
+          connection_status: string
+          created_at: string
+          encrypted_access_token: string | null
+          encrypted_refresh_token: string | null
+          granted_scopes: string[]
+          id: string
+          metadata: Json
+          provider: string
+          provider_account_id: string | null
+          provider_account_name: string | null
+          revoked_at: string | null
+          token_expiry: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connection_status?: string
+          created_at?: string
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
+          granted_scopes?: string[]
+          id?: string
+          metadata?: Json
+          provider: string
+          provider_account_id?: string | null
+          provider_account_name?: string | null
+          revoked_at?: string | null
+          token_expiry?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connection_status?: string
+          created_at?: string
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
+          granted_scopes?: string[]
+          id?: string
+          metadata?: Json
+          provider?: string
+          provider_account_id?: string | null
+          provider_account_name?: string | null
+          revoked_at?: string | null
+          token_expiry?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       invites: {
         Row: {
@@ -9478,12 +9875,17 @@ export type Database = {
           description: string | null
           due_date: string | null
           escrow_status: string | null
+          external_id: string | null
+          external_url: string | null
           id: string
+          import_job_id: string | null
+          imported_at: string | null
           paid_at: string | null
           paid_to: string | null
           payment_intent_id: string | null
           project_id: string
           requested_by: string | null
+          source_provider: string | null
           status: string
           title: string
           updated_at: string | null
@@ -9495,12 +9897,17 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           escrow_status?: string | null
+          external_id?: string | null
+          external_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
           paid_at?: string | null
           paid_to?: string | null
           payment_intent_id?: string | null
           project_id: string
           requested_by?: string | null
+          source_provider?: string | null
           status?: string
           title: string
           updated_at?: string | null
@@ -9512,12 +9919,17 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           escrow_status?: string | null
+          external_id?: string | null
+          external_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
           paid_at?: string | null
           paid_to?: string | null
           payment_intent_id?: string | null
           project_id?: string
           requested_by?: string | null
+          source_provider?: string | null
           status?: string
           title?: string
           updated_at?: string | null
@@ -12961,9 +13373,13 @@ export type Database = {
           created_at: string
           description: string | null
           due_date: string | null
+          external_id: string | null
+          external_url: string | null
           file_id: string | null
           file_url: string | null
           id: string
+          import_job_id: string | null
+          imported_at: string | null
           kind: string | null
           media_type: string | null
           milestone_id: string | null
@@ -12974,6 +13390,7 @@ export type Database = {
           reviewed_by: string | null
           sort_order: number
           source: string
+          source_provider: string | null
           status: string
           submission_files: Json | null
           submitted_by: string | null
@@ -12987,9 +13404,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          external_id?: string | null
+          external_url?: string | null
           file_id?: string | null
           file_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
           kind?: string | null
           media_type?: string | null
           milestone_id?: string | null
@@ -13000,6 +13421,7 @@ export type Database = {
           reviewed_by?: string | null
           sort_order?: number
           source?: string
+          source_provider?: string | null
           status?: string
           submission_files?: Json | null
           submitted_by?: string | null
@@ -13013,9 +13435,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          external_id?: string | null
+          external_url?: string | null
           file_id?: string | null
           file_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
           kind?: string | null
           media_type?: string | null
           milestone_id?: string | null
@@ -13026,6 +13452,7 @@ export type Database = {
           reviewed_by?: string | null
           sort_order?: number
           source?: string
+          source_provider?: string | null
           status?: string
           submission_files?: Json | null
           submitted_by?: string | null
@@ -13155,44 +13582,59 @@ export type Database = {
       project_files: {
         Row: {
           created_at: string | null
+          external_id: string | null
+          external_url: string | null
           file_name: string
           file_size: number | null
           file_type: string | null
           file_url: string
           folder_id: string | null
           id: string
+          import_job_id: string | null
+          imported_at: string | null
           is_link: boolean
           link_provider: string | null
           link_thumbnail_url: string | null
           project_id: string
+          source_provider: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          external_id?: string | null
+          external_url?: string | null
           file_name: string
           file_size?: number | null
           file_type?: string | null
           file_url: string
           folder_id?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
           is_link?: boolean
           link_provider?: string | null
           link_thumbnail_url?: string | null
           project_id: string
+          source_provider?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
+          external_id?: string | null
+          external_url?: string | null
           file_name?: string
           file_size?: number | null
           file_type?: string | null
           file_url?: string
           folder_id?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
           is_link?: boolean
           link_provider?: string | null
           link_thumbnail_url?: string | null
           project_id?: string
+          source_provider?: string | null
           user_id?: string
         }
         Relationships: [
@@ -13314,16 +13756,25 @@ export type Database = {
         Row: {
           attachments: Json
           created_at: string | null
+          external_author_name: string | null
+          external_channel: string | null
+          external_id: string | null
+          external_url: string | null
           file_name: string | null
           file_size: number | null
           file_type: string | null
           file_url: string | null
           id: string
+          import_job_id: string | null
+          imported_at: string | null
+          is_imported: boolean
           is_pinned: boolean | null
           message: string
           project_id: string
           reply_to: string | null
-          user_id: string
+          source_created_at: string | null
+          source_provider: string | null
+          user_id: string | null
           voice_duration: number | null
           voice_transcript: string | null
           voice_url: string | null
@@ -13331,16 +13782,25 @@ export type Database = {
         Insert: {
           attachments?: Json
           created_at?: string | null
+          external_author_name?: string | null
+          external_channel?: string | null
+          external_id?: string | null
+          external_url?: string | null
           file_name?: string | null
           file_size?: number | null
           file_type?: string | null
           file_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
+          is_imported?: boolean
           is_pinned?: boolean | null
           message: string
           project_id: string
           reply_to?: string | null
-          user_id: string
+          source_created_at?: string | null
+          source_provider?: string | null
+          user_id?: string | null
           voice_duration?: number | null
           voice_transcript?: string | null
           voice_url?: string | null
@@ -13348,16 +13808,25 @@ export type Database = {
         Update: {
           attachments?: Json
           created_at?: string | null
+          external_author_name?: string | null
+          external_channel?: string | null
+          external_id?: string | null
+          external_url?: string | null
           file_name?: string | null
           file_size?: number | null
           file_type?: string | null
           file_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
+          is_imported?: boolean
           is_pinned?: boolean | null
           message?: string
           project_id?: string
           reply_to?: string | null
-          user_id?: string
+          source_created_at?: string | null
+          source_provider?: string | null
+          user_id?: string | null
           voice_duration?: number | null
           voice_transcript?: string | null
           voice_url?: string | null
@@ -13426,8 +13895,14 @@ export type Database = {
           content: string | null
           created_at: string
           created_by: string
+          external_id: string | null
+          external_url: string | null
           id: string
+          import_job_id: string | null
+          imported_at: string | null
+          is_read_only: boolean
           project_id: string
+          source_provider: string | null
           title: string
           updated_at: string
         }
@@ -13435,8 +13910,14 @@ export type Database = {
           content?: string | null
           created_at?: string
           created_by?: string
+          external_id?: string | null
+          external_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
+          is_read_only?: boolean
           project_id: string
+          source_provider?: string | null
           title: string
           updated_at?: string
         }
@@ -13444,8 +13925,14 @@ export type Database = {
           content?: string | null
           created_at?: string
           created_by?: string
+          external_id?: string | null
+          external_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
+          is_read_only?: boolean
           project_id?: string
+          source_provider?: string | null
           title?: string
           updated_at?: string
         }
@@ -13837,10 +14324,15 @@ export type Database = {
           created_by: string
           description: string | null
           due_date: string | null
+          external_id: string | null
+          external_url: string | null
           id: string
+          import_job_id: string | null
+          imported_at: string | null
           labels: string[]
           priority: string
           project_id: string
+          source_provider: string | null
           status: string | null
           title: string
           updated_at: string | null
@@ -13851,10 +14343,15 @@ export type Database = {
           created_by: string
           description?: string | null
           due_date?: string | null
+          external_id?: string | null
+          external_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
           labels?: string[]
           priority?: string
           project_id: string
+          source_provider?: string | null
           status?: string | null
           title: string
           updated_at?: string | null
@@ -13865,10 +14362,15 @@ export type Database = {
           created_by?: string
           description?: string | null
           due_date?: string | null
+          external_id?: string | null
+          external_url?: string | null
           id?: string
+          import_job_id?: string | null
+          imported_at?: string | null
           labels?: string[]
           priority?: string
           project_id?: string
+          source_provider?: string | null
           status?: string | null
           title?: string
           updated_at?: string | null
@@ -19130,6 +19632,7 @@ export type Database = {
         Args: { ref_count: number }
         Returns: Database["public"]["Enums"]["network_tier"]
       }
+      can_access_import_job: { Args: { _job_id: string }; Returns: boolean }
       can_access_project: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean

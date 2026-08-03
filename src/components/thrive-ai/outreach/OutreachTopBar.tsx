@@ -24,26 +24,33 @@ export const OutreachTopBar = ({
   addOpen, setAddOpen, form, setForm, onCreateSequence, isCreating,
 }: Props) => {
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-      <p className="text-sm text-muted-foreground">{sequenceCount} sequence{sequenceCount !== 1 ? "s" : ""}</p>
-      <div className="flex items-center gap-1.5 flex-wrap w-full sm:w-auto">
-        <Button size="sm" variant="ghost" className="gap-1 text-[11px] px-2" onClick={onToggleSettings}>
-          <Settings2 className="h-3.5 w-3.5" /> <span className="hidden xs:inline">{showSettings ? "Hide" : "Email"}</span> Settings
+    <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-card/40 p-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-foreground">Outreach</p>
+        <p className="text-xs text-muted-foreground">
+          {sequenceCount} sequence{sequenceCount !== 1 ? "s" : ""}
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="sm" variant="ghost" className="h-9 gap-1.5 rounded-full px-3 text-xs" onClick={onToggleSettings}>
+          <Settings2 className="h-4 w-4" />
+          {showSettings ? "Hide settings" : "Email settings"}
         </Button>
-        <Button size="sm" variant="outline" className="gap-1 text-[11px] px-2" onClick={onOpenCompose}>
-          <Mail className="h-3.5 w-3.5" /> Quick Send
+        <Button size="sm" variant="outline" className="h-9 gap-1.5 rounded-full px-3 text-xs" onClick={onOpenCompose}>
+          <Mail className="h-4 w-4" /> Quick send
         </Button>
-        <Button size="sm" variant="outline" className="gap-1 text-[11px] px-2" onClick={onOpenBulk}>
-          <Users className="h-3.5 w-3.5" /> Bulk Send
+        <Button size="sm" variant="outline" className="h-9 gap-1.5 rounded-full px-3 text-xs" onClick={onOpenBulk}>
+          <Users className="h-4 w-4" /> Bulk send
         </Button>
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1 text-[11px] px-2">
-              <Plus className="h-3.5 w-3.5" /> New Sequence
+            <Button size="sm" className="h-9 gap-1.5 rounded-full px-3.5 text-xs">
+              <Plus className="h-4 w-4" /> New sequence
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader><DialogTitle>Create Email Sequence</DialogTitle></DialogHeader>
+
             <div className="space-y-3">
               <div>
                 <Label>Sequence Name *</Label>

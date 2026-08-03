@@ -98,7 +98,7 @@ const SoundStagesSection = () => {
 };
 
 export const UnifiedHome = () => {
-  const { user, subscriptionInfo } = useAuth();
+  const { user, subscriptionInfo, loading: authLoading } = useAuth();
   const { t } = useTranslation();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
   const navigate = useNavigate();
@@ -223,7 +223,8 @@ export const UnifiedHome = () => {
       // not just themselves (profiles table RLS hides non-connected rows).
       let creatorsQuery = supabase
         .from("public_profiles_safe")
-        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills, primary_intent, primary_intents")
+        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills")
+
         .not("avatar_url", "is", null)
         .not("full_name", "is", null)
         .order("created_at", { ascending: false })
@@ -448,9 +449,13 @@ export const UnifiedHome = () => {
       />
 
       {/* ═══════════ GUEST LANDING — Kretopia v1 (now canonical) ═══════════ */}
-      {!user && (
+      {/* Never show the public hero while the session is still resolving —
+          otherwise signed-in users bounce back to the landing page on refresh. */}
+      {!user && !authLoading && (
         <KretopiaLanding onSearchSubmit={handleHeroClaimSearch} />
       )}
+      {!user && authLoading && <div className="min-h-[60vh]" aria-busy="true" />}
+
 
       {/* Live gigs strip removed — Smart Gig Scout is the new front door */}
 

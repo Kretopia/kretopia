@@ -168,7 +168,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
         {/* Desktop Navigation - Mode Aware */}
         {user && !isLandingPage && (
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1 mx-6 pl-6 border-l border-border/50">
+
             {/* Mode toggle removed — single unified nav */}
 
             {desktopNavItems.map(({ path, icon: Icon, label }) => {

@@ -96,9 +96,15 @@ Deno.serve(async (req) => {
 
       // Branded emails
       for (const r of rsvps ?? []) {
-        const email = (r as any).profiles?.email;
-        const name  = (r as any).profiles?.full_name;
+        const uid = (r as any).user_id as string;
+        let email: string | null = null;
+        try {
+          const { data: u } = await admin.auth.admin.getUserById(uid);
+          email = u?.user?.email ?? null;
+        } catch (e) { console.error("[reminders] getUserById", uid, e); }
+        const name = nameById.get(uid) ?? null;
         if (!email) continue;
+
         try {
           await admin.functions.invoke("send-transactional-email", {
             body: {

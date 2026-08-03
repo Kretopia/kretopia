@@ -148,12 +148,12 @@ async function sendReminder(
     const startDate = new Date(ev.start_time);
 
     // --- Email (only on 24h reminder) ---
-    if (type === "reminder_24h" && profile?.email && !sentEmail.has(p.user_id)) {
+    if (type === "reminder_24h" && guestEmail && !sentEmail.has(p.user_id)) {
       try {
         await admin.functions.invoke("send-transactional-email", {
           body: {
             templateName: "event-reminder",
-            recipientEmail: profile.email,
+            recipientEmail: guestEmail,
             idempotencyKey: `event-${ev.id}-${p.user_id}-${type}`,
             templateData: {
               attendeeName: profile.first_name || profile.full_name || "there",

@@ -55,4 +55,7 @@ export const PROFILE_SELECT = [
   "model_stats", "model_unions", "mother_agency", "mother_agency_verified",
   "agency_representation", "model_categories", "polaroids", "comp_card_layout",
   "passport_profession", "bookings_enabled",
-].join(", ");
+].join(", ") as unknown as "*";
+// Cast to "*" purely for type inference: at runtime we send the explicit
+// safe column list, but the row shape is identical minus the ungranted
+// sensitive columns.

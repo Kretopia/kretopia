@@ -15,6 +15,7 @@ import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SEO } from "@/components/SEO";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 const MyAnalytics = () => {
   const { user } = useAuth();
@@ -58,7 +59,7 @@ const MyAnalytics = () => {
         invitesRes,
         viewStats
       ] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).single(),
+        supabase.from('profiles').select(PROFILE_SELECT).eq('user_id', user.id).single(),
         supabase.from('matches').select('*', { count: 'exact', head: true })
           .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`),
         supabase.from('connections').select('*', { count: 'exact', head: true })

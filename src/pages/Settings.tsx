@@ -24,6 +24,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 import { VibePicker } from "@/components/onboarding/VibePicker";
 import { Palette } from "lucide-react";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -340,7 +341,7 @@ const Settings = () => {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select(PROFILE_SELECT)
         .eq('user_id', user.id)
         .single();
 

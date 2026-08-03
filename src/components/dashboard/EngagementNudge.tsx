@@ -4,8 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getRemainingSwipes } from "@/lib/subscriptionLimits";
-import { 
 import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
+import { 
   Zap, 
   Users, 
   Briefcase, 

@@ -52,10 +52,25 @@ Deno.serve(async (req) => {
       if (sent[w.key]) continue;
       stats.sessions++;
 
-      const { data: rsvps } = await admin
+      // NOTE: speed_session_rsvps has no FK to profiles, and profiles has no
+      // `email` column — so a PostgREST embed here 500s the whole job.
+      // Fetch RSVPs, then resolve names from profiles and emails from auth.
+      const { data: rsvps, error: rErr } = await admin
         .from("speed_session_rsvps")
-        .select("user_id, profiles:user_id (full_name, email)")
+        .select("user_id")
         .eq("session_id", s.id);
+      if (rErr) { stats.errors++; console.error("[reminders] rsvps", rErr); continue; }
+
+      const userIds = (rsvps ?? []).map((r: any) => r.user_id).filter(Boolean);
+      const nameById = new Map<string, string | null>();
+      if (userIds.length > 0) {
+        const { data: profs } = await admin
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", userIds);
+        for (const p of profs ?? []) nameById.set(p.user_id, p.full_name);
+      }
+
       const link = `${APP_URL}/circle/speed/${s.id}`;
       const rsvpCount = rsvps?.length ?? 0;
       const startsAt = new Date(s.starts_at);

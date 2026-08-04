@@ -3,7 +3,7 @@ import { ArrowRight, Award, Brain, MessageSquare, Verified, DollarSign, Crown, G
 
 export const WhyCreatorsChooseSection = () => {
   const features = [
-    { icon: <Award className="h-5 w-5" />, title: "ThriveCredits", text: "Claim your work on any project — AI + peer verification builds a portable reputation that lasts" },
+    { icon: <Award className="h-5 w-5" />, title: "Kretopia Credits", text: "Claim your work on any project — AI + peer verification builds a portable reputation that lasts" },
     { icon: <Globe className="h-5 w-5" />, title: "Creator Websites", text: "Launch your own landing page at yourname.kretopia.com — no coding, premium templates included" },
     { icon: <Brain className="h-5 w-5" />, title: "Smart Match", text: "Swipe through portfolios, get matched by style, skills & location" },
     { icon: <FolderKanban className="h-5 w-5" />, title: "Project Management", text: "Tasks, files, milestones & team chat in one workspace — your creative Slack + Trello" },
@@ -12,7 +12,7 @@ export const WhyCreatorsChooseSection = () => {
     { icon: <Fingerprint className="h-5 w-5" />, title: "Creator Passport", text: "One verified identity across industries — embed it anywhere, carry your reputation with you" },
     { icon: <FileSignature className="h-5 w-5" />, title: "Contracts & Agreements", text: "Create contracts from templates, get e-signatures & protect your work — no lawyer needed" },
     { icon: <MessageSquare className="h-5 w-5" />, title: "Real Gigs & Collabs", text: "Post paid gigs, find collaborators, apply to opportunities — all in one place" },
-    { icon: <Rocket className="h-5 w-5" />, title: "ThriveFund", text: "Crowdfund films, albums, fashion drops & creative projects — Verified & Protected, milestone payouts, verified creators only" },
+    { icon: <Rocket className="h-5 w-5" />, title: "Kretopia Fund", text: "Crowdfund films, albums, fashion drops & creative projects — Verified & Protected, milestone payouts, verified creators only" },
   ];
 
   return (

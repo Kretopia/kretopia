@@ -30,7 +30,7 @@ export function EmbeddableCreditsWidget({ userId, displayName, thriveId, creditC
   const baseUrl = APP_URL;
   const profileUrl = `${baseUrl}/epk/${userId}`;
 
-  const embedHtml = `<!-- ThriveCredits Widget -->
+  const embedHtml = `<!-- Kretopia Credits Widget -->
 <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px;max-width:360px;font-family:system-ui,-apple-system,sans-serif;background:#fafafa">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
     <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center">
@@ -49,7 +49,7 @@ export function EmbeddableCreditsWidget({ userId, displayName, thriveId, creditC
   <a href="${profileUrl}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;margin-top:12px">View Full Credits on Kretopia</a>
 </div>`;
 
-  const embedMarkdown = `[![ThriveCredits](${baseUrl}/api/badge/${userId})](${profileUrl})
+  const embedMarkdown = `[![Kretopia Credits](${baseUrl}/api/badge/${userId})](${profileUrl})
 
 **${displayName}** · ${creditCount} Verified Credits
 ${topCredits.slice(0, 3).map(c => `- **${c.project_name}** — ${c.role}`).join('\n')}
@@ -57,7 +57,7 @@ ${topCredits.slice(0, 3).map(c => `- **${c.project_name}** — ${c.role}`).join(
 [View Full Credits →](${profileUrl})`;
 
   const badgeUrl = `${profileUrl}`;
-  const badgeMarkdown = `[![Verified on Kretopia](https://img.shields.io/badge/ThriveCredits-${creditCount}%20Credits-6366f1?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyTDkuMTkgOC42MyAyIDkuMjRsNS4xOCA1LjA5TDUuODIgMjJMMTIgMTguMjcgMTguMTggMjJsLTEuMzYtNy42N0wyMiA5LjI0bC03LjE5LS42MXoiLz48L3N2Zz4=)](${badgeUrl})`;
+  const badgeMarkdown = `[![Verified on Kretopia](https://img.shields.io/badge/Kretopia-${creditCount}%20Credits-6366f1?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyTDkuMTkgOC42MyAyIDkuMjRsNS4xOCA1LjA5TDUuODIgMjJMMTIgMTguMjcgMTguMTggMjJsLTEuMzYtNy42N0wyMiA5LjI0bC03LjE5LS42MXoiLz48L3N2Zz4=)](${badgeUrl})`;
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);

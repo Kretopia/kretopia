@@ -367,7 +367,7 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
           className="gap-1.5 h-auto py-2.5 flex-col items-center"
         >
           <Trophy className="h-4 w-4 text-primary" />
-          <span className="text-xs">ThriveCredits</span>
+          <span className="text-xs">Kretopia Credits</span>
           <span className="text-[10px] text-muted-foreground">Build your record</span>
         </Button>
         <Button 

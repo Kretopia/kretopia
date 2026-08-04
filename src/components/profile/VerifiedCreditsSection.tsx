@@ -352,7 +352,7 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-primary" />
-            ThriveCredits
+            Kretopia Credits
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -379,7 +379,7 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <CheckCircle2 className="h-5 w-5 text-primary" />
-          ThriveCredits
+          Kretopia Credits
           <Badge variant="secondary" className="ml-2">
             {credits.length} verified
           </Badge>

@@ -239,15 +239,15 @@ const ProductionPage = () => {
   return (
     <>
       <Helmet>
-        <title>{projectName} — ThriveCredits | Kretopia</title>
-        <meta name="description" content={production.description || `${projectName} — production credits on ThriveCredits. See the full roll call and claim your credit.`} />
-        <meta property="og:title" content={`${projectName} — ThriveCredits`} />
+        <title>{projectName} — Kretopia Credits | Kretopia</title>
+        <meta name="description" content={production.description || `${projectName} — production credits on Kretopia. See the full roll call and claim your credit.`} />
+        <meta property="og:title" content={`${projectName} — Kretopia Credits`} />
         <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on Kretopia`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={getShareUrl(`/production?name=${encodeURIComponent(projectName)}`)} />
         {production.image_url && <meta property="og:image" content={production.image_url} />}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${projectName} — ThriveCredits`} />
+        <meta name="twitter:title" content={`${projectName} — Kretopia Credits`} />
         <meta name="twitter:description" content={`${production.total_roles} roles · ${totalClaimed} claimed on Kretopia`} />
       </Helmet>
 

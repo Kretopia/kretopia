@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
   const stats = { windows: 0, sessions: 0, emails: 0, pushes: 0, errors: 0 };
   const now = Date.now();
 
+  try {
   for (const w of WINDOWS) {
     stats.windows++;
     const lo = new Date(now + w.loMin * 60_000).toISOString();
@@ -139,6 +140,14 @@ Deno.serve(async (req) => {
         })
         .eq("id", s.id);
     }
+  }
+
+  } catch (e) {
+    console.error("[reminders] fatal", e);
+    return new Response(JSON.stringify({ ok: false, error: String(e), ...stats }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   return new Response(JSON.stringify({ ok: true, ...stats }), {

@@ -24,7 +24,7 @@ Creative work is non-linear, multi-stakeholder, and admin-heavy. The bottleneck 
 - Smart Gig Scout: real gigs surfaced daily across web, LinkedIn, IG, ATS
 - Sponsor Radar generating qualified brand leads
 - ThriveDesk projects with autonomous Desk-Agent watching every studio
-- Caribbean-first, deployed via thrivein.io custom domain
+- Caribbean-first, deployed via kretopia.com custom domain
 
 ## Ask
 - Future Caribbean Buildathon: H200 compute + NYC capital exposure to harden the agentic layer and train a creative-economy reasoning model on the (anonymised) credit graph.

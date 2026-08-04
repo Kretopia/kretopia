@@ -21,11 +21,11 @@ Kretopia is the agentic Operating System for the creator economy — Creative Pa
 - Caribbean creatives are the sharpest version of the problem and the best training ground — bandwidth-constrained, cross-border, multi-currency, ghosted
 
 ## 4. Stage & progress
-- **Built and live** at https://thrivein.io (custom domain, deployed)
+- **Built and live** at https://kretopia.com (custom domain, deployed)
 - Active **OG cohort capped at 135**, **Founding Member ($499 lifetime)** tier shipped
 - Agents in production: **Smart Gig Scout, Desk-Agent-Watch, Sponsor Radar, Pricing Co-Pilot, Studio Brain, Auto-EPK Updater, Thrive Voice**
-- Observable run feed at https://thrivein.io/agents
-- Public no-auth demo at https://thrivein.io/demo/agent
+- Observable run feed at https://kretopia.com/agents
+- Public no-auth demo at https://kretopia.com/demo/agent
 - ThrivePay live with Stripe Connect + PowerTranz TT/USD rails
 
 ## 5. Why I'm right for FI Caribbean Spring 2026

@@ -193,7 +193,7 @@
 
 ## 📱 Technical Notes
 
-- All QR codes use the format: `thrivein.com/auth?connect={userId}` or `thrivein.com/event?join={eventId}`
+- All QR codes use the format: `kretopia.com/auth?connect={userId}` or `kretopia.com/event?join={eventId}`
 - NFC tags can store same URLs for tap-to-connect
 - Offline-first approach for event features (sync when connection available)
 - Event mode: Special UI state optimized for quick actions

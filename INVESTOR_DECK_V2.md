@@ -323,7 +323,7 @@ Kretopia has spent 13 years building trust. Now we're building the system.
 **Let's build the future of creative work.**
 
 📧 Contact Ethan Auguste
-🌐 thrivein.io
+🌐 kretopia.com
 
 ---
 

@@ -3,7 +3,7 @@
 
 **Prepared:** February 2026
 **Founder:** Ethan Auguste
-**Website:** thrivein.io
+**Website:** kretopia.com
 
 ---
 
@@ -420,7 +420,7 @@ Ethan Auguste is the Founder of Thrive, a global creative and community-driven e
 
 **Contact:**
 - Founder: Ethan Auguste
-- Website: thrivein.io
+- Website: kretopia.com
 - Email: [your email]
 
 ---

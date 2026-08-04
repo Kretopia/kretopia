@@ -54,7 +54,7 @@ export const SceneClose = () => {
             opacity: tagO,
           }}
         >
-          thrivein.io
+          kretopia.com
         </div>
       </AbsoluteFill>
     </AbsoluteFill>

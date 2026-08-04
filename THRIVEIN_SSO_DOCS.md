@@ -111,7 +111,7 @@ export function signInWithKretopia(redirectUri: string) {
   sessionStorage.setItem("thrivein_state", state);
   
   // Redirect to Kretopia app for authentication
-  const thriveINLoginUrl = new URL("https://thrivein-new-beta.lovable.app/auth");
+  const thriveINLoginUrl = new URL("https://kretopia.com/auth");
   thriveINLoginUrl.searchParams.set("sso_client_id", CLIENT_ID);
   thriveINLoginUrl.searchParams.set("sso_redirect_uri", redirectUri);
   thriveINLoginUrl.searchParams.set("sso_state", state);
@@ -206,7 +206,7 @@ export function SignInWithKretopiaButton() {
       onClick={() => signInWithKretopia("https://anansi.app/auth/callback")}
       className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-medium hover:opacity-90"
     >
-      <img src="https://thrivein-new-beta.lovable.app/favicon.png" alt="" className="w-5 h-5" />
+      <img src="https://kretopia.com/favicon.png" alt="" className="w-5 h-5" />
       Sign in with Kretopia
     </button>
   );

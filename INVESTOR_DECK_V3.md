@@ -12,7 +12,7 @@ AI-powered matching · Verified portfolios · Milestone payments · Creative wor
 
 **Pre-Seed Round | $500K SAFE**
 
-[logo] | thrivein.io | Ethan Auguste, Founder & CEO
+[logo] | kretopia.com | Ethan Auguste, Founder & CEO
 
 > Designer note: Clean, bold. One hero image of the platform UI (mobile + desktop). No clutter.
 
@@ -353,8 +353,8 @@ We're not starting from zero — we're starting from 13 years of community, 500+
 
 **The question isn't whether creators need this. It's who builds it first.**
 
-📧 ethan@thrivein.io
-🌐 thrivein.io
+📧 ethan@kretopia.com
+🌐 kretopia.com
 📱 Download the beta
 
 ---

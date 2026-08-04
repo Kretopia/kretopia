@@ -17,7 +17,7 @@ type: reference
 - **HQ:** Trinidad & Tobago
 - **Stage:** Post-MVP, paying users, active OG cohort (capped at 135), Founding Member tier live
 - **Sector:** Creative economy / agentic AI / fintech for creators
-- **Website:** https://thrivein.io
+- **Website:** https://kretopia.com
 
 ### A2. Problem
 Caribbean creative workers — musicians, filmmakers, designers, Carnival mas-makers, content creators — generate outsized cultural exports yet have no operating layer. Credits are unverified, gigs are ghosted in DMs, payments cross borders badly, and admin work eats 30-40% of billable time. The same gap exists across LATAM, Africa and Southeast Asia.
@@ -33,7 +33,7 @@ A fleet of agents (Gemini Pro / 2.5 Flash) runs continuously: scouting, drafting
 - Smart Gig Scout ingesting real gigs across web, LinkedIn, IG, ATS daily
 - ThriveDesk studios with autonomous agent proposals
 - ThrivePay live (Stripe Connect controller pattern, TT/USD currency conversion)
-- Caribbean-first deployment via thrivein.io custom domain
+- Caribbean-first deployment via kretopia.com custom domain
 - (Insert MRR / active-users / GMV numbers from `/founder-kit/metrics`)
 
 ### A5. Business model

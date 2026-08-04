@@ -13,7 +13,7 @@ type: reference
 **Company:** Kretopia — The Creative Operating System
 **HQ:** Port-of-Spain, Trinidad & Tobago (globally deployable)
 **Founder:** [Founder name] — solo founder, technical, operating agentic AI in production today
-**Domain:** https://thrivein.io · Demo: https://thrivein.io/demo/agent · Agent activity: https://thrivein.io/agents
+**Domain:** https://kretopia.com · Demo: https://kretopia.com/demo/agent · Agent activity: https://kretopia.com/agents
 
 ## 2. One-line pitch
 
@@ -79,7 +79,7 @@ Secondary fit (Workforce / MSME):
 
 ## 9. Links to verify
 
-- Live agents feed: https://thrivein.io/agents
-- Public demo (no auth): https://thrivein.io/demo/agent
-- Founder kit: https://thrivein.io/founder-kit
-- Metrics: https://thrivein.io/founder-kit/metrics
+- Live agents feed: https://kretopia.com/agents
+- Public demo (no auth): https://kretopia.com/demo/agent
+- Founder kit: https://kretopia.com/founder-kit
+- Metrics: https://kretopia.com/founder-kit/metrics

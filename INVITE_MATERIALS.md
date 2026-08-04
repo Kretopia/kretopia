@@ -7,7 +7,7 @@ Use these templates when inviting creatives to join Kretopia.
 ## 🔗 Your Personal Invite Link
 
 ```
-https://thrivein.io/join/ThriveOGs
+https://kretopia.com/join/ThriveOGs
 ```
 
 ---
@@ -20,7 +20,7 @@ Stop cold DMing strangers for collabs.
 Kretopia matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
 
 I'm already on. Join me 👇
-thrivein.io/join/ThriveOGs
+kretopia.com/join/ThriveOGs
 
 2 mins to set up. Let me know what you think!
 ```
@@ -44,7 +44,7 @@ Why I think you'd be a great fit:
 • No more endless scrolling through Facebook groups
 
 It's invite-only right now, and I have a spot for you:
-👉 thrivein.io/auth?invite=ThriveOGs
+👉 kretopia.com/auth?invite=ThriveOGs
 
 Setup takes about 2 minutes. Upload some portfolio work and start swiping!
 
@@ -99,8 +99,8 @@ Uses: 27 of 50
 
 | Partner | Link | Code |
 |---------|------|------|
-| CreativeTT | `thrivein.io/join/CREATIVETT` | `CREATIVETT` |
-| Artist Registry | `thrivein.io/join/ARTISTREGISTRY` | `ARTISTREGISTRY` |
+| CreativeTT | `kretopia.com/join/CREATIVETT` | `CREATIVETT` |
+| Artist Registry | `kretopia.com/join/ARTISTREGISTRY` | `ARTISTREGISTRY` |
 
 Partner links track signups without commission — purely for attribution and analytics.
 

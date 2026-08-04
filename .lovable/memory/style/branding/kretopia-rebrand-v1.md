@@ -31,7 +31,7 @@ Passport · Scout · Match · Studio · SoundStages · KrePay · Kreto · Kretop
 - DB tables: `thrive_documents`, `thrive_memory`, `thrive_intent_logs`, etc. stay.
 - Edge functions: `thrive-ai-chat`, `thrive-document-engine`, `thrive-voice-turn`, etc. stay.
 - Env vars and storage buckets: unchanged.
-- Domain canonical: stays `thrivein-new-beta.lovable.app` until DNS points at kretopia.com.
+- Domain canonical: stays `kretopia.com` until DNS points at kretopia.com.
 
 These are infrastructure names — never surface them in UI. When in doubt, label with `BRAND.*`.
 

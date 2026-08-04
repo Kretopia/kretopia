@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { QrCode, FileDown, ShieldCheck, Sparkles, Share2, Lock, ArrowRight } from "lucide-react";
 import type { Standing } from "@/lib/passport/standing";
 import { BRAND } from "@/lib/brandLexicon";
+import { HoloCard } from "./HoloCard";
 
 interface PassportClaimHeroProps {
   fullName?: string | null;
@@ -15,6 +16,8 @@ interface PassportClaimHeroProps {
   verifiedCredits: number;
   totalCredits?: number;
   cosigns: number;
+  /** Full-resolution portrait for the card face. */
+  avatarUrl?: string | null;
   /** Unclaimed discovered_credits — fires the "you're already on the record" wedge. */
   taggedCount?: number;
   onShare: () => void;
@@ -22,6 +25,22 @@ interface PassportClaimHeroProps {
   onDownloadEPK: () => void;
   onCosignWall?: () => void;
 }
+
+/**
+ * Strip any downscaling transform params so the portrait renders at full
+ * source resolution (no blurry upscaling on retina screens).
+ */
+function hdImage(url?: string | null): string | undefined {
+  if (!url) return undefined;
+  try {
+    const u = new URL(url, window.location.origin);
+    ["width", "height", "resize", "quality", "w", "h"].forEach((p) => u.searchParams.delete(p));
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 
 
 /**

@@ -41,7 +41,7 @@ A unified platform where creators can:
 
 ---
 
-## 🔥 THE THRIVEIN ADVANTAGE (Why We Win)
+## 🔥 THE KRETOPIA ADVANTAGE (Why We Win)
 
 ### What VCs Are Looking For (Based on Research)
 According to Slow Ventures ($60M creator fund) and leading creator economy investors, they want:

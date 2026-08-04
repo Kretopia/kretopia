@@ -102,7 +102,7 @@ Authorization: Bearer <access_token>
 ### `lib/thrivein-sso.ts`
 
 ```typescript
-const THRIVEIN_API = "https://kwmcocsitwssrtzkdojh.supabase.co/functions/v1";
+const KRETOPIA_API = "https://kwmcocsitwssrtzkdojh.supabase.co/functions/v1";
 const CLIENT_ID = "4f76281af0b789acc26f07555383af44";
 
 // Step 1: Open Kretopia login popup
@@ -125,7 +125,7 @@ export async function exchangeCodeForToken(
   redirectUri: string,
   clientSecret: string
 ) {
-  const res = await fetch(`${THRIVEIN_API}/sso-token`, {
+  const res = await fetch(`${KRETOPIA_API}/sso-token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -143,7 +143,7 @@ export async function exchangeCodeForToken(
 
 // Step 3: Fetch user profile
 export async function getKretopiaUser(accessToken: string) {
-  const res = await fetch(`${THRIVEIN_API}/sso-userinfo`, {
+  const res = await fetch(`${KRETOPIA_API}/sso-userinfo`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   

@@ -210,7 +210,7 @@ _Scope: every pillar, every surface, current build state._
 
 ---
 
-## 7. THRIVEIN — Community + Events + Magazine (retained sub-brand)
+## 7. KRETOPIA — Community + Events + Magazine (retained sub-brand)
 
 ### Built & working end-to-end
 - **Events** — full lifecycle: create, cover generation (`generate-event-cover`), reminders (24h/1h/recap/48h cron), waitlist trigger, RSVP RPC, promoter attribution (`?ref=`), dynamic OG image, live countdown, host trust card, .ics add-to-calendar, boarding-pass QR guest pass, IRL check-in via html5-qrcode, photo wall, auto Event Host credit, BringAFriendCard, event share pages (Vite plugin).

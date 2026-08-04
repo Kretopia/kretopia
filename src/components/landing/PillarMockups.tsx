@@ -278,7 +278,7 @@ function KretoMockup() {
   );
 }
 
-/* ───────── THRIVEIN ─────────
+/* ───────── KRETOPIA ─────────
    Upcoming events list with cover thumbnails. */
 function KretopiaMockup() {
   const events = [

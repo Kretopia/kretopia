@@ -21,6 +21,8 @@ import { getTierDisplayName } from "@/lib/subscriptionConfig";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { StorageMeter } from "@/components/storage/StorageMeter";
 import { useCrewUnread } from "@/hooks/useCrewUnread";
+import { MessagesDrawer } from "@/components/messages/MessagesDrawer";
+
 // useNavMode removed — single unified nav
 import {
   Sheet,

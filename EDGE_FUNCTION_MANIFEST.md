@@ -1,4 +1,4 @@
-# EDGE FUNCTION MANIFEST — ThriveIN Platform
+# EDGE FUNCTION MANIFEST — Kretopia Platform
 
 **Generated:** 2026-06-22 · **Total functions:** 291 · **Source:** automated scan of `supabase/functions/*/index.ts`
 

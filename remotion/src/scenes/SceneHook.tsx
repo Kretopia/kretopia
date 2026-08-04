@@ -52,7 +52,7 @@ export const SceneHook = () => {
             letterSpacing: 1,
           }}
         >
-          ThriveIN — the operating system for creatives
+          Kretopia — the operating system for creatives
         </p>
       </AbsoluteFill>
     </AbsoluteFill>

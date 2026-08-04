@@ -1,8 +1,8 @@
-# ThriveIN Subscription System Guide
+# Kretopia Subscription System Guide
 
 ## Overview
 
-ThriveIN uses Stripe for subscription management with two tiers: Free and Pro ($12/month with 7-day free trial).
+Kretopia uses Stripe for subscription management with two tiers: Free and Pro ($12/month with 7-day free trial).
 
 ## Subscription Tiers
 
@@ -120,7 +120,7 @@ ThriveIN uses Stripe for subscription management with two tiers: Free and Pro ($
 2. `customer-portal` edge function called
 3. User redirected to Stripe Customer Portal
 4. Can update payment method, cancel, etc.
-5. Returns to ThriveIN
+5. Returns to Kretopia
 6. Subscription status automatically synced
 
 ### Checking Status
@@ -214,4 +214,4 @@ ThriveIN uses Stripe for subscription management with two tiers: Free and Pro ($
 **Need Help?**
 - Stripe API Docs: https://stripe.com/docs/api
 - Supabase Edge Functions: https://supabase.com/docs/guides/functions
-- ThriveIN Support: [your support email]
+- Kretopia Support: [your support email]

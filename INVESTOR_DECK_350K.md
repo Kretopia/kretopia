@@ -1,4 +1,4 @@
-# ThriveIN Investor Deck
+# Kretopia Investor Deck
 ## Pre-Seed Round: $350K+
 
 **Prepared:** February 2026
@@ -9,7 +9,7 @@
 
 ## Slide 1: Title / Hook
 
-### ThriveIN
+### Kretopia
 # The Operating System for Creative Collaboration
 
 **13 years of community building. Now going digital.**
@@ -43,7 +43,7 @@ AI-powered matching • Verified portfolios • End-to-end payments • Global c
 
 ## Slide 3: The Solution
 
-### ThriveIN: Find → Verify → Work → Get Paid
+### Kretopia: Find → Verify → Work → Get Paid
 
 **One platform for the entire creative collaboration lifecycle:**
 
@@ -60,7 +60,7 @@ AI-powered matching • Verified portfolios • End-to-end payments • Global c
 
 ## Slide 4: Product Demo / Screenshots
 
-### The ThriveIN Experience
+### The Kretopia Experience
 
 **Circle (AI Matching)**
 - Swipe-based discovery with AI match explanations
@@ -160,15 +160,15 @@ AI-powered matching • Verified portfolios • End-to-end payments • Global c
 
 **Event Brands:**
 - **ThriveXchange** - Industry networking
-- **ThriveIN Bali** - Local creator community
-- **ThriveIN Dine** - Intimate creator dinners
+- **Kretopia Bali** - Local creator community
+- **Kretopia Dine** - Intimate creator dinners
 - **Thrive Master Class** - Educational workshops
 
 **Owned Media Properties:**
 | Property | Reach | Status |
 |----------|-------|--------|
 | **Discover A Thriver Podcast** | Top industry guests | Active |
-| **ThriveIN Magazine** | 400+ locations in Bali | Bali's top print magazine |
+| **Kretopia Magazine** | 400+ locations in Bali | Bali's top print magazine |
 
 **Why This Matters:**
 > Most startups spend years building community trust. We've spent 13 years doing it—now we're digitizing it.
@@ -206,9 +206,9 @@ AI-powered matching • Verified portfolios • End-to-end payments • Global c
 | Year | Milestone | Validation |
 |------|-----------|------------|
 | **2013** | Thrive Collective founded | Community-first approach |
-| **2020** | ThriveIN V1 Launch | 1,000 users acquired |
-| **2023** | ThriveIN V2 | $50K grant from NEAR Protocol |
-| **2026** | ThriveIN V3 Relaunch | Full-stack platform with AI matching |
+| **2020** | Kretopia V1 Launch | 1,000 users acquired |
+| **2023** | Kretopia V2 | $50K grant from NEAR Protocol |
+| **2026** | Kretopia V3 Relaunch | Full-stack platform with AI matching |
 
 **V3 Platform Features:**
 - ✅ AI-powered swipe matching (Circle)
@@ -224,7 +224,7 @@ AI-powered matching • Verified portfolios • End-to-end payments • Global c
 
 ## Slide 10: Competitive Landscape
 
-### Why ThriveIN Wins
+### Why Kretopia Wins
 
 | Platform | What They Do | What They Don't |
 |----------|--------------|-----------------|
@@ -234,7 +234,7 @@ AI-powered matching • Verified portfolios • End-to-end payments • Global c
 | **Vampr** | Music networking | Music-only, no project tools |
 | **Facebook Groups** | Community forums | No verification, no payments |
 
-**ThriveIN's Unfair Advantages:**
+**Kretopia's Unfair Advantages:**
 1. **AI Matching** - Personalized, explainable recommendations
 2. **Verification Layer** - IMDB, Spotify, social proof integration
 3. **Full Lifecycle** - Find → Verify → Work → Get Paid in one platform
@@ -278,7 +278,7 @@ AI-powered matching • Verified portfolios • End-to-end payments • Global c
 - Convert 18,000+ person distribution list
 - In-person onboarding via existing events
 - Target: 2,500 active users
-- Leverage ThriveIN Magazine, Podcast, Events
+- Leverage Kretopia Magazine, Podcast, Events
 
 **Phase 2: Caribbean, Dubai, Europe (Month 6-12)**
 - Activate existing communities in these regions
@@ -292,7 +292,7 @@ AI-powered matching • Verified portfolios • End-to-end payments • Global c
 
 **Growth Channels:**
 1. **Owned distribution** - 18K+ email/social/WhatsApp (FREE)
-2. **Event integration** - ThriveXchange, ThriveIN Dine, Master Class
+2. **Event integration** - ThriveXchange, Kretopia Dine, Master Class
 3. **Media amplification** - Podcast, Magazine, Press
 4. **Community-led growth** - Invite system, referral rewards
 
@@ -405,7 +405,7 @@ Ethan Auguste is the Founder of Thrive, a global creative and community-driven e
 
 **The Big Bet:**
 > Every creator will need a verified professional identity.
-> ThriveIN will be that identity.
+> Kretopia will be that identity.
 
 ---
 
@@ -483,7 +483,7 @@ Ethan Auguste is the Founder of Thrive, a global creative and community-driven e
 
 ### Platform Comparison Matrix
 
-| Feature | ThriveIN | LinkedIn | Behance | Upwork | Vampr |
+| Feature | Kretopia | LinkedIn | Behance | Upwork | Vampr |
 |---------|----------|----------|---------|--------|-------|
 | Swipe Matching | ✅ | ❌ | ❌ | ❌ | ✅ |
 | AI Explanations | ✅ | ❌ | ❌ | ❌ | ❌ |

@@ -19,7 +19,7 @@ Addendum absorbed: **KrePay, Studio Lite, Verified Paid Credits are IN V1.** The
 4. Kreto
 5. **KrePay** (contextual, no primary nav)
 6. **Studio Lite** (contextual, spawned by hire)
-7. ThriveIN (community layer)
+7. Kretopia (community layer)
 
 **The Loop (core moat):**
 Search → Passport → Scout → Opportunity → Pitch Pack → Hired → **Studio Lite** → **KrePay** → **Verified Paid Credit** → Review → Portfolio.
@@ -29,7 +29,7 @@ Search → Passport → Scout → Opportunity → Pitch Pack → Hired → **Stu
 ## Navigation
 
 - **Mobile bottom nav:** Home · Search · Scout · Passport · Kreto
-- **Desktop sidebar:** Home · Search · Scout · Passport · Kreto · ThriveIN · Perks · Settings
+- **Desktop sidebar:** Home · Search · Scout · Passport · Kreto · Kretopia · Perks · Settings
 - **KrePay & Studio Lite:** no nav entry. Surfaced inside Opportunity pages, Passport (Verified Paid Credits section), Kreto insights, and inline on hire.
 - **Kreto FAB:** floating, contextual.
 
@@ -46,7 +46,7 @@ Search → Passport → Scout → Opportunity → Pitch Pack → Hired → **Stu
 ## Phase 1 — Cleanup & hide non-V1 (preserve code)
 
 Hide from nav/onboarding (code preserved, routes still work behind `?legacy=1`):
-- Crews, Creator Score, agency/manager mode, old community feed, old dashboards, old events-first flows, unfinished gamified score systems, Fund, Magazine (except under ThriveIN), old Match tab surface.
+- Crews, Creator Score, agency/manager mode, old community feed, old dashboards, old events-first flows, unfinished gamified score systems, Fund, Magazine (except under Kretopia), old Match tab surface.
 
 KEEP wired (contextually surfaced, no nav):
 - KrePay (whole payments infra — Stripe Connect, invoices, payment links, wallets, expenses, receipt scan, payouts)
@@ -65,7 +65,7 @@ New: `src/components/nav/KretopiaSidebar.tsx`, `src/components/kreto/KretoFab.ts
 ## Phase 3 — Home (Kreto-first)
 
 `src/pages/KretopiaHome.tsx` at `/`:
-Kreto Insights hero · Scout strip · Passport activity · Trending · ThriveIN strip · Membership Card preview · **Money Brief mini** (from KrePay: open invoices, pending payouts).
+Kreto Insights hero · Scout strip · Passport activity · Trending · Kretopia strip · Membership Card preview · **Money Brief mini** (from KrePay: open invoices, pending payouts).
 
 ---
 
@@ -76,7 +76,7 @@ Route: `/passport` and public `/passport/:username` (username = existing handle)
 New components under `src/components/passport/`:
 - Header with dynamic profession-based hero media
 - `KretopiaIdBadge` (`KT-######`)
-- Snapshot, Credits, **Verified Paid Credits section** ("37 Credits · 18 Verified · 12 Paid through KrePay"), Featured, Portfolio, Press, Awards, Endorsements, Reviews, Co-signs, Collaborators, Skills, ThriveIN status
+- Snapshot, Credits, **Verified Paid Credits section** ("37 Credits · 18 Verified · 12 Paid through KrePay"), Featured, Portfolio, Press, Awards, Endorsements, Reviews, Co-signs, Collaborators, Skills, Kretopia status
 - Share sheet (WhatsApp, IG, LinkedIn, X, EPK/Comp Card/Speaker Sheet PDF)
 - `PassportKretoBuilder` overlay — Kreto finds first, user confirms
 
@@ -134,16 +134,16 @@ Rename all user-facing agent copy → Kreto. Mount points: Home, Passport (build
 
 ---
 
-## Phase 11 — ThriveIN layer
+## Phase 11 — Kretopia layer
 
-`/thrivein` tab: OG badge · Founding Circle · perks · events · magazine · podcast · dinners · member benefits. `/perks` dedicated page. `MembershipCard` component (name · Kretopia ID · Passport QR · badges · ThriveIN status). Existing Magazine/Podcast/Events routes preserved; entry point moves under ThriveIN.
+`/thrivein` tab: OG badge · Founding Circle · perks · events · magazine · podcast · dinners · member benefits. `/perks` dedicated page. `MembershipCard` component (name · Kretopia ID · Passport QR · badges · Kretopia status). Existing Magazine/Podcast/Events routes preserved; entry point moves under Kretopia.
 
 ---
 
 ## Phase 12 — Landing
 
 Rebuild `KretopiaLanding.tsx`:
-Hero ("Your Creative Career Starts Here.") + big search bar ("Search the Creative Universe") · Passport · Scout · Kreto · Search · **The Loop** (Search → Passport → Scout → Studio Lite → KrePay → Verified Credit — the moat) · Powered by ThriveIN · Founding Circle · Final CTA.
+Hero ("Your Creative Career Starts Here.") + big search bar ("Search the Creative Universe") · Passport · Scout · Kreto · Search · **The Loop** (Search → Passport → Scout → Studio Lite → KrePay → Verified Credit — the moat) · Powered by Kretopia · Founding Circle · Final CTA.
 
 ---
 
@@ -172,7 +172,7 @@ Midnight default, Kretopia gradient as accent only, cinematic Passport/landing h
 5. **Phase 6 (Scout)** + expiration migration.
 6. **Phase 8 (Kreto sweep) + Phase 7 (Pitch Pack)**.
 7. **Phase 9 (KrePayInline) + Phase 10 (Studio Lite wrapper)** — the Loop closes.
-8. **Phase 11 (ThriveIN + Membership Card) + Phase 13 (polish)**.
+8. **Phase 11 (Kretopia + Membership Card) + Phase 13 (polish)**.
 9. **Phase 14 (snapshot doc)**.
 
 Everything reversible via `V1_ENABLED`. No deletes.

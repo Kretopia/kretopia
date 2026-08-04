@@ -19,7 +19,7 @@ _Scope: every pillar, every surface, current build state._
 | Vibe / theme | Locked to Midnight |
 | Primary agent | **Kreto** (Executive Producer) |
 | Brand system | Kretopia by Thrive Collective — Signal Triad + Ink |
-| Ecosystem | Thrive Collective (parent) · Kretopia (platform) · ThriveIN (community/events/magazine) · Kreto (AI EP) |
+| Ecosystem | Thrive Collective (parent) · Kretopia (platform) · Kretopia (community/events/magazine) · Kreto (AI EP) |
 
 ---
 
@@ -39,7 +39,7 @@ _Scope: every pillar, every surface, current build state._
 - **Comp Card** — model-industry variant (`CompCard.tsx`, `CompCardBuilder.tsx`).
 - **Booking page** — `/@handle/book` public booking, guest bookable, ties directly into Kretopia video calls with recording + Kreto transcription (verified working after RLS + HandleResolver fix).
 - **Passport Anchor Strip** — 8 anchors (Standing · Stamps · Co-signs · Press Kit · Receipts · Wallet · Recent work · Verification) unifying Profile/Pay/Credits into one navigable spine.
-- **ThriveIN Verified** (formerly ICDB) — cross-referenced production database, roll call, production-detail pages, embeddable badge widget (HTML/Markdown/Shield.io).
+- **Kretopia Verified** (formerly ICDB) — cross-referenced production database, roll call, production-detail pages, embeddable badge widget (HTML/Markdown/Shield.io).
 - **Standing / Tiers** — verification score, level, XP, badge label (`badgeLabel.ts`), OG/Founding Member badges (135 OG cap locked).
 - **Trust signals** — Reply SLA badge, Recently Worked With, Hire-Me Trust Bar, Booked This Month chip.
 
@@ -222,7 +222,7 @@ _Scope: every pillar, every surface, current build state._
 
 ### What makes it unique (as sub-brand)
 - Community and events are the top-of-funnel; Kretopia (the platform) is where careers get built.
-- ThriveIN Verified (formerly ICDB) is the cross-referenced production DB.
+- Kretopia Verified (formerly ICDB) is the cross-referenced production DB.
 
 ---
 
@@ -298,7 +298,7 @@ _Scope: every pillar, every surface, current build state._
 
 - Challenges & Rewards Shop — deleted, DB kept.
 - "Standing" tier system — retired as a term.
-- ThriveIN as the platform brand — moved to community/events/magazine sub-brand.
+- Kretopia as the platform brand — moved to community/events/magazine sub-brand.
 - Izzy — renamed to Kreto everywhere.
 - Communities as a discoverable feature — data retained, UI hidden.
 
@@ -307,13 +307,13 @@ _Scope: every pillar, every surface, current build state._
 ## 13. HEALTH / READINESS
 
 - **Codebase health:** 279k LOC, 861 components, no critical build errors. Schema drift on Home/Pay tables patched. RLS hardened (`public_profiles_safe` view for guest surfaces).
-- **Rebrand completeness:** ~95% Kretopia surface language. Any remaining "ThriveIN" refers correctly to the sub-brand.
+- **Rebrand completeness:** ~95% Kretopia surface language. Any remaining "Kretopia" refers correctly to the sub-brand.
 - **Uniqueness moat:** Passport + Kreto + Scout + Studio + KrePay + Sound Stages — six defensible pillars, all live.
 - **Public beta readiness:** GO for supply side (creators). Monetization on but low volume by design.
 
 ---
 
-_This document supersedes `Kretopia_Product_Bible_v0.1`, `Kretopia_Technical_Snapshot_v0.1`, and the older ThriveIN roadmap. Use this for YC W27 and all AI board briefings._
+_This document supersedes `Kretopia_Product_Bible_v0.1`, `Kretopia_Technical_Snapshot_v0.1`, and the older Kretopia roadmap. Use this for YC W27 and all AI board briefings._
 
 ---
 
@@ -356,12 +356,12 @@ A tight, scannable list of the things no other creator platform has stitched tog
 ### Passport (the Creative Record)
 - `/@handle` public résumé + portfolio + press kit + rate cards + video intros.
 - **Stamps** (credits) — verified via **magic-link co-signs** (WhatsApp/Email/clipboard, no account required to verify).
-- **Vouches** (Gold/Amber ShieldCheck), Collab Graph, ThriveIN Verified badge.
+- **Vouches** (Gold/Amber ShieldCheck), Collab Graph, Kretopia Verified badge.
 - Native Web Share API, EPK → PDF export (jsPDF multi-page), embeddable widget (HTML/Markdown/Shield.io).
 - Anchor Strip surfaces Standing/Stamps/Co-signs/Press Kit/Receipts/Wallet/Recent work/Verification across /profile, /thrivepay, /credits.
 
 ### KrePay (frictionless money)
-- **ThriveIN Wallet (Phase 0)** — Stripe Connect controller with `stripe_dashboard='none'` → creators never leave Kretopia to onboard. Inline `<WalletAddBankSheet>`, no Stripe redirect.
+- **Kretopia Wallet (Phase 0)** — Stripe Connect controller with `stripe_dashboard='none'` → creators never leave Kretopia to onboard. Inline `<WalletAddBankSheet>`, no Stripe redirect.
 - **Pricing Co-Pilot** drafts quotes/invoices from a photographed brief.
 - **AI Receipt Scanner** (Gemini vision, client-side compression).
 - **Money Streaks** — `record_money_action` RPC tracks daily streak from invoice/expense/receipt actions.

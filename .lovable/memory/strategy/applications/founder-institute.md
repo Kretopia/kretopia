@@ -1,6 +1,6 @@
 ---
 name: Founder Institute — Application Draft
-description: ThriveIN application draft for Founder Institute Caribbean Spring 2026.
+description: Kretopia application draft for Founder Institute Caribbean Spring 2026.
 type: reference
 ---
 
@@ -9,11 +9,11 @@ type: reference
 ## 1. Founder
 - **Name:** [Founder name]
 - **Location:** Trinidad & Tobago
-- **Role:** Solo founder, full-time on ThriveIN
+- **Role:** Solo founder, full-time on Kretopia
 - **Background:** Technical operator shipping agentic AI in production; deep operating context in the Caribbean creative economy (Carnival, music, film, content)
 
 ## 2. Startup idea (≤ 280 chars)
-ThriveIN is the agentic Operating System for the creator economy — Creative Passport (verified credits), Smart Match, Smart Gig Scout, ThriveDesk and ThrivePay, all driven by always-on AI agents that find work, draft proposals, price quotes and run the back office.
+Kretopia is the agentic Operating System for the creator economy — Creative Passport (verified credits), Smart Match, Smart Gig Scout, ThriveDesk and ThrivePay, all driven by always-on AI agents that find work, draft proposals, price quotes and run the back office.
 
 ## 3. Why this idea, why now
 - Creator economy is $250B+ and has no native operating layer; creatives lose 30-40% of billable time to admin
@@ -43,10 +43,10 @@ ThriveIN is the agentic Operating System for the creator economy — Creative Pa
 - Close priced seed round (target lead identified by Week 8)
 - Hire founding engineer
 - Open Spanish-language version of platform (i18n stack in place)
-- Publish first ThriveIN Caribbean Creative Economy Index from anonymised credit graph
+- Publish first Kretopia Caribbean Creative Economy Index from anonymised credit graph
 
 ## 8. Long-form bio
 See `mem://strategy/founder-bio.md`.
 
 ## 9. Anything else
-ThriveIN's positioning — *"The Operating System for Creative Careers"* — was chosen specifically because it scales beyond the creator-economy niche into the global $1T+ knowledge-worker tail. Caribbean is the wedge, not the ceiling.
+Kretopia's positioning — *"The Operating System for Creative Careers"* — was chosen specifically because it scales beyond the creator-economy niche into the global $1T+ knowledge-worker tail. Caribbean is the wedge, not the ceiling.

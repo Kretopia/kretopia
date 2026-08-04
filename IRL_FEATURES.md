@@ -1,4 +1,4 @@
-# IRL Event Features for ThriveIN
+# IRL Event Features for Kretopia
 
 ## ✅ Currently Implemented
 
@@ -154,7 +154,7 @@
 ---
 
 ### 10. **Proximity Discovery**
-**Purpose**: Find nearby ThriveIN members at large events
+**Purpose**: Find nearby Kretopia members at large events
 
 **Features**:
 - Opt-in location sharing during events
@@ -212,4 +212,4 @@ Consider adding an "Event Organizer" dashboard:
 - Export attendee list (with permission)
 - Send post-event follow-ups
 
-This positions ThriveIN as the essential tool for creative community events!
+This positions Kretopia as the essential tool for creative community events!

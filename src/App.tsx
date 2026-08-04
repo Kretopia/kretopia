@@ -179,7 +179,7 @@ const ShareCampaignRedirect = lazy(() => import("./pages/ShareRedirects").then(m
 // Kretopia V1 tabs
 const KretopiaSearch = lazy(() => import("./pages/KretopiaSearch"));
 const KretoTab = lazy(() => import("./pages/KretoTab"));
-const ThriveINTab = lazy(() => import("./pages/ThriveINTab"));
+const KretopiaTab = lazy(() => import("./pages/KretopiaTab"));
 const PerksTab = lazy(() => import("./pages/PerksTab"));
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -535,7 +535,7 @@ const AppContent = () => {
             {/* Search & Notifications */}
             <Route path="/search" element={<KretopiaSearch />} />
             <Route path="/kreto" element={<ProtectedRoute><KretoTab /></ProtectedRoute>} />
-            <Route path="/thrivein" element={<ProtectedRoute><ThriveINTab /></ProtectedRoute>} />
+            <Route path="/thrivein" element={<ProtectedRoute><KretopiaTab /></ProtectedRoute>} />
             <Route path="/perks" element={<ProtectedRoute><PerksTab /></ProtectedRoute>} />
             <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />

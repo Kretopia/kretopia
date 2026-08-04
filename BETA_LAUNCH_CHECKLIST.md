@@ -1,4 +1,4 @@
-# ThriveIN Beta Launch Checklist
+# Kretopia Beta Launch Checklist
 **Status: READY FOR LAUNCH ✅**
 **Last Updated:** December 5, 2025
 

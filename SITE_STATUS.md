@@ -1,4 +1,4 @@
-# ThriveIN - Site Status & Readiness Report
+# Kretopia - Site Status & Readiness Report
 
 ## ✅ Core Features Implemented
 

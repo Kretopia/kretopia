@@ -1,4 +1,4 @@
-# 🚀 ThriveIN Conversion Optimization Report
+# 🚀 Kretopia Conversion Optimization Report
 **Date:** October 13, 2025  
 **Status:** Phase 2 Complete ✅
 
@@ -24,7 +24,7 @@ Dashboard:           46 active users         ✅
 ### Root Causes Identified:
 1. **Invite code requirement** - 42 people had no code
 2. **Waitlist buried** - At bottom of page (scroll required)
-3. **Unclear value prop** - Why ThriveIN vs competitors?
+3. **Unclear value prop** - Why Kretopia vs competitors?
 4. **Password friction** - Requirements not visible upfront
 5. **Mobile UX issues** - 69% mobile traffic, small forms
 

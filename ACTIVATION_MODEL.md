@@ -1,4 +1,4 @@
-# ThriveIN Activation Model v1.0
+# Kretopia Activation Model v1.0
 **Status:** Proposed · **Owner:** Growth + Data · **Date:** 2026-06-22 · **Phase:** 2 / Stabilize
 
 ---

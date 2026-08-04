@@ -1,6 +1,6 @@
 ---
 name: Kretopia Rebrand v1
-description: Thrive→Kretopia platform rebrand. Ecosystem map, agent rename to Kreto, ThriveIN as sub-brand, what NOT to rename.
+description: Thrive→Kretopia platform rebrand. Ecosystem map, agent rename to Kreto, Kretopia as sub-brand, what NOT to rename.
 type: design
 ---
 
@@ -9,7 +9,7 @@ type: design
 ## Ecosystem
 - **Thrive Collective** = parent company. Legal / footer only ("Kretopia by Thrive Collective").
 - **Kretopia** = the platform. The Creative Economy OS.
-- **ThriveIN** = sub-brand for community, events, magazine, IRL meetups, dinners, SYNC. Used ONLY on those surfaces.
+- **Kretopia** = sub-brand for community, events, magazine, IRL meetups, dinners, SYNC. Used ONLY on those surfaces.
 - **Kreto** = the AI Executive Producer. Replaces all user-facing "Thrive" / "Izzy" agent references.
 
 ## Positioning
@@ -17,7 +17,7 @@ type: design
 - Functional: "The Creative Economy OS. Build your profile. Find opportunities. Collaborate. Get paid."
 
 ## Pillars (nav-facing labels)
-Passport · Scout · Match · Studio · SoundStages · KrePay · Kreto · ThriveIN
+Passport · Scout · Match · Studio · SoundStages · KrePay · Kreto · Kretopia
 
 ## Source of truth
 `src/lib/brandLexicon.ts` — `BRAND.*`, `BRAND.pillars.*`, `KRETO_VOICE`. `THRIVE_VOICE` aliased for back-compat. Always import from here, never hardcode.

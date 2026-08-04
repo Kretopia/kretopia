@@ -63,7 +63,7 @@ export const NewMemberStarterCard = ({ className = "" }: { className?: string })
             supabase.from("connections").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "accepted"),
             supabase.from("projects").select("id", { count: "exact", head: true }).eq("created_by", user.id),
             supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("creator_id", user.id),
-            supabase.from("invoices" as any).select("id", { count: "exact", head: true }).eq("user_id", user.id),
+            supabase.from("invoices" as any).select("id", { count: "exact", head: true }).eq("issued_by", user.id),
           ]);
 
         const profileDone = !!(profile.bio && profile.avatar_url);

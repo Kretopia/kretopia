@@ -91,7 +91,7 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
     "📊 2 invoices/month · 5 expenses/month",
     "🔓 1 active project/month",
     "🔓 1 milestone payment / contract / approval / template per month",
-    "💸 ThriveFund — launch your first campaign on us (1/year)",
+    "💸 Kretopia Fund — launch your first campaign on us (1/year)",
     "Higher commission on transactions",
   ],
   company: [
@@ -123,7 +123,7 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
     "🎨 3 premium site templates",
     "📄 EPK-to-PDF deck export",
     "Smart Match explanations · Verified badge · Advanced filters",
-    "💸 ThriveFund — 3 campaigns/year",
+    "💸 Kretopia Fund — 3 campaigns/year",
     "Priority support",
   ],
   company: [
@@ -154,7 +154,7 @@ export const CREATOR_PRO_FEATURES: Record<AccountType, string[]> = {
     "📊 Site visitor + campaign analytics (open/click)",
     "⏰ Scheduled email sends",
     "🔓 Advanced reporting & exports",
-    "💸 ThriveFund — unlimited campaigns",
+    "💸 Kretopia Fund — unlimited campaigns",
     "White-glove onboarding · Dedicated account manager",
   ],
   company: [

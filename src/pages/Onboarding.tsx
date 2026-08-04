@@ -879,7 +879,7 @@ export default function Onboarding() {
                       <div className="space-y-1">
                         <p className="text-sm font-bold">We couldn't find your work online yet — that's okay.</p>
                         <p className="text-xs text-muted-foreground">Let's build your profile together. Start with your role and a short bio below.</p>
-                        <p className="text-[11px] text-muted-foreground/80 pt-1">You can always import credits later from your ThriveCredits page.</p>
+                        <p className="text-[11px] text-muted-foreground/80 pt-1">You can always import credits later from your Kretopia Credits page.</p>
                       </div>
                     </div>
                   </div>

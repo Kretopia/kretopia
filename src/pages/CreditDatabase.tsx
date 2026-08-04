@@ -364,7 +364,7 @@ const CreditDatabase = () => {
                   Creative Passport
                 </p>
                 <h1 className="text-3xl md:text-4xl font-black tracking-[-0.03em] leading-[1.05] mb-2">
-                  ThriveCredits
+                  Kretopia Credits
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   Search any project, person, or production across the global creative industry.

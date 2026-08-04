@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ProfileUpdate = Partial<Omit<Profile, "id" | "user_id">>;
@@ -253,7 +254,7 @@ function mergeSplitRows(
 async function getLegacyProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("*")
+    .select(PROFILE_SELECT)
     .eq("user_id", userId)
     .maybeSingle();
 

@@ -2246,13 +2246,6 @@ export type Database = {
             foreignKeyName: "company_reviews_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "company_reviews_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -2296,13 +2289,6 @@ export type Database = {
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "company_reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -2387,13 +2373,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "connected_platforms_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -3093,13 +3072,6 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "creative_jams_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -7527,6 +7499,36 @@ export type Database = {
           },
         ]
       }
+      guest_wallet_email_codes: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       guest_wallet_sessions: {
         Row: {
           created_at: string
@@ -8461,13 +8463,6 @@ export type Database = {
             foreignKeyName: "industry_stats_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "industry_stats_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -9275,13 +9270,6 @@ export type Database = {
             foreignKeyName: "manual_bank_transfers_confirmed_by_fkey"
             columns: ["confirmed_by"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "manual_bank_transfers_confirmed_by_fkey"
-            columns: ["confirmed_by"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -9324,13 +9312,6 @@ export type Database = {
             foreignKeyName: "manual_bank_transfers_recipient_id_fkey"
             columns: ["recipient_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "manual_bank_transfers_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -9360,13 +9341,6 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "manual_bank_transfers_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -9967,13 +9941,6 @@ export type Database = {
             foreignKeyName: "milestones_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "milestones_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -10003,13 +9970,6 @@ export type Database = {
             columns: ["paid_to"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "milestones_paid_to_fkey"
-            columns: ["paid_to"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -10052,13 +10012,6 @@ export type Database = {
             columns: ["requested_by"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "milestones_requested_by_fkey"
-            columns: ["requested_by"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -11734,13 +11687,6 @@ export type Database = {
             foreignKeyName: "payment_disputes_disputed_by_fkey"
             columns: ["disputed_by"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "payment_disputes_disputed_by_fkey"
-            columns: ["disputed_by"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -12497,13 +12443,6 @@ export type Database = {
             foreignKeyName: "profile_claim_requests_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "profile_claim_requests_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -13195,13 +13134,6 @@ export type Database = {
             foreignKeyName: "project_collaborators_invited_by_fkey"
             columns: ["invited_by"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "project_collaborators_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -13684,13 +13616,6 @@ export type Database = {
             foreignKeyName: "project_files_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "project_files_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -13872,13 +13797,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "project_messages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -14823,13 +14741,6 @@ export type Database = {
             foreignKeyName: "recipient_bank_accounts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "recipient_bank_accounts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -15054,13 +14965,6 @@ export type Database = {
             foreignKeyName: "review_requests_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "review_requests_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -15160,13 +15064,6 @@ export type Database = {
             foreignKeyName: "reviews_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reviews_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -15196,13 +15093,6 @@ export type Database = {
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -15752,13 +15642,6 @@ export type Database = {
             foreignKeyName: "service_packages_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "service_packages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -16078,13 +15961,6 @@ export type Database = {
             foreignKeyName: "skill_endorsement_requests_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "skill_endorsement_requests_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -16163,13 +16039,6 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "skill_endorsements_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -18245,13 +18114,6 @@ export type Database = {
             foreignKeyName: "wallet_topups_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "wallet_topups_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -18354,13 +18216,6 @@ export type Database = {
             foreignKeyName: "wallet_transfers_recipient_id_fkey"
             columns: ["recipient_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "wallet_transfers_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -18390,13 +18245,6 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "wallet_transfers_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -18604,13 +18452,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "connected_platforms_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -18910,68 +18751,6 @@ export type Database = {
           xp: number | null
           youtube_url: string | null
         }
-        Insert: {
-          account_type?: Database["public"]["Enums"]["account_type"] | null
-          avatar_url?: string | null
-          badge?: Database["public"]["Enums"]["user_badge"] | null
-          behance_url?: string | null
-          bio?: string | null
-          cover_image_url?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id_verified?: boolean | null
-          imdb_url?: string | null
-          instagram_url?: string | null
-          level?: number | null
-          linkedin_url?: string | null
-          location?: string | null
-          membership_number?: string | null
-          onboarding_completed?: boolean | null
-          professional_skills?: Json | null
-          role?: string | null
-          soundcloud_url?: string | null
-          spotify_url?: string | null
-          tiktok_url?: string | null
-          twitter_url?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-          username?: string | null
-          verification_status?: string | null
-          verification_tier?: string | null
-          xp?: number | null
-          youtube_url?: string | null
-        }
-        Update: {
-          account_type?: Database["public"]["Enums"]["account_type"] | null
-          avatar_url?: string | null
-          badge?: Database["public"]["Enums"]["user_badge"] | null
-          behance_url?: string | null
-          bio?: string | null
-          cover_image_url?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id_verified?: boolean | null
-          imdb_url?: string | null
-          instagram_url?: string | null
-          level?: number | null
-          linkedin_url?: string | null
-          location?: string | null
-          membership_number?: string | null
-          onboarding_completed?: boolean | null
-          professional_skills?: Json | null
-          role?: string | null
-          soundcloud_url?: string | null
-          spotify_url?: string | null
-          tiktok_url?: string | null
-          twitter_url?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-          username?: string | null
-          verification_status?: string | null
-          verification_tier?: string | null
-          xp?: number | null
-          youtube_url?: string | null
-        }
         Relationships: []
       }
       public_profiles_view: {
@@ -19131,13 +18910,6 @@ export type Database = {
             foreignKeyName: "reviews_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reviews_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -19167,13 +18939,6 @@ export type Database = {
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -19255,13 +19020,6 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "skill_endorsements_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -19365,13 +19123,6 @@ export type Database = {
             foreignKeyName: "reviews_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles_safe"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reviews_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -19401,13 +19152,6 @@ export type Database = {
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -19453,13 +19197,6 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "skill_endorsements_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -19538,13 +19275,6 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_discovery"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "skill_endorsements_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles_safe"
             referencedColumns: ["user_id"]
           },
           {
@@ -20122,6 +19852,16 @@ export type Database = {
         Args: { _email: string; _project_id: string }
         Returns: string
       }
+      get_own_payment_identifiers: {
+        Args: never
+        Returns: {
+          stripe_account_id: string
+          stripe_account_status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          subscription_tier: string
+        }[]
+      }
       get_own_profile_sensitive_data: {
         Args: never
         Returns: {
@@ -20182,6 +19922,40 @@ export type Database = {
           role: string
           user_id: string
           verification_tier: string
+        }[]
+      }
+      get_public_profiles_safe: {
+        Args: never
+        Returns: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          avatar_url: string
+          badge: Database["public"]["Enums"]["user_badge"]
+          behance_url: string
+          bio: string
+          cover_image_url: string
+          created_at: string
+          full_name: string
+          id_verified: boolean
+          imdb_url: string
+          instagram_url: string
+          level: number
+          linkedin_url: string
+          location: string
+          membership_number: string
+          onboarding_completed: boolean
+          professional_skills: Json
+          role: string
+          soundcloud_url: string
+          spotify_url: string
+          tiktok_url: string
+          twitter_url: string
+          updated_at: string
+          user_id: string
+          username: string
+          verification_status: string
+          verification_tier: string
+          xp: number
+          youtube_url: string
         }[]
       }
       get_public_studio_recap: { Args: { token: string }; Returns: Json }

@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 interface ChecklistItem {
   id: string;
@@ -37,7 +38,7 @@ export function GetStartedChecklist() {
     
     const fetchData = async () => {
       const [profileRes, creditsRes, portfolioRes, connectionRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("profiles").select(PROFILE_SELECT).eq("user_id", user.id).single(),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("connections").select("id", { count: "exact", head: true })

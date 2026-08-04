@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 import { format, subDays } from "date-fns";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 const CHART_COLORS = ['hsl(var(--primary))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
@@ -226,7 +227,7 @@ const Analytics = () => {
       // Fetch profile data
       const { data: profile } = await supabase
         .from("profiles")
-        .select("*")
+        .select(PROFILE_SELECT)
         .eq("user_id", user.id)
         .single();
 

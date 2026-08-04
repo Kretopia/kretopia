@@ -3,6 +3,8 @@
 // Uses HEAD/GET on the page itself, parses OpenGraph + provider hints.
 // Note: CORS open; called from authed clients only. No user data is stored.
 
+import { safeFetch } from "../_shared/ssrf.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -112,18 +114,13 @@ Deno.serve(async (req) => {
 
     if (!title || !thumbnail) {
       try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 8000);
-        const res = await fetch(url.toString(), {
-          signal: ctrl.signal,
+        const { response: res } = await safeFetch(url, {
           headers: {
             "User-Agent":
-              "Mozilla/5.0 (compatible; ThriveIN-LinkPreview/1.0; +https://thrivein.io)",
+              "Mozilla/5.0 (compatible; Kretopia-LinkPreview/1.0; +https://kretopia.com)",
             Accept: "text/html,application/xhtml+xml",
           },
-          redirect: "follow",
-        });
-        clearTimeout(t);
+        }, { maxRedirects: 3, timeoutMs: 8000 });
         if (res.ok) {
           const ct = res.headers.get("content-type") || "";
           if (ct.includes("text/html")) {

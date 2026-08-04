@@ -140,11 +140,8 @@ export default function ThrivePay() {
   const fetchAccountStatus = async () => {
     try {
       setLoading(true);
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("stripe_account_id, stripe_account_status, subscription_tier")
-        .eq("user_id", user?.id)
-        .single();
+      const { data: rows } = await supabase.rpc("get_own_payment_identifiers");
+      const profile = Array.isArray(rows) ? rows[0] : rows;
 
       if (profile?.subscription_tier) setSubscriptionTier(profile.subscription_tier);
 

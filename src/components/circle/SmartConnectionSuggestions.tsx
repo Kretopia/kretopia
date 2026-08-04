@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ConnectionInsightCard } from "./ConnectionInsightCard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { intentBoostForCreator } from "@/lib/intentMatching";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 export const SmartConnectionSuggestions = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export const SmartConnectionSuggestions = () => {
       // Get current user profile
       const { data: currentProfile } = await supabase
         .from('profiles')
-        .select('*')
+        .select(PROFILE_SELECT)
         .eq('user_id', user.id)
         .single();
 
@@ -179,7 +180,7 @@ export const SmartConnectionSuggestions = () => {
       // Get current user profile for AI analysis
       const { data: currentProfile } = await supabase
         .from('profiles')
-        .select('*')
+        .select(PROFILE_SELECT)
         .eq('user_id', user.id)
         .single();
 

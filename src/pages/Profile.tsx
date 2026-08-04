@@ -472,6 +472,8 @@ const ProfileContent = () => {
                   totalCredits={credits?.length || 0}
                   cosigns={cosigns}
                   taggedCount={taggedCount}
+                  avatarUrl={profile.avatar_url}
+
 
                   onShare={handleShare}
                   onShowQR={() => setIsQRDialogOpen(true)}

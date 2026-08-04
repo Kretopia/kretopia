@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 
 export default function PartnerDirectory() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function PartnerDirectory() {
       // Fetch user profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("*")
+        .select(PROFILE_SELECT)
         .eq("user_id", user.id)
         .single();
 

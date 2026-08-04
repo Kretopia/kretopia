@@ -231,8 +231,10 @@ export const PassportClaimHero = ({
           </span>
         </div>
       </div>
-    </Card>
+      </Card>
+    </HoloCard>
   );
+
 };
 
 export default PassportClaimHero;

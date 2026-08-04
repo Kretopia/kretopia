@@ -20295,6 +20295,14 @@ export type Database = {
         Args: { _action: string; _credit_id: string; _note?: string }
         Returns: Json
       }
+      wallet_credit: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
+      wallet_debit: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
     }
     Enums: {
       account_type: "individual" | "company"

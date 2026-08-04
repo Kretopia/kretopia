@@ -142,13 +142,13 @@ serve(async (req) => {
 
     logStep("Transfer completed", {
       amount,
-      newSenderBalance: senderBalance - amount,
-      newRecipientBalance: recipientBalance + amount,
+      newSenderBalance,
+      newRecipientBalance,
     });
 
     return new Response(JSON.stringify({
       success: true,
-      newBalance: senderBalance - amount,
+      newBalance: newSenderBalance,
       recipientName: recipient.full_name,
       amount,
     }), {

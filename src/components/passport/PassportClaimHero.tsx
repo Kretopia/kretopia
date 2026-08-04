@@ -60,6 +60,7 @@ export const PassportClaimHero = ({
   verifiedCredits,
   totalCredits,
   cosigns,
+  avatarUrl,
   taggedCount = 0,
   onShare,
   onShowQR,
@@ -81,18 +82,30 @@ export const PassportClaimHero = ({
     return "THR-—";
   }, [passportId, userId]);
 
+  const portrait = useMemo(() => hdImage(avatarUrl), [avatarUrl]);
+
   const level = standing.level;
   const needsForL3 = Math.max(0, 60 - (standing.score ?? 0));
   const isVerifiedPro = level >= 3;
 
   return (
-    <Card className="relative overflow-hidden border-[hsl(var(--signal-teal))]/30 bg-card">
+    <HoloCard>
+      <Card className="relative overflow-hidden rounded-2xl border-[hsl(var(--signal-teal))]/30 bg-card">
+      {/* Depth wash — layered inner lighting */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(90% 60% at 50% -10%, hsl(var(--signal-teal)/0.16), transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 30%)",
+        }}
+      />
       {/* Tag */}
-      <div className="absolute top-0 left-0 px-3 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg">
+      <div className="absolute top-0 left-0 px-3 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10">
         Creative Passport
       </div>
 
-      <div className="p-5 pt-10 space-y-4">
+      <div className="relative p-5 pt-10 space-y-4">
         {/* Locked headline */}
         <p className="text-[11px] sm:text-xs leading-snug font-medium text-foreground/85 italic">
           {BRAND.passportHeadline}
@@ -108,7 +121,24 @@ export const PassportClaimHero = ({
 
         {/* Identity row */}
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
+          {portrait && (
+            <div
+              className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/15 shadow-[0_10px_24px_-12px_rgba(0,0,0,0.8)]"
+              style={{ transform: "translateZ(30px)" }}
+            >
+              <img
+                src={portrait}
+                alt={fullName ? `${fullName} portrait` : "Passport portrait"}
+                width={256}
+                height={256}
+                loading="eager"
+                decoding="async"
+                draggable={false}
+                className="h-full w-full object-cover object-center"
+              />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
             <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
               Your Creative Passport ID
             </p>
@@ -132,6 +162,8 @@ export const PassportClaimHero = ({
           </Badge>
 
         </div>
+
+
 
         {/* Primary CTAs — the 4 hooks */}
         <div className="grid grid-cols-2 gap-2">

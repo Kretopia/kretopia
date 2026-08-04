@@ -1,6 +1,6 @@
-# ThriveIN Invite Materials
+# Kretopia Invite Materials
 
-Use these templates when inviting creatives to join ThriveIN.
+Use these templates when inviting creatives to join Kretopia.
 
 ---
 
@@ -17,7 +17,7 @@ https://thrivein.io/join/ThriveOGs
 ```
 Stop cold DMing strangers for collabs.
 
-ThriveIN matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
+Kretopia matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
 
 I'm already on. Join me 👇
 thrivein.io/join/ThriveOGs
@@ -29,12 +29,12 @@ thrivein.io/join/ThriveOGs
 
 ## 📧 Email Template
 
-**Subject:** Invite to ThriveIN - Find Your Next Creative Collaborator
+**Subject:** Invite to Kretopia - Find Your Next Creative Collaborator
 
 ```
 Hey [Name],
 
-I wanted to share something I've been building - ThriveIN.
+I wanted to share something I've been building - Kretopia.
 
 It's a new platform that uses AI to match creatives for collaborations. Think Tinder, but for finding your next videographer, photographer, designer, or creative partner.
 
@@ -58,7 +58,7 @@ Let me know if you have any questions.
 ## 💬 Voice Note Script
 
 ```
-"Hey! Quick one - I'm working on this platform called ThriveIN. 
+"Hey! Quick one - I'm working on this platform called Kretopia. 
 It's basically Tinder for creatives - swipe through verified portfolios, 
 match with other videographers, photographers, designers. 
 AI figures out who you'd work well with.

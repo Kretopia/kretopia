@@ -4,7 +4,7 @@
 
 ## SLIDE 1: COVER
 
-**ThriveIN.io**
+**Kretopia.io**
 
 *Where Creators Find Work — and Get Paid.*
 
@@ -37,7 +37,7 @@ Today, a filmmaker in Trinidad needs **6+ disconnected tools** just to find a vi
 
 **The result:** Creators lose 10+ hours/week to admin. Projects stall. Payments get disputed. Talent gets ghosted.
 
-> Designer note: Split screen — left side shows the messy reality (screenshots of WhatsApp threads, scattered invoices), right side shows ThriveIN's clean interface.
+> Designer note: Split screen — left side shows the messy reality (screenshots of WhatsApp threads, scattered invoices), right side shows Kretopia's clean interface.
 
 ---
 
@@ -105,7 +105,7 @@ Show 4 key screens:
 4. **Platform fatigue** — creators are exhausted by tool sprawl. Consolidation wins.
 5. **$7B+ deployed into creator tools** (2022-2025) — VCs are actively funding this category, and exits (81 M&A deals in 2025) prove market appetite
 
-**The analogy:** Shopify didn't invent e-commerce. It gave merchants the OS to run their business. ThriveIN does the same for creators.
+**The analogy:** Shopify didn't invent e-commerce. It gave merchants the OS to run their business. Kretopia does the same for creators.
 
 ---
 
@@ -117,12 +117,12 @@ Show 4 key screens:
 
 - **500+ events produced** across Dubai, Geneva, LA, Trinidad, Bali
 - **Thrive Collective** — 13-year creative ecosystem spanning events, media, and community
-- **ThriveIN Magazine** — 400+ physical distribution points in Bali
+- **Kretopia Magazine** — 400+ physical distribution points in Bali
 - **Discover A Thriver Podcast** — active, top creative industry guests
 - **ThriveXchange** — industry networking event series
-- **2020: ThriveIN V1** — 1,000+ downloads. First proof of demand. Built from community need.
-- **2022: ThriveIN V2** — Blockchain-powered. Secured **$50K grant from NEAR Protocol** to fund development.
-- **2026: ThriveIN V3** — AI-powered. Full-stack rebuild. 15+ features live. Built for **$5K** using AI-augmented development.
+- **2020: Kretopia V1** — 1,000+ downloads. First proof of demand. Built from community need.
+- **2022: Kretopia V2** — Blockchain-powered. Secured **$50K grant from NEAR Protocol** to fund development.
+- **2026: Kretopia V3** — AI-powered. Full-stack rebuild. 15+ features live. Built for **$5K** using AI-augmented development.
 - **Beta timeline:** Trinidad closed beta (March 2026) → Bali expansion (April 2026)
 - Personal investment: **$5K+** in V3 development (leveraging AI tools to ship at 10x efficiency)
 
@@ -159,7 +159,7 @@ Show 4 key screens:
 - Week 4-8: 5-10 real paid projects through escrow
 - Week 8-12: 40%+ weekly retention rate
 
-**Ecosystem revenue:** Events and ThriveIN Magazine generate **~$20K USD/year** independently — proving market access, creator trust, and the founder's ability to monetize creative communities. (This revenue is separate from the platform and not included in projections.)
+**Ecosystem revenue:** Events and Kretopia Magazine generate **~$20K USD/year** independently — proving market access, creator trust, and the founder's ability to monetize creative communities. (This revenue is separate from the platform and not included in projections.)
 
 > Designer note: Use a "build vs. validate" framework visual. Left: everything built. Right: what the beta will prove.
 
@@ -176,7 +176,7 @@ Most startups spend their first 12 months trying to find users. We've spent 13 y
 | WhatsApp community | 2,000+ | Active, engaged, Bali + Caribbean |
 | Social media following | 6,000+ | Instagram, LinkedIn, etc. |
 | Curated email list | 10,000+ | Built over 13 years of events |
-| ThriveIN Magazine | 400+ locations | Physical brand presence in Bali |
+| Kretopia Magazine | 400+ locations | Physical brand presence in Bali |
 | Event alumni network | 500+ events | Dubai, LA, Geneva, Trinidad, Bali |
 | **Total addressable network** | **18,000+** | **Organic, $0 acquisition cost** |
 
@@ -215,7 +215,7 @@ Events → Signups → Projects → Payments → Referrals → More Events
 
 **Headline:** They built tools. We're building the workflow.
 
-| Feature | ThriveIN | LinkedIn | Behance | Upwork | Vampr |
+| Feature | Kretopia | LinkedIn | Behance | Upwork | Vampr |
 |---|---|---|---|---|---|
 | AI Swipe Matching | ✅ | ❌ | ❌ | ❌ | ✅ (music only) |
 | Match Explanations | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -337,7 +337,7 @@ These are **bottom-up projections** based on the funnel, not top-down market fan
 
 **5+ years:** The professional identity and payment layer for the creator economy. Every creative's verified profile lives here. The "Shopify for creative services."
 
-> **The big bet:** The creator economy will professionalize. When it does, creators will need verified identities, project histories, and payment infrastructure. ThriveIN will be that layer.
+> **The big bet:** The creator economy will professionalize. When it does, creators will need verified identities, project histories, and payment infrastructure. Kretopia will be that layer.
 
 ---
 
@@ -398,7 +398,7 @@ We're not starting from zero — we're starting from 13 years of community, 500+
 - Median pre-seed round size: $500K-$1M
 - Standard dilution: 10-15%
 
-**Why $3M-$4M is right for ThriveIN:**
+**Why $3M-$4M is right for Kretopia:**
 - We're pre-revenue, which warrants below-median pricing
 - BUT we have: live product, distribution, proven founder, large TAM
 - $3M-$4M rewards early believers while leaving significant upside
@@ -409,4 +409,4 @@ We're not starting from zero — we're starting from 13 years of community, 500+
 - Contra (creator marketplace): $30M+ raised, now $300M+ valuation
 - Passionfroot (creator business tools): $3.8M seed
 
-ThriveIN is priced for the stage, with upside for the vision.
+Kretopia is priced for the stage, with upside for the vision.

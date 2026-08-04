@@ -1,6 +1,6 @@
 ---
 name: Bridge for Billions — Application Draft
-description: ThriveIN application drafts for Bridge for Billions, both Planting Seeds (idea-stage) and Conecta Caribbean (growth-stage / EU+IDB Lab CARIBEquity) tracks.
+description: Kretopia application drafts for Bridge for Billions, both Planting Seeds (idea-stage) and Conecta Caribbean (growth-stage / EU+IDB Lab CARIBEquity) tracks.
 type: reference
 ---
 
@@ -13,7 +13,7 @@ type: reference
 ## A. Conecta Caribbean (primary)
 
 ### A1. Company snapshot
-- **Name:** ThriveIN
+- **Name:** Kretopia
 - **HQ:** Trinidad & Tobago
 - **Stage:** Post-MVP, paying users, active OG cohort (capped at 135), Founding Member tier live
 - **Sector:** Creative economy / agentic AI / fintech for creators
@@ -23,7 +23,7 @@ type: reference
 Caribbean creative workers — musicians, filmmakers, designers, Carnival mas-makers, content creators — generate outsized cultural exports yet have no operating layer. Credits are unverified, gigs are ghosted in DMs, payments cross borders badly, and admin work eats 30-40% of billable time. The same gap exists across LATAM, Africa and Southeast Asia.
 
 ### A3. Solution
-ThriveIN is the **Creative Operating System** — a Creative Passport (verified credits + co-signs), Smart Match (creators ↔ opportunities), Smart Gig Scout (real gigs found daily by agents), ThriveDesk (project workspace with an autonomous Desk-Agent), and ThrivePay (Stripe Connect frictionless payouts with TT/USD support).
+Kretopia is the **Creative Operating System** — a Creative Passport (verified credits + co-signs), Smart Match (creators ↔ opportunities), Smart Gig Scout (real gigs found daily by agents), ThriveDesk (project workspace with an autonomous Desk-Agent), and ThrivePay (Stripe Connect frictionless payouts with TT/USD support).
 
 A fleet of agents (Gemini Pro / 2.5 Flash) runs continuously: scouting, drafting, pricing, watching every studio, surfacing sponsor leads, refreshing EPKs. Activity is observable at `/agents`.
 
@@ -61,7 +61,7 @@ Subscription tiers (Spark / Creator / Creator+ / Founding) + employer-pays platf
 ## B. Planting Seeds (fallback / if rerouted)
 
 ### B1. Idea in one sentence
-ThriveIN turns the chaotic, ghosted, under-paid life of a creative worker into an operating system run by always-on AI agents.
+Kretopia turns the chaotic, ghosted, under-paid life of a creative worker into an operating system run by always-on AI agents.
 
 ### B2. Why now
 LLM-powered agents are the first technology that can absorb a sole proprietor's operational tax at sole-proprietor unit economics. The creator economy is now a $250B+ market with no native operating layer.

@@ -1,4 +1,4 @@
-# ThriveIN Core Funnels v1.0
+# Kretopia Core Funnels v1.0
 **Status:** Proposed · **Owner:** Growth + Product · **Date:** 2026-06-22 · **Phase:** 2 / Stabilize
 
 Companion to `ACTIVATION_MODEL.md` and `ANALYTICS_EVENT_TAXONOMY.md`. Every step below maps to one (and only one) event in the taxonomy.

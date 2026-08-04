@@ -1,10 +1,10 @@
 ---
 name: Agent is Izzy
-description: The Executive Producer agent is named Izzy. Thrive/ThriveIN remain the platform.
+description: The Executive Producer agent is named Izzy. Thrive/Kretopia remain the platform.
 type: design
 ---
 
-**Izzy** = the agent. **Thrive / ThriveIN** = the platform.
+**Izzy** = the agent. **Thrive / Kretopia** = the platform.
 
 User-facing copy ALWAYS says Izzy when referring to the assistant:
 - "Meet Izzy. Your Creative Executive Producer."
@@ -17,4 +17,4 @@ Edge function system prompts now say `You are Izzy…` (thrive-ai-chat, thrive-d
 
 Code-side names kept (NOT user-facing): file/route names like `ThriveAgentFab`, `thrive-ai-chat`, `/thrive/generate`, table names, `BRAND` object key — they're internal.
 
-Never reintroduce "Thrive noticed/drafted/scouted/remembers" or "Meet Thrive" — those name the agent. "Made with ThriveIN" on share pages is fine (platform attribution).
+Never reintroduce "Thrive noticed/drafted/scouted/remembers" or "Meet Thrive" — those name the agent. "Made with Kretopia" on share pages is fine (platform attribution).

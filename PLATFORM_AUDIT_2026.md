@@ -1,8 +1,8 @@
-# ThriveIN Platform Audit & Stabilization Review
+# Kretopia Platform Audit & Stabilization Review
 **Date:** June 22, 2026 · **Stage:** Pre-scale (beta → growth)
 **Auditor lens:** Principal Architect · CTO · Staff Eng · Security · UX · YC Partner
 
-> Verdict up top: **ThriveIN is a category-defining product hiding inside a sprawling beta surface.** The moat (Credits + Passport + Scout + Studio + Pay) is real. The risk is sprawl: 158 routes, 291 edge functions, 660 migrations, 65 hooks, 320+ tables — built faster than they were consolidated. The next 90 days are not about *building*, they're about *deleting, merging, and hardening*.
+> Verdict up top: **Kretopia is a category-defining product hiding inside a sprawling beta surface.** The moat (Credits + Passport + Scout + Studio + Pay) is real. The risk is sprawl: 158 routes, 291 edge functions, 660 migrations, 65 hooks, 320+ tables — built faster than they were consolidated. The next 90 days are not about *building*, they're about *deleting, merging, and hardening*.
 
 ---
 
@@ -140,7 +140,7 @@ Scored 1–5 (5 = polished). E2E spot-checks + replay + code review.
 
 Tested mental walk-throughs for 6 workflow types:
 
-| Workflow | Can run E2E in ThriveIN? | Gap |
+| Workflow | Can run E2E in Kretopia? | Gap |
 |---|---|---|
 | **Event** | 🟢 90% | RSVP + roster + chat + photo wall ✅. Missing: ticket scanning offline mode |
 | **Podcast** | 🟢 85% | Podcast slice (episodes, gen questions) ✅. Missing: hosting/RSS, transcript-to-clips publishing |
@@ -236,7 +236,7 @@ Fix:
 
 ## PHASE 8 — PRODUCT CLARITY
 
-### The 5 core ThriveIN should be known for
+### The 5 core Kretopia should be known for
 1. **Creative Passport** (identity + proof + EPK)
 2. **Credits & Co-signs** (verified track record — the moat)
 3. **Studio** (the work happens here, with EP brain)
@@ -349,4 +349,4 @@ A strong, opinionated product with real moat — held back by sprawl, untracked 
 ---
 
 ## Closing
-ThriveIN does not have a vision problem. It has a **surface area problem**. The next 90 days should ship **one new feature** (Recruiter Lens) and **delete more than you add**. After that, the Creative Operating System story becomes inevitable.
+Kretopia does not have a vision problem. It has a **surface area problem**. The next 90 days should ship **one new feature** (Recruiter Lens) and **delete more than you add**. After that, the Creative Operating System story becomes inevitable.

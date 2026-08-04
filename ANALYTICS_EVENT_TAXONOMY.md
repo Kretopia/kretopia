@@ -1,4 +1,4 @@
-# ThriveIN Analytics Event Taxonomy v1.0
+# Kretopia Analytics Event Taxonomy v1.0
 **Status:** Proposed · **Owner:** Data + Eng · **Date:** 2026-06-22 · **Phase:** 2 / Stabilize
 
 > Single source of truth for every event name fired by the app, edge functions, or DB triggers.

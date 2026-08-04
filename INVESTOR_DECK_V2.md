@@ -4,7 +4,7 @@
 
 ## 1. COVER SLIDE
 
-**ThriveIN.io**
+**Kretopia.io**
 *The Operating System for Creative Collaboration*
 
 Find Verified Collaborators. Ship Creative Work. Get Paid.
@@ -24,7 +24,7 @@ AI-powered matching · Verified portfolios · Escrow payments · Project workspa
 - **1,000s of creatives showcased** before "creator economy" was a term
 - **$50K grant secured** from NEAR Protocol (2023)
 - **3 platform iterations** — V1 (1K users), V2 (grant-funded), V3 (full-stack, live)
-- Built & operates **ThriveIN Magazine** (400+ distribution points in Bali), **Discover A Thriver Podcast**, **ThriveXchange** event series
+- Built & operates **Kretopia Magazine** (400+ distribution points in Bali), **Discover A Thriver Podcast**, **ThriveXchange** event series
 
 > "Not a tech founder trying to build community. A community builder who learned tech. 13 years of trust = unfair distribution advantage."
 
@@ -72,7 +72,7 @@ Creatives juggle 6+ disconnected tools daily:
 
 ## 5. THE SOLUTION
 
-**ThriveIN: One platform for the entire creative collaboration lifecycle.**
+**Kretopia: One platform for the entire creative collaboration lifecycle.**
 
 **Find → Verify → Work → Get Paid → Build Reputation**
 
@@ -103,7 +103,7 @@ Not a marketplace. Not a task manager. Not a payment processor.
 | Vampr | Music networking | Music-only, no payments, no workspace |
 | LinkedIn | Professional networking | No portfolios, no payments, no matching |
 
-**ThriveIN's moats:**
+**Kretopia's moats:**
 1. **Vertical lock-in** — entire workflow in one place = high switching cost
 2. **Community network effects** — each user makes matching, reputation & payments more valuable
 3. **Offline-to-online trust loop** — 500+ events create real-world trust that converts to digital engagement
@@ -146,10 +146,10 @@ Not a marketplace. Not a task manager. Not a payment processor.
 | Asset | Scale | Strategic Value |
 |-------|-------|----------------|
 | **Events hosted** | 500+ | Dubai, LA, Geneva, Trinidad, Bali |
-| **ThriveIN Magazine** | 400+ locations in Bali | Physical brand presence |
+| **Kretopia Magazine** | 400+ locations in Bali | Physical brand presence |
 | **Discover A Thriver Podcast** | Active, top industry guests | Content-driven acquisition |
 | **ThriveXchange** | Industry networking series | High-value onboarding events |
-| **ThriveIN Dine** | Intimate creator dinners | Trust-building at scale |
+| **Kretopia Dine** | Intimate creator dinners | Trust-building at scale |
 | **Thrive Master Class** | Educational workshops | Thought leadership |
 
 > "Most startups spend years building community trust. We've spent 13 years doing it — now we're digitizing it."
@@ -241,7 +241,7 @@ More creators → Better AI matches → More collaborations → More payments �
 
 ## 13. COMPETITIVE LANDSCAPE
 
-| Feature | ThriveIN | LinkedIn | Behance | Upwork | Vampr |
+| Feature | Kretopia | LinkedIn | Behance | Upwork | Vampr |
 |---------|----------|----------|---------|--------|-------|
 | AI Swipe Matching | ✅ | ❌ | ❌ | ❌ | ✅ |
 | Match Explanations | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -306,7 +306,7 @@ More creators → Better AI matches → More collaborations → More payments �
 
 **Long term (5+ years):** The professional identity layer for the creative economy. Creator passport. The platform every creative needs on their resume.
 
-> **The big bet:** Every creator will need a verified professional identity. ThriveIN will be that identity.
+> **The big bet:** Every creator will need a verified professional identity. Kretopia will be that identity.
 
 ---
 
@@ -316,7 +316,7 @@ The creative economy is $260B and growing 22% annually.
 
 207 million creators worldwide lack professional infrastructure.
 
-ThriveIN has spent 13 years building trust. Now we're building the system.
+Kretopia has spent 13 years building trust. Now we're building the system.
 
 **Not another tool. An operating system.**
 

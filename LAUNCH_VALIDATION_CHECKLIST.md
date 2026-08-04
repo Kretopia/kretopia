@@ -11,7 +11,7 @@
 **Action Required:** Test send emails via `/test-emails` before event
 
 ### 2. Communities Feature ✓
-- [x] ThriveIN Bali community visible and joinable
+- [x] Kretopia Bali community visible and joinable
 - [x] Bali Cre8ives community visible and joinable
 - [x] RLS policies fixed (removed infinite recursion)
 - [x] Public visibility for unauthenticated users
@@ -208,7 +208,7 @@ WHERE tablename IN ('profiles', 'communities', 'community_members', 'opportuniti
 ### Quick Wins to Track:
 - [ ] First 10 signups from event
 - [ ] First match between event attendees
-- [ ] First community post in ThriveIN Bali
+- [ ] First community post in Kretopia Bali
 - [ ] First Cre8 challenge entry from new users
 
 ---

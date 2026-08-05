@@ -222,7 +222,7 @@ serve(async (req) => {
 
         if (platformFee > 0) {
           lineItems.push({
-            description: `ThriveIN Service Fee`,
+            description: `Kretopia Service Fee`,
             quantity: 1,
             rate: platformFee,
             amount: platformFee,

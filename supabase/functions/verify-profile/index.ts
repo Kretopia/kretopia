@@ -80,7 +80,7 @@ serve(async (req) => {
     } = profileData;
 
     // Build AI verification prompt
-    const prompt = `You are a profile verification AI for ThriveIN, an exclusive creative and content creator platform. Evaluate this profile for authenticity, industry fit, and quality standards.
+    const prompt = `You are a profile verification AI for Kretopia, an exclusive creative and content creator platform. Evaluate this profile for authenticity, industry fit, and quality standards.
 
 PROFILE DATA:
 Name: ${fullName}

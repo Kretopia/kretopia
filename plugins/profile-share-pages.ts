@@ -78,11 +78,11 @@ function buildEpkShareHtml(profile: ProfileRow, siteUrl: string) {
   const shareUrl = `${siteUrl}/share/epk/${profile.user_id}/`;
   const name = profile.full_name || "Creative Professional";
   const role = profile.role || "Creative";
-  const title = `${name} — ${role} | EPK on ThriveIN`;
+  const title = `${name} — ${role} | EPK on Kretopia`;
   const description = profile.bio
     ? truncate(profile.bio, 155)
-    : `${name}'s verified Electronic Press Kit on ThriveIN — credits, portfolio, rates, contact. Verified by the platform.`;
-  // Dynamic branded OG image (avatar + name + role + verified credits + ThriveIN mark).
+    : `${name}'s verified Electronic Press Kit on Kretopia — credits, portfolio, rates, contact. Verified by the platform.`;
+  // Dynamic branded OG image (avatar + name + role + verified credits + Kretopia mark).
   // Falls back to avatar if the function is unreachable.
   const projectRef = "kwmcocsitwssrtzkdojh";
   const image = `https://${projectRef}.supabase.co/functions/v1/epk-og-image?user_id=${profile.user_id}`;
@@ -101,7 +101,7 @@ function buildEpkShareHtml(profile: ProfileRow, siteUrl: string) {
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${shareUrl}" />
-    <meta property="og:site_name" content="ThriveIN" />
+    <meta property="og:site_name" content="Kretopia" />
     <meta property="og:image" content="${escapeHtml(image)}" />
     <meta property="og:image:alt" content="${escapeHtml(name)} — Verified EPK" />
     <meta property="profile:first_name" content="${escapeHtml(name.split(' ')[0])}" />
@@ -119,7 +119,7 @@ function buildEpkShareHtml(profile: ProfileRow, siteUrl: string) {
       <h1>${escapeHtml(name)} — Verified EPK</h1>
       <p>${escapeHtml(role)}</p>
       <p>${escapeHtml(description)}</p>
-      <p><a href="${epkUrl}">Open EPK on ThriveIN</a></p>
+      <p><a href="${epkUrl}">Open EPK on Kretopia</a></p>
     </main>
   </body>
 </html>`;
@@ -130,10 +130,10 @@ function buildProfileShareHtml(profile: ProfileRow, siteUrl: string) {
   const shareUrl = `${siteUrl}/share/profile/${profile.user_id}/`;
   const name = profile.full_name || "Creative Professional";
   const role = profile.role || "Creative";
-  const title = `${name} — ${role} | ThriveIN`;
+  const title = `${name} — ${role} | Kretopia`;
   const description = profile.bio
     ? truncate(profile.bio, 155)
-    : `${name} is a ${role} on ThriveIN — The Creative OS. View verified credits, portfolio & connect.`;
+    : `${name} is a ${role} on Kretopia — The Creative OS. View verified credits, portfolio & connect.`;
   const image = profile.avatar_url || FALLBACK_OG_IMAGE;
 
   return `<!doctype html>
@@ -150,7 +150,7 @@ function buildProfileShareHtml(profile: ProfileRow, siteUrl: string) {
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${shareUrl}" />
-    <meta property="og:site_name" content="ThriveIN" />
+    <meta property="og:site_name" content="Kretopia" />
     <meta property="og:image" content="${escapeHtml(image)}" />
     <meta property="og:image:alt" content="${escapeHtml(name)}" />
     <meta property="profile:first_name" content="${escapeHtml(name.split(' ')[0])}" />
@@ -168,7 +168,7 @@ function buildProfileShareHtml(profile: ProfileRow, siteUrl: string) {
       <h1>${escapeHtml(name)}</h1>
       <p>${escapeHtml(role)}</p>
       <p>${escapeHtml(description)}</p>
-      <p><a href="${profileUrl}">View profile on ThriveIN</a></p>
+      <p><a href="${profileUrl}">View profile on Kretopia</a></p>
     </main>
   </body>
 </html>`;

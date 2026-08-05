@@ -88,7 +88,7 @@ serve(async (req) => {
     const { email, fullName, role, bio, whyJoin, socialLinks } = applicationData;
 
     // Build AI validation prompt with sanitized inputs
-    const prompt = `Evaluate this creator application for ThriveIN, a creative networking platform. Score 0-100.
+    const prompt = `Evaluate this creator application for Kretopia, a creative networking platform. Score 0-100.
 
 APPLICANT INFO:
 Name: ${sanitize(fullName)}

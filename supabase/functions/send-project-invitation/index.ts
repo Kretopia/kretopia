@@ -127,9 +127,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     try {
       const emailResponse = await resend.emails.send({
-        from: "ThriveIN <noreply@thrivein.io>",
+        from: "Kretopia <noreply@thrivein.io>",
         to: [email],
-        subject: `${inviterName} invited you to "${projectTitle}" on ThriveIN`,
+        subject: `${inviterName} invited you to "${projectTitle}" on Kretopia`,
         html: `
 <!DOCTYPE html>
 <html>
@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
     <div style="max-width:560px;margin:0 auto;padding:32px 24px;">
       <div style="text-align:center;margin-bottom:32px;">
         <div style="display:inline-block;font-size:22px;font-weight:800;letter-spacing:-0.5px;">
-          <span style="color:#5B6BF5;">Thrive</span><span style="color:#D4FF3F;">IN</span>
+          <span style="color:#F8FAFC;">kre</span><span style="color:#17D9D4;">to</span><span style="color:#F8FAFC;">pia</span>
         </div>
       </div>
 
@@ -166,7 +166,7 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
 
       <p style="margin:24px 0 0 0;color:#475569;font-size:11px;text-align:center;line-height:1.5;">
-        This invitation was sent by ${inviterName} via ThriveIN. If you weren't expecting this, you can safely ignore this email.
+        This invitation was sent by ${inviterName} via Kretopia. If you weren't expecting this, you can safely ignore this email.
       </p>
     </div>
   </body>

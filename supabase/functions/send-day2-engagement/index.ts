@@ -1,5 +1,5 @@
 // Day-2 engagement edge function — runs daily via cron.
-// Sends a personalized "your first days on ThriveIN" email to users
+// Sends a personalized "your first days on Kretopia" email to users
 // who completed onboarding 2-3 days ago and haven't been emailed yet.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 

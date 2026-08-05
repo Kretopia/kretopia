@@ -131,7 +131,7 @@ serve(async (req) => {
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px;">
           ${wrapHtml(rawBody)}
           <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee;">
-            <p style="color: #999; font-size: 11px; margin: 0;">Sent via ThriveIN</p>
+            <p style="color: #999; font-size: 11px; margin: 0;">Sent via Kretopia</p>
           </div>
         </div>
       `;
@@ -144,7 +144,7 @@ serve(async (req) => {
 
       return sendViaResend(
         resendApiKey,
-        `${senderProfile?.full_name || "ThriveIN User"} via ThriveIN <noreply@thrivein.io>`,
+        `${senderProfile?.full_name || "Kretopia User"} via Kretopia <noreply@thrivein.io>`,
         to,
         subject,
         htmlBody,
@@ -174,8 +174,8 @@ serve(async (req) => {
         await client.send({
           from: gmail_email,
           to: gmail_email,
-          subject: "ThriveIN Outreach - Connection Test ✓",
-          html: `<div style="font-family: Arial, sans-serif; padding: 20px;"><h2>Gmail Connected!</h2><p>Your Gmail is now connected to ThriveIN Outreach. Emails will be sent from <strong>${gmail_email}</strong>.</p></div>`,
+          subject: "Kretopia Outreach - Connection Test ✓",
+          html: `<div style="font-family: Arial, sans-serif; padding: 20px;"><h2>Gmail Connected!</h2><p>Your Gmail is now connected to Kretopia Outreach. Emails will be sent from <strong>${gmail_email}</strong>.</p></div>`,
         });
 
         await client.close();

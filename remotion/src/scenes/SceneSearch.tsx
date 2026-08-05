@@ -38,7 +38,7 @@ export const SceneSearch = () => {
                   letterSpacing: -0.5,
                 }}
               >
-                ThriveIN
+                Kretopia
               </div>
               <div
                 style={{

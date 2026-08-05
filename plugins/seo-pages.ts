@@ -12,7 +12,7 @@
  *   2. Overwrites dist/sitemap.xml with a complete URL list pulled from the
  *      database (static routes + every public profile + every verified credit).
  *
- * Goal: when someone Googles a creator's name, their ThriveIN profile or
+ * Goal: when someone Googles a creator's name, their Kretopia profile or
  * credit page should be a candidate result — with the right title, not the
  * generic homepage title.
  */
@@ -152,10 +152,10 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
 
         // /profile/:id
         const profileUrl = `${siteUrl}/profile/${p.user_id}`;
-        const pTitle = `${p.full_name}${p.role ? ` — ${p.role}` : ""} | ThriveIN`;
+        const pTitle = `${p.full_name}${p.role ? ` — ${p.role}` : ""} | Kretopia`;
         const pDesc = truncate(
           p.bio ||
-            `${p.full_name} is a ${p.role || "creative"} on ThriveIN — view verified credits, portfolio, and contact info.`,
+            `${p.full_name} is a ${p.role || "creative"} on Kretopia — view verified credits, portfolio, and contact info.`,
           155,
         );
         const pHtml = patchHead(baseHtml, {
@@ -182,10 +182,10 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
         // /epk/:id  (Press Kit — same person, framed as EPK)
         const epkUrl = `${siteUrl}/epk/${p.user_id}`;
         const epkImage = `https://${PROJECT_REF}.supabase.co/functions/v1/epk-og-image?user_id=${p.user_id}`;
-        const epkTitle = `${p.full_name} — ${p.role || "Creative"} | Press Kit on ThriveIN`;
+        const epkTitle = `${p.full_name} — ${p.role || "Creative"} | Press Kit on Kretopia`;
         const epkDesc = truncate(
           p.bio ||
-            `${p.full_name}'s verified Electronic Press Kit on ThriveIN — credits, portfolio, rates, contact.`,
+            `${p.full_name}'s verified Electronic Press Kit on Kretopia — credits, portfolio, rates, contact.`,
           155,
         );
         const epkHtml = patchHead(baseHtml, {
@@ -211,10 +211,10 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
       for (const c of credits) {
         if (!c.project_name) continue;
         const url = `${siteUrl}/credits/project/${c.id}`;
-        const title = `${c.project_name}${c.year ? ` (${c.year})` : ""} | ThriveIN Credits`;
+        const title = `${c.project_name}${c.year ? ` (${c.year})` : ""} | Kretopia Credits`;
         const desc = truncate(
           c.description ||
-            `${c.project_name}${c.role ? ` — ${c.role}` : ""}${c.credit_category ? ` · ${c.credit_category}` : ""}. Verified credit on ThriveIN — the creative industry's collaboration database.`,
+            `${c.project_name}${c.role ? ` — ${c.role}` : ""}${c.credit_category ? ` · ${c.credit_category}` : ""}. Verified credit on Kretopia — the creative industry's collaboration database.`,
           155,
         );
         const html = patchHead(baseHtml, {
@@ -350,7 +350,7 @@ function patchHead(baseHtml: string, o: PatchOptions): string {
     <meta property="og:title" content="${t}" />
     <meta property="og:description" content="${d}" />
     <meta property="og:url" content="${url}" />
-    <meta property="og:site_name" content="ThriveIN" />
+    <meta property="og:site_name" content="Kretopia" />
     <meta property="og:image" content="${img}" />
     <meta property="og:image:alt" content="${imgAlt}" />
     <meta name="twitter:card" content="summary_large_image" />

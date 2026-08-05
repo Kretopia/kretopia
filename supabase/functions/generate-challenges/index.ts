@@ -166,7 +166,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `Generate creative challenges for ThriveIN's Cre8 Arena — a competitive creative platform for musicians, designers, filmmakers, photographers, writers, and content creators.
+            content: `Generate creative challenges for Kretopia's Cre8 Arena — a competitive creative platform for musicians, designers, filmmakers, photographers, writers, and content creators.
 
 Generate exactly: ${challengeDescriptions.join(", ")}
 

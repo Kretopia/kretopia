@@ -104,7 +104,7 @@ serve(async (req) => {
               <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px;">
                 ${wrapHtml(personalBody)}
                 <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee;">
-                  <p style="color: #999; font-size: 11px; margin: 0;">Sent via ThriveIN</p>
+                  <p style="color: #999; font-size: 11px; margin: 0;">Sent via Kretopia</p>
                 </div>
               </div>
             `;
@@ -141,7 +141,7 @@ serve(async (req) => {
               try {
                 const resend = new Resend(resendApiKey);
                 await resend.emails.send({
-                  from: `${senderProfile?.full_name || "ThriveIN User"} via ThriveIN <noreply@thrivein.io>`,
+                  from: `${senderProfile?.full_name || "Kretopia User"} via Kretopia <noreply@thrivein.io>`,
                   to: [recipient.email],
                   subject: personalSubject,
                   html: htmlBody,

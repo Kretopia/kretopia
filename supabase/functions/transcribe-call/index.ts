@@ -135,7 +135,7 @@ serve(async (req) => {
                         kind: {
                           type: "string",
                           enum: ["task", "credit", "note", "followup", "decision"],
-                          description: "task = someone needs to do something. credit = a creative contribution worth recording on ThriveIN. decision = a decision was made. followup = needs another conversation. note = important context.",
+                          description: "task = someone needs to do something. credit = a creative contribution worth recording on Kretopia. decision = a decision was made. followup = needs another conversation. note = important context.",
                         },
                         title: { type: "string", description: "Short, imperative phrasing for tasks (e.g. 'Send revised storyboard'). For decisions, the decision itself." },
                         detail: { type: "string", description: "Extra context, exact quote, or rationale." },

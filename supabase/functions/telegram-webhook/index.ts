@@ -211,7 +211,7 @@ Deno.serve(async (req) => {
       .eq("is_active", true)
       .maybeSingle();
     if (!link) {
-      await ack("Not linked. Open ThriveIN → Settings → Connect Telegram.", true);
+      await ack("Not linked. Open Kretopia → Settings → Connect Telegram.", true);
       return new Response(JSON.stringify({ ok: true }));
     }
     const userId = link.user_id as string;
@@ -358,8 +358,8 @@ Deno.serve(async (req) => {
       await tg("sendMessage", {
         chat_id: chatId,
         text:
-          "👋 Hey, I'm Kreto — your Creative Executive Producer on ThriveIN.\n\n" +
-          "To link this chat to your ThriveIN account, open the app → Settings → Connect Telegram.",
+          "👋 Hey, I'm Kreto — your Creative Executive Producer on Kretopia.\n\n" +
+          "To link this chat to your Kretopia account, open the app → Settings → Connect Telegram.",
       }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
       return new Response(JSON.stringify({ ok: true }));
     }
@@ -376,7 +376,7 @@ Deno.serve(async (req) => {
     if (!tokenRow || expired || used) {
       await tg("sendMessage", {
         chat_id: chatId,
-        text: "⚠️ That link is invalid or expired.\n\nOpen ThriveIN → Settings → Connect Telegram to get a fresh link.",
+        text: "⚠️ That link is invalid or expired.\n\nOpen Kretopia → Settings → Connect Telegram to get a fresh link.",
       }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
       return new Response(JSON.stringify({ ok: true }));
     }
@@ -417,7 +417,7 @@ Deno.serve(async (req) => {
   if (!resolvedUserId) {
     await tg("sendMessage", {
       chat_id: chatId,
-      text: "👋 We're not linked yet.\n\nOpen ThriveIN → Settings → Connect Telegram to pair this chat with your account.",
+      text: "👋 We're not linked yet.\n\nOpen Kretopia → Settings → Connect Telegram to pair this chat with your account.",
     }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
     return new Response(JSON.stringify({ ok: true, unlinked: true }));
   }
@@ -491,7 +491,7 @@ Deno.serve(async (req) => {
     await tg("sendMessage", {
       chat_id: chatId,
       parse_mode: "HTML",
-      text: `📋 I drafted a multi-step plan. Open ThriveIN to review and approve it — inline plan approval coming soon.`,
+      text: `📋 I drafted a multi-step plan. Open Kretopia to review and approve it — inline plan approval coming soon.`,
     }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
   }
 
@@ -581,7 +581,7 @@ Deno.serve(async (req) => {
       if (actionMsgId != null) {
         await editPlaceholder(
           chatId, actionMsgId,
-          `⚠️ <i>I couldn't queue that action. Try again, or open ThriveIN.</i>`,
+          `⚠️ <i>I couldn't queue that action. Try again, or open Kretopia.</i>`,
           LOVABLE_API_KEY, TELEGRAM_API_KEY,
         );
       }

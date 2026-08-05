@@ -1,5 +1,5 @@
-// Dynamic Open Graph image generator for ThriveIN EPKs.
-// Returns a 1200x630 PNG (avatar + name + role + verified credits + ThriveIN mark)
+// Dynamic Open Graph image generator for Kretopia EPKs.
+// Returns a 1200x630 PNG (avatar + name + role + verified credits + Kretopia mark)
 // for WhatsApp / iMessage / Twitter / LinkedIn link unfurls.
 // Public function — verify_jwt=false.
 //
@@ -78,7 +78,7 @@ function buildSvg(opts: {
   <circle cx="80" cy="600" r="220" fill="#5B6BF5" opacity="0.12"/>
 
   <!-- Brand -->
-  <text x="80" y="100" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">ThriveIN</text>
+  <text x="80" y="100" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">Kretopia</text>
   <text x="80" y="135" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="20" fill="#C6FF00" font-weight="600">Verified Creative EPK</text>
 
   <!-- Avatar ring -->

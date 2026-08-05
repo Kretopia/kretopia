@@ -46,13 +46,13 @@ serve(async (req) => {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 28px;">✨ Welcome to ThriveIN!</h1>
+              <h1 style="margin: 0; font-size: 28px;">✨ Welcome to Kretopia!</h1>
               <p style="margin: 10px 0 0; opacity: 0.9;">You've been approved to join the creator economy</p>
             </div>
             <div class="content">
               <p>Hey ${fullName},</p>
               
-              <p>🎉 <strong>Great news!</strong> Your application has been approved and you're now part of the ThriveIN beta community.</p>
+              <p>🎉 <strong>Great news!</strong> Your application has been approved and you're now part of the Kretopia beta community.</p>
               
               <p>We reviewed your profile and believe you'll be a great addition to our creative network. Here's your exclusive invite code:</p>
               
@@ -77,7 +77,7 @@ serve(async (req) => {
               </p>
               
               <div class="footer">
-                <p>Welcome to the community,<br><strong>The ThriveIN Team</strong></p>
+                <p>Welcome to the community,<br><strong>The Kretopia Team</strong></p>
                 <p style="font-size: 12px; margin-top: 20px;">
                   Questions? Reply to this email or visit our <a href="${Deno.env.get('SUPABASE_URL')?.replace('/functions/v1', '')}/support" style="color: #6366f1;">Support Center</a>
                 </p>
@@ -95,9 +95,9 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'ThriveIN <noreply@thrivein.io>',
+        from: 'Kretopia <noreply@thrivein.io>',
         to: [to],
-        subject: '🎉 Welcome to ThriveIN - Your Invite Code Inside',
+        subject: '🎉 Welcome to Kretopia - Your Invite Code Inside',
         html,
       }),
     });

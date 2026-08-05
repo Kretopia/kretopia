@@ -13,7 +13,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM = `You are "Producer", ThriveIN's clip-generation specialist for creators.
+const SYSTEM = `You are "Producer", Kretopia's clip-generation specialist for creators.
 Given a podcast/video transcript, propose 3-5 short, scroll-stopping clips for social.
 
 Each clip MUST include:

@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       const body = new URLSearchParams({
         To: toNumber,
         From: fromNumber,
-        Body: `Your ThriveIN verification code is: ${otp}. It expires in 10 minutes.`,
+        Body: `Your Kretopia verification code is: ${otp}. It expires in 10 minutes.`,
       });
 
       const twilioRes = await fetch(twilioUrl, {

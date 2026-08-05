@@ -81,6 +81,16 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
 
         {/* Card body */}
         <div className="relative h-full overflow-hidden rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.75),0_2px_0_0_rgba(255,255,255,0.06)_inset]">
+          {/* Material gloss — soft top-edge light catch, laminated-stock feel */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[1]"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 8%, transparent 22%)",
+            }}
+          />
+
           {/* Scan-line sweep along the top edge — same "actively scanning" motion as the AI tutorial surfaces */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px overflow-hidden z-10">
             <div

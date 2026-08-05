@@ -135,7 +135,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
       <div
         aria-hidden
         className="pointer-events-none absolute -top-20 -right-20 h-48 w-48 rounded-full opacity-40 blur-3xl"
-        style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+        style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#9413D2,#E0179C))" }}
       />
 
       <button
@@ -163,7 +163,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
               type="button"
               onClick={() => openKreto(tip.prompt)}
               className="group inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold text-white hover:scale-[1.02] transition-transform"
-              style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+              style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#9413D2,#E0179C))" }}
             >
               {tip.cta}
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />

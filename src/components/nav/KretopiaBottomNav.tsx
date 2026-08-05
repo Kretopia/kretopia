@@ -109,7 +109,7 @@ const KretopiaBottomNav = memo(() => {
               {active && (
                 <span
                   className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full"
-                  style={{ background: "var(--kretopia-sunset, linear-gradient(90deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+                  style={{ background: "var(--kretopia-sunset, linear-gradient(90deg,#9413D2,#E0179C))" }}
                 />
               )}
             </Link>

@@ -205,7 +205,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <span
                       aria-hidden
                       className="absolute bottom-0 left-3.5 right-3.5 h-0.5 rounded-full"
-                      style={{ background: "var(--kretopia-sunset, linear-gradient(90deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+                      style={{ background: "var(--kretopia-sunset, linear-gradient(90deg,#9413D2,#E0179C))" }}
                     />
                   )}
                 </Link>

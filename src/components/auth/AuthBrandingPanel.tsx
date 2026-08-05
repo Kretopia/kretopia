@@ -14,7 +14,7 @@ export const AuthBrandingPanel = () => (
     {/* Sunset wash behind */}
     <div
       className="pointer-events-none absolute -top-32 -left-32 h-[560px] w-[560px] rounded-full opacity-50 blur-[140px]"
-      style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+      style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#9413D2,#E0179C))" }}
     />
     <div className="pointer-events-none absolute -bottom-40 -right-20 h-[420px] w-[420px] rounded-full opacity-30 blur-[120px]"
          style={{ background: "linear-gradient(135deg,#FF2CA7,#FFB347)" }} />
@@ -34,7 +34,7 @@ export const AuthBrandingPanel = () => (
         Where{" "}
         <span
           className="italic bg-clip-text text-transparent"
-          style={{ backgroundImage: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+          style={{ backgroundImage: "var(--kretopia-sunset, linear-gradient(135deg,#9413D2,#E0179C))" }}
         >
           Creativity
         </span>
@@ -65,7 +65,7 @@ export const AuthBrandingPanel = () => (
               className="flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 transition-all hover:border-white/15 hover:bg-white/[0.04]"
             >
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-white mt-0.5"
-                   style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}>
+                   style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#9413D2,#E0179C))" }}>
                 <Icon className="h-4 w-4" />
               </div>
               <div>

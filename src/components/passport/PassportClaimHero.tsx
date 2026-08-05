@@ -100,8 +100,11 @@ export const PassportClaimHero = ({
             "radial-gradient(90% 60% at 50% -10%, hsl(var(--signal-teal)/0.16), transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 30%)",
         }}
       />
-      {/* Tag */}
-      <div className="absolute top-0 left-0 px-3 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10">
+      {/* Tag — its own depth plane, between the card surface and the portrait */}
+      <div
+        className="absolute top-0 left-0 px-3 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10"
+        style={{ transform: "translateZ(10px)" }}
+      >
         Creative Passport
       </div>
 
@@ -151,6 +154,7 @@ export const PassportClaimHero = ({
           </div>
           <Badge
             variant="outline"
+            style={{ transform: "translateZ(16px)" }}
             className={
               isVerifiedPro
                 ? "bg-amber-500/15 text-amber-500 border-amber-500/40 shrink-0"

@@ -326,6 +326,7 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
     margin: 0;
     padding: 0;
+    height: 100%;
     /* Kretopia v1 — Satoshi is the OS typeface (Inter fallback) */
     font-family: var(--font-family-brand);
     font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
@@ -344,8 +345,19 @@ All colors MUST be HSL.
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+  /*
+   * Must be a definite height (not min-height) so the app's own root
+   * div (.h-full.overflow-auto in AppContent) can actually inherit a
+   * real height and become the real scrolling container. Without this,
+   * the percentage-height chain breaks, the outer document scrolls
+   * instead, and Navbar's `sticky top-0` has nothing reliable to stick
+   * within — it drifts down on scroll/touch-drag instead of staying put.
+   * 100dvh (dynamic viewport height) overrides 100vh where supported,
+   * fixing the same issue against mobile browser chrome resizing.
+   */
   #root {
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
   }
 
   h1, h2 {

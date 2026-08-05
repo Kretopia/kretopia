@@ -59,7 +59,7 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
           className="pointer-events-none absolute -inset-2 rounded-[26px] opacity-60 blur-2xl"
           style={{
             background:
-              "linear-gradient(135deg, hsl(var(--signal-teal)/0.35), transparent 45%, hsl(var(--signal-pink,320 100% 60%)/0.28))",
+              "linear-gradient(135deg, hsl(var(--signal-teal)/0.35), transparent 45%, hsl(var(--signal-pink,320 100% 60%)/0.14))",
             transform: "translateZ(-40px)",
           }}
         />

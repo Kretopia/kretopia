@@ -1,4 +1,4 @@
-# ThriveIN Launch Checklist
+# Kretopia Launch Checklist
 
 ## ⚡ Quick Setup (Do These First - 15 minutes)
 

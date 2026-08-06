@@ -1,13 +1,13 @@
-# ThriveIN Invite Materials
+# Kretopia Invite Materials
 
-Use these templates when inviting creatives to join ThriveIN.
+Use these templates when inviting creatives to join Kretopia.
 
 ---
 
 ## 🔗 Your Personal Invite Link
 
 ```
-https://thrivein.io/join/ThriveOGs
+https://kretopia.com/join/ThriveOGs
 ```
 
 ---
@@ -17,10 +17,10 @@ https://thrivein.io/join/ThriveOGs
 ```
 Stop cold DMing strangers for collabs.
 
-ThriveIN matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
+Kretopia matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
 
 I'm already on. Join me 👇
-thrivein.io/join/ThriveOGs
+kretopia.com/join/ThriveOGs
 
 2 mins to set up. Let me know what you think!
 ```
@@ -29,12 +29,12 @@ thrivein.io/join/ThriveOGs
 
 ## 📧 Email Template
 
-**Subject:** Invite to ThriveIN - Find Your Next Creative Collaborator
+**Subject:** Invite to Kretopia - Find Your Next Creative Collaborator
 
 ```
 Hey [Name],
 
-I wanted to share something I've been building - ThriveIN.
+I wanted to share something I've been building - Kretopia.
 
 It's a new platform that uses AI to match creatives for collaborations. Think Tinder, but for finding your next videographer, photographer, designer, or creative partner.
 
@@ -44,7 +44,7 @@ Why I think you'd be a great fit:
 • No more endless scrolling through Facebook groups
 
 It's invite-only right now, and I have a spot for you:
-👉 thrivein.io/auth?invite=ThriveOGs
+👉 kretopia.com/auth?invite=ThriveOGs
 
 Setup takes about 2 minutes. Upload some portfolio work and start swiping!
 
@@ -58,7 +58,7 @@ Let me know if you have any questions.
 ## 💬 Voice Note Script
 
 ```
-"Hey! Quick one - I'm working on this platform called ThriveIN. 
+"Hey! Quick one - I'm working on this platform called Kretopia. 
 It's basically Tinder for creatives - swipe through verified portfolios, 
 match with other videographers, photographers, designers. 
 AI figures out who you'd work well with.
@@ -99,8 +99,8 @@ Uses: 27 of 50
 
 | Partner | Link | Code |
 |---------|------|------|
-| CreativeTT | `thrivein.io/join/CREATIVETT` | `CREATIVETT` |
-| Artist Registry | `thrivein.io/join/ARTISTREGISTRY` | `ARTISTREGISTRY` |
+| CreativeTT | `kretopia.com/join/CREATIVETT` | `CREATIVETT` |
+| Artist Registry | `kretopia.com/join/ARTISTREGISTRY` | `ARTISTREGISTRY` |
 
 Partner links track signups without commission — purely for attribution and analytics.
 

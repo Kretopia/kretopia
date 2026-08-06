@@ -1,4 +1,4 @@
-# 🎯 ThriveIN MVP Optimization Plan
+# 🎯 Kretopia MVP Optimization Plan
 **Based on Real Traction Data & Competitive Analysis**  
 **Date:** October 13, 2025  
 **Goal:** Double conversion rate & create irresistible upgrade path
@@ -97,7 +97,7 @@
 
 #### Optimizations Needed:
 
-**A. Add "Why ThriveIN?" Comparison Section**
+**A. Add "Why Kretopia?" Comparison Section**
 ```
 Position: After features, before pricing
 Content:
@@ -111,7 +111,7 @@ Content:
 ```
 - Quote from paid user (1 of 3 Creator Pro users)
 - Before/after stats from active user
-- "How I found my co-founder on ThriveIN" story
+- "How I found my co-founder on Kretopia" story
 ```
 
 **C. Enhance Feature Cards with Stats**
@@ -396,7 +396,7 @@ Email at 9am daily:
 
 #### 3. Weekly Digest Email
 ```
-Your ThriveIN Week:
+Your Kretopia Week:
 - 5 new matches
 - 12 profile views
 - 2 projects started
@@ -420,7 +420,7 @@ Your ThriveIN Week:
 ```
 Like LinkedIn verification:
 - Blue checkmark for verified
-- "Verified by ThriveIN" tooltip
+- "Verified by Kretopia" tooltip
 - Show verification process
 - Make badges prominent
 ```
@@ -507,7 +507,7 @@ Add: Notification badges
 ```
 After completing profile:
 - "Import connections from Instagram?" 
-- "Find friends already on ThriveIN"
+- "Find friends already on Kretopia"
 - Email import tool
 ```
 
@@ -754,7 +754,7 @@ Paid users see:
 
 ### 3. "Skill Exchange Events"
 - Virtual meetups
-- "Photography 101 by ThriveIN Creator"
+- "Photography 101 by Kretopia Creator"
 - Network effect
 - Community building
 
@@ -857,4 +857,4 @@ Paid users see:
 **Expected:** 40+ new signups, 20+ waitlist submissions, conversion rate 20%+  
 **Decision Point:** If metrics hit, scale marketing. If not, iterate messaging.
 
-🚀 **Let's make ThriveIN irresistible!**
+🚀 **Let's make Kretopia irresistible!**

@@ -278,9 +278,9 @@ function KretoMockup() {
   );
 }
 
-/* ───────── THRIVEIN ─────────
+/* ───────── KRETOPIA ─────────
    Upcoming events list with cover thumbnails. */
-function ThriveINMockup() {
+function KretopiaMockup() {
   const events = [
     { img: IMG.event1, d: "FRI", n: "21", t: "Creator Mixer · POS" },
     { img: IMG.event2, d: "SAT", n: "22", t: "Producer Beat Battle" },
@@ -321,5 +321,5 @@ export const PILLAR_MOCKUPS: Record<string, React.FC> = {
   SoundStages: SoundStagesMockup,
   KrePay: KrePayMockup,
   Kreto: KretoMockup,
-  Kretopia: ThriveINMockup,
+  Kretopia: KretopiaMockup,
 };

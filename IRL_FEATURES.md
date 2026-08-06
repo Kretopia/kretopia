@@ -1,4 +1,4 @@
-# IRL Event Features for ThriveIN
+# IRL Event Features for Kretopia
 
 ## ✅ Currently Implemented
 
@@ -154,7 +154,7 @@
 ---
 
 ### 10. **Proximity Discovery**
-**Purpose**: Find nearby ThriveIN members at large events
+**Purpose**: Find nearby Kretopia members at large events
 
 **Features**:
 - Opt-in location sharing during events
@@ -193,7 +193,7 @@
 
 ## 📱 Technical Notes
 
-- All QR codes use the format: `thrivein.com/auth?connect={userId}` or `thrivein.com/event?join={eventId}`
+- All QR codes use the format: `kretopia.com/auth?connect={userId}` or `kretopia.com/event?join={eventId}`
 - NFC tags can store same URLs for tap-to-connect
 - Offline-first approach for event features (sync when connection available)
 - Event mode: Special UI state optimized for quick actions
@@ -212,4 +212,4 @@ Consider adding an "Event Organizer" dashboard:
 - Export attendee list (with permission)
 - Send post-event follow-ups
 
-This positions ThriveIN as the essential tool for creative community events!
+This positions Kretopia as the essential tool for creative community events!

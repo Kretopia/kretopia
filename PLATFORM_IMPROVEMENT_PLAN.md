@@ -1,4 +1,4 @@
-# ThriveIN Platform Improvement Plan
+# Kretopia Platform Improvement Plan
 
 ## Overview
 Systematic improvements to ensure platform readiness for user growth.

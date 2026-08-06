@@ -73,7 +73,7 @@ export function campaignSharePagesPlugin(options: CampaignSharePagesPluginOption
 function buildCampaignShareHtml(c: CampaignRow, siteUrl: string) {
   const campaignUrl = `${siteUrl}/fund/${c.slug}`;
   const shareUrl = `${siteUrl}/share/fund/${c.slug}/`;
-  const title = `${c.title} | Kretopia Fund on Kretopia`;
+  const title = `${c.title} | ThriveFund on Kretopia`;
 
   const pct = c.goal_amount > 0 ? Math.round((c.total_raised / c.goal_amount) * 100) : 0;
   const daysLeft = Math.max(0, Math.ceil((new Date(c.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));

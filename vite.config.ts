@@ -179,6 +179,7 @@ export default defineConfig(({ mode }) => {
     },
     optimizeDeps: {
       include: ["react", "react-dom"],
+      exclude: ["mapbox-gl"], // Résout l'erreur de string literal non terminée sur la source map
     },
   };
 });

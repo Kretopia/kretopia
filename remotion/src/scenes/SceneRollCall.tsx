@@ -57,7 +57,7 @@ export const SceneRollCall = () => {
           </PhoneShell>
         </div>
       </AbsoluteFill>
-      <LowerThird kicker="ThriveIN Verified" title="IMDb for the creative industry. Every credit, attested." />
+      <LowerThird kicker="Kretopia Verified" title="IMDb for the creative industry. Every credit, attested." />
     </AbsoluteFill>
   );
 };

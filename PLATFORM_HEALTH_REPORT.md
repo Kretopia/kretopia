@@ -1,4 +1,4 @@
-# ThriveIN Platform Health Report
+# Kretopia Platform Health Report
 **Date:** November 5, 2025  
 **Status:** Production Ready Assessment  
 **Admin:** Ethan Auguste (thriveuae@gmail.com)

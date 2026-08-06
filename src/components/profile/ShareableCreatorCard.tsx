@@ -204,7 +204,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
                 ))}
               </div>
               <div className="absolute top-3 right-4 flex items-center gap-1">
-                <span className="text-white/60 text-[10px] font-medium tracking-wider">THRIVEIN</span>
+                <span className="text-white/60 text-[10px] font-medium tracking-wider">KRETOPIA</span>
               </div>
             </div>
 

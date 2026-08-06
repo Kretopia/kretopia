@@ -1,9 +1,9 @@
-# ThriveIN Platform Audit - November 2025
+# Kretopia Platform Audit - November 2025
 *Comprehensive analysis of MVP readiness, PMF alignment, and optimization opportunities*
 
 ## Executive Summary
 
-**Current State:** ThriveIN is feature-rich but experiencing conversion/engagement friction
+**Current State:** Kretopia is feature-rich but experiencing conversion/engagement friction
 **Core Issue:** Platform has grown complex with too many secondary features competing for attention
 **Recommendation:** Ruthless MVP simplification focusing on the 3 core value props
 
@@ -281,7 +281,7 @@ Portfolio should be added LATER from profile
    - Creates FOMO
 
 3. **Community Showcase:**
-   - "Join ThriveIN Bali - 127 creators"
+   - "Join Kretopia Bali - 127 creators"
    - "Join Bali Cre8ives - 89 creators"
    - Show recent posts/activity
    - MUST be visible pre-auth
@@ -435,10 +435,10 @@ Portfolio should be added LATER from profile
 - **vs Discord:** Professional + Monetization built-in
 
 ### The Focused Message:
-"ThriveIN is where creators find each other, collaborate on projects, compete in challenges, and get matched with brand opportunities—all in one place."
+"Kretopia is where creators find each other, collaborate on projects, compete in challenges, and get matched with brand opportunities—all in one place."
 
 **Not:**
-"ThriveIN is a professional network meets project workspace meets challenge platform meets marketplace meets community..."
+"Kretopia is a professional network meets project workspace meets challenge platform meets marketplace meets community..."
 
 ---
 

@@ -6,7 +6,7 @@ import { BRAND } from "@/lib/brandLexicon";
  * Phase 11 will replace this with the full Kretopia experience
  * (OG badge, Founding Circle, perks, events, magazine, podcast, dinners).
  */
-export default function ThriveINTab() {
+export default function KretopiaTab() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="mb-2 font-serif text-3xl">{BRAND.community}</h1>

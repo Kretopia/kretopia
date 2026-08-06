@@ -1,4 +1,4 @@
-# 🚀 ThriveIN Strategic MVP Plan 2025
+# 🚀 Kretopia Strategic MVP Plan 2025
 **The Ultimate Creator Economy Platform - Investment-Ready Blueprint**
 
 **Date:** January 2025  
@@ -10,7 +10,7 @@
 ## 🎯 EXECUTIVE SUMMARY
 
 ### What We Are
-ThriveIN is the first end-to-end collaboration platform specifically built for the $250B creator economy. We combine AI-powered matching, integrated workspace tools, and secure payments to transform how creatives find, collaborate with, and pay each other.
+Kretopia is the first end-to-end collaboration platform specifically built for the $250B creator economy. We combine AI-powered matching, integrated workspace tools, and secure payments to transform how creatives find, collaborate with, and pay each other.
 
 ### The Problem We Solve
 - **Discovery Gap**: Finding the right collaborator takes 40+ hours of manual searching across multiple platforms
@@ -41,7 +41,7 @@ A unified platform where creators can:
 
 ---
 
-## 🔥 THE THRIVEIN ADVANTAGE (Why We Win)
+## 🔥 THE KRETOPIA ADVANTAGE (Why We Win)
 
 ### What VCs Are Looking For (Based on Research)
 According to Slow Ventures ($60M creator fund) and leading creator economy investors, they want:
@@ -270,7 +270,7 @@ A competitive creative challenge system where creators:
 #### 2.4 Engagement Mechanics
 - [ ] Daily login streak rewards (+5 credits per 7-day streak)
 - [ ] Push notifications (new match, message, opportunity)
-- [ ] Weekly digest email (your ThriveIN week summary)
+- [ ] Weekly digest email (your Kretopia week summary)
 - [ ] Milestone celebrations (Level up! 10th match! animations)
 - [ ] Referral program (invite friend → both get 50 credits)
 - [ ] First action prompts (guide users to first match)
@@ -619,7 +619,7 @@ We're the **ONLY** platform that combines:
 
 ## 🎤 VC PITCH (30-Second Version)
 
-> "ThriveIN is the LinkedIn + Fiverr + Slack for the $250B creator economy. We use AI to match creators 7x faster than manual search, then provide an integrated workspace and secure payment system so they can actually get work done. 
+> "Kretopia is the LinkedIn + Fiverr + Slack for the $250B creator economy. We use AI to match creators 7x faster than manual search, then provide an integrated workspace and secure payment system so they can actually get work done. 
 >
 > We've proven product-market fit with 14% paid conversion (3x industry average) and $0 in marketing spend. We're pre-seed/seed stage raising $1.5M to scale to 25,000 users and $1.3M ARR in 12 months. 
 >
@@ -765,7 +765,7 @@ We're the **ONLY** platform that combines:
 - Build network effects moat
 - Creator-specific (hard to replicate authentically)
 - Integrated ecosystem (not just one feature)
-- Community loyalty (ThriveIN = creator identity)
+- Community loyalty (Kretopia = creator identity)
 
 ### Risk 5: Platform Dependency (Instagram, Spotify, etc.)
 **Risk**: API changes break verification  
@@ -860,7 +860,7 @@ We're the **ONLY** platform that combines:
 
 ## 🎉 CONCLUSION
 
-ThriveIN is positioned to become the **defining platform of the creator economy**. We have:
+Kretopia is positioned to become the **defining platform of the creator economy**. We have:
 
 ✅ **Product-Market Fit**: 14% paid conversion proves it  
 ✅ **Unique Technology**: AI matching + integrated workspace  
@@ -869,7 +869,7 @@ ThriveIN is positioned to become the **defining platform of the creator economy*
 ✅ **Clear Path to $10M+ ARR**: Multi-revenue streams  
 ✅ **Exceptional Team**: Hungry, technical, creator-focused  
 
-**The creator economy is exploding. ThriveIN is the infrastructure.**
+**The creator economy is exploding. Kretopia is the infrastructure.**
 
 **Let's. Fucking. Go.** 🚀
 
@@ -878,4 +878,4 @@ ThriveIN is positioned to become the **defining platform of the creator economy*
 *Document Version: 1.0*  
 *Last Updated: January 30, 2025*  
 *Next Review: After Cre8 Challenge launch*  
-*Prepared By: ThriveIN Leadership Team*
+*Prepared By: Kretopia Leadership Team*

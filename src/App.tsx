@@ -172,6 +172,7 @@ const FundCampaign = lazy(() => import("./pages/FundCampaign"));
 const FundManage = lazy(() => import("./pages/FundManage"));
 const ManageHub = lazy(() => import("./pages/ManageHub"));
 const Recordings = lazy(() => import("./pages/Recordings"));
+const StudioImport = lazy(() => import("./pages/StudioImport"));
 const ShareEventRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareEventRedirect })));
 const ShareMagazineRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareMagazineRedirect })));
 const ShareCampaignRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareCampaignRedirect })));
@@ -179,7 +180,7 @@ const ShareCampaignRedirect = lazy(() => import("./pages/ShareRedirects").then(m
 // Kretopia V1 tabs
 const KretopiaSearch = lazy(() => import("./pages/KretopiaSearch"));
 const KretoTab = lazy(() => import("./pages/KretoTab"));
-const ThriveINTab = lazy(() => import("./pages/ThriveINTab"));
+const KretopiaTab = lazy(() => import("./pages/KretopiaTab"));
 const PerksTab = lazy(() => import("./pages/PerksTab"));
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -374,6 +375,7 @@ const AppContent = () => {
             {/* ThriveDesk - Lightweight Project Workspace */}
             <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
             <Route path="/desk/projects" element={<Navigate to="/desk" replace />} />
+            <Route path="/studio/import" element={<ProtectedRoute><StudioImport /></ProtectedRoute>} />
             <Route path="/shortlists" element={<ProtectedRoute><Shortlists /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             <Route path="/desk/:id/thrive/generate" element={<ProtectedRoute><ThriveGenerate /></ProtectedRoute>} />
@@ -535,7 +537,7 @@ const AppContent = () => {
             {/* Search & Notifications */}
             <Route path="/search" element={<KretopiaSearch />} />
             <Route path="/kreto" element={<ProtectedRoute><KretoTab /></ProtectedRoute>} />
-            <Route path="/thrivein" element={<ProtectedRoute><ThriveINTab /></ProtectedRoute>} />
+            <Route path="/thrivein" element={<ProtectedRoute><KretopiaTab /></ProtectedRoute>} />
             <Route path="/perks" element={<ProtectedRoute><PerksTab /></ProtectedRoute>} />
             <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />

@@ -491,7 +491,7 @@ serve(async (req) => {
       .eq("user_id", userId);
 
     return new Response(JSON.stringify({
-      ok: true, found: extracted.length, inserted, queries: queries.length,
+      ok: true, found: extracted.length, filtered: filtered.length, inserted, queries: queries.length,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("[scout] error", e);

@@ -205,16 +205,12 @@ export function ScoutPreferencesDialog({ open, onOpenChange, onSaved }: Props) {
           </div>
         ) : (
           <div className="mt-4 space-y-6">
-            {/* Enable */}
-            <div className="flex items-center justify-between rounded-lg border border-border p-3">
-              <div>
-                <Label className="text-sm font-semibold">Daily auto-scan</Label>
-                <p className="text-xs text-muted-foreground">Scout runs every morning at 7am UTC.</p>
-              </div>
-              <Switch
-                checked={prefs.enabled}
-                onCheckedChange={(v) => setPrefs((p) => ({ ...p, enabled: v }))}
-              />
+            {/* How scanning works */}
+            <div className="rounded-lg border border-border p-3">
+              <Label className="text-sm font-semibold">How this works</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Scanning is manual — tap "Scan now" on the Scout page to search using the preferences below. There's no automatic background scan yet.
+              </p>
             </div>
 
             {/* Job types */}

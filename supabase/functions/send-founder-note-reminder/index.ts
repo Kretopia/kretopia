@@ -90,7 +90,7 @@ serve(async (req) => {
       `;
 
       const { error } = await resend.emails.send({
-        from: "ThriveIN <noreply@thrivein.io>",
+        from: "Kretopia <noreply@thrivein.io>",
         to: [email],
         subject: existingNote ? `📝 Reminder: Monday note ready (${mondayLabel})` : `⏰ Write your Monday note for ${mondayLabel}`,
         html,

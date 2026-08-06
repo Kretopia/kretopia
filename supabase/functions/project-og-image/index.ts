@@ -1,4 +1,4 @@
-// Dynamic Open Graph image for ThriveIN Desk invite/share links.
+// Dynamic Open Graph image for Kretopia Desk invite/share links.
 // Returns 1200x630 PNG. Public — no JWT required.
 //
 // Usage: GET /functions/v1/project-og-image?project_id=<uuid>
@@ -110,7 +110,7 @@ function buildSvg(opts: {
 
   <!-- Brand row -->
   <text x="80" y="100" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">
-    ThriveIN
+    Kretopia
   </text>
   <text x="80" y="138" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="20" fill="#C6FF00" font-weight="600">
     ThriveDesk · ${escapeXml(opts.workspaceLabel)}

@@ -57,11 +57,11 @@ Deno.serve(async (req) => {
     ? `🎉 Funded · ${goalFormatted} raised · ${c.backer_count} backers`
     : `${pct}% funded · ${goalFormatted} goal · ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`;
 
-  const tagline = c.tagline?.trim() || (c.story ? truncate(c.story, 120) : "Back this creative project on ThriveFund.");
+  const tagline = c.tagline?.trim() || (c.story ? truncate(c.story, 120) : "Back this creative project on Kretopia Fund.");
   const description = `${stat} — ${tagline}`;
-  const ctaDescription = `${description} Pledge on ThriveIN, the Creative OS — only charged if it funds.`;
+  const ctaDescription = `${description} Pledge on Kretopia, the Creative OS — only charged if it funds.`;
   const image = c.cover_image_url || FALLBACK_OG_IMAGE;
-  const title = `${c.title} | ThriveFund on ThriveIN`;
+  const title = `${c.title} | Kretopia Fund on Kretopia`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
   <meta property="og:title" content="${escapeHtml(title)}" />
   <meta property="og:description" content="${escapeHtml(ctaDescription)}" />
   <meta property="og:url" content="${canonicalUrl}" />
-  <meta property="og:site_name" content="ThriveIN" />
+  <meta property="og:site_name" content="Kretopia" />
   <meta property="og:image" content="${escapeHtml(image)}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
   <h1>${escapeHtml(c.title)}</h1>
   <p>${escapeHtml(stat)}</p>
   <p>${escapeHtml(tagline)}</p>
-  <a href="${canonicalUrl}">Back this campaign on ThriveIN</a>
+  <a href="${canonicalUrl}">Back this campaign on Kretopia</a>
 </body>
 </html>`;
 

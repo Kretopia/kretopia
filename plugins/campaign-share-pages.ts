@@ -83,7 +83,7 @@ function buildCampaignShareHtml(c: CampaignRow, siteUrl: string) {
     ? `🎉 Funded · ${goalFormatted} raised · ${c.backer_count} backers`
     : `${pct}% funded · ${goalFormatted} goal · ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`;
 
-  const tagline = c.tagline?.trim() || (c.story ? truncate(c.story, 120) : "Back this creative project on ThriveFund.");
+  const tagline = c.tagline?.trim() || (c.story ? truncate(c.story, 120) : "Back this creative project on Kretopia Fund.");
   const description = `${stat} — ${tagline}`;
   const ctaDescription = `${description} Pledge on Kretopia, the Creative OS — only charged if it funds.`;
   const image = c.cover_image_url || FALLBACK_OG_IMAGE;

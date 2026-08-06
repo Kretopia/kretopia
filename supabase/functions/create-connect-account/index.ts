@@ -117,7 +117,7 @@ serve(async (req) => {
         business_type: 'individual',
         metadata: {
           user_id: user.id,
-          full_name: profile?.full_name || 'ThriveIN User',
+          full_name: profile?.full_name || 'Kretopia User',
         },
       });
 

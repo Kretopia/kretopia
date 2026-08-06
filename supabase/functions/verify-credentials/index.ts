@@ -125,7 +125,7 @@ serve(async (req) => {
     }
 
     // Build comprehensive verification prompt with web search capabilities
-    const verificationPrompt = `You are an advanced credential verification AI for ThriveIN, a professional platform for creatives. Perform comprehensive verification of this creator's credentials.
+    const verificationPrompt = `You are an advanced credential verification AI for Kretopia, a professional platform for creatives. Perform comprehensive verification of this creator's credentials.
 
 PROFILE TO VERIFY:
 - Name: ${fullName}

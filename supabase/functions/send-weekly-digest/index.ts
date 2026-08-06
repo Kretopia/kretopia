@@ -118,7 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #a5b4fc; font-weight: 600; margin-bottom: 8px;">📝 Note from the Founder</div>
           ${founderNote.title ? `<h3 style="color: #ffffff; font-size: 20px; margin: 0 0 12px; line-height: 1.3;">${escapeHtml(founderNote.title)}</h3>` : ""}
           ${paragraphify(founderNote.body)}
-          <p style="color: #818cf8; font-size: 13px; margin: 12px 0 0; font-style: italic;">— Ethan, Founder of ThriveIN</p>
+          <p style="color: #818cf8; font-size: 13px; margin: 12px 0 0; font-style: italic;">— Ethan, Founder of Kretopia</p>
         </div>
       `
       : "";
@@ -186,7 +186,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const statsSection = `
       <div style="margin: 28px 0; background: rgba(67,56,202,0.08); border-radius: 12px; padding: 18px; text-align: center;">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #a5b4fc; font-weight: 600; margin-bottom: 12px;">📊 ThriveIN This Week</div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #a5b4fc; font-weight: 600; margin-bottom: 12px;">📊 Kretopia This Week</div>
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
             <td style="text-align: center; padding: 4px;">
@@ -210,7 +210,7 @@ const handler = async (req: Request): Promise<Response> => {
       <div style="font-family: 'Inter', -apple-system, Arial, sans-serif; max-width: 620px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #ffffff; padding: 36px 28px; border-radius: 16px;">
         <div style="text-align: center; margin-bottom: 28px;">
           <h1 style="color: #ffffff; font-size: 26px; margin: 0; font-weight: 700;">Monday Drop 🎯</h1>
-          <p style="color: #818cf8; font-size: 12px; margin-top: 6px; text-transform: uppercase; letter-spacing: 2px;">ThriveIN · The Creative OS</p>
+          <p style="color: #818cf8; font-size: 12px; margin-top: 6px; text-transform: uppercase; letter-spacing: 2px;">Kretopia · The Creative OS</p>
         </div>
         <p style="font-size: 16px; line-height: 1.6; margin: 0 0 8px;">Hey ${escapeHtml(greetingName)},</p>
         <p style="font-size: 14px; line-height: 1.6; color: #a0a0a0; margin: 0 0 16px;">Your weekly hit of opportunities, stories, and what's moving on the platform.</p>
@@ -221,7 +221,7 @@ const handler = async (req: Request): Promise<Response> => {
         ${eventsSection}
         ${statsSection}
         <div style="text-align: center; margin: 32px 0 12px;">
-          <a href="${baseUrl}/discover" style="display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #4338CA, #6366f1); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Open ThriveIN →</a>
+          <a href="${baseUrl}/discover" style="display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #4338CA, #6366f1); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Open Kretopia →</a>
         </div>
         <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 28px; padding-top: 16px; text-align: center;">
           <p style="color: #666; font-size: 12px; margin: 0;">
@@ -252,7 +252,7 @@ const handler = async (req: Request): Promise<Response> => {
         if (prof?.full_name) previewName = prof.full_name.split(" ")[0];
       }
       const { error } = await resend.emails.send({
-        from: "ThriveIN <noreply@thrivein.io>",
+        from: "Kretopia <noreply@thrivein.io>",
         to: [recipient],
         subject: `[PREVIEW] ${subjectLine}`,
         html: buildEmailHtml(previewName),
@@ -293,7 +293,7 @@ const handler = async (req: Request): Promise<Response> => {
         sentEmails.add(email.toLowerCase());
 
         const { error } = await resend.emails.send({
-          from: "ThriveIN <noreply@thrivein.io>",
+          from: "Kretopia <noreply@thrivein.io>",
           to: [email],
           subject: subjectLine,
           html: buildEmailHtml(profile.full_name?.split(" ")[0] || "Creative"),
@@ -311,7 +311,7 @@ const handler = async (req: Request): Promise<Response> => {
       sentEmails.add(e);
       try {
         const { error } = await resend.emails.send({
-          from: "ThriveIN <noreply@thrivein.io>",
+          from: "Kretopia <noreply@thrivein.io>",
           to: [sub.email],
           subject: subjectLine,
           html: buildEmailHtml("Creative"),

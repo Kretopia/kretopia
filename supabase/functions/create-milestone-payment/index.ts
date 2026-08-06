@@ -165,7 +165,7 @@ serve(async (req) => {
         price_data: {
           currency: "usd",
           product_data: {
-            name: `ThriveIN Service Fee (${(platformFeeRate * 100).toFixed(0)}%)`,
+            name: `Kretopia Service Fee (${(platformFeeRate * 100).toFixed(0)}%)`,
             description: `Platform service fee`,
           },
           unit_amount: Math.round(platformFee * 100),

@@ -100,7 +100,7 @@ serve(async (req) => {
         : '';
 
       await resend.emails.send({
-        from: "ThriveIN <noreply@thrivein.io>",
+        from: "Kretopia <noreply@thrivein.io>",
         to: [recipientEmail],
         subject: `${senderName} wants to pay you 💰`,
         html: `
@@ -127,7 +127,7 @@ serve(async (req) => {
               <h3 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">How it works:</h3>
               <ol style="margin: 0; padding-left: 20px; color: #6b7280; line-height: 2;">
                 <li>Click the button above</li>
-                <li>Create a free ThriveIN account (or sign in)</li>
+                <li>Create a free Kretopia account (or sign in)</li>
                 <li>Connect your bank account via Stripe (secure & instant)</li>
                 <li>Get paid directly to your bank! 🎉</li>
               </ol>
@@ -141,7 +141,7 @@ serve(async (req) => {
             
             <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
             <p style="color: #999; font-size: 12px;">
-              This email was sent by ${senderName} via ThriveIN. If you weren't expecting this, you can safely ignore it.
+              This email was sent by ${senderName} via Kretopia. If you weren't expecting this, you can safely ignore it.
             </p>
           </div>
         `,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -83,6 +83,8 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
   const [gigs, setGigs] = useState<ScoutedGig[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [scanElapsed, setScanElapsed] = useState(0);
+  const scanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [openGig, setOpenGig] = useState<ScoutedGig | null>(null);
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [enriching, setEnriching] = useState(false);
@@ -131,16 +133,41 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
   const scanNow = async () => {
     if (!user) return;
     setScanning(true);
-    toast({ title: "Scouting the web…", description: "Searching gig boards, LinkedIn, Instagram and ATS pages. ~30s." });
+    setScanElapsed(0);
+    scanTimerRef.current = setInterval(() => setScanElapsed((s) => s + 1), 1000);
+
     const { data, error } = await supabase.functions.invoke("scout-gigs", { body: { trigger: "manual" } });
+
+    if (scanTimerRef.current) clearInterval(scanTimerRef.current);
+    scanTimerRef.current = null;
     setScanning(false);
+
     if (error) {
       toast({ title: "Scout failed", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: `Found ${data?.inserted || 0} new gigs`, description: `Scanned ${data?.queries || 0} queries.` });
+    if (data?.gated) {
+      toast({ title: "Weekly Scout limit reached", description: data.message || "Upgrade for daily scans." });
+      return;
+    }
+
+    const found = data?.found ?? 0;
+    const filteredCount = data?.filtered ?? found;
+    const inserted = data?.inserted ?? 0;
+    if (inserted > 0) {
+      toast({
+        title: `Found ${inserted} new gig${inserted === 1 ? "" : "s"}`,
+        description: `Matched ${filteredCount} across ${data?.queries || 0} searches — ${inserted} weren't already in your list.`,
+      });
+    } else if (filteredCount > 0) {
+      toast({ title: "No new gigs", description: `Matched ${filteredCount} gigs, but you've already seen all of them.` });
+    } else {
+      toast({ title: "No fresh gigs matched right now", description: "Try again later, or widen your sources under Tune." });
+    }
     load();
   };
+
+  useEffect(() => () => { if (scanTimerRef.current) clearInterval(scanTimerRef.current); }, []);
 
   const dismiss = async (gigId: string) => {
     if (!user) return;
@@ -262,11 +289,21 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
       <FirstTimeHint
         storageKey="gigs.scouted-explainer"
         title="How scouting works"
-        description="Every morning Kreto scans gig boards, LinkedIn, Instagram and ATS pages, then ranks them by fit. Tap a card to read the full brief inside the app."
+        description="Tap Scan now and Kreto searches gig boards, LinkedIn, Instagram and ATS pages, then ranks results by fit. Tap a card to read the full brief inside the app."
         tone="energy"
       />
 
-      {gigs.length === 0 ? (
+      {scanning && (
+        <Card className="p-3 border-energy/30 bg-energy/[0.04] flex items-center gap-3">
+          <Loader2 className="h-4 w-4 animate-spin text-energy shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-foreground">Searching gig boards, LinkedIn, Instagram and ATS pages…</p>
+            <p className="text-[11px] text-muted-foreground">{scanElapsed}s elapsed — usually takes 20-40s</p>
+          </div>
+        </Card>
+      )}
+
+      {gigs.length === 0 && !scanning ? (
         <Card className="p-6 text-center text-sm text-muted-foreground border-dashed">
           No scouted gigs yet. Tap <span className="font-semibold text-foreground">Scan now</span> to find real jobs across the web matched to your skills.
         </Card>
@@ -441,14 +478,36 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
 
                 {/* Smart Apply */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <h3 className="text-sm font-bold">Cover letter</h3>
-                    {!coverLetter && (
-                      <Button size="sm" variant="outline" onClick={draftLetter} disabled={drafting}>
-                        {drafting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
-                        Draft with Kreto
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent("thrive-copilot:open", {
+                            detail: {
+                              prompt: `Help me think through this opportunity: "${openGig.title}"${openGig.company ? ` at ${openGig.company}` : ""}. What's the strongest angle for my pitch?`,
+                              context: {
+                                scouted_gig_id: openGig.id,
+                                opportunity_title: openGig.title,
+                                opportunity_source: openGig.source_name || openGig.source,
+                                opportunity_source_url: openGig.source_url,
+                              },
+                            },
+                          }));
+                        }}
+                      >
+                        <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                        Open in Kreto
                       </Button>
-                    )}
+                      {!coverLetter && (
+                        <Button size="sm" variant="outline" onClick={draftLetter} disabled={drafting}>
+                          {drafting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
+                          Draft with Kreto
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   {drafting ? (
                     <div className="space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></div>

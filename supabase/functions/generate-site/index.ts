@@ -30,7 +30,7 @@ serve(async (req) => {
     const hasVisualCredits = (credits || []).some((c: any) => c.thumbnail_url || c.primary_media_url);
     const creditCategories = [...new Set((credits || []).map((c: any) => c.credit_category).filter(Boolean))];
 
-    const systemPrompt = `You are a professional website copywriter and creative director for ThriveIN, a platform for creative professionals. Your job is to analyze a creator's profile data and generate optimized website content.
+    const systemPrompt = `You are a professional website copywriter and creative director for Kretopia, a platform for creative professionals. Your job is to analyze a creator's profile data and generate optimized website content.
 
 You must respond with a JSON object using the tool provided. Be bold, professional, and compelling. Avoid generic AI-sounding copy. Write like a top-tier creative agency.`;
 

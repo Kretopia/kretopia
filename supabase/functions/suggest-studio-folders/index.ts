@@ -68,7 +68,7 @@ serve(async (req) => {
           {
             role: "system",
             content:
-              "You are Kreto, the Executive Producer inside ThriveIN. Cluster the user's creative Studio projects into 2-5 short, human folder names a creative would actually use (e.g. 'Client Work', '2026 Campaigns', 'Music Releases', 'Personal Films', 'Brand Partners', 'Wedding Season'). Prefer client/brand groupings, work-type, or season/year if obvious. Avoid generic 'Misc'. Each project belongs to exactly one folder. Skip projects that don't fit anywhere. Reuse an existing folder name if it clearly fits.",
+              "You are Kreto, the Executive Producer inside Kretopia. Cluster the user's creative Studio projects into 2-5 short, human folder names a creative would actually use (e.g. 'Client Work', '2026 Campaigns', 'Music Releases', 'Personal Films', 'Brand Partners', 'Wedding Season'). Prefer client/brand groupings, work-type, or season/year if obvious. Avoid generic 'Misc'. Each project belongs to exactly one folder. Skip projects that don't fit anywhere. Reuse an existing folder name if it clearly fits.",
           },
           {
             role: "user",

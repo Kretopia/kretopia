@@ -73,7 +73,7 @@ export function campaignSharePagesPlugin(options: CampaignSharePagesPluginOption
 function buildCampaignShareHtml(c: CampaignRow, siteUrl: string) {
   const campaignUrl = `${siteUrl}/fund/${c.slug}`;
   const shareUrl = `${siteUrl}/share/fund/${c.slug}/`;
-  const title = `${c.title} | ThriveFund on Kretopia`;
+  const title = `${c.title} | Kretopia Fund on Kretopia`;
 
   const pct = c.goal_amount > 0 ? Math.round((c.total_raised / c.goal_amount) * 100) : 0;
   const daysLeft = Math.max(0, Math.ceil((new Date(c.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
@@ -83,7 +83,7 @@ function buildCampaignShareHtml(c: CampaignRow, siteUrl: string) {
     ? `🎉 Funded · ${goalFormatted} raised · ${c.backer_count} backers`
     : `${pct}% funded · ${goalFormatted} goal · ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`;
 
-  const tagline = c.tagline?.trim() || (c.story ? truncate(c.story, 120) : "Back this creative project on ThriveFund.");
+  const tagline = c.tagline?.trim() || (c.story ? truncate(c.story, 120) : "Back this creative project on Kretopia Fund.");
   const description = `${stat} — ${tagline}`;
   const ctaDescription = `${description} Pledge on Kretopia, the Creative OS — only charged if it funds.`;
   const image = c.cover_image_url || FALLBACK_OG_IMAGE;

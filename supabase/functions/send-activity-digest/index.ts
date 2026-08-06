@@ -82,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
           : `https://www.thrivein.io/unsubscribe`;
 
         const emailResult = await resend.emails.send({
-          from: "ThriveIN <noreply@thrivein.io>",
+          from: "Kretopia <noreply@thrivein.io>",
           to: [email],
           subject: `📬 ${userName}, you have ${unreadCount} notifications waiting`,
           html: `
@@ -101,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="font-size: 18px; color: #374151; margin-top: 0;">Hey ${userName},</p>
                 
                 <p style="color: #6b7280; line-height: 1.6;">
-                  You've got <strong>${unreadCount} unread notifications</strong> waiting for you on ThriveIN.
+                  You've got <strong>${unreadCount} unread notifications</strong> waiting for you on Kretopia.
                   Someone might be trying to connect with you!
                 </p>
                 
@@ -126,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
                 
                 <p style="color: #9ca3af; font-size: 14px; text-align: center; margin-top: 30px;">
                   Keep creating! ✨<br>
-                  The ThriveIN Team
+                  The Kretopia Team
                 </p>
               </div>
               

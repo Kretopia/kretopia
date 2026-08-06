@@ -175,7 +175,7 @@ async function planTools(
     {
       role: "system",
       content:
-        `You are the ${agentKind} sub-agent inside ThriveIN, a creative-economy platform. ` +
+        `You are the ${agentKind} sub-agent inside Kretopia, a creative-economy platform. ` +
         `Your job: turn the user's natural-language intent into the right tool calls. ` +
         `\n\nRules:\n` +
         `- Tools tagged [safe_auto] (find_user, list_my_projects, etc.) run automatically — call them first to RESOLVE names/IDs before proposing destructive actions.\n` +

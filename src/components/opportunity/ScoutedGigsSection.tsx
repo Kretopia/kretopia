@@ -262,7 +262,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
       <FirstTimeHint
         storageKey="gigs.scouted-explainer"
         title="How scouting works"
-        description="Every morning Kreto scans gig boards, LinkedIn, Instagram and ATS pages, then ranks them by fit. Tap a card to read the full brief inside the app."
+        description="Tap Scan now and Kreto searches gig boards, LinkedIn, Instagram and ATS pages, then ranks results by fit. Tap a card to read the full brief inside the app."
         tone="energy"
       />
 

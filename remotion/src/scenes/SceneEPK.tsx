@@ -9,7 +9,7 @@ export const SceneEPK = () => {
   const shareO = interpolate(frame, [120, 145], [0, 1], { extrapolateRight: "clamp" });
   const shareY = interpolate(frame, [120, 150], [40, 0], { extrapolateRight: "clamp" });
   const linkChars = Math.floor(interpolate(frame, [30, 70], [0, 30], { extrapolateRight: "clamp" }));
-  const link = "thrivein.io/m/michelene".slice(0, linkChars);
+  const link = "kretopia.com/m/michelene".slice(0, linkChars);
 
   return (
     <AbsoluteFill>

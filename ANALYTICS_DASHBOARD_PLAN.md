@@ -1,4 +1,4 @@
-# ThriveIN Analytics Dashboard Plan v1.0
+# Kretopia Analytics Dashboard Plan v1.0
 **Status:** Proposed · **Owner:** Data + Admin UI · **Date:** 2026-06-22 · **Phase:** 2 / Stabilize
 
 Single admin surface at `/admin/analytics` rendering everything defined in `ACTIVATION_MODEL.md`, `FUNNELS.md`, and `ANALYTICS_EVENT_TAXONOMY.md`. Replaces the scattered metrics tiles currently in `SiteAnalyticsDashboard.tsx`, `deckMetrics.ts`, and ad-hoc admin pages.

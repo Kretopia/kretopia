@@ -22,6 +22,7 @@ import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";
 import { BriefDropZone } from "./BriefDropZone";
+import { ImportedSourcesCard } from "./ImportedSourcesCard";
 import { WorkSection } from "./WorkSection";
 import { MoneySection } from "./MoneySection";
 import { PeopleSection } from "./PeopleSection";
@@ -225,6 +226,9 @@ export const StudioRoom = ({
         isOwner={isOwner}
         onIngested={onUpdated}
       />
+      <div className="px-4 pt-2">
+        <ImportedSourcesCard projectId={project.id} />
+      </div>
       {/* Phase E — outcome composer: free-text → routed capability */}
       {isOwner && (
         <StudioOutcomeComposer projectId={project.id} projectTitle={project.title ?? "this project"} />

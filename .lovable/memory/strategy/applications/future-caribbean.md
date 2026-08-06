@@ -1,6 +1,6 @@
 ---
 name: Future Caribbean Buildathon — Application Draft
-description: ThriveIN application draft for the Future Caribbean 3-week buildathon (40 teams, 10 tracks, H200 GPUs, $70K prizes, NYSE finals).
+description: Kretopia application draft for the Future Caribbean 3-week buildathon (40 teams, 10 tracks, H200 GPUs, $70K prizes, NYSE finals).
 type: reference
 ---
 
@@ -10,14 +10,14 @@ type: reference
 
 ## 1. Team
 
-**Company:** ThriveIN — The Creative Operating System
+**Company:** Kretopia — The Creative Operating System
 **HQ:** Port-of-Spain, Trinidad & Tobago (globally deployable)
 **Founder:** [Founder name] — solo founder, technical, operating agentic AI in production today
-**Domain:** https://thrivein.io · Demo: https://thrivein.io/demo/agent · Agent activity: https://thrivein.io/agents
+**Domain:** https://kretopia.com · Demo: https://kretopia.com/demo/agent · Agent activity: https://kretopia.com/agents
 
 ## 2. One-line pitch
 
-ThriveIN is the agentic operating system for the global creator economy — Creative Passport (verified credits) + always-on agents that find, draft, negotiate and bank creative work.
+Kretopia is the agentic operating system for the global creator economy — Creative Passport (verified credits) + always-on agents that find, draft, negotiate and bank creative work.
 
 ## 3. The problem (Caribbean-sharp, globally true)
 
@@ -31,7 +31,7 @@ The bottleneck is not talent. It's the **operational tax**.
 
 ## 4. The solution — agentic, not assistive
 
-ThriveIN runs a **fleet of specialised agents** on Lovable AI Gateway (Gemini Pro / 2.5 Flash / Flash Lite), each with a tool registry and persistent memory (`thrive_memory`):
+Kretopia runs a **fleet of specialised agents** on Lovable AI Gateway (Gemini Pro / 2.5 Flash / Flash Lite), each with a tool registry and persistent memory (`thrive_memory`):
 
 | Agent | What it does autonomously |
 |---|---|
@@ -61,7 +61,7 @@ Secondary fit (Workforce / MSME):
 1. **Open-source the Thrive Agent tool schema** — registry, memory, daily-caps, planner/executor pattern as a public Caribbean contribution
 2. **Train a creative-economy reasoning model** on H200s, fine-tuned on the anonymised credit graph + scouted-gig outcomes (won/lost/ghosted)
 3. **Agent observability dashboard** (`/agents` v2) — public-readable proof of autonomy at scale
-4. **OpenClaw-compatible agent layer** so other Buildathon teams can call ThriveIN agents as tools
+4. **OpenClaw-compatible agent layer** so other Buildathon teams can call Kretopia agents as tools
 5. **Live Carnival 2026 demo corridor** — onboard 50 verified Trinidad creatives during the buildathon
 
 ## 7. Why we win the NYSE finals
@@ -79,7 +79,7 @@ Secondary fit (Workforce / MSME):
 
 ## 9. Links to verify
 
-- Live agents feed: https://thrivein.io/agents
-- Public demo (no auth): https://thrivein.io/demo/agent
-- Founder kit: https://thrivein.io/founder-kit
-- Metrics: https://thrivein.io/founder-kit/metrics
+- Live agents feed: https://kretopia.com/agents
+- Public demo (no auth): https://kretopia.com/demo/agent
+- Founder kit: https://kretopia.com/founder-kit
+- Metrics: https://kretopia.com/founder-kit/metrics

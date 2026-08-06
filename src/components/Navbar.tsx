@@ -132,6 +132,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/circle", icon: Theater, label: "Stages" },
         { path: "/profile", icon: BadgeCheck, label: "Passport" },
         { path: "/kreto", icon: Sparkles, label: "Kreto" },
+        { path: "/perks", icon: Gift, label: "Perks" },
+        { path: "/settings", icon: Settings, label: "Settings" },
       ];
 
   // search moved to Thrive bar — keep state stub removed
@@ -222,22 +224,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   aria-current={isActive ? "page" : undefined}
                   aria-label={label}
                   className={cn(
-                    "relative flex items-center gap-2 h-10 px-3.5 rounded-lg transition-smooth text-sm font-medium whitespace-nowrap",
+                    "flex items-center gap-2 h-10 px-3.5 rounded-lg transition-smooth text-sm font-medium whitespace-nowrap border",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
+                    isActive
+                      ? "text-foreground border-white/15 bg-white/[0.04]"
+                      : "text-muted-foreground border-transparent hover:text-foreground hover:border-white/10 hover:bg-white/[0.02]",
                   )}
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
                   {label}
-                  {isActive && (
-                    <span
-                      aria-hidden
-                      className="absolute bottom-0 left-3.5 right-3.5 h-0.5 rounded-full"
-                      style={{ background: "var(--kretopia-sunset, linear-gradient(90deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
-                    />
-                  )}
                 </Link>
-
               );
             })}
           </div>

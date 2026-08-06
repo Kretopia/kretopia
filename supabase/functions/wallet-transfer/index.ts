@@ -64,18 +64,6 @@ serve(async (req) => {
       throw new Error(limitResult?.reason || "Transfer limit exceeded");
     }
 
-    // Check sender has sufficient balance
-    const { data: senderWallet } = await supabaseAdmin
-      .from("wallets")
-      .select("balance")
-      .eq("user_id", user.id)
-      .single();
-
-    const senderBalance = senderWallet?.balance || 0;
-    if (senderBalance < amount) {
-      throw new Error(`Insufficient balance. You have $${senderBalance.toFixed(2)} available.`);
-    }
-
     // Check recipient exists
     const { data: recipient } = await supabaseAdmin
       .from("profiles")
@@ -85,32 +73,24 @@ serve(async (req) => {
 
     if (!recipient) throw new Error("Recipient not found");
 
-    // Ensure recipient has a wallet
-    const { data: recipientWallet } = await supabaseAdmin
-      .from("wallets")
-      .select("balance")
-      .eq("user_id", recipientId)
-      .maybeSingle();
+    // Atomic debit — fails if balance is insufficient (no read-then-write race)
+    const { data: newSenderBalance, error: debitError } = await supabaseAdmin
+      .rpc("wallet_debit", { p_user_id: user.id, p_amount: amount });
 
-    if (!recipientWallet) {
-      await supabaseAdmin
-        .from("wallets")
-        .insert({ user_id: recipientId, balance: 0, credits: 0 });
+    if (debitError || newSenderBalance === null) {
+      throw new Error("Insufficient balance");
     }
 
-    const recipientBalance = recipientWallet?.balance || 0;
+    // Atomic credit (creates the recipient wallet if missing)
+    const { data: newRecipientBalance, error: creditError } = await supabaseAdmin
+      .rpc("wallet_credit", { p_user_id: recipientId, p_amount: amount });
 
-    // Deduct from sender
-    await supabaseAdmin
-      .from("wallets")
-      .update({ balance: senderBalance - amount, updated_at: new Date().toISOString() })
-      .eq("user_id", user.id);
+    if (creditError) {
+      // Roll the debit back so funds are never lost
+      await supabaseAdmin.rpc("wallet_credit", { p_user_id: user.id, p_amount: amount });
+      throw new Error("Transfer failed");
+    }
 
-    // Add to recipient
-    await supabaseAdmin
-      .from("wallets")
-      .update({ balance: recipientBalance + amount, updated_at: new Date().toISOString() })
-      .eq("user_id", recipientId);
 
     // Record transfer
     await supabaseAdmin
@@ -162,13 +142,13 @@ serve(async (req) => {
 
     logStep("Transfer completed", {
       amount,
-      newSenderBalance: senderBalance - amount,
-      newRecipientBalance: recipientBalance + amount,
+      newSenderBalance,
+      newRecipientBalance,
     });
 
     return new Response(JSON.stringify({
       success: true,
-      newBalance: senderBalance - amount,
+      newBalance: newSenderBalance,
       recipientName: recipient.full_name,
       amount,
     }), {

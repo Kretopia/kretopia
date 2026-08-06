@@ -72,7 +72,7 @@ export function eventSharePagesPlugin(options: EventSharePagesPluginOptions): Pl
 function buildEventShareHtml(event: EventRow, siteUrl: string) {
   const eventUrl = `${siteUrl}/event/${event.id}`;
   const shareUrl = `${siteUrl}/share/event/${event.id}/`;
-  const title = `${event.title} | ThriveIN`;
+  const title = `${event.title} | Kretopia`;
 
   const eventDate = new Date(event.start_time).toLocaleDateString("en-US", {
     weekday: "long",
@@ -96,7 +96,7 @@ function buildEventShareHtml(event: EventRow, siteUrl: string) {
 
   const description = event.description
     ? `${subtitle} — ${truncate(event.description, 120)}`
-    : `${subtitle} — RSVP now on ThriveIN, the Creative OS.`;
+    : `${subtitle} — RSVP now on Kretopia, the Creative OS.`;
   const ctaDescription = `${description} Join the creative community.`;
   // Prefer dynamic OG image (live attendee count) over static cover, fall back gracefully
   const projectRef = process.env.VITE_SUPABASE_PROJECT_ID || "kwmcocsitwssrtzkdojh";
@@ -118,11 +118,11 @@ function buildEventShareHtml(event: EventRow, siteUrl: string) {
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(ctaDescription)}" />
     <meta property="og:url" content="${shareUrl}" />
-    <meta property="og:site_name" content="ThriveIN" />
+    <meta property="og:site_name" content="Kretopia" />
     <meta property="og:image" content="${escapeHtml(image)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="${escapeHtml(event.title)} on ThriveIN" />
+    <meta property="og:image:alt" content="${escapeHtml(event.title)} on Kretopia" />
     <meta property="og:image:secondary" content="${escapeHtml(fallbackImage)}" />
 
     <meta name="twitter:card" content="summary_large_image" />
@@ -138,7 +138,7 @@ function buildEventShareHtml(event: EventRow, siteUrl: string) {
       <h1>${escapeHtml(event.title)}</h1>
       <p>${escapeHtml(subtitle)}</p>
       <p>${escapeHtml(ctaDescription)}</p>
-      <p><a href="${eventUrl}">RSVP on ThriveIN</a></p>
+      <p><a href="${eventUrl}">RSVP on Kretopia</a></p>
     </main>
   </body>
 </html>`;

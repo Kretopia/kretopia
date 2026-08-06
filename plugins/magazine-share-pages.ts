@@ -73,7 +73,7 @@ function buildShareHtml(article: MagazineArticle, identifier: string, siteUrl: s
   const title = article.title;
   const description = article.subtitle || buildExcerpt(article.content);
   const image = article.cover_image_url || FALLBACK_OG_IMAGE;
-  const author = article.author_name || "ThriveIN Magazine";
+  const author = article.author_name || "Kretopia Magazine";
   const publishedTime = article.created_at;
 
   return `<!doctype html>
@@ -81,7 +81,7 @@ function buildShareHtml(article: MagazineArticle, identifier: string, siteUrl: s
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${escapeHtml(title)} | ThriveIN Magazine</title>
+    <title>${escapeHtml(title)} | Kretopia Magazine</title>
     <meta name="description" content="${escapeHtml(description)}" />
     <meta name="robots" content="noindex,follow" />
     <link rel="canonical" href="${articleUrl}" />
@@ -90,7 +90,7 @@ function buildShareHtml(article: MagazineArticle, identifier: string, siteUrl: s
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${shareUrl}" />
-    <meta property="og:site_name" content="ThriveIN Magazine" />
+    <meta property="og:site_name" content="Kretopia Magazine" />
     <meta property="og:image" content="${escapeHtml(image)}" />
     <meta property="og:image:secure_url" content="${escapeHtml(image)}" />
     <meta property="og:image:alt" content="${escapeHtml(title)}" />
@@ -109,7 +109,7 @@ function buildShareHtml(article: MagazineArticle, identifier: string, siteUrl: s
     <main>
       <h1>${escapeHtml(title)}</h1>
       <p>${escapeHtml(description)}</p>
-      <p><a href="${articleUrl}">Open article on ThriveIN Magazine</a></p>
+      <p><a href="${articleUrl}">Open article on Kretopia Magazine</a></p>
     </main>
   </body>
 </html>`;

@@ -1,4 +1,4 @@
-# ThriveIN Function Security Matrix v1.0
+# Kretopia Function Security Matrix v1.0
 **Status:** Classification only — no code changes · **Owner:** Security + Eng · **Date:** 2026-06-22 · **Phase:** 1.b complete → Phase 2
 
 Companion to `EDGE_FUNCTION_MANIFEST.md`. The manifest is the inventory; this matrix is the **risk and remediation plan** for every function. **No functions are modified by this document.** Phase 3+ will execute the fixes ranked here.

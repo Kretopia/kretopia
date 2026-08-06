@@ -1,6 +1,6 @@
-# AI Features in ThriveIN
+# AI Features in Kretopia
 
-ThriveIN is powered by AI throughout the platform to provide intelligent matching, smart suggestions, and enhanced user experiences.
+Kretopia is powered by AI throughout the platform to provide intelligent matching, smart suggestions, and enhanced user experiences.
 
 ## 🤖 Core AI Features
 
@@ -160,7 +160,7 @@ All AI features use the centralized `generate-content` edge function:
 
 ## 🎨 Differentiators
 
-### What Makes ThriveIN's AI Different
+### What Makes Kretopia's AI Different
 
 1. **Collaboration-Focused**: Unlike job boards, AI optimizes for partnership quality
 2. **Complementary Matching**: Finds opposite but compatible skills, not just similar
@@ -175,7 +175,7 @@ All AI features use the centralized `generate-content` edge function:
 - **Behance/Dribbble**: Portfolio-only, no AI matching
 - **Fiverr/Upwork**: Transactional, not collaboration-focused
 - **Tinder/Bumble for Business**: No portfolio integration, basic matching
-- **ThriveIN**: AI-powered, creator-focused, collaboration-optimized
+- **Kretopia**: AI-powered, creator-focused, collaboration-optimized
 
 ## 💡 AI Usage Tips for Users
 
@@ -204,4 +204,4 @@ All AI features use the centralized `generate-content` edge function:
 
 ---
 
-**ThriveIN's AI makes creator collaboration smarter, faster, and more successful.**
+**Kretopia's AI makes creator collaboration smarter, faster, and more successful.**

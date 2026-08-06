@@ -17,11 +17,40 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { userId } = await req.json();
-    
-    if (!userId) {
-      throw new Error("User ID is required");
+    // Require a valid user JWT
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized", success: false }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+    const authed = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authed.auth.getClaims(token);
+    const callerId = claimsData?.claims?.sub as string | undefined;
+    if (claimsError || !callerId) {
+      return new Response(JSON.stringify({ error: "Unauthorized", success: false }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const requestedId = typeof body?.userId === "string" ? body.userId : undefined;
+
+    // A user may only recalculate their own score
+    if (requestedId && requestedId !== callerId) {
+      return new Response(JSON.stringify({ error: "Forbidden", success: false }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = callerId;
 
     console.log(`[UPDATE-SCORE] Calculating verification score for user ${userId}`);
 

@@ -2,7 +2,7 @@
 
 ## ✅ Installed
 
-Both Vercel Analytics and Sentry are now integrated into ThriveIN!
+Both Vercel Analytics and Sentry are now integrated into Kretopia!
 
 ---
 
@@ -21,7 +21,7 @@ Vercel Analytics works automatically when deployed on Vercel. It's already integ
 
 ### Access Your Analytics:
 1. Go to your Vercel Dashboard
-2. Select your ThriveIN project
+2. Select your Kretopia project
 3. Click on "Analytics" tab
 4. View real-time and historical data
 

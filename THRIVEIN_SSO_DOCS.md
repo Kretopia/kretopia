@@ -1,7 +1,7 @@
-# ThriveIN SSO — Integration Guide for Anansi
+# Kretopia SSO — Integration Guide for Anansi
 
 ## Overview
-"Sign in with ThriveIN" lets Anansi users authenticate using their ThriveIN creative profile. This uses a standard OAuth 2.0 Authorization Code flow.
+"Sign in with Kretopia" lets Anansi users authenticate using their Kretopia creative profile. This uses a standard OAuth 2.0 Authorization Code flow.
 
 ---
 
@@ -31,9 +31,9 @@
 
 ## Flow
 
-### Step 1: Redirect user to ThriveIN
+### Step 1: Redirect user to Kretopia
 
-From Anansi, redirect the user to ThriveIN's login page. After they log in, call the authorize endpoint with their ThriveIN session token:
+From Anansi, redirect the user to Kretopia's login page. After they log in, call the authorize endpoint with their Kretopia session token:
 
 ```
 GET /functions/v1/sso-authorize
@@ -44,7 +44,7 @@ GET /functions/v1/sso-authorize
   &state=random_csrf_token
 ```
 
-**Headers:** `Authorization: Bearer <user's ThriveIN JWT>`
+**Headers:** `Authorization: Bearer <user's Kretopia JWT>`
 
 **Response:**
 ```json
@@ -102,16 +102,16 @@ Authorization: Bearer <access_token>
 ### `lib/thrivein-sso.ts`
 
 ```typescript
-const THRIVEIN_API = "https://kwmcocsitwssrtzkdojh.supabase.co/functions/v1";
+const KRETOPIA_API = "https://kwmcocsitwssrtzkdojh.supabase.co/functions/v1";
 const CLIENT_ID = "4f76281af0b789acc26f07555383af44";
 
-// Step 1: Open ThriveIN login popup
-export function signInWithThriveIN(redirectUri: string) {
+// Step 1: Open Kretopia login popup
+export function signInWithKretopia(redirectUri: string) {
   const state = crypto.randomUUID();
   sessionStorage.setItem("thrivein_state", state);
   
-  // Redirect to ThriveIN app for authentication
-  const thriveINLoginUrl = new URL("https://thrivein-new-beta.lovable.app/auth");
+  // Redirect to Kretopia app for authentication
+  const thriveINLoginUrl = new URL("https://kretopia.com/auth");
   thriveINLoginUrl.searchParams.set("sso_client_id", CLIENT_ID);
   thriveINLoginUrl.searchParams.set("sso_redirect_uri", redirectUri);
   thriveINLoginUrl.searchParams.set("sso_state", state);
@@ -125,7 +125,7 @@ export async function exchangeCodeForToken(
   redirectUri: string,
   clientSecret: string
 ) {
-  const res = await fetch(`${THRIVEIN_API}/sso-token`, {
+  const res = await fetch(`${KRETOPIA_API}/sso-token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -142,8 +142,8 @@ export async function exchangeCodeForToken(
 }
 
 // Step 3: Fetch user profile
-export async function getThriveINUser(accessToken: string) {
-  const res = await fetch(`${THRIVEIN_API}/sso-userinfo`, {
+export async function getKretopiaUser(accessToken: string) {
+  const res = await fetch(`${KRETOPIA_API}/sso-userinfo`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   
@@ -191,23 +191,23 @@ export default function AuthCallback() {
     }
   }, [searchParams, router]);
   
-  return <div>Signing you in with ThriveIN...</div>;
+  return <div>Signing you in with Kretopia...</div>;
 }
 ```
 
 ### Button Component
 
 ```tsx
-import { signInWithThriveIN } from "@/lib/thrivein-sso";
+import { signInWithKretopia } from "@/lib/thrivein-sso";
 
-export function SignInWithThriveINButton() {
+export function SignInWithKretopiaButton() {
   return (
     <button
-      onClick={() => signInWithThriveIN("https://anansi.app/auth/callback")}
+      onClick={() => signInWithKretopia("https://anansi.app/auth/callback")}
       className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-medium hover:opacity-90"
     >
-      <img src="https://thrivein-new-beta.lovable.app/favicon.png" alt="" className="w-5 h-5" />
-      Sign in with ThriveIN
+      <img src="https://kretopia.com/favicon.png" alt="" className="w-5 h-5" />
+      Sign in with Kretopia
     </button>
   );
 }
@@ -231,7 +231,7 @@ export function SignInWithThriveINButton() {
 | `invalid_client` | Wrong client_id or client_secret |
 | `invalid_grant` | Code expired, used, or redirect_uri mismatch |
 | `invalid_token` | Access token expired or revoked |
-| `login_required` | User is not authenticated on ThriveIN |
+| `login_required` | User is not authenticated on Kretopia |
 
 ---
 
@@ -241,4 +241,4 @@ export function SignInWithThriveINButton() {
 - Access tokens expire after **30 days**
 - Always validate the `state` parameter to prevent CSRF
 - Keep `client_secret` server-side only (use Next.js API routes)
-- To add more redirect URIs, contact ThriveIN admin
+- To add more redirect URIs, contact Kretopia admin

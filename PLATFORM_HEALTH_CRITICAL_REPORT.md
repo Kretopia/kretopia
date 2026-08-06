@@ -396,7 +396,7 @@
 - LinkedIn: Professional focus, but not creator-specific
 - Fiverr/Upwork: Gig only, no community/portfolio
 - Behance: Portfolio only, no matching/community
-- **ThriveIN**: All of the above + local Bali focus
+- **Kretopia**: All of the above + local Bali focus
 
 **Gap**: We have **better strategy**, but **worse execution**. Strategy gets investment, execution gets users.
 

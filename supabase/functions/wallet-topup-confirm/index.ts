@@ -72,30 +72,32 @@ serve(async (req) => {
       logStep("Payment verified", { sessionId: session.id, status: session.payment_status });
     }
 
-    // Update topup status
-    await supabaseAdmin
+    // Update topup status — conditional so only ONE concurrent request wins
+    const { data: claimed, error: claimError } = await supabaseAdmin
       .from("wallet_topups")
       .update({
         status: "completed",
         completed_at: new Date().toISOString(),
         gateway_payment_id: topup.gateway_session_id,
       })
-      .eq("id", topupId);
+      .eq("id", topupId)
+      .neq("status", "completed")
+      .select("id")
+      .maybeSingle();
 
-    // Add funds to wallet
-    const { data: wallet } = await supabaseAdmin
-      .from("wallets")
-      .select("balance")
-      .eq("user_id", user.id)
-      .single();
+    if (claimError) throw claimError;
+    if (!claimed) {
+      return new Response(JSON.stringify({ success: true, message: "Already confirmed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const currentBalance = wallet?.balance || 0;
-    const newBalance = currentBalance + topup.amount;
+    // Atomic credit — no read-then-write race
+    const { data: newBalance, error: creditError } = await supabaseAdmin
+      .rpc("wallet_credit", { p_user_id: user.id, p_amount: topup.amount });
 
-    await supabaseAdmin
-      .from("wallets")
-      .update({ balance: newBalance, updated_at: new Date().toISOString() })
-      .eq("user_id", user.id);
+    if (creditError) throw creditError;
+
 
     // Record transaction
     await supabaseAdmin

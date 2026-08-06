@@ -1,4 +1,4 @@
-# ThriveIN Security Audit — Phase 1 (30-Day Stabilize)
+# Kretopia Security Audit — Phase 1 (30-Day Stabilize)
 
 Date: 2026-06-22  
 Scope: RLS · JWT verification · Admin guard · Wallet/payment flows  

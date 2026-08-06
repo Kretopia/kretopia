@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ShieldCheck, Check, X, MessageSquare, Loader2, Clock } from "lucide-react";
+import { ShieldCheck, Check, X, Loader2, Clock, XCircle, History } from "lucide-react";
+import { HoloCard } from "@/components/passport/HoloCard";
 
 interface PendingEndorsement {
   id: string;
@@ -25,47 +26,82 @@ interface PendingEndorsement {
   } | null;
 }
 
+interface ResolvedEndorsement extends PendingEndorsement {
+  status: "accepted" | "declined" | "expired";
+  responded_at: string | null;
+}
+
+// 'expired' is a valid status in the DB check constraint, but no server-side
+// job currently transitions a row to it — there's no auto-expiry cron. It's
+// rendered here only in case a row is ever set to it manually or by a future
+// job; the card never claims an expiry mechanism is running today.
+const RESOLVED_STATUS_META: Record<ResolvedEndorsement["status"], { label: string; icon: typeof Check; tagClassName: string }> = {
+  accepted: { label: "Verified — co-signed", icon: ShieldCheck, tagClassName: "bg-[hsl(var(--signal-teal))] text-black" },
+  declined: { label: "Declined", icon: XCircle, tagClassName: "bg-muted text-muted-foreground" },
+  expired: { label: "Expired — no response", icon: Clock, tagClassName: "bg-muted text-muted-foreground" },
+};
+
 interface CreditVerificationPanelProps {
   userId: string;
 }
 
 export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps) {
   const [pendingEndorsements, setPendingEndorsements] = useState<PendingEndorsement[]>([]);
+  const [resolvedEndorsements, setResolvedEndorsements] = useState<ResolvedEndorsement[]>([]);
   const [loading, setLoading] = useState(true);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [testimonials, setTestimonials] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    fetchPendingEndorsements();
+    fetchEndorsements();
   }, [userId]);
 
-  const fetchPendingEndorsements = async () => {
+  const fetchEndorsements = async () => {
     try {
-      const { data, error } = await supabase
-        .from('credit_endorsements')
-        .select(`
-          id, credit_id, requested_by, relationship, requested_at,
-          credits!credit_endorsements_credit_id_fkey(project_name, role, year)
-        `)
-        .eq('endorser_id', userId)
-        .eq('status', 'pending')
-        .order('requested_at', { ascending: false });
+      const enrich = async (rows: any[]) =>
+        Promise.all(
+          rows.map(async (endorsement: any) => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name, avatar_url')
+              .eq('user_id', endorsement.requested_by)
+              .single();
+            return { ...endorsement, requester_profile: profile };
+          })
+        );
 
-      if (error) throw error;
+      const [{ data: pending, error: pendingError }, { data: resolved, error: resolvedError }] = await Promise.all([
+        supabase
+          .from('credit_endorsements')
+          .select(`
+            id, credit_id, requested_by, relationship, requested_at,
+            credits!credit_endorsements_credit_id_fkey(project_name, role, year)
+          `)
+          .eq('endorser_id', userId)
+          .eq('status', 'pending')
+          .order('requested_at', { ascending: false }),
+        supabase
+          .from('credit_endorsements')
+          .select(`
+            id, credit_id, requested_by, relationship, requested_at, status, responded_at,
+            credits!credit_endorsements_credit_id_fkey(project_name, role, year)
+          `)
+          .eq('endorser_id', userId)
+          .in('status', ['accepted', 'declined', 'expired'])
+          .order('responded_at', { ascending: false })
+          .limit(5),
+      ]);
 
-      // Fetch requester profiles
-      const enriched = await Promise.all(
-        (data || []).map(async (endorsement: any) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('user_id', endorsement.requested_by)
-            .single();
-          return { ...endorsement, requester_profile: profile };
-        })
-      );
+      if (pendingError) throw pendingError;
+      if (resolvedError) throw resolvedError;
 
-      setPendingEndorsements(enriched as any[]);
+      const [enrichedPending, enrichedResolved] = await Promise.all([
+        enrich(pending || []),
+        enrich(resolved || []),
+      ]);
+
+      setPendingEndorsements(enrichedPending as any[]);
+      setResolvedEndorsements(enrichedResolved as any[]);
     } catch (error) {
       console.error('Error fetching endorsements:', error);
     } finally {
@@ -77,6 +113,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
     setRespondingId(endorsementId);
     try {
       const testimonial = testimonials[endorsementId] || null;
+      const endorsement = pendingEndorsements.find(e => e.id === endorsementId);
 
       const { error } = await supabase
         .from('credit_endorsements')
@@ -90,20 +127,24 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
 
       if (error) throw error;
 
-      if (accept) {
-        const endorsement = pendingEndorsements.find(e => e.id === endorsementId);
-        if (endorsement) {
-          // Increment endorsement count
-          await supabase.rpc('increment_endorsement_count' as any, { credit_id_param: endorsement.credit_id });
-          // Upgrade credit verification status to 'peer' (boosts ThriveStatus)
-          await supabase
-            .from('credits')
-            .update({ verification_status: 'peer', verified_by_user_id: userId })
-            .eq('id', endorsement.credit_id);
-        }
+      if (accept && endorsement) {
+        // Increment endorsement count
+        await supabase.rpc('increment_endorsement_count' as any, { credit_id_param: endorsement.credit_id });
+        // Upgrade credit verification status to 'peer' (boosts ThriveStatus)
+        await supabase
+          .from('credits')
+          .update({ verification_status: 'peer', verified_by_user_id: userId })
+          .eq('id', endorsement.credit_id);
       }
 
       setPendingEndorsements(prev => prev.filter(e => e.id !== endorsementId));
+      if (endorsement) {
+        const status: ResolvedEndorsement["status"] = accept ? 'accepted' : 'declined';
+        setResolvedEndorsements(prev => [
+          { ...endorsement, status, responded_at: new Date().toISOString() },
+          ...prev,
+        ].slice(0, 5));
+      }
       toast.success(accept ? 'Credit endorsed! Your verification has been added.' : 'Endorsement declined.');
     } catch (error: any) {
       console.error('Error responding to endorsement:', error);
@@ -117,83 +158,152 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
     return null;
   }
 
-  if (pendingEndorsements.length === 0) {
+  if (pendingEndorsements.length === 0 && resolvedEndorsements.length === 0) {
     return null;
   }
 
   return (
-    <Card className="border-primary/20">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <ShieldCheck className="h-5 w-5 text-primary" />
-          Verification Requests
-          <Badge variant="secondary" className="ml-auto">{pendingEndorsements.length}</Badge>
-        </CardTitle>
-        <CardDescription>Confirm credits from people you've worked with</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {pendingEndorsements.map((endorsement) => (
-          <div key={endorsement.id} className="p-3 rounded-lg bg-muted/30 space-y-3">
-            <div className="flex items-start gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={endorsement.requester_profile?.avatar_url || ''} />
-                <AvatarFallback>{endorsement.requester_profile?.full_name?.[0] || '?'}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">
-                  {endorsement.requester_profile?.full_name || 'Someone'} wants you to verify:
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  <strong>{endorsement.credits?.project_name}</strong> — {endorsement.credits?.role}
-                  {endorsement.credits?.year && <span> ({endorsement.credits.year})</span>}
-                </p>
-                {endorsement.relationship && (
-                  <Badge variant="outline" className="mt-1 text-[10px]">
-                    {endorsement.relationship}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" />
-                {new Date(endorsement.requested_at).toLocaleDateString()}
-              </div>
+    <div className="space-y-4">
+      {pendingEndorsements.length > 0 && (
+        <>
+      <div className="flex items-center gap-2 px-1">
+        <ShieldCheck className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
+        <h3 className="text-sm font-bold">Verification Requests</h3>
+        <Badge variant="secondary">{pendingEndorsements.length}</Badge>
+        <p className="text-xs text-muted-foreground ml-auto hidden sm:block">Confirm credits from people you've worked with</p>
+      </div>
+
+      {pendingEndorsements.map((endorsement) => (
+        <HoloCard key={endorsement.id} maxTilt={5}>
+          <Card className="relative overflow-hidden rounded-2xl border-[hsl(var(--signal-teal))]/20 bg-card">
+            {/* Status tag — same depth plane as Passport's card tag */}
+            <div
+              className="absolute top-0 left-0 px-3 py-1 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10 flex items-center gap-1"
+              style={{ transform: "translateZ(10px)" }}
+            >
+              <Clock className="h-2.5 w-2.5" aria-hidden />
+              Pending — awaits your co-sign
             </div>
 
-            {/* Optional testimonial */}
-            <Textarea
-              placeholder="Add a testimonial (optional) — e.g., 'Great to work with, delivered exceptional results'"
-              value={testimonials[endorsement.id] || ''}
-              onChange={(e) => setTestimonials(prev => ({ ...prev, [endorsement.id]: e.target.value }))}
-              className="text-sm min-h-[60px]"
-            />
+            <div className="relative p-4 pt-9 space-y-3">
+              <div className="flex items-start gap-3">
+                <div style={{ transform: "translateZ(24px)" }} className="shrink-0">
+                  <Avatar className="h-10 w-10 ring-1 ring-white/15">
+                    <AvatarImage src={endorsement.requester_profile?.avatar_url || ''} />
+                    <AvatarFallback>{endorsement.requester_profile?.full_name?.[0] || '?'}</AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">
+                    {endorsement.requester_profile?.full_name || 'Someone'} wants you to verify:
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>{endorsement.credits?.project_name}</strong> — {endorsement.credits?.role}
+                    {endorsement.credits?.year && <span> ({endorsement.credits.year})</span>}
+                  </p>
+                  {endorsement.relationship && (
+                    <Badge variant="outline" className="mt-1 text-[10px]" style={{ transform: "translateZ(14px)" }}>
+                      {endorsement.relationship}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                  <Clock className="h-3 w-3" aria-hidden />
+                  {new Date(endorsement.requested_at).toLocaleDateString()}
+                </div>
+              </div>
 
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                className="flex-1"
-                onClick={() => respondToEndorsement(endorsement.id, true)}
-                disabled={respondingId === endorsement.id}
-              >
-                {respondingId === endorsement.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                ) : (
-                  <Check className="h-4 w-4 mr-1" />
-                )}
-                Confirm & Endorse
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => respondToEndorsement(endorsement.id, false)}
-                disabled={respondingId === endorsement.id}
-              >
-                <X className="h-4 w-4 mr-1" />
-                Decline
-              </Button>
+              {/* Optional testimonial */}
+              <Textarea
+                placeholder="Add a testimonial (optional) — e.g., 'Great to work with, delivered exceptional results'"
+                value={testimonials[endorsement.id] || ''}
+                onChange={(e) => setTestimonials(prev => ({ ...prev, [endorsement.id]: e.target.value }))}
+                className="text-sm min-h-[60px]"
+              />
+
+              {/* Controls sit at a slight lift so tilt never occludes click targets */}
+              <div className="flex gap-2" style={{ transform: "translateZ(8px)" }}>
+                <Button
+                  size="sm"
+                  className="flex-1 relative z-10"
+                  onClick={() => respondToEndorsement(endorsement.id, true)}
+                  disabled={respondingId === endorsement.id}
+                >
+                  {respondingId === endorsement.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <Check className="h-4 w-4 mr-1" />
+                  )}
+                  Confirm & Endorse
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="relative z-10"
+                  onClick={() => respondToEndorsement(endorsement.id, false)}
+                  disabled={respondingId === endorsement.id}
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Decline
+                </Button>
+              </div>
             </div>
+          </Card>
+        </HoloCard>
+      ))}
+        </>
+      )}
+
+      {resolvedEndorsements.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 px-1">
+            <History className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+            <h3 className="text-xs font-semibold text-muted-foreground">Recently responded</h3>
           </div>
-        ))}
-      </CardContent>
-    </Card>
+
+          {resolvedEndorsements.map((endorsement) => {
+            const meta = RESOLVED_STATUS_META[endorsement.status];
+            const StatusIcon = meta.icon;
+            return (
+              <HoloCard key={endorsement.id} maxTilt={3}>
+                <Card className="relative overflow-hidden rounded-2xl border-border/60 bg-card/60">
+                  <div
+                    className={`absolute top-0 left-0 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10 flex items-center gap-1 ${meta.tagClassName}`}
+                    style={{ transform: "translateZ(10px)" }}
+                  >
+                    <StatusIcon className="h-2.5 w-2.5" aria-hidden />
+                    <span>{meta.label}</span>
+                  </div>
+
+                  <div className="relative p-4 pt-9 flex items-start gap-3">
+                    <div style={{ transform: "translateZ(16px)" }} className="shrink-0">
+                      <Avatar className="h-8 w-8 ring-1 ring-white/10 opacity-80">
+                        <AvatarImage src={endorsement.requester_profile?.avatar_url || ''} />
+                        <AvatarFallback>{endorsement.requester_profile?.full_name?.[0] || '?'}</AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-muted-foreground">
+                        <strong className="text-foreground">{endorsement.credits?.project_name}</strong> — {endorsement.credits?.role}
+                        {endorsement.credits?.year && <span> ({endorsement.credits.year})</span>}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {endorsement.requester_profile?.full_name || 'Someone'} · requested{' '}
+                        {new Date(endorsement.requested_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {endorsement.responded_at && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                        {new Date(endorsement.responded_at).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </HoloCard>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

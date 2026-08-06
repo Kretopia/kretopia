@@ -13,7 +13,6 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import KretopiaBottomNav from "./components/nav/KretopiaBottomNav";
-import { KretopiaSidebar } from "./components/nav/KretopiaSidebar";
 import QuickActionFab from "./components/QuickActionFab";
 import { BrandLoader } from "./components/brand/BrandDots";
 
@@ -37,7 +36,7 @@ import UnifiedHome from "./components/home/UnifiedHome";
 import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
 import { RoomKnockToast } from "./components/calls/RoomKnockToast";
 import { ThriveAgentFab } from "./components/desk/ThriveAgentFab";
-import { DesktopCopilotRail } from "./components/desk/DesktopCopilotRail";
+import { KretoLauncher } from "./components/kreto/KretoLauncher";
 import { ThriveBar } from "./components/agent/ThriveBar";
 
 // Lazy load active page components
@@ -179,7 +178,7 @@ const ShareCampaignRedirect = lazy(() => import("./pages/ShareRedirects").then(m
 // Kretopia V1 tabs
 const KretopiaSearch = lazy(() => import("./pages/KretopiaSearch"));
 const KretoTab = lazy(() => import("./pages/KretoTab"));
-const ThriveINTab = lazy(() => import("./pages/ThriveINTab"));
+const KretopiaTab = lazy(() => import("./pages/KretopiaTab"));
 const PerksTab = lazy(() => import("./pages/PerksTab"));
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -293,11 +292,10 @@ const AppContent = () => {
       <SkipLink />
       <PageViewTracker />
       {showNavbar && <Navbar user={user} />}
-      {showNavbar && !!user && <KretopiaSidebar />}
       {showBottomNav && <KretopiaBottomNav />}
       {showBottomNav && <QuickActionFab />}
       <ThriveAgentFab />
-      <DesktopCopilotRail />
+      {showBottomNav && <KretoLauncher />}
       {showBottomNav && <ThriveBar />}
       
       {/* OnboardingTour removed — real /onboarding flow + GetStartedChecklist cover this. */}
@@ -308,8 +306,7 @@ const AppContent = () => {
       {showGuestBanner && <GuestBanner />}
       <main
         id="main-content"
-        className={cn(shouldAddBottomPadding ? "pb-36 lg:pb-0" : "", user ? "lg:pl-60" : "")}
-        style={{ paddingRight: "var(--copilot-rail-w, 0px)" }}
+        className={cn(shouldAddBottomPadding ? "pb-36 lg:pb-0" : "")}
       >
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
@@ -535,7 +532,7 @@ const AppContent = () => {
             {/* Search & Notifications */}
             <Route path="/search" element={<KretopiaSearch />} />
             <Route path="/kreto" element={<ProtectedRoute><KretoTab /></ProtectedRoute>} />
-            <Route path="/thrivein" element={<ProtectedRoute><ThriveINTab /></ProtectedRoute>} />
+            <Route path="/thrivein" element={<ProtectedRoute><KretopiaTab /></ProtectedRoute>} />
             <Route path="/perks" element={<ProtectedRoute><PerksTab /></ProtectedRoute>} />
             <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />

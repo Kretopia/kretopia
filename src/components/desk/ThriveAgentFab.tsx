@@ -51,20 +51,6 @@ import { resultCardForAction } from "@/lib/agentActionPresentation";
  * Hidden on auth, landing, and other unauthenticated/full-screen surfaces.
  */
 
-const HIDDEN_PATH_PREFIXES = [
-  "/auth",
-  "/login",
-  "/signup",
-  "/onboarding",
-  "/claim",
-  "/accept-invite",
-  "/landing",
-  "/check-in",
-  "/call/",
-  "/guest-call",
-  "/messages",
-];
-
 const QUICK_PROMPTS_BY_SURFACE: Partial<Record<CopilotSurface, string[]>> = {
   desk: [
     "Where does my main project stand?",
@@ -727,28 +713,6 @@ export const ThriveAgentFab = () => {
   }, []);
 
 
-  // FAB visibility: hide the floating orb on chat surfaces & unauthenticated paths.
-  // The Sheet itself remains mounted so the global header sparkle (thrive-copilot:open)
-  // can still open the Copilot from anywhere — including /messages and Desk chat.
-  // Track desktop breakpoint — on lg+ the persistent DesktopCopilotRail handles
-  // Copilot, so we hide the FAB to avoid two assistants with diverged state.
-  const [isDesktop, setIsDesktop] = useState(() =>
-    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches,
-  );
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const onChange = () => setIsDesktop(mq.matches);
-    mq.addEventListener?.("change", onChange);
-    return () => mq.removeEventListener?.("change", onChange);
-  }, []);
-
-  const fabHidden =
-    !user ||
-    isDesktop ||
-    HIDDEN_PATH_PREFIXES.some((p) => location.pathname.startsWith(p)) ||
-    (location.pathname.startsWith("/desk/") && deskTab === "messages");
-
   // If there's no user at all, don't mount anything (avoids flashing the drawer pre-auth).
   if (!user) return null;
 
@@ -758,7 +722,7 @@ export const ThriveAgentFab = () => {
   return (
     <>
       {/* Floating "Chat" pill removed — entry point is now the docked ThriveBar
-          (mobile) and DesktopCopilotRail (desktop). The Sheet stays mounted
+          (mobile) and KretoLauncher (desktop). The Sheet stays mounted
           so any surface can open it via `thrive-copilot:open`. */}
 
       <Sheet open={open} onOpenChange={setOpen}>

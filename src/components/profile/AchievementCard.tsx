@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
+import { HoloCard } from "@/components/passport/HoloCard";
 
 export interface AchievementCardProps {
   variant: "credit" | "press" | "award" | "stat";
@@ -45,27 +46,14 @@ export const AchievementCard = ({
   metadata,
   category,
 }: AchievementCardProps) => {
-  const getVariantStyles = () => {
-    switch (variant) {
-      case "credit":
-        return "border-primary/20 hover:border-primary/40";
-      case "press":
-        return "border-secondary/20 hover:border-secondary/40";
-      case "award":
-        return "border-amber-500/20 hover:border-amber-500/40";
-      case "stat":
-        return "border-muted hover:border-muted-foreground/20";
-      default:
-        return "";
-    }
-  };
+  // One sober neutral treatment for every variant — the colored per-variant
+  // borders (blue/purple/amber/gray) didn't carry real meaning users read,
+  // just noise. Verification state below is the one place color is earned.
+  const getVariantStyles = () => "border-border/60 hover:border-white/20";
 
-  // 4-tier verification:
-  // - "verified" + endorsements > 0 → Gold (authoritative + peer)
-  // - "verified" → Gold (authoritative API source like IMDb/Spotify)
-  // - endorsements > 0 → Amber (peer-vouched)
-  // - "pending" → Pending (request out)
-  // - default → Self-claimed (subtle)
+  // 3-tier verification, collapsed to two colors: pink = trusted (verified
+  // or peer-vouched), neutral = not yet (pending or self-claimed). Fewer
+  // hues than the old amber/primary/muted split, same real distinction.
   const VerificationBadge = () => {
     const isVerified = verificationStatus === "verified";
     const isPending = verificationStatus === "pending" || (verificationStatus as string) === "pending_review";
@@ -80,17 +68,17 @@ export const AchievementCard = ({
       label = "Verified";
       why = `Sourced from an authoritative platform and vouched by ${endorsementCount} collaborator${endorsementCount === 1 ? "" : "s"}.`;
       Icon = ShieldCheck;
-      cls = "bg-amber-500/15 text-amber-500 border-amber-500/40";
+      cls = "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40";
     } else if (isVerified) {
       label = "Verified";
       why = "Sourced from an authoritative platform (e.g. IMDb, Spotify, Behance).";
       Icon = ShieldCheck;
-      cls = "bg-amber-500/15 text-amber-500 border-amber-500/40";
+      cls = "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40";
     } else if (hasPeers) {
       label = `Vouched · ${endorsementCount}`;
       why = `Vouched by ${endorsementCount} collaborator${endorsementCount === 1 ? "" : "s"} who worked on this project.`;
       Icon = ShieldCheck;
-      cls = "bg-primary/10 text-primary border-primary/30";
+      cls = "bg-[hsl(var(--signal-teal))]/10 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/30";
     } else if (isPending) {
       label = "Pending";
       why = "Verification request sent. Waiting on collaborators to confirm.";
@@ -126,215 +114,218 @@ export const AchievementCard = ({
 
   if (isCompact) {
     return (
-      <Card
-        className={cn(
-          "group relative overflow-hidden transition-all duration-300 hover:shadow-lg",
-          getVariantStyles(),
-          isFeatured && "ring-2 ring-amber-500/20"
-        )}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            {/* Compact Icon */}
-            <div className={cn(
-              "shrink-0 w-10 h-10 rounded-lg flex items-center justify-center",
-              isWinner 
-                ? "bg-gradient-to-br from-amber-500/20 to-yellow-500/20 text-amber-400" 
-                : "bg-muted text-muted-foreground"
-            )}>
-              {isWinner ? (
-                <Trophy className="h-5 w-5" />
-              ) : (
-                <Award className="h-5 w-5" />
-              )}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0 space-y-1">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                  {title}
-                </h3>
-                {year && (
-                  <span className="text-xs text-muted-foreground shrink-0">{year}</span>
+      <HoloCard maxTilt={4} className="animate-in fade-in slide-in-from-bottom-1 duration-500 motion-reduce:animate-none">
+        <Card
+          className={cn(
+            "group relative overflow-hidden transition-all duration-300",
+            getVariantStyles(),
+            isFeatured && "ring-2 ring-[hsl(var(--signal-teal))]/20"
+          )}
+        >
+          <CardContent className="p-4" style={{ transform: "translateZ(12px)" }}>
+            <div className="flex items-start gap-3">
+              {/* Compact Icon */}
+              <div className={cn(
+                "shrink-0 w-10 h-10 rounded-lg flex items-center justify-center",
+                isWinner
+                  ? "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))]"
+                  : "bg-muted text-muted-foreground"
+              )}>
+                {isWinner ? (
+                  <Trophy className="h-5 w-5" />
+                ) : (
+                  <Award className="h-5 w-5" />
                 )}
               </div>
 
-              {subtitle && (
-                <p className="text-xs text-muted-foreground">{subtitle}</p>
-              )}
-
-              {description && (
-                <p className="text-xs text-muted-foreground/80 line-clamp-1">{description}</p>
-              )}
-
-              {/* Metadata & Actions Row */}
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {metadata && Object.entries(metadata).map(([key, value]) => (
-                    <Badge key={key} variant="secondary" className="text-[10px] px-1.5 py-0">
-                      {value}
-                    </Badge>
-                  ))}
-                  {endorsementCount > 0 && verificationStatus !== "verified" ? null : null}
-                  {isFeatured && (
-                    <Badge variant="default" className="gap-0.5 text-[10px] px-1.5 py-0">
-                      <Star className="h-2.5 w-2.5 fill-current" />
-                      Featured
-                    </Badge>
+              {/* Content */}
+              <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-foreground transition-colors">
+                    {title}
+                  </h3>
+                  {year && (
+                    <span className="text-xs text-muted-foreground shrink-0">{year}</span>
                   )}
-                  <VerificationBadge />
                 </div>
-                <div className="flex items-center gap-1">
-                  {isOwnProfile && onRequestEndorsement && verificationStatus !== 'verified' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onRequestEndorsement}
-                      className="h-6 px-1.5 text-[10px] gap-1 text-primary hover:text-primary hover:bg-primary/10"
-                    >
-                      <UserPlus className="h-3 w-3" />
-                      Verify
-                    </Button>
-                  )}
-                  {url && (
-                    <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-0">
-                      <a href={url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
-                  )}
-                  {isOwnProfile && onDelete && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onDelete}
-                      className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
+
+                {subtitle && (
+                  <p className="text-xs text-muted-foreground">{subtitle}</p>
+                )}
+
+                {description && (
+                  <p className="text-xs text-muted-foreground/80 line-clamp-1">{description}</p>
+                )}
+
+                {/* Metadata & Actions Row */}
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {metadata && Object.entries(metadata).map(([key, value]) => (
+                      <Badge key={key} variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {value}
+                      </Badge>
+                    ))}
+                    {isFeatured && (
+                      <Badge variant="default" className="gap-0.5 text-[10px] px-1.5 py-0">
+                        <Star className="h-2.5 w-2.5 fill-current" />
+                        Featured
+                      </Badge>
+                    )}
+                    <VerificationBadge />
+                  </div>
+                  <div className="relative z-10 flex items-center gap-1">
+                    {isOwnProfile && onRequestEndorsement && verificationStatus !== 'verified' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onRequestEndorsement}
+                        className="h-6 px-1.5 text-[10px] gap-1 text-foreground hover:bg-accent"
+                      >
+                        <UserPlus className="h-3 w-3" />
+                        Verify
+                      </Button>
+                    )}
+                    {url && (
+                      <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-0">
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </Button>
+                    )}
+                    {isOwnProfile && onDelete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onDelete}
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </HoloCard>
     );
   }
 
   // Original layout for cards with images
   return (
-    <Card
-      onClick={onCardClick}
-      className={cn(
-        "group relative overflow-hidden transition-all duration-300 hover:shadow-lg",
-        getVariantStyles(),
-        isFeatured && "ring-2 ring-primary/20",
-        onCardClick && "cursor-pointer"
-      )}
-    >
-      <CardContent className="p-0">
-        {/* Thumbnail/Icon Section */}
-        {imageUrl ? (
-          <div className="relative h-48 bg-muted overflow-hidden">
-            <img
-              src={imageUrl}
-              alt={title}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+    <HoloCard maxTilt={5} className="animate-in fade-in slide-in-from-bottom-1 duration-500 motion-reduce:animate-none">
+      <Card
+        onClick={onCardClick}
+        className={cn(
+          "group relative overflow-hidden transition-all duration-300",
+          getVariantStyles(),
+          isFeatured && "ring-2 ring-[hsl(var(--signal-teal))]/20",
+          onCardClick && "cursor-pointer"
+        )}
+      >
+        <CardContent className="p-0" style={{ transform: "translateZ(14px)" }}>
+          {/* Thumbnail/Icon Section */}
+          {imageUrl ? (
+            <div className="relative h-48 bg-muted overflow-hidden">
+              <img
+                src={imageUrl}
+                alt={title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              {isFeatured && (
+                <div className="absolute top-3 left-3" style={{ transform: "translateZ(10px)" }}>
+                  <Badge variant="default" className="gap-1">
+                    <Star className="h-3 w-3 fill-current" />
+                    Featured
+                  </Badge>
+                </div>
+              )}
+            </div>
+          ) : variant === "credit" ? (
+            <CreditCoverPlaceholder
+              category={category}
+              title={title}
+              role={subtitle || undefined}
+              height="h-48"
             />
-            {isFeatured && (
-              <div className="absolute top-3 left-3">
-                <Badge variant="default" className="gap-1">
-                  <Star className="h-3 w-3 fill-current" />
-                  Featured
-                </Badge>
+          ) : null}
+
+          {/* Content Section */}
+          <div className="p-4 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-base line-clamp-2 group-hover:text-foreground transition-colors">
+                  {title}
+                </h3>
+                {subtitle && (
+                  <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+                )}
+              </div>
+              {year && (
+                <span className="text-xs text-muted-foreground shrink-0">{year}</span>
+              )}
+            </div>
+
+            {description && (
+              <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+            )}
+
+            {/* Metadata */}
+            {metadata && Object.keys(metadata).length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(metadata).map(([key, value]) => (
+                  <Badge key={key} variant="secondary" className="text-xs">
+                    {value}
+                  </Badge>
+                ))}
               </div>
             )}
-          </div>
-        ) : variant === "credit" ? (
-          <CreditCoverPlaceholder
-            category={category}
-            title={title}
-            role={subtitle || undefined}
-            height="h-48"
-          />
-        ) : null}
 
-        {/* Content Section */}
-        <div className="p-4 space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-base line-clamp-2 group-hover:text-primary transition-colors">
-                {title}
-              </h3>
-              {subtitle && (
-                <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
-              )}
-            </div>
-            {year && (
-              <span className="text-xs text-muted-foreground shrink-0">{year}</span>
-            )}
-          </div>
-
-          {description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
-          )}
-
-          {/* Metadata */}
-          {metadata && Object.keys(metadata).length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(metadata).map(([key, value]) => (
-                <Badge key={key} variant="secondary" className="text-xs">
-                  {value}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-2">
-              <VerificationBadge />
-            </div>
-            <div className="flex items-center gap-2">
-              {isOwnProfile && onRequestEndorsement && verificationStatus !== 'verified' && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => { e.stopPropagation(); onRequestEndorsement(); }}
-                  className="h-8 gap-1 text-xs text-primary hover:text-primary hover:bg-primary/10"
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  Request verify
-                </Button>
-              )}
-              {url && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="h-8"
-                >
-                  <a href={url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-              {isOwnProfile && onDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                  className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
+            {/* Footer Actions */}
+            <div className="flex items-center justify-between pt-2" style={{ transform: "translateZ(8px)" }}>
+              <div className="flex items-center gap-2">
+                <VerificationBadge />
+              </div>
+              <div className="relative z-10 flex items-center gap-2">
+                {isOwnProfile && onRequestEndorsement && verificationStatus !== 'verified' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); onRequestEndorsement(); }}
+                    className="h-8 gap-1 text-xs text-foreground hover:bg-accent"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Request verify
+                  </Button>
+                )}
+                {url && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="h-8"
+                  >
+                    <a href={url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
+                {isOwnProfile && onDelete && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                    className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </HoloCard>
   );
 };

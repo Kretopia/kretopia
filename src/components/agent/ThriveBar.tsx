@@ -11,7 +11,7 @@ import { inferSurface } from "@/lib/thriveCopilot";
  * Tap the input → opens the Copilot drawer (text mode).
  * Tap the mic → opens the drawer in voice mode (auto-starts recording).
  *
- * Hidden on desktop (DesktopCopilotRail handles it), on full-screen surfaces
+ * Hidden on desktop (KretoLauncher handles it there), on full-screen surfaces
  * (auth, onboarding, calls), and on the Desk Messages tab.
  */
 

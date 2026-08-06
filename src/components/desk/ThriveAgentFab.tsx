@@ -173,9 +173,17 @@ export const ThriveAgentFab = () => {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as
-        | { prompt?: string; mode?: "plan" | "chat" | "voice" }
+        | { prompt?: string; mode?: "plan" | "chat" | "voice"; context?: Record<string, unknown> }
         | undefined;
       setOpen(true);
+
+      // Merge in any handoff context (e.g. a selected Scout opportunity) so
+      // it's available to the model via surface_context. Client-supplied
+      // IDs only — the server re-resolves and authorizes ownership itself,
+      // it never trusts these values for anything sensitive.
+      if (detail?.context) {
+        setSurfaceContext((prev) => ({ ...prev, ...detail.context }));
+      }
 
       // Voice mode: open the drawer and auto-start recording.
       if (detail?.mode === "voice") {

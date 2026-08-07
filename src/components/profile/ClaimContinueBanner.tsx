@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Plus, Award, FileText, X } from "lucide-react";
+import { Sparkles, Plus, Award, FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ClaimContinueBannerProps {
@@ -34,17 +34,19 @@ export const ClaimContinueBanner = ({ onRefresh }: ClaimContinueBannerProps) => 
       </button>
 
       <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-xl bg-success/15 flex items-center justify-center shrink-0">
-          <CheckCircle2 className="h-5 w-5 text-success" />
+        <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+          <Sparkles className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm text-foreground">
             {claimInfo.count > 0
-              ? `${claimInfo.count} credit${claimInfo.count !== 1 ? 's' : ''} claimed!`
+              ? `${claimInfo.count} potential credit${claimInfo.count !== 1 ? 's' : ''} found`
               : `Welcome, ${claimInfo.name}!`}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Keep building your verified profile — add more credits, awards, and press links.
+            {claimInfo.count > 0
+              ? "Review and confirm them below to add them to your Passport."
+              : "Keep building your verified profile — add more credits, awards, and press links."}
           </p>
 
           <div className="flex flex-wrap gap-2 mt-3">

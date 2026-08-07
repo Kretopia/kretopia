@@ -85,7 +85,12 @@ export const AchievementCard = ({
       label = "Verified";
       why = "Sourced from an authoritative platform (e.g. IMDb, Spotify, Behance).";
       Icon = ShieldCheck;
-      cls = "bg-amber-500/15 text-amber-500 border-amber-500/40";
+      cls = "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40";
+    } else if (verificationStatus === "auto_discovered") {
+      label = "Publicly Sourced";
+      why = "Kreto found this from public information and you confirmed it's yours. Not yet independently verified.";
+      Icon = Shield;
+      cls = "bg-muted text-muted-foreground border-border";
     } else if (hasPeers) {
       label = `Vouched · ${endorsementCount}`;
       why = `Vouched by ${endorsementCount} collaborator${endorsementCount === 1 ? "" : "s"} who worked on this project.`;

@@ -40,6 +40,23 @@ interface NavbarProps {
   user?: SupabaseUser | null;
 }
 
+// Cache the individual/company split per user so the first paint already
+// shows the right nav instead of always guessing "individual" and flashing
+// to "company" (or vice versa) once the profile fetch resolves ~1s later.
+// Same pattern as useAccountTone's tone:v1 cache, namespaced separately
+// since Navbar also needs is_manager_mode.
+const NAV_ACCOUNT_CACHE_KEY = "navbar_account_type:v1";
+
+function readCachedAccountType(userId: string | undefined): "individual" | "company" | null {
+  if (!userId || typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(`${NAV_ACCOUNT_CACHE_KEY}:${userId}`);
+    return raw === "company" || raw === "individual" ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
 const Navbar = memo(({ user }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,7 +64,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const { subscriptionInfo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);
-  const [accountType, setAccountType] = useState<"individual" | "company">("individual");
+  const [accountType, setAccountType] = useState<"individual" | "company">(
+    () => readCachedAccountType(user?.id) ?? "individual"
+  );
   const [isManagerMode, setIsManagerMode] = useState(false);
   const isLandingPage = location.pathname === "/" && !user;
   const isPro = subscriptionInfo.subscribed;
@@ -71,6 +90,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   useEffect(() => {
     if (!user) return;
+    const cached = readCachedAccountType(user.id);
+    if (cached) setAccountType(cached);
+
     Promise.resolve(
       supabase
         .from("profiles")
@@ -78,7 +100,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
         .eq("user_id", user.id)
         .maybeSingle()
     ).then(({ data }) => {
-      if (data?.account_type) setAccountType(data.account_type);
+      if (data?.account_type) {
+        setAccountType(data.account_type);
+        try { window.localStorage.setItem(`${NAV_ACCOUNT_CACHE_KEY}:${user.id}`, data.account_type); } catch { /* ignore */ }
+      }
       if (data?.is_manager_mode) setIsManagerMode(true);
     }).catch(err => console.warn('[Navbar] Error loading profile:', err));
   }, [user?.id]);

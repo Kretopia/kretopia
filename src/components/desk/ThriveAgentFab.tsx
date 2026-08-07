@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Sparkles, Send, Loader2, Trash2, HelpCircle, Mic, Square, Volume2, VolumeX, Crown, CheckCircle2, AlertCircle } from "lucide-react";
+import { Sparkles, Send, Loader2, Trash2, HelpCircle, Mic, Square, Volume2, VolumeX, Crown, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   startRecording,
@@ -10,12 +10,7 @@ import {
   stopPlayback,
 } from "@/lib/thriveVoice";
 import ReactMarkdown from "react-markdown";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -130,6 +125,20 @@ export const ThriveAgentFab = () => {
   const recordTimerRef = useRef<number | null>(null);
   const [recordSec, setRecordSec] = useState(0);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
+
+  // Desktop (lg+, matches KretoLauncher's own breakpoint) renders as a
+  // compact floating panel anchored above the launcher button instead of
+  // the full-height bottom Sheet used on mobile.
+  const [isDesktop, setIsDesktop] = useState(false);
+  const desktopPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mq.matches);
+    const onChange = () => setIsDesktop(mq.matches);
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
 
   const surface: CopilotSurface = inferSurface(location.pathname);
 
@@ -319,6 +328,28 @@ export const ThriveAgentFab = () => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, sending]);
+
+  // Desktop compact panel has no Radix overlay, so wire its own
+  // click-outside / Escape dismissal. The launcher button is excluded so
+  // clicking it doesn't immediately close what it just opened.
+  useEffect(() => {
+    if (!isDesktop || !open) return;
+    const onPointerDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (desktopPanelRef.current?.contains(target)) return;
+      if ((e.target as HTMLElement)?.closest?.('[aria-label="Open Kreto"]')) return;
+      setOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isDesktop, open]);
 
   const send = useCallback(
     async (msgText?: string): Promise<string> => {
@@ -719,55 +750,46 @@ export const ThriveAgentFab = () => {
   const quickPrompts = QUICK_PROMPTS_BY_SURFACE[surface] ?? QUICK_PROMPTS_BY_SURFACE.home!;
   const surfaceLabel = SURFACE_LABEL[surface];
 
-  return (
-    <>
-      {/* Floating "Chat" pill removed — entry point is now the docked ThriveBar
-          (mobile) and KretoLauncher (desktop). The Sheet stays mounted
-          so any surface can open it via `thrive-copilot:open`. */}
+  const chatHeader = (
+    <div className="px-5 pt-5 pb-3 border-b border-border shrink-0">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <Sparkles className="h-4 w-4 text-primary" />
+          Kreto
+        </h2>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
+            On: {surfaceLabel}
+          </Badge>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
+            onClick={() => setCapsOpen(true)}
+            aria-label="What can Copilot do?"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span className="text-[11px] font-medium">What can I do?</span>
+          </Button>
+          {user && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
+              onClick={clearHistory}
+              aria-label="Reset chat memory"
+              title="Reset chat memory — next prompt starts fresh"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-medium">Reset</span>
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent
-          side="bottom"
-          className="rounded-t-3xl border-t border-border p-0 h-[85vh] flex flex-col"
-        >
-          <SheetHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
-            <div className="flex items-center justify-between gap-3">
-              <SheetTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Kreto
-              </SheetTitle>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
-                  On: {surfaceLabel}
-                </Badge>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
-                  onClick={() => setCapsOpen(true)}
-                  aria-label="What can Copilot do?"
-                >
-                  <HelpCircle className="h-3.5 w-3.5" />
-                  <span className="text-[11px] font-medium">What can I do?</span>
-                </Button>
-                {user && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
-                    onClick={clearHistory}
-                    aria-label="Reset chat memory"
-                    title="Reset chat memory — next prompt starts fresh"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    <span className="text-[11px] font-medium">Reset</span>
-                  </Button>
-                )}
-              </div>
-            </div>
-          </SheetHeader>
-
-          {/* Scrollable chat area */}
+  const messagesArea = (
           <div
             ref={scrollRef}
             className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3"
@@ -943,8 +965,9 @@ export const ThriveAgentFab = () => {
               </div>
             )}
           </div>
+  );
 
-          {/* Composer */}
+  const composerArea = (
           <div className="border-t border-border bg-background p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shrink-0">
             {recording ? (
               <div className="flex items-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-3 py-2.5">
@@ -1033,8 +1056,55 @@ export const ThriveAgentFab = () => {
               </div>
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+  );
+
+  return (
+    <>
+      {/* Entry points: docked ThriveBar (mobile) and KretoLauncher (desktop).
+          Desktop opens a compact panel anchored above the launcher button;
+          mobile keeps the full-height bottom Sheet, which fits the platform's
+          own drawer conventions. Both render the exact same chat content. */}
+
+      {isDesktop ? (
+        open && (
+          <div
+            ref={desktopPanelRef}
+            role="dialog"
+            aria-label="Kreto chat"
+            className="hidden lg:flex fixed z-40 flex-col rounded-2xl border border-border bg-background shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+            style={{
+              right: "max(1.25rem, env(safe-area-inset-right))",
+              bottom: "calc(max(1.25rem, env(safe-area-inset-bottom)) + 4.25rem)",
+              width: "380px",
+              height: "min(600px, 75vh)",
+            }}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-3 top-3 z-10 h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={() => setOpen(false)}
+              aria-label="Close Kreto"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+            {chatHeader}
+            {messagesArea}
+            {composerArea}
+          </div>
+        )
+      ) : (
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent
+            side="bottom"
+            className="rounded-t-3xl border-t border-border p-0 h-[85vh] flex flex-col"
+          >
+            {chatHeader}
+            {messagesArea}
+            {composerArea}
+          </SheetContent>
+        </Sheet>
+      )}
 
       <CopilotCapabilities
         open={capsOpen}

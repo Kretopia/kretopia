@@ -23,6 +23,7 @@ import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { StorageMeter } from "@/components/storage/StorageMeter";
 import { useCrewUnread } from "@/hooks/useCrewUnread";
 import { MessagesDrawer } from "@/components/messages/MessagesDrawer";
+import { SettingsDrawer } from "@/components/SettingsDrawer";
 
 // useNavMode removed — single unified nav
 import {
@@ -133,7 +134,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/profile", icon: BadgeCheck, label: "Passport" },
         { path: "/kreto", icon: Sparkles, label: "Kreto" },
         { path: "/perks", icon: Gift, label: "Perks" },
-        { path: "/settings", icon: Settings, label: "Settings" },
       ];
 
   // search moved to Thrive bar — keep state stub removed
@@ -244,6 +244,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           {!isLandingPage && user && <MessagesDrawer />}
 
           {!isLandingPage && user && <NotificationCenter />}
+          {!isLandingPage && user && <SettingsDrawer />}
           {!user && !isLandingPage && <ThemeToggle />}
           
           {user && !isLandingPage ? (

@@ -79,7 +79,15 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-const Settings = () => {
+interface SettingsProps {
+  /** Render just the settings sections, without the full-page header/back
+   *  button/container — used when mounted inside SettingsDrawer's Sheet,
+   *  which already supplies its own title and close affordance. All state
+   *  and logic below is identical either way; only the outer chrome differs. */
+  embedded?: boolean;
+}
+
+const Settings = ({ embedded = false }: SettingsProps = {}) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -414,40 +422,7 @@ const Settings = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen p-4 md:p-6 pb-24 md:pb-6">
-      <div className="container mx-auto max-w-4xl">
-        <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex-1">
-              <p className="brand-eyebrow mb-1">Account</p>
-              <h1 className="text-3xl font-black tracking-[-0.03em] mb-2 flex items-center gap-2">
-                <SettingsIcon className="h-8 w-8 text-primary" />
-                Settings
-              </h1>
-              <p className="text-muted-foreground">
-                Manage your account preferences and security
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/circle")}
-              className="shrink-0"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-
+  const sections = (
         <div className="space-y-6">
           {/* Account Type Switcher */}
           <Card>
@@ -1033,6 +1008,45 @@ const Settings = () => {
             </CardContent>
           </Card>
         </div>
+  );
+
+  if (embedded) return sections;
+
+  return (
+    <div className="min-h-screen p-4 md:p-6 pb-24 md:pb-6">
+      <div className="container mx-auto max-w-4xl">
+        <div className="mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex-1">
+              <p className="brand-eyebrow mb-1">Account</p>
+              <h1 className="text-3xl font-black tracking-[-0.03em] mb-2 flex items-center gap-2">
+                <SettingsIcon className="h-8 w-8 text-primary" />
+                Settings
+              </h1>
+              <p className="text-muted-foreground">
+                Manage your account preferences and security
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/circle")}
+              className="shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+
+        {sections}
       </div>
     </div>
   );

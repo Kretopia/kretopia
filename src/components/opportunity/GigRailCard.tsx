@@ -20,22 +20,20 @@ const TYPE_CONFIG: Record<string, { label: string; chip: string; icon: typeof Br
   barter:        { label: "Barter",    chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25", icon: ArrowRightLeft,gradient: "from-fuchsia-500/30 via-fuchsia-500/10 to-background" },
 };
 
-const getMatchScore = (id: string): number => {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 5) - hash) + id.charCodeAt(i);
-    hash |= 0;
-  }
-  return 70 + Math.abs(hash % 28);
-};
+interface GigRailCardProps {
+  opportunity: GigOpportunity;
+  /** Real match score (0-100) from computeOpportunityMatch(). Omit or pass
+   *  null when there's no real signal — the badge is hidden rather than
+   *  showing a fabricated number. */
+  matchScore?: number | null;
+}
 
-export const GigRailCard = ({ opportunity: opp }: { opportunity: GigOpportunity }) => {
+export const GigRailCard = ({ opportunity: opp, matchScore = null }: GigRailCardProps) => {
   const navigate = useNavigate();
   const config = TYPE_CONFIG[opp.type] || TYPE_CONFIG.job;
   const TypeIcon = config.icon;
   const isBarter = opp.type === "barter";
   const isPaid = ["job", "paid", "gig", "project"].includes(opp.type);
-  const matchScore = getMatchScore(opp.id);
   const compensationLabel = isBarter ? "Trade" : (opp.compensation || (isPaid ? "Paid" : "—"));
 
   return (
@@ -66,10 +64,12 @@ export const GigRailCard = ({ opportunity: opp }: { opportunity: GigOpportunity 
             {config.label}
           </Badge>
           <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-            <span className="px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm border border-border text-[10px] font-bold text-energy flex items-center gap-1">
-              <Sparkles className="h-2.5 w-2.5" />
-              {matchScore}%
-            </span>
+            {matchScore != null && (
+              <span className="px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm border border-border text-[10px] font-bold text-energy flex items-center gap-1">
+                <Sparkles className="h-2.5 w-2.5" />
+                {matchScore}%
+              </span>
+            )}
             <BookmarkButton opportunityId={opp.id} size="sm" />
           </div>
         </div>

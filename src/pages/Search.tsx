@@ -10,6 +10,7 @@ import { StatusAvatar } from "@/components/ui/status-avatar";
 import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2, Film, Music, Camera, Calendar, Palette, Video, Mic } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { analytics } from "@/lib/analytics";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 interface ProfileResult {
   user_id: string;
@@ -143,8 +144,11 @@ const Search = () => {
       return;
     }
     analytics.searchStarted(searchQuery.trim());
+    const searchV2 = isFeatureEnabled("FEATURE_SEARCH_V2");
+    if (searchV2) analytics.creativeSearchStarted(searchQuery.trim());
     setLoading(true);
     setAiLoading(true);
+    let resultCount = 0;
 
     try {
       // Call universal-search edge function for blended results
@@ -155,10 +159,21 @@ const Search = () => {
       if (error) throw error;
 
       const rawProfiles = data?.platform?.profiles || [];
-      setProfiles(await enrichProfilesWithStatus(rawProfiles));
-      setCredits(data?.platform?.credits || []);
-      setOpportunities(data?.platform?.opportunities || []);
-      setExternal(data?.external || null);
+      const enrichedProfiles = await enrichProfilesWithStatus(rawProfiles);
+      const creditsData = data?.platform?.credits || [];
+      const oppsData = data?.platform?.opportunities || [];
+      const externalData = data?.external || null;
+      setProfiles(enrichedProfiles);
+      setCredits(creditsData);
+      setOpportunities(oppsData);
+      setExternal(externalData);
+      resultCount = enrichedProfiles.length + creditsData.length + oppsData.length;
+
+      if (searchV2) {
+        const kc = externalData?.knowledge_card;
+        if (kc?.type === "person") analytics.passportFound("unclaimed_person");
+        else if (resultCount === 0 && (!kc || kc.type === "none")) analytics.passportFound("no_record");
+      }
     } catch (err) {
       console.error("[Search] Error:", err);
       // Fallback to direct queries (group locally)
@@ -168,7 +183,8 @@ const Search = () => {
         supabase.from("credits").select("id, project_name, role, year, verification_status, credit_category, thumbnail_url, user_id").or(`project_name.ilike.${q},role.ilike.${q}`).order("year", { ascending: false }).limit(20),
         supabase.from("opportunities").select("id, title, description, type, compensation, location").eq("status", "active").or(`title.ilike.${q},description.ilike.${q}`).limit(10),
       ]);
-      setProfiles(await enrichProfilesWithStatus(profilesRes.data || []));
+      const enrichedProfiles = await enrichProfilesWithStatus(profilesRes.data || []);
+      setProfiles(enrichedProfiles);
       // Group fallback credits by project_name
       const fallbackCredits = creditsRes.data || [];
       const grouped = new Map<string, CreditResult>();
@@ -178,9 +194,13 @@ const Search = () => {
         }
         grouped.get(c.project_name)!.roles.push({ id: c.id, role: c.role, user_id: c.user_id, verification_status: c.verification_status, full_name: null, avatar_url: null });
       }
-      setCredits(Array.from(grouped.values()));
-      setOpportunities(oppsRes.data || []);
+      const groupedCredits = Array.from(grouped.values());
+      setCredits(groupedCredits);
+      const oppsData = oppsRes.data || [];
+      setOpportunities(oppsData);
+      resultCount = enrichedProfiles.length + groupedCredits.length + oppsData.length;
     } finally {
+      if (searchV2) analytics.creativeSearchCompleted(resultCount);
       setLoading(false);
       setAiLoading(false);
     }

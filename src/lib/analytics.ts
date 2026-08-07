@@ -185,6 +185,30 @@ export const analytics = {
       properties: { query_length: query.length },
     }),
 
+  // Creative Passport migration — additive, flag-gated (FEATURE_SEARCH_V2).
+  // New event vocabulary for the Creative Record search step; existing
+  // search_started/passport_preview_viewed above are untouched.
+  creativeSearchStarted: (query: string) =>
+    trackEvent({
+      eventName: 'creative_search_started',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { query_length: query.length },
+    }),
+
+  creativeSearchCompleted: (resultCount: number) =>
+    trackEvent({
+      eventName: 'creative_search_completed',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { result_count: resultCount },
+    }),
+
+  passportFound: (kind: 'unclaimed_person' | 'no_record') =>
+    trackEvent({
+      eventName: 'passport_found',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { kind },
+    }),
+
   passportPreviewViewed: (targetUserId: string, claimed: boolean) =>
     trackEvent({
       eventName: 'passport_preview_viewed',

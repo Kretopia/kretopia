@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import {
@@ -403,61 +403,55 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
         </>
       )}
 
-      {/* In-app detail sheet */}
-      <Sheet open={!!openGig} onOpenChange={(o) => !o && setOpenGig(null)}>
-        <SheetContent side="bottom" className="h-[92vh] overflow-y-auto p-0">
+      {/* In-app detail modal — compact, centered, no big hero/whitespace */}
+      <Dialog open={!!openGig} onOpenChange={(o) => !o && setOpenGig(null)}>
+        <DialogContent className="max-w-lg p-0">
           {openGig && (
             <>
-              {/* Hero */}
-              <div className="relative aspect-[16/9] sm:aspect-[21/9] overflow-hidden">
-                {openGig.image_url ? (
-                  <img src={openGig.image_url} alt={openGig.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-energy/30 via-primary/10 to-background" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6">
-                  <Badge className="mb-2 bg-energy/15 text-energy border-energy/30">{openGig.fit_score}% fit</Badge>
-                  <SheetHeader className="text-left p-0">
-                    <SheetTitle className="text-xl sm:text-2xl font-black leading-tight text-foreground">
+              <DialogHeader className="p-4 pb-3 border-b border-border">
+                <div className="flex items-start gap-3">
+                  <div className="h-11 w-11 rounded-xl overflow-hidden shrink-0 bg-gradient-to-br from-energy/30 via-primary/10 to-background flex items-center justify-center">
+                    {openGig.image_url ? (
+                      <img src={openGig.image_url} alt={openGig.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <Briefcase className="h-5 w-5 text-foreground/30" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1 text-left">
+                    <DialogTitle className="text-base font-black leading-tight text-foreground line-clamp-2 pr-6">
                       {openGig.title}
-                    </SheetTitle>
-                  </SheetHeader>
-                  {(openGig.company || openGig.location) && (
-                    <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-2 flex-wrap">
+                    </DialogTitle>
+                    <div className="flex items-center gap-1.5 flex-wrap mt-1 text-xs text-muted-foreground">
                       {openGig.company && <span className="font-medium text-foreground/80">{openGig.company}</span>}
-                      {openGig.location && <><span>·</span><MapPin className="h-3 w-3" />{openGig.location}</>}
+                      {openGig.location && (
+                        <span className="flex items-center gap-0.5">
+                          <MapPin className="h-3 w-3" />{openGig.location}
+                        </span>
+                      )}
                       {openGig.remote && <Badge variant="outline" className="h-4 text-[9px] px-1">Remote</Badge>}
-                    </p>
-                  )}
+                      <Badge className="h-4 text-[9px] bg-energy/15 text-energy border-energy/30">{openGig.fit_score}% fit</Badge>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </DialogHeader>
 
-              <div className="p-4 sm:p-6 space-y-5 max-w-2xl mx-auto">
-                {/* Why this fits */}
+              <div className="p-4 space-y-3.5">
                 {openGig.fit_reason && (
-                  <div className="rounded-xl bg-energy/[0.06] border border-energy/20 p-3">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-energy mb-1 flex items-center gap-1">
-                      <Sparkles className="h-3 w-3" />
+                  <div className="rounded-lg bg-energy/[0.06] border border-energy/20 px-3 py-2">
+                    <div className="text-[9px] uppercase tracking-wider font-bold text-energy mb-0.5 flex items-center gap-1">
+                      <Sparkles className="h-2.5 w-2.5" />
                       Why this fits you
                     </div>
-                    <p className="text-sm leading-relaxed text-foreground/90">{openGig.fit_reason}</p>
+                    <p className="text-xs leading-relaxed text-foreground/90">{openGig.fit_reason}</p>
                   </div>
                 )}
 
-                {/* Full brief */}
                 <div>
-                  <h3 className="text-sm font-bold mb-2 flex items-center gap-1.5">
-                    <Briefcase className="h-3.5 w-3.5 text-primary" />
-                    The brief
-                  </h3>
                   {enriching ? (
                     <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-5/6" />
-                      <p className="text-xs text-muted-foreground italic mt-2">Reading the original post…</p>
+                      <Skeleton className="h-3.5 w-full" />
+                      <Skeleton className="h-3.5 w-full" />
+                      <Skeleton className="h-3.5 w-3/4" />
                     </div>
                   ) : openGig.full_description ? (
                     <MiniMarkdown md={openGig.full_description} />
@@ -468,22 +462,22 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                   )}
                 </div>
 
-                {/* Compensation chip */}
                 {openGig.compensation && (
-                  <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mr-2">Comp</span>
+                  <div className="rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-xs">
+                    <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider mr-2">Comp</span>
                     {openGig.compensation}
                   </div>
                 )}
 
-                {/* Smart Apply */}
-                <div className="space-y-2">
+                {/* Cover letter — collapsed until drafted, keeps the modal short by default */}
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-bold">Cover letter</h3>
+                    <h3 className="text-xs font-bold">Cover letter</h3>
                     <div className="flex items-center gap-1.5">
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="h-7 text-xs px-2"
                         onClick={() => {
                           window.dispatchEvent(new CustomEvent("thrive-copilot:open", {
                             detail: {
@@ -498,72 +492,64 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                           }));
                         }}
                       >
-                        <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                        <Sparkles className="h-3 w-3 mr-1" />
                         Open in Kreto
                       </Button>
                       {!coverLetter && (
-                        <Button size="sm" variant="outline" onClick={draftLetter} disabled={drafting}>
-                          {drafting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
-                          Draft with Kreto
+                        <Button size="sm" variant="outline" className="h-7 text-xs px-2" onClick={draftLetter} disabled={drafting}>
+                          {drafting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                          Draft
                         </Button>
                       )}
                     </div>
                   </div>
                   {drafting ? (
-                    <div className="space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></div>
+                    <div className="space-y-1.5"><Skeleton className="h-3.5 w-full" /><Skeleton className="h-3.5 w-3/4" /></div>
                   ) : coverLetter ? (
-                    <Textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} rows={8} className="text-sm" />
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic">Tap "Draft with Kreto" to generate a tailored cover letter.</p>
-                  )}
+                    <Textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} rows={5} className="text-sm" />
+                  ) : null}
                 </div>
+              </div>
 
-                {/* Footer actions */}
-                <div className="space-y-2 pt-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    {openGig.contact_email ? (
-                      <Button asChild variant="default" onClick={trackApplyClick}>
-                        <a href={`mailto:${openGig.contact_email}?subject=${encodeURIComponent(`RE: ${openGig.title}`)}&body=${encodeURIComponent(coverLetter)}`}>
-                          <Mail className="h-4 w-4 mr-1.5" />Email apply
-                        </a>
-                      </Button>
-                    ) : (
-                      <Button asChild variant="default" onClick={trackApplyClick}>
-                        <a href={openGig.apply_url || openGig.source_url} target="_blank" rel="noopener noreferrer">
-                          <Send className="h-4 w-4 mr-1.5" />Apply on site
-                        </a>
-                      </Button>
-                    )}
-                    <Button onClick={markApplied} variant="outline">
-                      <ShieldCheck className="h-4 w-4 mr-1.5" />I applied
+              {/* Footer actions */}
+              <div className="p-4 pt-0 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {openGig.contact_email ? (
+                    <Button asChild size="sm" variant="default" onClick={trackApplyClick}>
+                      <a href={`mailto:${openGig.contact_email}?subject=${encodeURIComponent(`RE: ${openGig.title}`)}&body=${encodeURIComponent(coverLetter)}`}>
+                        <Mail className="h-3.5 w-3.5 mr-1.5" />Email apply
+                      </a>
                     </Button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setOutcome("won")}>
-                      🎉 Won
+                  ) : (
+                    <Button asChild size="sm" variant="default" onClick={trackApplyClick}>
+                      <a href={openGig.apply_url || openGig.source_url} target="_blank" rel="noopener noreferrer">
+                        <Send className="h-3.5 w-3.5 mr-1.5" />Apply on site
+                      </a>
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setOutcome("lost")}>
-                      Lost
-                    </Button>
-                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setOutcome("ghosted")}>
-                      Ghosted
-                    </Button>
-                  </div>
-                  <a
-                    href={openGig.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition pt-1"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    Verify on {openGig.source_name || openGig.source}
-                  </a>
+                  )}
+                  <Button size="sm" onClick={markApplied} variant="outline">
+                    <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />I applied
+                  </Button>
                 </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setOutcome("won")}>🎉 Won</Button>
+                  <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setOutcome("lost")}>Lost</Button>
+                  <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setOutcome("ghosted")}>Ghosted</Button>
+                </div>
+                <a
+                  href={openGig.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition pt-0.5"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Verify on {openGig.source_name || openGig.source}
+                </a>
               </div>
             </>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

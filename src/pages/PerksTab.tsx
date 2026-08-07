@@ -43,7 +43,7 @@ export default function PerksTab() {
           <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.06] border border-white/10">
             <Gift className="h-5 w-5 text-[#FF2DA1]" />
           </div>
-          <h1 className="mb-1.5 font-serif text-3xl">Perks</h1>
+          <h1 className="mb-1.5 text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">Perks</h1>
           <p className="text-white/60 max-w-xl">
             What each ThriveStatus tier unlocks. Perks stack as your verified credits and
             reputation grow.
@@ -63,15 +63,15 @@ export default function PerksTab() {
               return (
                 <div
                   key={tier.tier}
-                  className={`rounded-xl border p-4 ${
+                  className={`flex flex-col min-h-[216px] rounded-xl border p-4 ${
                     isCurrentTier ? "border-[#FF2DA1]/50 bg-[#FF2DA1]/[0.05]" : "border-white/10 bg-white/[0.03]"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 mb-1">
-                    <Icon className={`h-4 w-4 ${isUnlocked ? "text-[#FF2DA1]" : "text-white/30"}`} aria-hidden />
-                    <h3 className="text-sm font-bold">{tier.label}</h3>
+                    <Icon className={`h-4 w-4 shrink-0 ${isUnlocked ? "text-[#FF2DA1]" : "text-white/30"}`} aria-hidden />
+                    <h3 className="text-sm font-bold truncate">{tier.label}</h3>
                     {isCurrentTier && (
-                      <span className="ml-auto text-[9px] uppercase tracking-wider font-bold text-[#FF2DA1] bg-[#FF2DA1]/10 px-1.5 py-0.5 rounded">
+                      <span className="ml-auto shrink-0 text-[9px] uppercase tracking-wider font-bold text-[#FF2DA1] bg-[#FF2DA1]/10 px-1.5 py-0.5 rounded">
                         Your status
                       </span>
                     )}
@@ -81,14 +81,14 @@ export default function PerksTab() {
                     {tier.perks.map((perk, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs">
                         <Check className={`h-3 w-3 mt-0.5 shrink-0 ${isUnlocked ? "text-[#FF2DA1]" : "text-white/25"}`} aria-hidden />
-                        <span className={isUnlocked ? "text-white/80" : "text-white/35"}>{perk}</span>
+                        <span className={`line-clamp-1 ${isUnlocked ? "text-white/80" : "text-white/35"}`}>{perk}</span>
                       </div>
                     ))}
                   </div>
 
                   {!isUnlocked && (
-                    <div className="flex items-center gap-1.5 text-[11px] text-white/35 mt-3 pt-3 border-t border-white/10">
-                      <Lock className="h-3 w-3" aria-hidden />
+                    <div className="flex items-center gap-1.5 text-[11px] text-white/35 mt-auto pt-3 border-t border-white/10">
+                      <Lock className="h-3 w-3 shrink-0" aria-hidden />
                       Build your reputation to unlock
                     </div>
                   )}

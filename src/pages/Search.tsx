@@ -649,12 +649,20 @@ const Search = () => {
             )}
 
             {!hasResults && !hasKnowledge && (
-              <EmptyState
-                icon={SearchIcon}
-                eyebrow="No matches"
-                title={`Nothing found for "${searchParams.get("q")}"`}
-                description="Try a different name, project, or brand — or add the credit manually to claim it on your profile."
-              />
+              <div className="text-center py-10">
+                <EmptyState
+                  icon={SearchIcon}
+                  eyebrow="Creative Record"
+                  title="You're not in the Creative Record yet. Let's fix that."
+                  description={`No public record found for "${searchParams.get("q")}" — that just means nothing's been added yet, not that the work doesn't exist.`}
+                />
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Create my Creative Passport
+                </button>
+              </div>
             )}
           </div>
         )}

@@ -127,13 +127,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/thrivepay", icon: Wallet, label: "Pay" },
       ]
     : [
+        // Prioritized set — Today/Studio/Scout/Passport stay in the primary
+        // row; Stages, Kreto (the dedicated page — the floating launcher
+        // and ThriveBar already give one-tap chat access everywhere) and
+        // Perks moved into the Menu's Explore section so nothing becomes
+        // unreachable, just less crowded up top.
         { path: "/", icon: Sun, label: "Today" },
         { path: "/desk", icon: LayoutGrid, label: "Studio" },
         { path: "/scout", icon: Compass, label: "Scout" },
-        { path: "/circle", icon: Theater, label: "Stages" },
         { path: "/profile", icon: BadgeCheck, label: "Passport" },
-        { path: "/kreto", icon: Sparkles, label: "Kreto" },
-        { path: "/perks", icon: Gift, label: "Perks" },
       ];
 
   // search moved to Thrive bar — keep state stub removed
@@ -197,7 +199,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
         {/* Desktop Navigation - Mode Aware */}
         {user && !isLandingPage && (
-          <div className="hidden lg:flex items-center gap-1 mx-6 pl-6 border-l border-border/50">
+          <div className="hidden lg:flex items-center gap-2 mx-6 pl-6 border-l border-border/50">
 
             {/* Mode toggle removed — single unified nav */}
 
@@ -325,6 +327,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       {/* PILLARS — live surfaces not in bottom nav */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
+                      <MenuButton icon={Theater} label="Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
+                      <MenuButton icon={Sparkles} label="Kreto" onClick={() => handleNavigation("/kreto")} path="/kreto" />
                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
                       <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} path="/search" />
                       <MenuButton icon={Users} label="Kretopia" onClick={() => handleNavigation("/thrivein")} path="/thrivein" />

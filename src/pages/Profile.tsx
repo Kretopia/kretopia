@@ -44,6 +44,7 @@ import { PassportHeroRibbon } from "@/components/passport/PassportHeroRibbon";
 import { LevelUpCard } from "@/components/passport/LevelUpCard";
 import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
 import { PassportClaimHero } from "@/components/passport/PassportClaimHero";
+import { PassportCommandCenter } from "@/components/passport/PassportCommandCenter";
 import { computeStanding } from "@/lib/passport/standing";
 import { useTaggedCredits } from "@/hooks/useTaggedCredits";
 
@@ -518,6 +519,18 @@ const ProfileContent = () => {
             <RecentlyWorkedWith userId={profile.user_id} />
           </div>
         )}
+
+        {/* Personalized next-step cards — real data, no invented counts */}
+        <div className="mt-3">
+          <PassportCommandCenter
+            credits={credits || []}
+            hasBio={!!profile?.bio}
+            hasAvatar={!!profile?.avatar_url}
+            cosignCount={reviews?.filter((r: any) => r.status === 'approved').length || 0}
+            onShare={() => setIsShareDialogOpen(true)}
+            onReviewCredits={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
+          />
+        </div>
 
         {/* Owner tools — preview public Passport + private dashboard */}
         <div className="mt-3 flex items-center gap-2">

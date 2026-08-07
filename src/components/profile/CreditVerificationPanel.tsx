@@ -46,6 +46,17 @@ interface CreditVerificationPanelProps {
   userId: string;
 }
 
+// A short, context-aware line instead of one generic sentence for every
+// card — uses the relationship tag when the requester supplied one, so the
+// ask reads specific ("As their director, confirm...") rather than generic.
+function smartEndorsementDescription(endorsement: PendingEndorsement): string {
+  const name = endorsement.requester_profile?.full_name?.split(" ")[0] || "They";
+  if (endorsement.relationship) {
+    return `As their ${endorsement.relationship.toLowerCase()}, confirm this credit to make it part of ${name === "They" ? "their" : `${name}'s`} verified record.`;
+  }
+  return "Confirm you actually worked together — this becomes part of their verified record.";
+}
+
 export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps) {
   const [pendingEndorsements, setPendingEndorsements] = useState<PendingEndorsement[]>([]);
   const [resolvedEndorsements, setResolvedEndorsements] = useState<ResolvedEndorsement[]>([]);
@@ -176,7 +187,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
 
       {pendingEndorsements.map((endorsement) => (
         <HoloCard key={endorsement.id} maxTilt={5}>
-          <Card className="relative overflow-hidden rounded-2xl border-[hsl(var(--signal-teal))]/20 bg-card">
+          <Card className="relative overflow-hidden rounded-2xl border-[hsl(var(--signal-teal))]/20 bg-card flex flex-col min-h-[280px]">
             {/* Status tag — same depth plane as Passport's card tag */}
             <div
               className="absolute top-0 left-0 px-3 py-1 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10 flex items-center gap-1"
@@ -186,7 +197,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
               Pending — awaits your co-sign
             </div>
 
-            <div className="relative p-4 pt-9 space-y-3">
+            <div className="relative flex-1 flex flex-col p-4 pt-9 space-y-3">
               <div className="flex items-start gap-3">
                 <div style={{ transform: "translateZ(24px)" }} className="shrink-0">
                   <Avatar className="h-10 w-10 ring-1 ring-white/15">
@@ -195,10 +206,10 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
                   </Avatar>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium line-clamp-1">
                     {endorsement.requester_profile?.full_name || 'Someone'} wants you to verify:
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground line-clamp-1">
                     <strong>{endorsement.credits?.project_name}</strong> — {endorsement.credits?.role}
                     {endorsement.credits?.year && <span> ({endorsement.credits.year})</span>}
                   </p>
@@ -207,8 +218,8 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
                       {endorsement.relationship}
                     </Badge>
                   )}
-                  <p className="mt-1.5 text-xs text-muted-foreground/80">
-                    Confirm you actually worked together — this becomes part of their verified record.
+                  <p className="mt-1.5 text-xs text-muted-foreground/80 line-clamp-2">
+                    {smartEndorsementDescription(endorsement)}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
@@ -222,11 +233,11 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
                 placeholder="Add a testimonial (optional) — e.g., 'Great to work with, delivered exceptional results'"
                 value={testimonials[endorsement.id] || ''}
                 onChange={(e) => setTestimonials(prev => ({ ...prev, [endorsement.id]: e.target.value }))}
-                className="text-sm min-h-[60px]"
+                className="text-sm min-h-[60px] resize-none"
               />
 
               {/* Controls sit at a slight lift so tilt never occludes click targets */}
-              <div className="flex gap-2" style={{ transform: "translateZ(8px)" }}>
+              <div className="flex gap-2 mt-auto" style={{ transform: "translateZ(8px)" }}>
                 <Button
                   size="sm"
                   className="flex-1 relative z-10"
@@ -270,7 +281,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
             const StatusIcon = meta.icon;
             return (
               <HoloCard key={endorsement.id} maxTilt={3}>
-                <Card className="relative overflow-hidden rounded-2xl border-border/60 bg-card/60">
+                <Card className="relative overflow-hidden rounded-2xl border-border/60 bg-card/60 flex flex-col min-h-[130px]">
                   <div
                     className={`absolute top-0 left-0 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10 flex items-center gap-1 ${meta.tagClassName}`}
                     style={{ transform: "translateZ(10px)" }}
@@ -279,7 +290,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
                     <span>{meta.label}</span>
                   </div>
 
-                  <div className="relative p-4 pt-9 flex items-start gap-3">
+                  <div className="relative flex-1 p-4 pt-9 flex items-start gap-3">
                     <div style={{ transform: "translateZ(16px)" }} className="shrink-0">
                       <Avatar className="h-8 w-8 ring-1 ring-white/10 opacity-80">
                         <AvatarImage src={endorsement.requester_profile?.avatar_url || ''} />
@@ -287,26 +298,26 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
                       </Avatar>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground line-clamp-1">
                         <strong className="text-foreground">{endorsement.credits?.project_name}</strong> — {endorsement.credits?.role}
                         {endorsement.credits?.year && <span> ({endorsement.credits.year})</span>}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                         {endorsement.requester_profile?.full_name || 'Someone'} · requested{' '}
                         {new Date(endorsement.requested_at).toLocaleDateString()}
                       </p>
                       {endorsement.status === "accepted" && (
-                        <p className="text-[11px] text-[hsl(var(--signal-teal))] mt-1">
+                        <p className="text-[11px] text-[hsl(var(--signal-teal))] mt-1 line-clamp-1">
                           Counts toward their ThriveStatus verification
                         </p>
                       )}
                       {endorsement.status === "declined" && (
-                        <p className="text-[11px] text-muted-foreground/70 mt-1">
+                        <p className="text-[11px] text-muted-foreground/70 mt-1 line-clamp-1">
                           No explanation was collected for this response.
                         </p>
                       )}
                       {endorsement.status === "expired" && (
-                        <p className="text-[11px] text-muted-foreground/70 mt-1">
+                        <p className="text-[11px] text-muted-foreground/70 mt-1 line-clamp-1">
                           This request is no longer active.
                         </p>
                       )}

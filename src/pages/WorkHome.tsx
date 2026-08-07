@@ -436,16 +436,6 @@ const CreatorWorkHome = () => {
                 {activeProjects.length} Active
               </Badge>
             )}
-            <div className="ml-auto flex items-center gap-2">
-              <Button
-                onClick={() => setShowCreateProject(true)}
-                size="sm"
-                className="gap-1.5 rounded-full font-semibold"
-              >
-                <Plus className="h-4 w-4" />
-                <span>New project</span>
-              </Button>
-            </div>
           </div>
           <p className="text-sm text-muted-foreground mt-2">
             Built for creatives. Save time — use your voice.
@@ -453,15 +443,27 @@ const CreatorWorkHome = () => {
           </p>
         </div>
 
-        {/* Today Strip — what needs me right now */}
-        <TodayStrip
-          onVoice={() => setVoiceCmdOpen(true)}
-          onCommandPalette={() => setPaletteOpen(true)}
-          onWrapWeek={() => setWrapWeekOpen(true)}
-        />
-
-        {/* Pending invites */}
-        <MyPendingInvitations />
+        {/* Dominant creation CTA — Studio creation is the primary action on
+            this page, so it's the first thing after the title, not a small
+            button competing with the header. */}
+        <button
+          type="button"
+          onClick={() => setShowCreateProject(true)}
+          className="group w-full rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6 text-left transition-all hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10"
+        >
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+              <Plus className="h-6 w-6" strokeWidth={2.5} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-base sm:text-lg font-black tracking-tight">New project</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Tell Kreto what you're making — voice or text — and we'll set up the room.
+              </p>
+            </div>
+            <ArrowRight className="h-5 w-5 text-primary shrink-0 transition-transform group-hover:translate-x-0.5" />
+          </div>
+        </button>
 
         {(() => {
           const moveProject = async (projectId: string, folderId: string | null) => {
@@ -587,6 +589,14 @@ const CreatorWorkHome = () => {
             </>
           );
         })()}
+
+        {/* Today Strip + pending invites — secondary, below the rooms themselves */}
+        <TodayStrip
+          onVoice={() => setVoiceCmdOpen(true)}
+          onCommandPalette={() => setPaletteOpen(true)}
+          onWrapWeek={() => setWrapWeekOpen(true)}
+        />
+        <MyPendingInvitations />
       </div>
 
 

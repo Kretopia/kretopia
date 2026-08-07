@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import KretopiaBottomNav from "./components/nav/KretopiaBottomNav";
+import { KretopiaSidebar } from "./components/nav/KretopiaSidebar";
 import QuickActionFab from "./components/QuickActionFab";
 import { BrandLoader } from "./components/brand/BrandDots";
 
@@ -36,7 +37,7 @@ import UnifiedHome from "./components/home/UnifiedHome";
 import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
 import { RoomKnockToast } from "./components/calls/RoomKnockToast";
 import { ThriveAgentFab } from "./components/desk/ThriveAgentFab";
-import { KretoLauncher } from "./components/kreto/KretoLauncher";
+import { DesktopCopilotRail } from "./components/desk/DesktopCopilotRail";
 import { ThriveBar } from "./components/agent/ThriveBar";
 
 // Lazy load active page components
@@ -293,10 +294,11 @@ const AppContent = () => {
       <SkipLink />
       <PageViewTracker />
       {showNavbar && <Navbar user={user} />}
+      {showNavbar && !!user && <KretopiaSidebar />}
       {showBottomNav && <KretopiaBottomNav />}
       {showBottomNav && <QuickActionFab />}
       <ThriveAgentFab />
-      {showBottomNav && <KretoLauncher />}
+      <DesktopCopilotRail />
       {showBottomNav && <ThriveBar />}
       
       {/* OnboardingTour removed — real /onboarding flow + GetStartedChecklist cover this. */}
@@ -307,7 +309,8 @@ const AppContent = () => {
       {showGuestBanner && <GuestBanner />}
       <main
         id="main-content"
-        className={cn(shouldAddBottomPadding ? "pb-36 lg:pb-0" : "")}
+        className={cn(shouldAddBottomPadding ? "pb-36 lg:pb-0" : "", user ? "lg:pl-60" : "")}
+        style={{ paddingRight: "var(--copilot-rail-w, 0px)" }}
       >
         <Suspense fallback={<LoadingFallback />}>
           <Routes>

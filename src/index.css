@@ -70,7 +70,7 @@ All colors MUST be HSL.
     --signal-pink: 325 87% 49%;      /* #E0179C  Kretopia Magenta */
     --signal-amber: 38 99% 55%;      /* #FEA61A  Kretopia Amber   */
     --signal-violet: 285 82% 45%;    /* #9413D2  Kretopia Violet  */
-    --signal-teal: 327 100% 59%;     /* #FF2DA1  legacy alias — was violet, now pink (kills residual cyan) */
+    --signal-teal: 285 82% 45%;      /* legacy alias → violet (kills residual cyan) */
 
     /* Product accent tokens — Kretopia signature (Violet · Amber · Magenta · Green).
        Passport swapped from teal → violet so no surface reads as cyan. */

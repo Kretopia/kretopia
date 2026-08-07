@@ -8,7 +8,6 @@ import {
   Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database, Heart, Video
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useAutoHideNavbar } from "@/hooks/useAutoHideNavbar";
 // UnifiedSearchDropdown removed from top nav — Thrive bar owns search
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -40,33 +39,13 @@ interface NavbarProps {
   user?: SupabaseUser | null;
 }
 
-// Cache the individual/company split per user so the first paint already
-// shows the right nav instead of always guessing "individual" and flashing
-// to "company" (or vice versa) once the profile fetch resolves ~1s later.
-// Same pattern as useAccountTone's tone:v1 cache, namespaced separately
-// since Navbar also needs is_manager_mode.
-const NAV_ACCOUNT_CACHE_KEY = "navbar_account_type:v1";
-
-function readCachedAccountType(userId: string | undefined): "individual" | "company" | null {
-  if (!userId || typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(`${NAV_ACCOUNT_CACHE_KEY}:${userId}`);
-    return raw === "company" || raw === "individual" ? raw : null;
-  } catch {
-    return null;
-  }
-}
-
 const Navbar = memo(({ user }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [guestMenuOpen, setGuestMenuOpen] = useState(false);
-  const [accountType, setAccountType] = useState<"individual" | "company">(
-    () => readCachedAccountType(user?.id) ?? "individual"
-  );
+  const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
   const isLandingPage = location.pathname === "/" && !user;
   const isPro = subscriptionInfo.subscribed;
@@ -75,24 +54,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const inboxBadge = unreadCount > 0 ? (unreadCount > 99 ? "99+" : String(unreadCount)) : undefined;
   const { badge: crewBadge } = useCrewUnread();
 
-  // Sticky, subtly auto-hiding TopNavbar: hides on scroll-down, reveals on
-  // scroll-up, dims slightly when idle. Never hides while the pointer is over
-  // it, keyboard focus is inside it, a drawer is open, at the top of the
-  // page, or reduced-motion is on — useAutoHideNavbar already forces
-  // visibility for the last four; pointer/focus are tracked locally here
-  // since they're per-element.
-  const { hiddenByScroll, idle, idleOpacity, forceVisible } = useAutoHideNavbar();
-  const [navHovered, setNavHovered] = useState(false);
-  const [navFocused, setNavFocused] = useState(false);
-  const navKeepVisible = navHovered || navFocused || forceVisible || isOpen || guestMenuOpen;
-  const navHidden = hiddenByScroll && !navKeepVisible;
-  const navOpacity = !navKeepVisible && idle ? idleOpacity : 1;
-
   useEffect(() => {
     if (!user) return;
-    const cached = readCachedAccountType(user.id);
-    if (cached) setAccountType(cached);
-
     Promise.resolve(
       supabase
         .from("profiles")
@@ -100,10 +63,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         .eq("user_id", user.id)
         .maybeSingle()
     ).then(({ data }) => {
-      if (data?.account_type) {
-        setAccountType(data.account_type);
-        try { window.localStorage.setItem(`${NAV_ACCOUNT_CACHE_KEY}:${user.id}`, data.account_type); } catch { /* ignore */ }
-      }
+      if (data?.account_type) setAccountType(data.account_type);
       if (data?.is_manager_mode) setIsManagerMode(true);
     }).catch(err => console.warn('[Navbar] Error loading profile:', err));
   }, [user?.id]);
@@ -156,9 +116,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/scout", icon: Compass, label: "Scout" },
         { path: "/circle", icon: Theater, label: "Stages" },
         { path: "/profile", icon: BadgeCheck, label: "Passport" },
-        { path: "/kreto", icon: Sparkles, label: "Kreto" },
-        { path: "/perks", icon: Gift, label: "Perks" },
-        { path: "/settings", icon: Settings, label: "Settings" },
       ];
 
   // search moved to Thrive bar — keep state stub removed
@@ -170,27 +127,18 @@ const Navbar = memo(({ user }: NavbarProps) => {
     { path: "/about", label: "About Us" },
   ];
 
+  const [guestMenuOpen, setGuestMenuOpen] = useState(false);
+
   return (
     <nav
       className={cn(
-        "sticky top-0 z-50 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none",
+        "sticky top-0 z-50",
         isLandingPage
           ? "dark-surface border-b border-white/10 bg-[#05070D] text-white"
           : "border-b border-border/60 bg-background",
       )}
-      style={{
-        transform: navHidden ? "translateY(-100%)" : "translateY(0)",
-        opacity: navOpacity,
-        paddingTop: "env(safe-area-inset-top)",
-      }}
       role="navigation"
       aria-label="Main navigation"
-      onMouseEnter={() => setNavHovered(true)}
-      onMouseLeave={() => setNavHovered(false)}
-      onFocus={() => setNavFocused(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) setNavFocused(false);
-      }}
     >
       <div className="container mx-auto flex items-center justify-between gap-1 px-2 sm:px-4 py-2.5">
         <div className="shrink-0">
@@ -246,19 +194,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <Link
                   key={path}
                   to={path}
-                  aria-current={isActive ? "page" : undefined}
-                  aria-label={label}
                   className={cn(
-                    "flex items-center gap-2 h-10 px-3.5 rounded-lg transition-smooth text-sm font-medium whitespace-nowrap border",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                    isActive
-                      ? "text-foreground border-white/15 bg-white/[0.04]"
-                      : "text-muted-foreground border-transparent hover:text-foreground hover:border-white/10 hover:bg-white/[0.02]",
+                    "relative flex items-center gap-2 h-10 px-3.5 rounded-lg transition-smooth text-sm font-medium whitespace-nowrap",
+                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
                   )}
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
                   {label}
+                  {isActive && (
+                    <span
+                      aria-hidden
+                      className="absolute bottom-0 left-3.5 right-3.5 h-0.5 rounded-full"
+                      style={{ background: "var(--kretopia-sunset, linear-gradient(90deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+                    />
+                  )}
                 </Link>
+
               );
             })}
           </div>
@@ -350,9 +301,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       {/* PILLARS — live surfaces not in bottom nav */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
-                      <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} path="/search" />
-                      <MenuButton icon={Users} label="Kretopia" onClick={() => handleNavigation("/thrivein")} path="/thrivein" />
-                      <MenuButton icon={Gift} label="Perks" onClick={() => handleNavigation("/perks")} path="/perks" />
+
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
                       <MenuButton icon={Theater} label="Sound Stages" onClick={() => handleNavigation("/soundstages")} path="/soundstages" />
                       <MenuButton icon={Video} label="Recordings" onClick={() => handleNavigation("/recordings")} path="/recordings" />

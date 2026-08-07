@@ -6,8 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
-import { ShieldCheck, Check, X, Loader2, Clock, XCircle, History, ArrowRight } from "lucide-react";
+import { ShieldCheck, Check, X, Loader2, Clock, XCircle, History } from "lucide-react";
 import { HoloCard } from "@/components/passport/HoloCard";
 
 interface PendingEndorsement {
@@ -207,9 +206,6 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
                       {endorsement.relationship}
                     </Badge>
                   )}
-                  <p className="mt-1.5 text-xs text-muted-foreground/80">
-                    Confirm you actually worked together — this becomes part of their verified record.
-                  </p>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
                   <Clock className="h-3 w-3" aria-hidden />
@@ -295,37 +291,12 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
                         {endorsement.requester_profile?.full_name || 'Someone'} · requested{' '}
                         {new Date(endorsement.requested_at).toLocaleDateString()}
                       </p>
-                      {endorsement.status === "accepted" && (
-                        <p className="text-[11px] text-[hsl(var(--signal-teal))] mt-1">
-                          Counts toward their ThriveStatus verification
-                        </p>
-                      )}
-                      {endorsement.status === "declined" && (
-                        <p className="text-[11px] text-muted-foreground/70 mt-1">
-                          No explanation was collected for this response.
-                        </p>
-                      )}
-                      {endorsement.status === "expired" && (
-                        <p className="text-[11px] text-muted-foreground/70 mt-1">
-                          This request is no longer active.
-                        </p>
-                      )}
                     </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0" style={{ transform: "translateZ(8px)" }}>
-                      {endorsement.responded_at && (
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(endorsement.responded_at).toLocaleDateString()}
-                        </span>
-                      )}
-                      {endorsement.status === "accepted" && (
-                        <Link
-                          to={`/profile/${endorsement.requested_by}`}
-                          className="relative z-10 inline-flex items-center gap-1 text-[11px] font-medium text-foreground hover:text-[hsl(var(--signal-teal))] transition-colors"
-                        >
-                          View Passport <ArrowRight className="h-3 w-3" />
-                        </Link>
-                      )}
-                    </div>
+                    {endorsement.responded_at && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                        {new Date(endorsement.responded_at).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
                 </Card>
               </HoloCard>

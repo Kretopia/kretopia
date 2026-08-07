@@ -437,10 +437,30 @@ const CreatorWorkHome = () => {
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            Built for creatives. Save time — use your voice.
-            <span className="hidden md:inline"> · Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono ml-1">⌘K</kbd> to jump anywhere</span>
-          </p>
+          {/* Voice as a primary interaction, not a passive tip — real mic
+              button wired to the existing VoiceCommandSheet, styled with
+              Kreto's established sunset-gradient AI-brand treatment. */}
+          <button
+            type="button"
+            onClick={() => setVoiceCmdOpen(true)}
+            className="group mt-3 inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-card/60 pl-1.5 pr-4 py-1.5 transition-all hover:border-primary/40 hover:bg-card"
+          >
+            <span
+              className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white"
+              style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+            >
+              <span
+                className="absolute inset-0 rounded-full animate-ping opacity-40 motion-reduce:animate-none"
+                style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+                aria-hidden
+              />
+              <Mic className="relative h-3.5 w-3.5" />
+            </span>
+            <span className="text-sm font-semibold text-foreground">Just talk — Kreto's listening</span>
+            <span className="hidden md:inline text-xs text-muted-foreground">
+              · <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd> anywhere
+            </span>
+          </button>
         </div>
 
         {/* Dominant creation CTA — Studio creation is the primary action on

@@ -276,6 +276,11 @@ const Search = () => {
             {blendedItems.map((item, idx) => {
               if (item.type === "knowledge") {
                 const kc = item.data as KnowledgeCard;
+                // STATE B — a person we found publicly but who has no claimed
+                // Passport on Kretopia yet. Distinct from "production/brand/
+                // event" knowledge cards, which aren't claimable identities.
+                const isUnclaimedPerson = kc.type === "person";
+                const creditCount = kc.key_credits?.length || 0;
                 return (
                   <div key="knowledge" className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-card p-5">
                     <div className="flex items-start gap-3 mb-3">
@@ -283,16 +288,33 @@ const Search = () => {
                         <Globe className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                           <h3 className="font-bold text-base text-foreground">{kc.name}</h3>
-                          <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
-                            <Database className="h-2 w-2 mr-0.5" /> Knowledge Base
-                          </Badge>
+                          {isUnclaimedPerson ? (
+                            <Badge className="text-[8px] bg-muted border-border text-muted-foreground">
+                              Unclaimed
+                            </Badge>
+                          ) : (
+                            <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
+                              <Database className="h-2 w-2 mr-0.5" /> Knowledge Base
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-xs text-muted-foreground">{kc.industry}</p>
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{kc.description}</p>
+
+                    {isUnclaimedPerson && creditCount > 0 && (
+                      <div className="mb-3 rounded-lg border border-border bg-muted/30 px-3 py-2">
+                        <p className="text-xs font-semibold text-foreground">
+                          {creditCount} potential credit{creditCount === 1 ? "" : "s"} found
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Potentially sourced from public information. Confirm these credits to build your Passport.
+                        </p>
+                      </div>
+                    )}
 
                     {kc.known_for && kc.known_for.length > 0 && (
                       <div className="mb-3">
@@ -309,8 +331,12 @@ const Search = () => {
                       <p className="text-[11px] text-muted-foreground italic mb-3">{kc.fun_fact}</p>
                     )}
 
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <p className="text-[10px] text-primary">{kc.claim_prompt}</p>
+                    <div className="flex items-center justify-between pt-3 border-t border-border gap-2">
+                      <p className="text-[10px] text-primary">
+                        {isUnclaimedPerson
+                          ? "Confirm your work and turn this record into your professional Creative Passport."
+                          : kc.claim_prompt}
+                      </p>
                       <button onClick={() => {
                         // Store discovered credits for post-signup auto-import
                         const claimData = {
@@ -322,8 +348,8 @@ const Search = () => {
                           platforms: kc.platforms || [],
                         };
                         goToClaimFlow(claimData);
-                      }} className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1">
-                        Claim Profile <ArrowRight className="h-3 w-3" />
+                      }} className="shrink-0 text-[10px] font-semibold text-primary hover:underline flex items-center gap-1">
+                        {isUnclaimedPerson ? "Claim your Creative Passport" : "Claim Profile"} <ArrowRight className="h-3 w-3" />
                       </button>
                     </div>
 

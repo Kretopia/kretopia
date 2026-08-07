@@ -11,6 +11,7 @@ import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowR
 import { EmptyState } from "@/components/ui/empty-state";
 import { analytics } from "@/lib/analytics";
 import { isFeatureEnabled } from "@/lib/featureFlags";
+import { SearchV2 } from "@/components/search/SearchV2";
 
 interface ProfileResult {
   user_id: string;
@@ -118,6 +119,17 @@ async function enrichProfilesWithStatus(rawProfiles: ProfileResult[]): Promise<P
 }
 
 const Search = () => {
+  if (isFeatureEnabled("FEATURE_SEARCH_V2")) {
+    return <SearchV2 />;
+  }
+  return <SearchLegacy />;
+};
+
+// Unmodified pre-existing implementation, renamed only so the outer `Search`
+// can gate on the flag without breaking the Rules of Hooks (an early return
+// can never precede hook calls in the same component). Not exported — the
+// route still imports and renders `Search` exactly as before.
+const SearchLegacy = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();

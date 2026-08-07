@@ -63,8 +63,9 @@ All colors MUST be HSL.
        BRAND SYSTEM v1.0 — Signal Triad (Magenta · Yellow · Teal).
        The three dots are sacred. Order is locked: Magenta → Yellow → Teal.
        Magenta = People (Match, Messages, Connection)
-       Yellow  = Momentum (Scout, Opportunities, Executive Producer)
+       Yellow  = reserved for status/warning use only, not a section accent
        Teal    = Credibility (Passport, Credits, Verification)
+       Scout now shares the project's primary pink (--accent-scout), not Yellow.
        Used surgically: brand mark, loaders, surface accents, key words.
        ============================================================ */
     --signal-pink: 325 87% 49%;      /* #E0179C  Kretopia Magenta */
@@ -75,7 +76,7 @@ All colors MUST be HSL.
     /* Product accent tokens — Kretopia signature (Violet · Amber · Magenta · Green).
        Passport swapped from teal → violet so no surface reads as cyan. */
     --accent-passport: 285 82% 45%;   /* Violet   — Identity   */
-    --accent-scout:    38 99% 55%;    /* Amber    — Action     */
+    --accent-scout:    327 100% 59%;  /* Pink     — Action (was Amber; unified with the project's primary pink) */
     --accent-match:    325 87% 49%;   /* Magenta  — People     */
     --accent-pay:      141 71% 42%;   /* #1DB954  — Money only */
     --radius: 1rem;

@@ -97,6 +97,7 @@ const ProfileContent = () => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [builderCredits, setBuilderCredits] = useState<{ project_name: string; role: string; year?: number | null }[] | null>(null);
+  const [justRevealed, setJustRevealed] = useState<{ bioDrafted: boolean } | null>(null);
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
   const [isCreatorCardOpen, setIsCreatorCardOpen] = useState(false);
   const [isEPKEditorOpen, setIsEPKEditorOpen] = useState(false);
@@ -133,8 +134,10 @@ const ProfileContent = () => {
       if (error) {
         toast({ title: "Couldn't save Passport", description: error.message, variant: "destructive" });
       } else {
-        toast({ title: "Passport updated" });
         fetchData();
+        const { analytics } = await import("@/lib/analytics");
+        analytics.passportRevealed(!!bio);
+        setJustRevealed({ bioDrafted: !!bio });
       }
     }
     setBuilderCredits(null);
@@ -423,8 +426,54 @@ const ProfileContent = () => {
           </div>
         </header>
 
+        {/* Passport reveal — the reward moment right after Kreto builds the
+            Passport. Uses the real Passport UI below it, doesn't replace it. */}
+        {justRevealed && (
+          <div className="mb-4 rounded-2xl border border-[hsl(var(--signal-teal))]/30 bg-gradient-to-br from-[hsl(var(--signal-teal))]/10 to-card p-5">
+            <p className="text-lg font-semibold text-foreground">Your Creative Passport is ready.</p>
+            {justRevealed.bioDrafted && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Kreto drafted parts of this from your Creative Record — review it below.
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => setJustRevealed(null)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[hsl(var(--signal-teal))] text-black hover:opacity-90 transition-opacity"
+              >
+                Looks good
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsEditOpen(true); setJustRevealed(null); }}
+                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
+              >
+                Edit Passport
+              </button>
+              <button
+                type="button"
+                onClick={() => { document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' }); setJustRevealed(null); }}
+                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
+              >
+                Review credit evidence
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsShareDialogOpen(true); setJustRevealed(null); }}
+                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
+              >
+                Share Passport
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Kreto whisper — Passport surface */}
         <KretoTip surface="passport" compact className="mb-4" />
+
+        {/* Post-claim "we found X credits" nudge — was built, never mounted. */}
+        <ClaimContinueBanner onRefresh={fetchData} />
 
         {/* Discovered credit candidates — the real Phase 3 confirm screen.
             Was built but never mounted; this is the actual entry point. */}

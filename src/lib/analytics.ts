@@ -241,6 +241,19 @@ export const analytics = {
       properties: { channel },
     }),
 
+  passportRevealed: (bioDrafted: boolean) =>
+    trackEvent({
+      eventName: 'passport_revealed',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { bio_drafted: bioDrafted },
+    }),
+
+  activationCompleted: () =>
+    trackEvent({
+      eventName: 'activation_completed',
+      eventCategory: EventCategory.ONBOARDING,
+    }),
+
   // Opportunity events
   opportunityView: (opportunityId: string) =>
     trackEvent({

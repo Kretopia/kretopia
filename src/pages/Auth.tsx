@@ -119,12 +119,18 @@ const Auth = () => {
             analytics.onboardingStart();
             navigate(profile?.account_type === 'company' ? "/company-onboarding" : "/onboarding");
           } else {
-            // Auto-import pending claim credits for returning users
+            // Stage pending claim credits as candidates for returning users —
+            // NEVER insert straight into `credits`. These are search-found,
+            // user-supplied-context guesses, not confirmed work history; they
+            // go through the same discovered_credits review screen
+            // (DiscoveriesInbox on /profile) as AI-discovered credits, so the
+            // user explicitly confirms/edits/removes each one before it
+            // becomes part of their Passport.
             const pendingClaimRaw = sessionStorage.getItem('pending_claim_credits');
             if (pendingClaimRaw) {
               try {
                 const claimData = JSON.parse(pendingClaimRaw);
-                const creditsToInsert = (claimData.credits || [])
+                const candidatesToInsert = (claimData.credits || [])
                   .filter((c: any) => c.project && c.role)
                   .map((c: any) => ({
                     user_id: user.id,
@@ -133,17 +139,17 @@ const Auth = () => {
                     year: c.year || null,
                     platform: c.platform || null,
                     source: 'search_claim',
-                    verification_status: 'pending',
+                    status: 'pending',
                   }));
-                if (creditsToInsert.length > 0) {
-                  await supabase.from('credits').insert(creditsToInsert);
+                if (candidatesToInsert.length > 0) {
+                  await supabase.from('discovered_credits').insert(candidatesToInsert);
                 }
                 sessionStorage.setItem('show_claim_continue', JSON.stringify({
                   name: claimData.name || claimData.query,
-                  count: creditsToInsert.length,
+                  count: candidatesToInsert.length,
                 }));
                 sessionStorage.removeItem('pending_claim_credits');
-              } catch (e) { console.error('[Auth] Auto-import credits error:', e); }
+              } catch (e) { console.error('[Auth] Stage claim credits error:', e); }
             }
             sessionStorage.removeItem("thrivein_post_auth_redirect");
             navigate(redirectTo);

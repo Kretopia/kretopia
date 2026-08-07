@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusAvatar } from "@/components/ui/status-avatar";
 import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2, Film, Music, Camera, Calendar, Palette, Video, Mic } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { analytics } from "@/lib/analytics";
 
 interface ProfileResult {
   user_id: string;
@@ -132,6 +133,7 @@ const Search = () => {
     const q = claimData.query || searchParams.get("q") || claimData.name || "";
     sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
     sessionStorage.setItem('claim_intent', JSON.stringify({ q, source: 'landing', results: [], ts: Date.now() }));
+    analytics.claimStarted('search');
     navigate(user ? '/profile' : `/auth?tab=signup&claim=1&q=${encodeURIComponent(q)}`);
   };
 
@@ -140,6 +142,7 @@ const Search = () => {
       setProfiles([]); setCredits([]); setOpportunities([]); setExternal(null);
       return;
     }
+    analytics.searchStarted(searchQuery.trim());
     setLoading(true);
     setAiLoading(true);
 
@@ -390,7 +393,7 @@ const Search = () => {
                 const p = item.data as ProfileResult;
                 const skills = Array.isArray(p.professional_skills) ? p.professional_skills.slice(0, 3).map((s: any) => typeof s === "string" ? s : s?.skill || "").filter(Boolean) : [];
                 return (
-                  <button key={`p-${p.user_id}`} onClick={() => navigate(`/profile/${p.user_id}`)} className="w-full text-left rounded-xl border border-border bg-card p-4 hover:border-primary/40 transition-all group">
+                  <button key={`p-${p.user_id}`} onClick={() => { analytics.passportPreviewViewed(p.user_id, true); navigate(`/profile/${p.user_id}`); }} className="w-full text-left rounded-xl border border-border bg-card p-4 hover:border-primary/40 transition-all group">
                     <div className="flex items-start gap-3">
                       <StatusAvatar
                         src={p.avatar_url}

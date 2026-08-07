@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 interface ConfirmedCredit {
@@ -116,6 +117,7 @@ Return as a JSON array of strings only, e.g. ["Skill 1","Skill 2"].`,
   useEffect(() => {
     if (started.current) return;
     started.current = true;
+    analytics.passportBuildStarted(confirmedCredits.length);
     setCreditsStatus("running");
     const t = setTimeout(() => setCreditsStatus("done"), 500); // real, just brief enough to read
     runBio();
@@ -221,7 +223,10 @@ Return as a JSON array of strings only, e.g. ["Skill 1","Skill 2"].`,
         </Button>
         <Button
           className="flex-1"
-          onClick={() => onConfirm({ bio: bioStatus === "done" ? draftBio : null, skills: draftSkills })}
+          onClick={() => {
+            analytics.passportBuildCompleted(bioStatus === "done", draftSkills.length);
+            onConfirm({ bio: bioStatus === "done" ? draftBio : null, skills: draftSkills });
+          }}
         >
           Confirm & apply to Passport
         </Button>

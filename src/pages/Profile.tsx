@@ -45,6 +45,8 @@ import { LevelUpCard } from "@/components/passport/LevelUpCard";
 import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
 import { PassportClaimHero } from "@/components/passport/PassportClaimHero";
 import { PassportCommandCenter } from "@/components/passport/PassportCommandCenter";
+import { KretoPassportBuilder } from "@/components/passport/KretoPassportBuilder";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { computeStanding } from "@/lib/passport/standing";
 import { useTaggedCredits } from "@/hooks/useTaggedCredits";
 
@@ -94,6 +96,7 @@ const ProfileContent = () => {
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [builderCredits, setBuilderCredits] = useState<{ project_name: string; role: string; year?: number | null }[] | null>(null);
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
   const [isCreatorCardOpen, setIsCreatorCardOpen] = useState(false);
   const [isEPKEditorOpen, setIsEPKEditorOpen] = useState(false);
@@ -113,6 +116,29 @@ const ProfileContent = () => {
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Applies Kreto's drafted bio/skills only after the user explicitly
+  // confirms them in KretoPassportBuilder — never auto-published.
+  const applyBuilderResult = async ({ bio, skills }: { bio: string | null; skills: string[] }) => {
+    if (!profile?.user_id) { setBuilderCredits(null); return; }
+    const existingSkills: string[] = Array.isArray(profile.professional_skills)
+      ? (profile.professional_skills as any[]).map((s) => (typeof s === "string" ? s : s?.skill)).filter(Boolean)
+      : [];
+    const mergedSkills = Array.from(new Set([...existingSkills, ...skills]));
+    const update: Record<string, any> = {};
+    if (bio) update.bio = bio;
+    if (skills.length > 0) update.professional_skills = mergedSkills;
+    if (Object.keys(update).length > 0) {
+      const { error } = await supabase.from("profiles").update(update).eq("user_id", profile.user_id);
+      if (error) {
+        toast({ title: "Couldn't save Passport", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Passport updated" });
+        fetchData();
+      }
+    }
+    setBuilderCredits(null);
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -400,6 +426,16 @@ const ProfileContent = () => {
         {/* Kreto whisper — Passport surface */}
         <KretoTip surface="passport" compact className="mb-4" />
 
+        {/* Discovered credit candidates — the real Phase 3 confirm screen.
+            Was built but never mounted; this is the actual entry point. */}
+        {profile?.user_id && (
+          <DiscoveriesInbox
+            userId={profile.user_id}
+            onApproved={fetchData}
+            onBulkConfirmed={setBuilderCredits}
+          />
+        )}
+
         {/* Identity section — who you are */}
         <section id="identity" className="scroll-mt-20">
 
@@ -567,6 +603,21 @@ const ProfileContent = () => {
           />
         </section>
       </div>
+
+      {/* Kreto builds the Passport — shown right after a batch credit confirm */}
+      <Dialog open={!!builderCredits} onOpenChange={(open) => !open && setBuilderCredits(null)}>
+        <DialogContent className="max-w-md">
+          {builderCredits && (
+            <KretoPassportBuilder
+              role={profile?.role || undefined}
+              existingBio={profile?.bio || undefined}
+              confirmedCredits={builderCredits}
+              onConfirm={applyBuilderResult}
+              onCancel={() => setBuilderCredits(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* All Dialogs */}
       <ProfileDialogs

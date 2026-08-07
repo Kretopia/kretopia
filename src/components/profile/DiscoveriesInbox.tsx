@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { analytics } from "@/lib/analytics";
 import { Sparkles, Check, X, ExternalLink, Loader2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 
 interface Discovery {
@@ -24,6 +25,8 @@ interface Discovery {
 interface Props {
   userId: string;
   onApproved?: () => void;
+  /** Fired once, right after a batch confirm succeeds, with the credits that were added — hands off to the Kreto Passport-build sequence. */
+  onBulkConfirmed?: (credits: { project_name: string; role: string; year?: number | null }[]) => void;
 }
 
 // Evidence label per the product's approved vocabulary. Nothing here is
@@ -36,7 +39,7 @@ function evidenceLabel(d: Discovery): string {
   return "Potential";
 }
 
-export const DiscoveriesInbox = ({ userId, onApproved }: Props) => {
+export const DiscoveriesInbox = ({ userId, onApproved, onBulkConfirmed }: Props) => {
   const { toast } = useToast();
   const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,6 +81,7 @@ export const DiscoveriesInbox = ({ userId, onApproved }: Props) => {
     }
     setDiscoveries((d) => d.filter((x) => x.id !== id));
     setSelected((s) => { const n = new Set(s); n.delete(id); return n; });
+    analytics.creditConfirmed(1);
     if (!silent) {
       toast({ title: "Added to your credits", description: "Your profile is updated." });
       onApproved?.();
@@ -95,21 +99,24 @@ export const DiscoveriesInbox = ({ userId, onApproved }: Props) => {
     }
     setDiscoveries((d) => d.filter((x) => x.id !== id));
     setSelected((s) => { const n = new Set(s); n.delete(id); return n; });
+    analytics.creditRemoved('not_me');
   };
 
   const handleConfirmSelected = async () => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     setBulkActioning(true);
-    let added = 0;
+    const confirmed: { project_name: string; role: string; year?: number | null }[] = [];
     for (const id of ids) {
+      const d = discoveries.find((x) => x.id === id);
       const ok = await handleApprove(id, true);
-      if (ok) added++;
+      if (ok && d) confirmed.push({ project_name: d.project_name, role: d.role || "Contributor", year: d.year });
     }
     setBulkActioning(false);
-    if (added > 0) {
-      toast({ title: `${added} credit${added === 1 ? "" : "s"} added to your Passport` });
+    if (confirmed.length > 0) {
+      toast({ title: `${confirmed.length} credit${confirmed.length === 1 ? "" : "s"} added to your Passport` });
       onApproved?.();
+      onBulkConfirmed?.(confirmed);
     }
   };
 

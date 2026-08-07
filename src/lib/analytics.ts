@@ -177,6 +177,70 @@ export const analytics = {
       properties: { target_user_id: targetUserId, source },
     }),
 
+  // Activation funnel events (Search -> Claim -> Confirm -> Passport)
+  searchStarted: (query: string) =>
+    trackEvent({
+      eventName: 'search_started',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { query_length: query.length },
+    }),
+
+  passportPreviewViewed: (targetUserId: string, claimed: boolean) =>
+    trackEvent({
+      eventName: 'passport_preview_viewed',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { target_user_id: targetUserId, claimed },
+    }),
+
+  claimStarted: (source: string) =>
+    trackEvent({
+      eventName: 'claim_started',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { source },
+    }),
+
+  creditConfirmed: (count: number) =>
+    trackEvent({
+      eventName: 'credit_confirmed',
+      eventCategory: EventCategory.PROFILE,
+      properties: { count },
+    }),
+
+  creditRemoved: (reason: 'not_me' | 'user_removed' = 'not_me') =>
+    trackEvent({
+      eventName: 'credit_removed',
+      eventCategory: EventCategory.PROFILE,
+      properties: { reason },
+    }),
+
+  passportBuildStarted: (creditCount: number) =>
+    trackEvent({
+      eventName: 'passport_build_started',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { credit_count: creditCount },
+    }),
+
+  passportBuildCompleted: (bioDrafted: boolean, skillsSuggested: number) =>
+    trackEvent({
+      eventName: 'passport_build_completed',
+      eventCategory: EventCategory.ONBOARDING,
+      properties: { bio_drafted: bioDrafted, skills_suggested: skillsSuggested },
+    }),
+
+  trustActionStarted: (action: 'cosign' | 'share' | 'verify_identity') =>
+    trackEvent({
+      eventName: 'trust_action_started',
+      eventCategory: EventCategory.ENGAGEMENT,
+      properties: { action },
+    }),
+
+  passportShared: (channel: string) =>
+    trackEvent({
+      eventName: 'passport_shared',
+      eventCategory: EventCategory.ENGAGEMENT,
+      properties: { channel },
+    }),
+
   // Opportunity events
   opportunityView: (opportunityId: string) =>
     trackEvent({

@@ -1,5 +1,6 @@
 import { Share2, ShieldCheck, Gauge, ArrowRight } from "lucide-react";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
+import { analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 interface Credit {
@@ -62,7 +63,7 @@ export function PassportCommandCenter({
       {unconfirmedCount > 0 && (
         <button
           type="button"
-          onClick={onReviewCredits}
+          onClick={() => { analytics.trustActionStarted('cosign'); onReviewCredits(); }}
           className="w-full flex items-start gap-3 rounded-xl border border-border/60 bg-card/60 p-3.5 text-left hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
         >
           <ShieldCheck className="h-4 w-4 text-[hsl(var(--signal-teal))] shrink-0 mt-0.5" />
@@ -78,7 +79,7 @@ export function PassportCommandCenter({
 
       <button
         type="button"
-        onClick={onShare}
+        onClick={() => { analytics.trustActionStarted('share'); onShare(); }}
         className="w-full flex items-start gap-3 rounded-xl border border-border/60 bg-card/60 p-3.5 text-left hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
       >
         <Share2 className="h-4 w-4 text-[hsl(var(--signal-teal))] shrink-0 mt-0.5" />

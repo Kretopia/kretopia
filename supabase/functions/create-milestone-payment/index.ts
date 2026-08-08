@@ -197,6 +197,7 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/desk/${projectId}?payment=success&milestone=${milestoneId}&escrow=${useEscrow ? 'true' : 'false'}`,
       cancel_url: `${req.headers.get("origin")}/desk/${projectId}?payment=cancelled`,
       metadata: {
+        kind: 'milestone',
         milestoneId,
         projectId,
         userId: user.id,

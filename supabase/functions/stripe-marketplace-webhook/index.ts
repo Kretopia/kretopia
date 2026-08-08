@@ -146,6 +146,170 @@ serve(async (req) => {
         });
       }
 
+      // ── Milestone payment (non-escrow "Pay Now") ──
+      // Escrow milestones (useEscrow === 'true') are confirmed separately at
+      // capture time by capture-milestone-payment, which re-verifies the
+      // PaymentIntent with Stripe directly before writing status -- this
+      // branch only covers the immediate-capture "Pay Now" path, which
+      // previously had no confirmation step at all.
+      if (kind === "milestone" && session.metadata?.useEscrow !== "true" && session.payment_status === "paid") {
+        const milestoneId = session.metadata?.milestoneId;
+        const paymentIntentId = session.payment_intent as string;
+
+        if (!milestoneId || !paymentIntentId) {
+          logStep("Milestone payment missing metadata", { milestoneId, paymentIntentId });
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const { data: milestone } = await supabaseAdmin
+          .from("milestones")
+          .select("*, projects(id, title)")
+          .eq("id", milestoneId)
+          .maybeSingle();
+
+        if (!milestone) {
+          logStep("Milestone not found", { milestoneId });
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Idempotency -- webhooks can be delivered more than once.
+        if (milestone.payment_intent_id === paymentIntentId && milestone.status === "paid") {
+          logStep("Milestone payment already recorded", { milestoneId, paymentIntentId });
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        await supabaseAdmin
+          .from("milestones")
+          .update({
+            status: "paid",
+            escrow_status: "none",
+            payment_intent_id: paymentIntentId,
+            paid_at: new Date().toISOString(),
+            paid_to: milestone.created_by,
+          })
+          .eq("id", milestoneId);
+
+        const talentRate = parseFloat(session.metadata?.talentRate || String(milestone.amount));
+        const platformFee = parseFloat(session.metadata?.platformFee || "0");
+        const managerCommission = parseFloat(session.metadata?.managerCommission || "0");
+        const managerTableId = session.metadata?.managerTableId || null;
+        const managerStripeAccountId = session.metadata?.managerStripeAccountId || null;
+        const payerUserId = session.metadata?.userId;
+
+        // Record + transfer manager commission, mirroring capture-milestone-payment.
+        if (managerTableId && managerCommission > 0) {
+          const { error: commissionError } = await supabaseAdmin
+            .from("referral_commissions")
+            .insert({
+              manager_id: managerTableId,
+              talent_user_id: milestone.created_by,
+              source_type: "milestone",
+              source_id: milestoneId,
+              gross_amount: talentRate,
+              commission_rate: 0.10,
+              commission_amount: managerCommission,
+              currency: "USD",
+              status: managerStripeAccountId ? "paid" : "earned",
+            });
+          if (commissionError) {
+            logStep("WARNING: Failed to record commission", { error: commissionError.message });
+          }
+
+          if (managerStripeAccountId) {
+            try {
+              const transfer = await stripe.transfers.create({
+                amount: Math.round(managerCommission * 100),
+                currency: "usd",
+                destination: managerStripeAccountId,
+                description: `Manager commission for milestone: ${milestone.title}`,
+                metadata: { milestone_id: milestoneId, project_id: milestone.project_id, manager_table_id: managerTableId },
+              });
+              logStep("Commission transferred to manager", { transferId: transfer.id, amount: managerCommission });
+              await supabaseAdmin.rpc("increment_manager_earnings" as any, {
+                manager_id_input: managerTableId,
+                amount_input: managerCommission,
+              }).catch((err: any) => logStep("WARNING: Failed to update manager earnings", { error: String(err) }));
+            } catch (transferErr) {
+              logStep("WARNING: Failed to transfer commission to manager", { error: String(transferErr) });
+              await supabaseAdmin
+                .from("referral_commissions")
+                .update({ status: "earned" })
+                .eq("manager_id", managerTableId)
+                .eq("source_id", milestoneId);
+            }
+          }
+        }
+
+        // Auto-generate invoice, mirroring capture-milestone-payment.
+        try {
+          const { data: payerProfile } = payerUserId
+            ? await supabaseAdmin.from("profiles").select("full_name").eq("user_id", payerUserId).single()
+            : { data: null };
+          const { data: creatorProfile } = await supabaseAdmin
+            .from("profiles")
+            .select("full_name")
+            .eq("user_id", milestone.created_by)
+            .single();
+          const { data: creatorAuth } = await supabaseAdmin.auth.admin.getUserById(milestone.created_by);
+
+          const now = new Date();
+          const lineItems = [
+            { description: `Milestone: ${milestone.title}`, quantity: 1, rate: talentRate, amount: talentRate },
+            ...(platformFee > 0 ? [{ description: "Kretopia Service Fee", quantity: 1, rate: platformFee, amount: platformFee }] : []),
+            ...(managerCommission > 0 ? [{ description: "Talent Manager Commission", quantity: 1, rate: managerCommission, amount: managerCommission }] : []),
+          ];
+
+          const { error: invoiceError } = await supabaseAdmin.from("invoices").insert({
+            invoice_number: `INV-${now.getFullYear()}-${now.getTime()}`,
+            issued_by: payerUserId,
+            issued_to: milestone.created_by,
+            project_id: milestone.project_id,
+            milestone_id: milestoneId,
+            amount: talentRate + platformFee + managerCommission,
+            currency: "USD",
+            status: "paid",
+            paid_at: now.toISOString(),
+            brand_name: payerProfile?.full_name || "Client",
+            recipient_name: creatorProfile?.full_name || "Creator",
+            recipient_email: creatorAuth?.user?.email || null,
+            payment_method: "stripe",
+            payment_details: { payment_intent_id: paymentIntentId, escrow: false, auto_generated: true, talent_rate: talentRate, platform_fee: platformFee, manager_commission: managerCommission },
+            line_items: lineItems,
+            notes: `Auto-generated invoice for milestone "${milestone.title}".`,
+          });
+          if (invoiceError) logStep("WARNING: Failed to create auto-invoice", { error: invoiceError.message });
+        } catch (invoiceErr) {
+          logStep("WARNING: Auto-invoice generation failed", { error: String(invoiceErr) });
+        }
+
+        try {
+          await supabaseAdmin.from("notifications").insert({
+            user_id: milestone.created_by,
+            title: "Payment received 💰",
+            message: `$${talentRate.toFixed(2)} for "${milestone.title}" was paid on ${milestone.projects?.title || "your project"}.`,
+            type: "payment",
+            category: "payment",
+            priority: "high",
+            link: `/desk/${milestone.project_id}?tab=finance`,
+            action_url: `/desk/${milestone.project_id}?tab=finance`,
+            action_text: "View milestone",
+          });
+        } catch (notifErr) {
+          logStep("WARNING: notification dispatch failed", { error: String(notifErr) });
+        }
+
+        logStep("Milestone payment confirmed via webhook", { milestoneId, paymentIntentId });
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       // Only handle marketplace purchases from here
       if (session.metadata?.type !== 'marketplace_purchase') {
         logStep("Skipping non-marketplace session", { sessionId: session.id });

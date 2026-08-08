@@ -14,7 +14,6 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
-import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { CreditThumb } from "@/components/onboarding/claim-flow/CreditThumb";
 // ProfileHubCard removed from Home — Passport tab covers profile surface.
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
@@ -467,20 +466,6 @@ export const UnifiedHome = () => {
           gating the whole hub on `profile` left mobile blank for ~500ms+ on slow nets. */}
       {user && (
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
-          {/* Search — the central action on Today. Reuses the same live
-              dropdown search that powers Navbar/landing/SearchV2, so this
-              is zero new search logic, just a premium placement for it. */}
-          <div className="mb-5 pt-2">
-            <p className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-2.5">
-              Find your creative identity
-            </p>
-            <UnifiedSearchDropdown
-              variant="hero"
-              placeholder="Search your name, a collaborator, a production..."
-              className="max-w-xl mx-auto"
-            />
-          </div>
-
           {/* Conversational entry — Tell Thrive what you want to create. */}
           <div className="mb-4">
             <ThrivePromptHero />

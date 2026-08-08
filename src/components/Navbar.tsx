@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAutoHideNavbar } from "@/hooks/useAutoHideNavbar";
-// UnifiedSearchDropdown removed from top nav — Thrive bar owns search
+import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +47,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
@@ -66,9 +67,18 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const { hiddenByScroll, idle, idleOpacity, forceVisible } = useAutoHideNavbar();
   const [navHovered, setNavHovered] = useState(false);
   const [navFocused, setNavFocused] = useState(false);
-  const navKeepVisible = navHovered || navFocused || forceVisible || isOpen || guestMenuOpen;
+  const navKeepVisible = navHovered || navFocused || forceVisible || isOpen || guestMenuOpen || mobileSearchOpen;
   const navHidden = hiddenByScroll && !navKeepVisible;
   const navOpacity = !navKeepVisible && idle ? idleOpacity : 1;
+
+  // UnifiedSearchDropdown's onSelect/onQuerySubmit fully replace its default
+  // navigate() calls when provided, so hooking them to close the sheet would
+  // break the actual navigation. Closing on route change instead covers
+  // every way a search result can be opened (click, submit, "deep search").
+  useEffect(() => {
+    if (mobileSearchOpen) setMobileSearchOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!user) return;
@@ -174,7 +184,17 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <BrandLogo size="md" showBeta linkToHome onDark={isLandingPage} />
         </div>
 
-        {/* Search lives in Thrive bar — top nav is bell + menu only */}
+        {/* Global search — reachable from every route, not just Today.
+            Fixed width so the results dropdown (absolutely positioned,
+            already built into UnifiedSearchDropdown) never shifts layout. */}
+        {!isLandingPage && (
+          <div className="hidden lg:block w-40 xl:w-64 mx-3 shrink-0">
+            <UnifiedSearchDropdown
+              variant="navbar"
+              placeholder="Search your name, stage name or creative work..."
+            />
+          </div>
+        )}
 
         {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
         {!user && (
@@ -243,6 +263,27 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
         <div className="flex items-center gap-0.5 sm:gap-2 ml-auto shrink-0">
           {/* Top nav: Logo · · · ✉ 🔔 ☰ */}
+          {!isLandingPage && (
+            <Sheet open={mobileSearchOpen} onOpenChange={setMobileSearchOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10 lg:hidden" aria-label="Search">
+                  <Search className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="top" className="w-full">
+                <SheetHeader>
+                  <SheetTitle>Search</SheetTitle>
+                </SheetHeader>
+                <div className="mt-4">
+                  <UnifiedSearchDropdown
+                    variant="hero"
+                    placeholder="Search your name, stage name or creative work..."
+                    autoFocus
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
           {!isLandingPage && user && <MessagesDrawer />}
 
           {!isLandingPage && user && <NotificationCenter />}
@@ -471,7 +512,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
           ) : null}
         </div>
       </div>
-      {/* Mobile search removed — Thrive bar handles search & intent */}
     </nav>
   );
 });

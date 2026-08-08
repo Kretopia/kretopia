@@ -58,6 +58,17 @@ import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
+import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
+import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+
+interface ProjectPersonRow {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: string | null;
+  collaborator_status: string | null;
+}
 
 interface WidgetProps {
   title: string;
@@ -345,6 +356,17 @@ const CreatorWorkHome = () => {
   const [wrapWeekOpen, setWrapWeekOpen] = useState(false);
   const [folders, setFolders] = useState<StudioFolder[]>([]);
   const [folderFilter, setFolderFilter] = useState<string>("all");
+  const [recentCollaborators, setRecentCollaborators] = useState<
+    { id: string; full_name: string; avatar_url: string | null; role: string | null }[]
+  >([]);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const onChange = () => setReducedMotion(mq.matches);
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
 
   const fetchFolders = async () => {
     if (!user) return;
@@ -393,6 +415,40 @@ const CreatorWorkHome = () => {
     fetchFolders().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  // Recent collaborators across the user's most recently active projects.
+  // Reuses the existing get_project_people RPC (same one useProjectData
+  // calls for a single project) rather than adding a new aggregate query
+  // or RPC -- just runs it over a few projects and dedupes client-side.
+  useEffect(() => {
+    if (!user || projects.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const topProjects = projects.slice(0, 5);
+      const results = await Promise.all(
+        topProjects.map((p) =>
+          supabase
+            .rpc("get_project_people" as any, { _project_id: p.id })
+            .then(({ data }) => (data ?? []) as ProjectPersonRow[])
+            .catch(() => [] as ProjectPersonRow[])
+        )
+      );
+      if (cancelled) return;
+      const seen = new Set<string>();
+      const people: { id: string; full_name: string; avatar_url: string | null; role: string | null }[] = [];
+      for (const rows of results) {
+        for (const p of rows) {
+          if (p.collaborator_status !== "accepted") continue;
+          if (p.user_id === user.id) continue;
+          if (seen.has(p.user_id)) continue;
+          seen.add(p.user_id);
+          people.push({ id: p.user_id, full_name: p.full_name || "Member", avatar_url: p.avatar_url, role: p.role });
+        }
+      }
+      setRecentCollaborators(people.slice(0, 10));
+    })();
+    return () => { cancelled = true; };
+  }, [user, projects]);
 
   if (loading) {
     return <WorkHomeSkeleton variant="studio" />;
@@ -609,6 +665,53 @@ const CreatorWorkHome = () => {
             </>
           );
         })()}
+
+        {/* Live & upcoming — real Sound Stages data (own loading/empty
+            states, realtime-subscribed), reused as-is from Circle rather
+            than rebuilt here. Joining sends you to the real room-joining
+            flow at /soundstages instead of a second, duplicate
+            implementation of the Daily.co join/render logic. */}
+        <div className="space-y-2 pt-2">
+          <h2 className="text-base font-bold">Live &amp; upcoming</h2>
+          <SoundStagesRail onJoin={() => navigate("/soundstages")} />
+        </div>
+
+        <SpeedTonightCard />
+
+        {/* Recent collaborators — real people from the user's most
+            recently active projects, via the same get_project_people RPC
+            useProjectData already calls per-project; just run over a few
+            projects and deduped here. Self-hides when there's nobody yet. */}
+        {recentCollaborators.length > 0 && (
+          <div className="space-y-2">
+            <h2 className="text-base font-bold">Recent collaborators</h2>
+            <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full">
+              <CarouselContent className="-ml-3">
+                {recentCollaborators.map((c) => (
+                  <CarouselItem key={c.id} className="pl-3 basis-auto">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/profile/${c.id}`)}
+                      className="w-28 rounded-2xl border border-border bg-card p-3 text-center transition-all hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <div className="h-14 w-14 mx-auto rounded-full overflow-hidden bg-muted mb-2">
+                        {c.avatar_url ? (
+                          <img src={c.avatar_url} alt={c.full_name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-sm font-bold text-muted-foreground">
+                            {c.full_name[0]}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs font-semibold truncate">{c.full_name}</p>
+                      {c.role && <p className="text-[10px] text-muted-foreground truncate">{c.role}</p>}
+                    </button>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
+        )}
 
         {/* Today Strip + pending invites — secondary, below the rooms themselves */}
         <TodayStrip

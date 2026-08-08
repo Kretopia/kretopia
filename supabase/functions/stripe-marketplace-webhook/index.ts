@@ -176,9 +176,13 @@ serve(async (req) => {
           });
         }
 
-        // Idempotency -- webhooks can be delivered more than once.
-        if (milestone.payment_intent_id === paymentIntentId && milestone.status === "paid") {
-          logStep("Milestone payment already recorded", { milestoneId, paymentIntentId });
+        // Idempotency -- guards both webhook redelivery of the same event
+        // AND a second, genuinely-different completed session for a
+        // milestone that's already paid (e.g. two tabs racing past the
+        // create-milestone-payment guard before either had committed).
+        // Once paid, no further session should touch this milestone.
+        if (milestone.status === "paid") {
+          logStep("Milestone already paid, skipping", { milestoneId, paymentIntentId, existingPaymentIntent: milestone.payment_intent_id });
           return new Response(JSON.stringify({ received: true }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });

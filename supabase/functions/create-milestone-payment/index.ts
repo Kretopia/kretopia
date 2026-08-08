@@ -73,9 +73,20 @@ serve(async (req) => {
     // Check if a talent manager is involved (via talent_referrals)
     const { data: milestone } = await supabaseAdmin
       .from('milestones')
-      .select('created_by')
+      .select('created_by, status')
       .eq('id', milestoneId)
       .single();
+
+    // Guard against duplicate payment attempts (double-click, two tabs,
+    // retried request) -- this is the authoritative check; a disabled
+    // button client-side helps but isn't a security boundary.
+    if (milestone?.status === 'paid') {
+      logStep("Rejected: milestone already paid", { milestoneId });
+      return new Response(JSON.stringify({ error: "This milestone has already been paid." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 409,
+      });
+    }
 
     let hasManager = false;
     let managerTableId: string | null = null;

@@ -186,6 +186,25 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Payment recorded!" });
+      // Milestone completion -> project status. Mirrors the same
+      // all-paid check the payment edge functions run server-side; this
+      // is the client-triggered "Mark Paid (offline)" path, so it isn't
+      // covered by either of those.
+      try {
+        const { data: allMilestones } = await supabase
+          .from('milestones')
+          .select('status')
+          .eq('project_id', projectId);
+        const allPaid = !!allMilestones?.length && allMilestones.every((m) => m.status === 'paid');
+        if (allPaid) {
+          const { data: proj } = await supabase.from('projects').select('status').eq('id', projectId).maybeSingle();
+          if (proj?.status === 'active') {
+            await supabase.from('projects').update({ status: 'completed' }).eq('id', projectId);
+          }
+        }
+      } catch (syncErr) {
+        console.error('project status sync failed', syncErr);
+      }
       onUpdate();
     }
   };

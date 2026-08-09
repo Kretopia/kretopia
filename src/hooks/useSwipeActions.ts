@@ -175,53 +175,12 @@ export function useSwipeActions(currentUserId: string | undefined) {
         console.log('[useSwipeActions] Match already exists, skipping');
       }
 
-      // Notifications are now handled by database trigger (notify_on_match_with_email)
-      // No client-side notification creation needed - prevents duplicates
-      console.log('[useSwipeActions] Match created - notifications handled by database trigger');
-
-      // Send match email notifications to both users
-      try {
-        console.log('[useSwipeActions] Sending match email notifications...');
-        
-        // Notify the target user about the match
-        const matchEmailPromises = [
-          supabase.functions.invoke('send-notification-email', {
-            body: {
-              recipientId: targetId,
-              type: 'match',
-              data: {
-                userName: matchedProfile?.full_name || 'there',
-                matchName: currentUserProfile?.full_name || 'A creator',
-              }
-            }
-          }),
-          // Also notify the current user
-          supabase.functions.invoke('send-notification-email', {
-            body: {
-              recipientId: currentUserId,
-              type: 'match',
-              data: {
-                userName: currentUserProfile?.full_name || 'there',
-                matchName: matchedProfile?.full_name || 'A creator',
-              }
-            }
-          })
-        ];
-
-        const results = await Promise.allSettled(matchEmailPromises);
-        results.forEach((result, i) => {
-          if (result.status === 'rejected') {
-            console.warn(`[useSwipeActions] Match email ${i} failed:`, result.reason);
-          } else if (result.value?.error) {
-            console.warn(`[useSwipeActions] Match email ${i} error:`, result.value.error);
-          } else {
-            console.log(`[useSwipeActions] Match email ${i} sent successfully`);
-          }
-        });
-      } catch (emailError) {
-        console.warn('[useSwipeActions] Email notification failed (non-blocking):', emailError);
-      }
-
+      // Both the in-app notification AND the match email are already sent
+      // server-side by the on_match_created trigger (notify_on_match_with_email),
+      // which fires on the `matches` insert above. This used to also fire
+      // send-notification-email from the client for both users, which meant
+      // every match sent each user two duplicate "You matched!" emails.
+      console.log('[useSwipeActions] Match created - notifications + email handled by database trigger');
       console.log('[useSwipeActions] ✅ Match flow completed successfully!');
       
       return {

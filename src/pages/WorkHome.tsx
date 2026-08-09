@@ -498,7 +498,8 @@ const CreatorWorkHome = () => {
           </div>
           {/* Voice as a primary interaction, not a passive tip — real mic
               button wired to the existing VoiceCommandSheet, styled with
-              Kreto's established sunset-gradient AI-brand treatment. */}
+              Kreto's solid accent treatment (formerly a sunset gradient,
+              flattened in the design system reset). */}
           <button
             type="button"
             onClick={() => setVoiceCmdOpen(true)}
@@ -506,11 +507,11 @@ const CreatorWorkHome = () => {
           >
             <span
               className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white"
-              style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+              style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
             >
               <span
                 className="absolute inset-0 rounded-full animate-ping opacity-40 motion-reduce:animate-none"
-                style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+                style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
                 aria-hidden
               />
               <Mic className="relative h-3.5 w-3.5" />

@@ -60,35 +60,51 @@ All colors MUST be HSL.
     --warning-foreground: 30 50% 12%;
 
     /* ============================================================
-       BRAND SYSTEM v1.0 — Signal Triad (Magenta · Yellow · Teal).
-       The three dots are sacred. Order is locked: Magenta → Yellow → Teal.
-       Magenta = People (Match, Messages, Connection)
-       Yellow  = reserved for status/warning use only, not a section accent
-       Teal    = Credibility (Passport, Credits, Verification)
-       Scout now shares the project's primary pink (--accent-scout), not Yellow.
-       Used surgically: brand mark, loaders, surface accents, key words.
+       DESIGN SYSTEM RESET — single accent.
+       #FF2DA1 is the ONLY accent color in the product. It converts to
+       exactly hsl(327 100% 59%), which is what --energy already was —
+       this reset consolidates every other "brand color" name onto
+       that same value instead of introducing a new number. The old
+       Signal Triad (magenta/amber/violet per product area) and the
+       Kretopia brand-sheet gradient palette are retired: one accent,
+       used strategically, not a rainbow of section colors.
        ============================================================ */
-    --signal-pink: 325 87% 49%;      /* #E0179C  Kretopia Magenta */
-    --signal-amber: 38 99% 55%;      /* #FEA61A  Kretopia Amber   */
-    --signal-violet: 285 82% 45%;    /* #9413D2  Kretopia Violet  */
-    --signal-teal: 327 100% 59%;     /* #FF2DA1  legacy alias — was violet, now pink (kills residual cyan) */
+    --signal-pink: 327 100% 59%;     /* retired triad member — now = accent */
+    --signal-amber: 327 100% 59%;    /* retired triad member — now = accent */
+    --signal-violet: 327 100% 59%;   /* retired triad member — now = accent */
+    --signal-teal: 327 100% 59%;     /* #FF2DA1 — kept as an alias name; hundreds of call sites reference it */
 
-    /* Product accent tokens — Kretopia signature (Violet · Amber · Magenta · Green).
-       Passport swapped from teal → violet so no surface reads as cyan. */
-    --accent-passport: 285 82% 45%;   /* Violet   — Identity   */
-    --accent-scout:    327 100% 59%;  /* Pink     — Action (was Amber; unified with the project's primary pink) */
-    --accent-match:    325 87% 49%;   /* Magenta  — People     */
-    --accent-pay:      141 71% 42%;   /* #1DB954  — Money only */
+    /* Product accent tokens — all product areas now share the one accent.
+       Passport/Scout/Match no longer get their own hue; --accent-pay
+       stays green because it's a functional money-state signal, not
+       decoration (see "preserve semantic colors" rule). */
+    --accent-passport: 327 100% 59%;
+    --accent-scout:    327 100% 59%;
+    --accent-match:    327 100% 59%;
+    --accent-pay:      141 71% 42%;   /* #1DB954 — Money only, functional */
     --radius: 1rem;
 
-    /* Daylight gradient + shadow system — v1.0 teal accent (was indigo). */
-    --gradient-primary: linear-gradient(135deg, hsl(240 11% 8%), hsl(240 11% 18%));
-    --gradient-secondary: linear-gradient(135deg, hsl(178 80% 47% / 0.08), hsl(178 80% 47% / 0.02));
-    --gradient-accent: linear-gradient(180deg, hsl(36 27% 97%), hsl(36 22% 95%));
-    --gradient-subtle: linear-gradient(180deg, hsl(178 80% 47% / 0.04), transparent);
+    /* Canonical reset tokens (requested names) — thin aliases over the
+       tokens above so existing call sites keep working unchanged while
+       new code can reach for these directly. */
+    --color-accent: 327 100% 59%;           /* #FF2DA1 */
+    --color-background: var(--background);
+    --color-surface: var(--card);
+    --color-surface-elevated: var(--secondary);
+    --color-text-primary: var(--foreground);
+    --color-text-secondary: var(--muted-foreground);
+
+    /* Gradient variables flattened to solid colors — no decorative
+       multi-hue gradients. --gradient-glass keeps a two-stop white-opacity
+       ramp since that's a material/glass highlight, not a brand-color
+       gradient (see Liquid Glass system). */
+    --gradient-primary: hsl(240 11% 8%);
+    --gradient-secondary: hsl(327 100% 59% / 0.06);
+    --gradient-accent: hsl(36 22% 95%);
+    --gradient-subtle: hsl(327 100% 59% / 0.03);
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.95), hsl(0 0% 100% / 0.85));
-    --gradient-gold: linear-gradient(135deg, hsl(43 100% 58%), hsl(36 96% 52%));
-    --gradient-hero: linear-gradient(180deg, hsl(178 80% 47% / 0.06), transparent);
+    --gradient-gold: hsl(327 100% 59%);
+    --gradient-hero: hsl(327 100% 59% / 0.04);
 
     /* Shadow system — softer, warm-tinted */
     --shadow-xs: 0 1px 2px hsl(240 11% 8% / 0.03);
@@ -96,26 +112,27 @@ All colors MUST be HSL.
     --shadow-md: 0 4px 12px hsl(240 11% 8% / 0.06);
     --shadow-lg: 0 8px 24px hsl(240 11% 8% / 0.08);
     --shadow-xl: 0 16px 48px hsl(240 11% 8% / 0.12);
-    --shadow-glow: 0 0 32px hsl(178 80% 47% / 0.22);
-    --shadow-glow-lime: 0 0 12px hsl(178 80% 47% / 0.18);
+    --shadow-glow: 0 0 32px hsl(327 100% 59% / 0.22);
+    --shadow-glow-lime: 0 0 12px hsl(327 100% 59% / 0.18);
     --shadow-card: 0 1px 2px hsl(240 11% 8% / 0.04), 0 2px 8px -2px hsl(240 11% 8% / 0.05);
     --shadow-card-hover: 0 2px 4px hsl(240 11% 8% / 0.05), 0 6px 16px -4px hsl(240 11% 8% / 0.08);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    /* Mode accent tokens — v1.0 teal */
-    --mode-accent: 178 80% 47%;
+    /* Mode accent tokens — one accent, no per-mode hue switching */
+    --mode-accent: 327 100% 59%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 32px hsl(178 80% 47% / 0.22);
+    --mode-glow: 0 0 32px hsl(327 100% 59% / 0.22);
   }
 
-  /* Modes collapse to single teal accent in Daylight v1.0 */
+  /* Nav modes (Create/Work) no longer switch accent hue — same token
+     everywhere so routes share one design system, not a color per section. */
   [data-nav-mode="create"],
   [data-nav-mode="work"] {
-    --mode-accent: 178 80% 47%;
+    --mode-accent: 327 100% 59%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 32px hsl(178 80% 47% / 0.22);
+    --mode-glow: 0 0 32px hsl(327 100% 59% / 0.22);
   }
 
 
@@ -166,67 +183,67 @@ All colors MUST be HSL.
     --warning: 33 100% 62%;          /* Kretopia Warm Orange */
     --warning-foreground: 225 44% 4%;
 
-    /* Kretopia brand gradient — violet → magenta */
-    --gradient-primary: linear-gradient(135deg, hsl(252 100% 60%), hsl(327 100% 59%));
-    --gradient-secondary: linear-gradient(135deg, hsl(327 100% 59% / 0.18), hsl(252 100% 60% / 0.04));
-    --gradient-accent: linear-gradient(180deg, hsl(225 44% 4%), hsl(222 24% 9%));
-    --gradient-subtle: linear-gradient(180deg, hsl(327 100% 59% / 0.06), transparent);
+    /* Design system reset — flattened to the single accent, no
+       multi-hue brand gradients. See :root for the rationale. */
+    --gradient-primary: hsl(327 100% 59%);
+    --gradient-secondary: hsl(327 100% 59% / 0.14);
+    --gradient-accent: hsl(222 24% 9%);
+    --gradient-subtle: hsl(327 100% 59% / 0.05);
     --gradient-glass: linear-gradient(135deg, hsl(222 24% 9% / 0.92), hsl(222 22% 13% / 0.78));
-    --gradient-gold: linear-gradient(135deg, hsl(33 100% 62%), hsl(15 100% 62%));
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(252 100% 60% / 0.18), transparent 70%);
+    --gradient-gold: hsl(327 100% 59%);
+    --gradient-hero: hsl(327 100% 59% / 0.10);
 
     /* ============================================================
-       KRETOPIA v1 BRAND SHEET — palette + signature gradients.
-       Midnight · Deep Purple · Magenta · Coral · Warm Orange · Soft Sand.
-       Use the gradients sparingly: hero CTAs, Kreto glow, pillar accents.
+       KRETOPIA BRAND SHEET — retired. Every named swatch and every
+       signature gradient below now resolves to the single accent
+       (327 100% 59% / #FF2DA1) instead of the old blue→violet→
+       magenta→amber sweep. Names are kept as aliases so the ~7 files
+       consuming --kretopia-sunset / --k-grad-* / .bg-k-* / .text-k-*
+       don't need per-file edits — they now render solid pink.
        ============================================================ */
     --k-midnight:    240 18% 5%;     /* #0B0B10 */
-    --k-blue:        251 92% 51%;    /* #2A0FD9 electric indigo-blue (logo start) */
-    --k-purple:      251 92% 52%;    /* #4812F5 deep blue-violet */
-    --k-violet:      282 82% 45%;    /* #9413D2 violet midpoint */
-    --k-magenta:     320 86% 49%;    /* #E0179C magenta */
-    --k-pink:        345 100% 62%;   /* #FF3D7A warm pink */
-    --k-amber:       38 99% 55%;     /* #FEA61A amber tip */
-    --k-sand:        36 21% 93%;     /* #F2EFEA soft sand */
+    --k-blue:        327 100% 59%;
+    --k-purple:      327 100% 59%;
+    --k-violet:      327 100% 59%;
+    --k-magenta:     327 100% 59%;
+    --k-pink:        327 100% 59%;
+    --k-amber:       327 100% 59%;
+    --k-sand:        36 21% 93%;     /* #F2EFEA soft sand — neutral, unaffected */
 
-    /* Signature gradients — re-tuned to match the actual K mark.
-       Heavy blue/violet runway, magenta in the lower third, amber only as a tip.
-       This keeps it OFF the Instagram (yellow→pink→purple) territory. */
-    --k-grad-purple-dream:  linear-gradient(160deg, #2A0FD9 0%, #4812F5 35%, #9413D2 100%);
-    --k-grad-sunset-drive:  linear-gradient(160deg, #9413D2 0%, #E0179C 55%, #FF3D7A 100%);
-    --k-grad-creative-flow: linear-gradient(160deg, #2A0FD9 0%, #9413D2 50%, #FEA61A 100%);
-    --k-grad-full:          linear-gradient(160deg, #2A0FD9 0%, #4812F5 22%, #9413D2 52%, #E0179C 78%, #FF3D7A 90%, #FEA61A 100%);
+    --k-grad-purple-dream:  hsl(327 100% 59%);
+    --k-grad-sunset-drive:  hsl(327 100% 59%);
+    --k-grad-creative-flow: hsl(327 100% 59%);
+    --k-grad-full:          hsl(327 100% 59%);
 
-    /* Backwards-compat: keep --kretopia-sunset pointing at the canonical full sweep. */
     --kretopia-sunset: var(--k-grad-full);
-    --kretopia-sunset-soft: linear-gradient(160deg, hsl(251 92% 51% / 0.20) 0%, hsl(282 82% 45% / 0.18) 50%, hsl(38 99% 55% / 0.14) 100%);
-    --kretopia-glow: 0 0 60px -10px hsl(326 100% 59% / 0.5), 0 0 120px -20px hsl(248 92% 57% / 0.4);
+    --kretopia-sunset-soft: hsl(327 100% 59% / 0.16);
+    --kretopia-glow: 0 0 60px -10px hsl(327 100% 59% / 0.5), 0 0 120px -20px hsl(327 100% 59% / 0.3);
 
     --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.5);
     --shadow-sm: 0 2px 4px hsl(0 0% 0% / 0.55);
     --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.6);
     --shadow-lg: 0 8px 24px hsl(0 0% 0% / 0.65);
     --shadow-xl: 0 20px 60px hsl(0 0% 0% / 0.7);
-    --shadow-glow: 0 0 32px hsl(178 80% 47% / 0.35);
-    --shadow-glow-lime: 0 0 18px hsl(178 80% 47% / 0.25);
+    --shadow-glow: 0 0 32px hsl(327 100% 59% / 0.35);
+    --shadow-glow-lime: 0 0 18px hsl(327 100% 59% / 0.25);
     --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.7);
-    --shadow-card-hover: 0 12px 40px -8px hsl(178 80% 47% / 0.22), 0 4px 20px -4px hsl(0 0% 0% / 0.7);
+    --shadow-card-hover: 0 12px 40px -8px hsl(327 100% 59% / 0.22), 0 4px 20px -4px hsl(0 0% 0% / 0.7);
 
-    --mode-accent: 178 80% 47%;
+    --mode-accent: 327 100% 59%;
     --mode-accent-foreground: 225 44% 4%;
-    --mode-glow: 0 0 32px hsl(178 80% 47% / 0.35);
+    --mode-glow: 0 0 32px hsl(327 100% 59% / 0.35);
   }
 
   .dark [data-nav-mode="create"] {
-    --mode-accent: 252 100% 72%;
-    --mode-accent-foreground: 250 35% 6%;
-    --mode-glow: 0 0 40px hsl(252 100% 72% / 0.4);
+    --mode-accent: 327 100% 59%;
+    --mode-accent-foreground: 0 0% 100%;
+    --mode-glow: 0 0 40px hsl(327 100% 59% / 0.4);
   }
 
   .dark [data-nav-mode="work"] {
-    --mode-accent: 72 100% 65%;
-    --mode-accent-foreground: 250 35% 6%;
-    --mode-glow: 0 0 40px hsl(72 100% 65% / 0.4);
+    --mode-accent: 327 100% 59%;
+    --mode-accent-foreground: 0 0% 100%;
+    --mode-glow: 0 0 40px hsl(327 100% 59% / 0.4);
   }
 
   /* ============================================================
@@ -242,9 +259,9 @@ All colors MUST be HSL.
     --energy: 327 100% 59%;
     --energy-foreground: 0 0% 100%;
     --ring: 0 0% 100%;
-    --gradient-secondary: linear-gradient(135deg, hsl(327 100% 59% / 0.18), hsl(252 100% 60% / 0.04));
-    --gradient-subtle: linear-gradient(180deg, hsl(327 100% 59% / 0.08), transparent);
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(252 100% 60% / 0.18), transparent 70%);
+    --gradient-secondary: hsl(327 100% 59% / 0.10);
+    --gradient-subtle: hsl(327 100% 59% / 0.05);
+    --gradient-hero: hsl(327 100% 59% / 0.08);
     --shadow-glow: 0 0 32px hsl(327 100% 59% / 0.35);
     --mode-accent: 327 100% 59%;
     --mode-accent-foreground: 0 0% 100%;
@@ -264,10 +281,10 @@ All colors MUST be HSL.
     --energy: 75 100% 50%;
     --energy-foreground: 240 17% 7%;
     --ring: 75 100% 50%;
-    --gradient-primary: linear-gradient(135deg, hsl(75 100% 50%), hsl(68 95% 55%));
-    --gradient-secondary: linear-gradient(135deg, hsl(75 100% 50% / 0.18), hsl(75 100% 50% / 0.04));
-    --gradient-subtle: linear-gradient(180deg, hsl(75 100% 50% / 0.08), transparent);
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(75 100% 50% / 0.14), transparent 70%);
+    --gradient-primary: hsl(75 100% 50%);
+    --gradient-secondary: hsl(75 100% 50% / 0.10);
+    --gradient-subtle: hsl(75 100% 50% / 0.05);
+    --gradient-hero: hsl(75 100% 50% / 0.08);
     --shadow-glow: 0 0 32px hsl(75 100% 50% / 0.35);
     --mode-accent: 75 100% 50%;
     --mode-accent-foreground: 240 17% 7%;
@@ -367,20 +384,14 @@ All colors MUST be HSL.
     @apply float-left text-6xl sm:text-7xl font-sans font-black leading-[0.85] mr-2 mt-1 text-primary;
   }
 
-  /* Brand spectrum text gradient — pink → amber → teal.
-     Reserve for: wordmark "IN", landing hero accent words, brand moments.
-     Do NOT use on body copy, buttons, or anything functional. */
+  /* Formerly a pink→amber→teal text gradient. Design system reset: solid
+     accent color, no gradient text anywhere. */
   .text-spectrum {
-    background-image: linear-gradient(
-      90deg,
-      hsl(var(--signal-pink)) 0%,
-      hsl(var(--signal-amber)) 55%,
-      hsl(var(--signal-teal)) 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
+    background-image: none;
+    color: hsl(var(--signal-teal));
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    -webkit-text-fill-color: hsl(var(--signal-teal));
   }
   .gradient-primary {
     background: var(--gradient-primary);
@@ -481,11 +492,11 @@ All colors MUST be HSL.
     @apply text-2xl sm:text-3xl font-black tracking-[-0.03em];
   }
   /* Cinematic hero backdrop — soft spectrum wash (teal → amber) on canvas */
+  /* Formerly a dual radial-gradient wash. Design system reset: flat
+     surface, no decorative gradients — depth now comes from the Liquid
+     Glass system's blur/border/shadow instead of a color wash. */
   .bg-cinematic {
-    background:
-      radial-gradient(ellipse 70% 50% at 25% 0%, hsl(var(--signal-teal) / 0.12), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 85% 100%, hsl(var(--signal-amber) / 0.08), transparent 60%),
-      hsl(var(--background));
+    background: hsl(var(--background));
   }
 
   .shadow-card {

@@ -142,12 +142,16 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
       if (error) throw error;
 
       if (accept && endorsement) {
-        // Increment endorsement count
+        // increment_endorsement_count already sets verification_status
+        // correctly (verified at 2+ endorsements, pending at 1) — mirrors
+        // submit_credit_endorsement_by_token's threshold. Don't overwrite
+        // it here; this used to hardcode 'peer' regardless of count, which
+        // both stomped that correct value AND isn't an allowed
+        // verification_status per credits_verification_status_check.
         await supabase.rpc('increment_endorsement_count' as any, { credit_id_param: endorsement.credit_id });
-        // Upgrade credit verification status to 'peer' (boosts ThriveStatus)
         await supabase
           .from('credits')
-          .update({ verification_status: 'peer', verified_by_user_id: userId })
+          .update({ verified_by_user_id: userId })
           .eq('id', endorsement.credit_id);
       }
 

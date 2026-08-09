@@ -23,6 +23,8 @@ const buttonVariants = cva(
         // Lime — same accent as hero but reusable name
         lime: "bg-energy text-energy-foreground font-black uppercase tracking-wider hover:scale-[1.03] shadow-glow-lime",
         glow: "bg-primary text-primary-foreground hover:bg-primary/90 animate-glow",
+        // Liquid Glass — translucent surface, hairline border, accent on hover/active.
+        glass: "glass-surface text-foreground hover:border-[hsl(var(--color-accent)_/_0.5)] hover:text-[hsl(var(--color-accent))] data-[state=open]:border-[hsl(var(--color-accent)_/_0.6)] data-[state=open]:text-[hsl(var(--color-accent))]",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -163,7 +163,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         "sticky top-0 z-50 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none",
         isLandingPage
           ? "dark-surface border-b border-white/10 bg-[#05070D] text-white"
-          : "border-b border-border/60 bg-background",
+          : "border-b border-border/60 glass-surface-elevated rounded-none border-x-0 border-t-0",
       )}
       style={{
         transform: navHidden ? "translateY(-100%)" : "translateY(0)",

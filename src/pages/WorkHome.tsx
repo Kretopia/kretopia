@@ -60,6 +60,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
 import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
+import { CastingCallsRail } from "@/components/opportunity/CastingCallsRail";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
 interface ProjectPersonRow {
@@ -677,6 +678,15 @@ const CreatorWorkHome = () => {
         </div>
 
         <SpeedTonightCard />
+
+        {/* Casting calls — real open opportunities of type "casting",
+            shortcut/filter for parity with the Live & upcoming and Recent
+            collaborators rails. Reuses GigRailCard as-is (same card used
+            in OpportunitiesFeed's grid) rather than a new card design. */}
+        <div className="space-y-2">
+          <h2 className="text-base font-bold">Casting calls</h2>
+          <CastingCallsRail />
+        </div>
 
         {/* Recent collaborators — real people from the user's most
             recently active projects, via the same get_project_people RPC

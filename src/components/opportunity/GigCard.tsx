@@ -6,7 +6,7 @@ import {
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock,
   DollarSign, Zap, Target, GraduationCap, AlertTriangle,
   Gift, ArrowRight, Shield, User, Verified, Radar, Sparkles,
-  Globe, Lock,
+  Globe, Lock, Camera,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
@@ -54,6 +54,7 @@ const TYPE_CONFIG: Record<string, { label: string; chip: string; icon: typeof Br
   project:        { label: "Project",       chip: "bg-violet-500/15 text-violet-400 border-violet-500/25",             icon: Target },
   internship:     { label: "Internship",    chip: "bg-orange-500/15 text-orange-400 border-orange-500/25",    icon: GraduationCap },
   barter:         { label: "Barter",        chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25", icon: ArrowRightLeft },
+  casting:        { label: "Casting Call",  chip: "bg-rose-500/15 text-rose-400 border-rose-500/25",          icon: Camera },
 };
 
 const USAGE_LABELS: Record<string, string> = {

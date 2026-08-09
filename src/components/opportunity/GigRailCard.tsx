@@ -3,7 +3,7 @@ import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
 import {
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock,
-  DollarSign, Zap, Target, GraduationCap, Sparkles, Radar, Shield, Globe, Lock,
+  DollarSign, Zap, Target, GraduationCap, Sparkles, Radar, Shield, Globe, Lock, Camera,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -18,6 +18,7 @@ const TYPE_CONFIG: Record<string, { label: string; chip: string; icon: typeof Br
   project:       { label: "Project",   chip: "bg-violet-500/15 text-violet-400 border-violet-500/25",             icon: Target,        gradient: "from-violet-500/30 via-violet-500/10 to-background" },
   internship:    { label: "Internship",chip: "bg-orange-500/15 text-orange-400 border-orange-500/25",   icon: GraduationCap, gradient: "from-orange-500/30 via-orange-500/10 to-background" },
   barter:        { label: "Barter",    chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25", icon: ArrowRightLeft,gradient: "from-fuchsia-500/30 via-fuchsia-500/10 to-background" },
+  casting:       { label: "Casting Call", chip: "bg-rose-500/15 text-rose-400 border-rose-500/25",       icon: Camera,        gradient: "from-rose-500/30 via-rose-500/10 to-background" },
 };
 
 interface GigRailCardProps {

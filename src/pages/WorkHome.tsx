@@ -430,8 +430,10 @@ const CreatorWorkHome = () => {
         topProjects.map((p) =>
           supabase
             .rpc("get_project_people" as any, { _project_id: p.id })
-            .then(({ data }) => (data ?? []) as ProjectPersonRow[])
-            .catch(() => [] as ProjectPersonRow[])
+            .then(
+              ({ data }) => (data ?? []) as ProjectPersonRow[],
+              () => [] as ProjectPersonRow[]
+            )
         )
       );
       if (cancelled) return;

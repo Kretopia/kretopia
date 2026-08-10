@@ -120,19 +120,32 @@ export default function KretoTab() {
           </p>
         </div>
 
-        {/* Quick actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {QUICK_ACTIONS.map(({ icon: Icon, label, prompt }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => openKreto(prompt)}
-              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-sm font-medium text-white/90 hover:border-[#FF2DA1]/40 hover:bg-white/[0.06] transition-colors"
-            >
-              <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
-              {label}
-            </button>
-          ))}
+        {/* Primary CTA — the one dominant action on this page */}
+        <button
+          type="button"
+          onClick={() => openKreto()}
+          className="w-full flex items-center justify-between gap-3 rounded-2xl border border-[#FF2DA1]/40 bg-[#FF2DA1]/10 px-5 py-4 text-left hover:bg-[#FF2DA1]/15 transition-colors"
+        >
+          <span className="text-base font-medium text-white">Ask {BRAND.agentName} anything…</span>
+          <ArrowRight className="h-5 w-5 text-[#FF2DA1] shrink-0" />
+        </button>
+
+        {/* Quick actions — secondary shortcuts, visually quieter than the primary CTA above */}
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2.5">Or start with</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {QUICK_ACTIONS.map(({ icon: Icon, label, prompt }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => openKreto(prompt)}
+                className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-sm font-medium text-white/80 hover:border-white/25 hover:bg-white/[0.06] transition-colors"
+              >
+                <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Live context: Passport, Scout, recent actions */}
@@ -201,16 +214,6 @@ export default function KretoTab() {
             )}
           </div>
         )}
-
-        {/* Composer teaser — opens the real composer, doesn't duplicate it */}
-        <button
-          type="button"
-          onClick={() => openKreto()}
-          className="w-full flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-left hover:border-white/25 transition-colors"
-        >
-          <span className="text-sm text-white/50">Ask {BRAND.agentName} anything…</span>
-          <ArrowRight className="h-4 w-4 text-white/30 shrink-0" />
-        </button>
 
         <p className="text-xs text-white/35 leading-relaxed">
           {BRAND.agentName} opens automatically above. Anything that could affect other people, spend

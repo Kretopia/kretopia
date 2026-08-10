@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Mic, Video, Loader2, Users } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
+import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export type SoundStage = {
   id: string;
@@ -27,6 +30,8 @@ export function SoundStagesRail({ onJoin }: Props) {
   const [stages, setStages] = useState<SoundStage[]>([]);
   const [hosts, setHosts] = useState<Record<string, HostProfile>>({});
   const [loading, setLoading] = useState(true);
+  const [api, setApi] = useState<CarouselApi>();
+  const reducedMotion = useReducedMotion();
 
   const fetchStages = async () => {
     const { data } = await supabase
@@ -84,8 +89,9 @@ export function SoundStagesRail({ onJoin }: Props) {
   }
 
   return (
-    <div className="-mx-3 px-3 overflow-x-auto scrollbar-none">
-      <div className="flex gap-4 pb-3 snap-x snap-mandatory">
+    <div className="relative">
+      <Carousel setApi={setApi} opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full" aria-label="Live sound stages">
+      <CarouselContent className="-ml-4">
         {stages.map((s, idx) => {
           const host = hosts[s.host_user_id];
           const hostHandle = host?.username ? `@${host.username}` : host?.full_name ?? "Host";
@@ -96,7 +102,8 @@ export function SoundStagesRail({ onJoin }: Props) {
             s.format === "audience" ? "Audience" : "Open Jam";
 
           return (
-            <div key={s.id} className="flex-none w-[280px] snap-center">
+            <CarouselItem key={s.id} className="pl-4 basis-auto">
+            <div className="w-[280px]">
               <div className="relative group">
                 {isHeadliner && (
                   <div
@@ -120,7 +127,7 @@ export function SoundStagesRail({ onJoin }: Props) {
                         className="w-14 h-14 rounded-2xl p-[2px] shadow-lg"
                         style={{
                           background: isHeadliner
-                            ? "linear-gradient(to top right, hsl(var(--signal-pink)), hsl(var(--signal-amber)))"
+                            ? "hsl(var(--signal-pink))"
                             : "hsl(var(--muted))",
                           boxShadow: isHeadliner
                             ? "0 8px 24px -8px hsl(var(--signal-pink) / 0.4)"
@@ -213,9 +220,14 @@ export function SoundStagesRail({ onJoin }: Props) {
                 </button>
               </div>
             </div>
+            </CarouselItem>
           );
         })}
-      </div>
+      </CarouselContent>
+      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous — live sound stages" />
+      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next — live sound stages" />
+      </Carousel>
+      <CarouselPositionDots api={api} label="Live sound stages" className="mt-2" />
     </div>
   );
 }

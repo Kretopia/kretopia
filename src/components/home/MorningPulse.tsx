@@ -211,9 +211,7 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
                   <div
                     className="h-14 w-full"
                     style={{
-                      background:
-                        grad ||
-                        "linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--accent) / 0.12))",
+                      background: grad || "hsl(var(--color-accent) / 0.14)",
                     }}
                   />
                   <div className="p-3">

@@ -1,4 +1,4 @@
-import { Share2, ShieldCheck, Gauge, ArrowRight } from "lucide-react";
+import { ShieldCheck, Gauge, ArrowRight } from "lucide-react";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
 import { analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,6 @@ interface PassportCommandCenterProps {
   hasBio: boolean;
   hasAvatar: boolean;
   cosignCount: number;
-  onShare: () => void;
   onReviewCredits: () => void;
   className?: string;
 }
@@ -36,7 +35,6 @@ export function PassportCommandCenter({
   hasBio,
   hasAvatar,
   cosignCount,
-  onShare,
   onReviewCredits,
   className,
 }: PassportCommandCenterProps) {
@@ -76,19 +74,6 @@ export function PassportCommandCenter({
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
         </button>
       )}
-
-      <button
-        type="button"
-        onClick={() => { analytics.trustActionStarted('share'); onShare(); }}
-        className="w-full flex items-start gap-3 rounded-xl border border-border/60 bg-card/60 p-3.5 text-left hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
-      >
-        <Share2 className="h-4 w-4 text-[hsl(var(--signal-teal))] shrink-0 mt-0.5" />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">Your career now has a home</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Share your Creative Passport.</p>
-        </div>
-        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-      </button>
 
       <div className="rounded-xl border border-border/60 bg-card/60 p-3.5">
         <div className="flex items-center gap-2 mb-1.5">

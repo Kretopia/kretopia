@@ -62,7 +62,8 @@ import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
 import { CastingCallsRail } from "@/components/opportunity/CastingCallsRail";
 import { RecentRecordingsRail } from "@/components/calls/RecentRecordingsRail";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
+import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
 
 interface ProjectPersonRow {
   user_id: string;
@@ -361,6 +362,7 @@ const CreatorWorkHome = () => {
   const [recentCollaborators, setRecentCollaborators] = useState<
     { id: string; full_name: string; avatar_url: string | null; role: string | null }[]
   >([]);
+  const [collabApi, setCollabApi] = useState<CarouselApi>();
   const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -701,7 +703,8 @@ const CreatorWorkHome = () => {
         {recentCollaborators.length > 0 && (
           <div className="space-y-2">
             <h2 className="text-base font-bold">Recent collaborators</h2>
-            <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full">
+            <div className="relative">
+            <Carousel setApi={setCollabApi} opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full" aria-label="Recent collaborators">
               <CarouselContent className="-ml-3">
                 {recentCollaborators.map((c) => (
                   <CarouselItem key={c.id} className="pl-3 basis-auto">
@@ -725,7 +728,11 @@ const CreatorWorkHome = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
+              <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous — recent collaborators" />
+              <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next — recent collaborators" />
             </Carousel>
+            <CarouselPositionDots api={collabApi} label="Recent collaborators" className="mt-2" />
+            </div>
           </div>
         )}
 

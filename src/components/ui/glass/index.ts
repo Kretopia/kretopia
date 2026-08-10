@@ -24,6 +24,7 @@ export {
   GlassModalDescription,
 } from "./GlassModal";
 export { GlassCarousel, GlassCarouselItem, type GlassCarouselProps } from "./GlassCarousel";
+export { CarouselPositionDots, type CarouselPositionDotsProps } from "./CarouselPositionDots";
 export {
   GlassStatusPill,
   type GlassStatusPillProps,

@@ -35,7 +35,6 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
 import { PassportKretoEntry } from "@/components/passport/PassportKretoEntry";
-import { PassportOverview } from "@/components/passport/PassportOverview";
 import { PassportMomentum } from "@/components/passport/PassportMomentum";
 import { ThriveRemembersChip } from "@/components/passport/ThriveRemembersChip";
 import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
@@ -577,16 +576,6 @@ const ProfileContent = () => {
           );
         })()}
 
-        {/* Passport Overview — 4 trust cards (Stamps · Connections · Projects · Co-signs) */}
-        <div className="mt-3">
-          <PassportOverview
-            stamps={credits?.filter((c: any) => c.verification_status === 'verified').length || 0}
-            connections={stats.circle || 0}
-            projects={stats.projects || 0}
-            cosigns={reviews?.filter((r: any) => r.status === 'approved').length || 0}
-          />
-        </div>
-
         {/* Last-30-day momentum strip — only renders when something happened */}
         <div className="mt-3">
           <PassportMomentum />
@@ -612,7 +601,6 @@ const ProfileContent = () => {
             hasBio={!!profile?.bio}
             hasAvatar={!!profile?.avatar_url}
             cosignCount={reviews?.filter((r: any) => r.status === 'approved').length || 0}
-            onShare={() => setIsShareDialogOpen(true)}
             onReviewCredits={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
           />
         </div>

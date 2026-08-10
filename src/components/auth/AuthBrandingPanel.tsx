@@ -14,10 +14,10 @@ export const AuthBrandingPanel = () => (
     {/* Sunset wash behind */}
     <div
       className="pointer-events-none absolute -top-32 -left-32 h-[560px] w-[560px] rounded-full opacity-50 blur-[140px]"
-      style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+      style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
     />
     <div className="pointer-events-none absolute -bottom-40 -right-20 h-[420px] w-[420px] rounded-full opacity-30 blur-[120px]"
-         style={{ background: "linear-gradient(135deg,#FF2CA7,#FFB347)" }} />
+         style={{ background: "hsl(327 100% 59%)" }} />
     <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-white/15 to-transparent" />
 
     <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16 w-full">
@@ -26,7 +26,7 @@ export const AuthBrandingPanel = () => (
       </div>
 
       <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-white/85 mb-6 px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm w-fit">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#FF2CA7] animate-pulse" />
+        <span className="h-1.5 w-1.5 rounded-full bg-[#FF2DA1] animate-pulse" />
         The Creative Economy OS
       </p>
 
@@ -34,7 +34,7 @@ export const AuthBrandingPanel = () => (
         Where{" "}
         <span
           className="italic bg-clip-text text-transparent"
-          style={{ backgroundImage: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+          style={{ backgroundImage: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
         >
           Creativity
         </span>
@@ -49,7 +49,7 @@ export const AuthBrandingPanel = () => (
       <div className="mb-8 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-3.5 max-w-md">
         <KretoAvatar size="sm" />
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF2CA7] mb-0.5">Kreto</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF2DA1] mb-0.5">Kreto</p>
           <p className="text-sm text-white/90 leading-snug">
             "I'll line up your first three opportunities the moment you sign in."
           </p>
@@ -65,7 +65,7 @@ export const AuthBrandingPanel = () => (
               className="flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 transition-all hover:border-white/15 hover:bg-white/[0.04]"
             >
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-white mt-0.5"
-                   style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}>
+                   style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}>
                 <Icon className="h-4 w-4" />
               </div>
               <div>
@@ -79,7 +79,7 @@ export const AuthBrandingPanel = () => (
 
       <div className="mt-7">
         <p className="flex items-center gap-1.5 text-xs text-white/55">
-          <Zap className="h-3 w-3 text-[#FFB347]" />
+          <Zap className="h-3 w-3 text-[#FF2DA1]" />
           60-second setup · No credit card · Free forever to start
         </p>
         <p className="mt-2 text-[10px] uppercase tracking-[0.25em] text-white/35">

@@ -76,7 +76,7 @@ export const MeetKretoSection = () => {
             className="lg:col-span-7 order-1 lg:order-2"
           >
             <div className="flex items-center gap-3 mb-6">
-              <span className="font-serif italic text-2xl" style={{ color: "#FFB347" }}>VII.</span>
+              <span className="font-serif italic text-2xl" style={{ color: "#FF2DA1" }}>VII.</span>
               <span
                 className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/55"
                 style={{ fontFamily: "'Work Sans', sans-serif" }}
@@ -111,7 +111,7 @@ export const MeetKretoSection = () => {
               <span className="border-b border-white/30 group-hover:border-white pb-0.5 transition-colors">
                 Meet Kreto
               </span>
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ color: "#FFB347" }} />
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ color: "#FF2DA1" }} />
             </Link>
           </motion.div>
         </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -148,19 +147,17 @@ export const MyPendingInvitations = () => {
   }
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Inbox className="h-5 w-5 text-primary" />
-          Project Invitations
-          <Badge className="ml-auto">{invitations.length}</Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <div className="rounded-2xl glass-surface p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <Inbox className="h-5 w-5 text-[hsl(var(--color-accent))]" />
+        <h3 className="text-lg font-semibold">Project Invitations</h3>
+        <Badge className="ml-auto">{invitations.length}</Badge>
+      </div>
+      <div className="space-y-3">
         {invitations.map((invitation) => (
           <div
             key={invitation.id}
-            className="flex flex-col gap-3 p-4 rounded-lg border bg-card"
+            className="flex flex-col gap-3 p-4 rounded-lg border border-white/10 bg-white/[0.02]"
           >
             <div className="flex items-start gap-3">
               <Avatar className="h-10 w-10 flex-shrink-0">
@@ -223,7 +220,7 @@ export const MyPendingInvitations = () => {
             </div>
           </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

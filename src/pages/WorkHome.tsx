@@ -61,6 +61,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
 import { CastingCallsRail } from "@/components/opportunity/CastingCallsRail";
+import { RecentRecordingsRail } from "@/components/calls/RecentRecordingsRail";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
 interface ProjectPersonRow {
@@ -690,6 +691,8 @@ const CreatorWorkHome = () => {
           <h2 className="text-base font-bold">Casting calls</h2>
           <CastingCallsRail />
         </div>
+
+        <RecentRecordingsRail />
 
         {/* Recent collaborators — real people from the user's most
             recently active projects, via the same get_project_people RPC

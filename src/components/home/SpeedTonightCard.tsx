@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent } from "@/components/ui/card";
 import { CalendarDays, Users, ArrowRight, Radio } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type Sess = {
   id: string;
@@ -72,31 +72,29 @@ export const SpeedTonightCard = () => {
 
   return (
     <Link to={`/circle/speed/${sess.id}`} className="block">
-      <Card className="border-primary/30 hover:border-primary/60 transition-colors">
-        <CardContent className="p-4 flex items-center gap-3">
-          <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
-            {isLive ? <Radio className="h-5 w-5 animate-pulse" /> : <CalendarDays className="h-5 w-5" />}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-primary truncate">
-                {isLive ? "Speed Session · LIVE" : sess.mine ? "Your Speed Session" : "Speed Session tonight"}
-              </p>
-              {isGroupMode && (
-                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400">
-                  Group
-                </span>
-              )}
-            </div>
-            <p className="text-sm font-semibold truncate">{sess.title}</p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-              <Users className="h-3 w-3" /> {inWords}
-              {sess.theme && <span className="truncate">· {sess.theme}</span>}
+      <div className={cn("rounded-2xl glass-surface p-4 flex items-center gap-3 transition-colors hover:border-[hsl(var(--color-accent)_/_0.4)]")}>
+        <div className="h-11 w-11 shrink-0 rounded-xl bg-[hsl(var(--color-accent)_/_0.15)] text-[hsl(var(--color-accent))] flex items-center justify-center">
+          {isLive ? <Radio className="h-5 w-5 animate-pulse" /> : <CalendarDays className="h-5 w-5" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--color-accent))] truncate">
+              {isLive ? "Speed Session · LIVE" : sess.mine ? "Your Speed Session" : "Speed Session tonight"}
             </p>
+            {isGroupMode && (
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-muted-foreground">
+                Group
+              </span>
+            )}
           </div>
-          <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
-        </CardContent>
-      </Card>
+          <p className="text-sm font-semibold truncate">{sess.title}</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+            <Users className="h-3 w-3" /> {inWords}
+            {sess.theme && <span className="truncate">· {sess.theme}</span>}
+          </p>
+        </div>
+        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+      </div>
     </Link>
   );
 };

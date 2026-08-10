@@ -84,6 +84,7 @@ export const QuickMatchBanner = ({ userId, className }: QuickMatchBannerProps) =
           size="icon"
           className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-foreground"
           onClick={handleDismiss}
+          aria-label="Dismiss"
         >
           <X className="h-4 w-4" />
         </Button>

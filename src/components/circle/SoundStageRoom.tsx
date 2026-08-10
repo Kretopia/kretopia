@@ -1300,11 +1300,14 @@ function ColorfulAvatar({
   avatar: string | null;
   seed: string | null;
 }) {
-  const hue = useMemo(() => {
+  // Deterministic per-user lightness within the single accent hue, not a
+  // full hue-wheel gradient -- keeps each fallback avatar distinguishable
+  // without introducing off-brand colors.
+  const lightness = useMemo(() => {
     const s = (seed || name || "x")
       .split("")
       .reduce((a, c) => a + c.charCodeAt(0), 0);
-    return s % 360;
+    return 30 + (s % 22);
   }, [seed, name]);
   const initial = (name?.trim()?.[0] || "?").toUpperCase();
   return (
@@ -1314,7 +1317,7 @@ function ColorfulAvatar({
         className,
       )}
       style={{
-        background: `linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 60) % 360} 65% 28%))`,
+        background: `hsl(327 70% ${lightness}%)`,
       }}
     >
       {avatar ? (
@@ -1495,12 +1498,14 @@ function VideoStageTile({
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
   const showVideo = member.videoOn && !!videoTrack;
-  // Deterministic colorful background per user so cam-off tiles never look "broken/black"
-  const hue = useMemo(() => {
+  // Deterministic per-user background so cam-off tiles never look "broken/
+  // black" -- varies lightness within the single accent hue rather than a
+  // full hue-wheel gradient, so it stays on-brand across every seed.
+  const lightness = useMemo(() => {
     const seed = (member.userId || member.name || member.sessionId)
       .split("")
       .reduce((a, c) => a + c.charCodeAt(0), 0);
-    return seed % 360;
+    return 22 + (seed % 20);
   }, [member.userId, member.name, member.sessionId]);
   const initial = (member.name?.trim()?.[0] || "?").toUpperCase();
   return (
@@ -1529,7 +1534,7 @@ function VideoStageTile({
         <div
           className="absolute inset-0 flex items-center justify-center"
           style={{
-            background: `linear-gradient(135deg, hsl(${hue} 70% 35%), hsl(${(hue + 60) % 360} 65% 22%))`,
+            background: `hsl(327 65% ${lightness}%)`,
           }}
         >
           {member.avatar ? (

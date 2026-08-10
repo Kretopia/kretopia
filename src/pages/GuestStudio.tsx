@@ -280,7 +280,8 @@ export default function GuestStudio() {
         style={{
           backgroundImage: project.cover_url
             ? `linear-gradient(180deg, hsl(var(--background)/0.2), hsl(var(--background)/0.95)), url(${project.cover_url})`
-            : `linear-gradient(135deg, hsl(var(--primary)/0.3), hsl(var(--accent)/0.2))`,
+            : undefined,
+          backgroundColor: project.cover_url ? undefined : "hsl(var(--color-accent) / 0.16)",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

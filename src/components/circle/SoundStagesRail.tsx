@@ -127,7 +127,7 @@ export function SoundStagesRail({ onJoin }: Props) {
                         className="w-14 h-14 rounded-2xl p-[2px] shadow-lg"
                         style={{
                           background: isHeadliner
-                            ? "linear-gradient(to top right, hsl(var(--signal-pink)), hsl(var(--signal-amber)))"
+                            ? "hsl(var(--signal-pink))"
                             : "hsl(var(--muted))",
                           boxShadow: isHeadliner
                             ? "0 8px 24px -8px hsl(var(--signal-pink) / 0.4)"

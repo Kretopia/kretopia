@@ -209,20 +209,16 @@ export function LiveCallsPanel() {
         >
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[length:200%_auto] animate-[gradient_3s_linear_infinite]"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, hsl(var(--signal-amber)), hsl(var(--signal-pink)), hsl(var(--signal-amber)))",
-            }}
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "hsl(var(--signal-teal))" }}
           />
           <span className="pointer-events-none relative flex bg-card rounded-[22px] py-5 px-6 items-center justify-between">
             <span className="flex items-center gap-4">
               <span
                 className="w-12 h-12 rounded-2xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform"
                 style={{
-                  background:
-                    "linear-gradient(to bottom right, hsl(var(--signal-amber)), hsl(var(--signal-pink)))",
-                  boxShadow: "0 0 25px hsl(var(--signal-pink) / 0.5)",
+                  background: "hsl(var(--signal-teal))",
+                  boxShadow: "0 0 25px hsl(var(--signal-teal) / 0.5)",
                 }}
               >
                 <Plus className="w-6 h-6 text-white" strokeWidth={3} />

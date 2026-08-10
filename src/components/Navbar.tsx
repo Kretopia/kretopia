@@ -301,7 +301,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-[hsl(var(--k-midnight))] text-white border-l border-white/10">
                 <SheetHeader className="pr-8 text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FF2CA7]">Kretopia</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FF2DA1]">Kretopia</p>
                   <SheetTitle className="font-serif text-2xl font-normal text-white">Menu</SheetTitle>
                 </SheetHeader>
 

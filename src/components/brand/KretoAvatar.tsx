@@ -40,7 +40,7 @@ export const KretoAvatar = ({
         <motion.span
           aria-hidden
           className={cn("absolute rounded-full blur-2xl opacity-60", s.halo)}
-          style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+          style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
           animate={{ scale: [1, 1.08, 1], opacity: [0.45, 0.7, 0.45] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -48,7 +48,7 @@ export const KretoAvatar = ({
         <span
           aria-hidden
           className={cn("absolute rounded-full blur-2xl opacity-50", s.halo)}
-          style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+          style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
         />
       )}
 
@@ -57,7 +57,7 @@ export const KretoAvatar = ({
         aria-hidden
         className={cn("absolute rounded-full", s.ring)}
         style={{
-          background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))",
+          background: "var(--kretopia-sunset, hsl(327 100% 59%))",
           padding: "2px",
           WebkitMask: "linear-gradient(#000,#000) content-box, linear-gradient(#000,#000)",
           WebkitMaskComposite: "xor",

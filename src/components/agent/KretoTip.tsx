@@ -135,7 +135,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
       <div
         aria-hidden
         className="pointer-events-none absolute -top-20 -right-20 h-48 w-48 rounded-full opacity-40 blur-3xl"
-        style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+        style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
       />
 
       <button
@@ -151,7 +151,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
         <KretoAvatar size={compact ? "sm" : "md"} />
 
         <div className="min-w-0 flex-1 pr-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#FF2CA7] mb-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#FF2DA1] mb-1">
             Kreto · {tip.eyebrow}
           </p>
           <p className={cn("text-white/90 leading-snug", compact ? "text-sm" : "text-sm sm:text-[15px]")}>
@@ -163,7 +163,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
               type="button"
               onClick={() => openKreto(tip.prompt)}
               className="group inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold text-white hover:scale-[1.02] transition-transform"
-              style={{ background: "var(--kretopia-sunset, linear-gradient(135deg,#4B2CF5,#FF2CA7,#FF6A3D,#FFB347))" }}
+              style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
             >
               {tip.cta}
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />

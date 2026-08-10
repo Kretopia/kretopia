@@ -3,10 +3,16 @@ import { Loader2, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GigRailCard } from "@/components/opportunity/GigRailCard";
 import type { GigOpportunity } from "@/components/opportunity/GigCard";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import type { CarouselApi } from "@/components/ui/carousel";
 
 export const CastingCallsRail = ({ limit = 12 }: { limit?: number }) => {
   const [calls, setCalls] = useState<GigOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [api, setApi] = useState<CarouselApi>();
+  const reducedMotion = useReducedMotion();
 
   const fetchCalls = useCallback(async () => {
     const { data } = await supabase
@@ -50,12 +56,21 @@ export const CastingCallsRail = ({ limit = 12 }: { limit?: number }) => {
   }
 
   return (
-    <div className="-mx-4 px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-thin">
-      {calls.map((c) => (
-        <div key={c.id} className="w-64 shrink-0">
-          <GigRailCard opportunity={c} />
-        </div>
-      ))}
+    <div className="relative">
+      <Carousel setApi={setApi} opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full" aria-label="Casting calls">
+        <CarouselContent className="-ml-3">
+          {calls.map((c) => (
+            <CarouselItem key={c.id} className="pl-3 basis-auto">
+              <div className="w-64">
+                <GigRailCard opportunity={c} />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous — casting calls" />
+        <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next — casting calls" />
+      </Carousel>
+      <CarouselPositionDots api={api} label="Casting calls" className="mt-2" />
     </div>
   );
 };

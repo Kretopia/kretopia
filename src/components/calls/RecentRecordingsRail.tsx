@@ -6,6 +6,9 @@ import { CallRecapSheet } from "@/components/calls/CallRecapSheet";
 import { formatDistanceToNow } from "date-fns";
 import { FileVideo, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
+import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 type Row = {
   id: string;
@@ -47,6 +50,8 @@ export const RecentRecordingsRail = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [recapId, setRecapId] = useState<string | null>(null);
+  const [api, setApi] = useState<CarouselApi>();
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -72,9 +77,12 @@ export const RecentRecordingsRail = () => {
   return (
     <div className="space-y-2">
       <h2 className="text-base font-bold">Recent recordings &amp; notes</h2>
-      <div className="-mx-4 px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-thin">
+      <div className="relative">
+      <Carousel setApi={setApi} opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full" aria-label="Recent recordings and notes">
+      <CarouselContent className="-ml-3">
         {rows.map((r) => (
-          <div key={r.id} className="w-64 shrink-0 rounded-2xl glass-surface p-3.5 flex flex-col">
+          <CarouselItem key={r.id} className="pl-3 basis-auto">
+          <div className="w-64 rounded-2xl glass-surface p-3.5 flex flex-col">
             <div className="flex items-center gap-2">
               <span className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
                 <FileVideo className="h-4 w-4 text-muted-foreground" />
@@ -116,7 +124,13 @@ export const RecentRecordingsRail = () => {
               {r.recording_id && <WatchReplayButton transcriptId={r.id} variant="ghost" size="sm" label="Watch" />}
             </div>
           </div>
+          </CarouselItem>
         ))}
+      </CarouselContent>
+      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous — recent recordings and notes" />
+      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next — recent recordings and notes" />
+      </Carousel>
+      <CarouselPositionDots api={api} label="Recent recordings and notes" className="mt-2" />
       </div>
 
       {recapId && (

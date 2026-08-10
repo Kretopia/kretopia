@@ -8,6 +8,8 @@ import {
   CarouselNext,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export { CarouselItem as GlassCarouselItem };
 
@@ -42,21 +44,7 @@ export const GlassCarousel = ({
   label,
 }: GlassCarouselProps) => {
   const [api, setApi] = React.useState<CarouselApi>();
-  const [selected, setSelected] = React.useState(0);
-  const [count, setCount] = React.useState(0);
-
-  React.useEffect(() => {
-    if (!api) return;
-    setCount(api.scrollSnapList().length);
-    setSelected(api.selectedScrollSnap());
-    const onSelect = () => setSelected(api.selectedScrollSnap());
-    api.on("select", onSelect);
-    api.on("reInit", onSelect);
-    return () => {
-      api.off("select", onSelect);
-      api.off("reInit", onSelect);
-    };
-  }, [api]);
+  const reducedMotion = useReducedMotion();
 
   if (loading) {
     return (
@@ -81,7 +69,7 @@ export const GlassCarousel = ({
     <div className={cn("relative", className)}>
       <Carousel
         setApi={setApi}
-        opts={{ align: "start", dragFree: true }}
+        opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }}
         className="w-full"
         aria-label={label}
       >
@@ -90,24 +78,7 @@ export const GlassCarousel = ({
         <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label={`Next — ${label}`} />
       </Carousel>
 
-      {count > 1 && (
-        <div className="mt-2 flex items-center justify-center gap-1.5" role="tablist" aria-label={`${label} position`}>
-          {Array.from({ length: count }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              role="tab"
-              aria-selected={i === selected}
-              aria-label={`Go to slide ${i + 1} of ${count}`}
-              onClick={() => api?.scrollTo(i)}
-              className={cn(
-                "h-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--color-accent))]",
-                i === selected ? "w-4 bg-[hsl(var(--color-accent))]" : "w-1.5 bg-white/20 hover:bg-white/35",
-              )}
-            />
-          ))}
-        </div>
-      )}
+      <CarouselPositionDots api={api} label={label} className="mt-2" />
     </div>
   );
 };

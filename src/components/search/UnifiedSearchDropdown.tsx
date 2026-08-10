@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Sparkles, Database, Briefcase, User, ArrowRight, Loader2, X, UserCheck, Globe, ExternalLink } from "lucide-react";
+import { Search, Sparkles, Database, Briefcase, User, ArrowRight, Loader2, X, UserCheck, Globe, ExternalLink, Mic, Square } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useVoiceSearch } from "@/hooks/useVoiceSearch";
+import { VoiceWaveform } from "@/components/search/VoiceWaveform";
 
 interface SearchResult {
   type: "creator" | "credit" | "gig" | "web";
@@ -382,6 +384,24 @@ export function UnifiedSearchDropdown({
   const isHero = variant === "hero";
   const isNavbar = variant === "navbar";
 
+  const voice = useVoiceSearch({
+    onTranscript: (text) => {
+      setQuery(text);
+      setOpen(true);
+      onOpenChange?.(true);
+      inputRef.current?.focus();
+    },
+  });
+
+  // Transient permission/error messages clear themselves — they're a
+  // toast-style note, not a persistent blocker; typed search keeps working
+  // the whole time regardless of voice state.
+  useEffect(() => {
+    if (voice.status !== "denied" && voice.status !== "error") return;
+    const t = setTimeout(voice.dismissError, 5000);
+    return () => clearTimeout(t);
+  }, [voice.status, voice.dismissError]);
+
   return (
     <div ref={wrapperRef} className={cn("relative", className)}>
       <form onSubmit={handleSubmit}>
@@ -426,30 +446,107 @@ export function UnifiedSearchDropdown({
                 : "h-10 rounded-xl border-border bg-muted/40 pl-9 pr-8 text-sm focus:border-primary/50 focus:bg-card"
             )}
           />
-          {query && (
-            <button
-              type="button"
-              onClick={handleClear}
+          {(voice.status === "recording" || voice.status === "processing") ? (
+            <div
               className={cn(
-                "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors",
-                isHero ? "right-14" : "right-8"
+                "absolute top-1/2 -translate-y-1/2 right-1.5 flex items-center gap-1.5 rounded-full glass-surface pl-2.5 pr-1 py-1",
               )}
             >
-              <X className="h-3.5 w-3.5" />
-            </button>
+              {voice.status === "recording" ? (
+                <>
+                  <VoiceWaveform level={voice.level} className="w-8" />
+                  <button
+                    type="button"
+                    onClick={voice.stop}
+                    aria-label="Stop and use this recording"
+                    title="Stop"
+                    className="h-6 w-6 shrink-0 rounded-full bg-[hsl(var(--color-accent))] text-white flex items-center justify-center hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--color-accent))]"
+                  >
+                    <Square className="h-2.5 w-2.5 fill-current" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={voice.cancel}
+                    aria-label="Cancel recording"
+                    title="Cancel"
+                    className="h-6 w-6 shrink-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--color-accent))]"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </>
+              ) : (
+                <span className="flex items-center gap-1.5 px-1 text-[11px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Transcribing…
+                </span>
+              )}
+            </div>
+          ) : (
+            <>
+              {query ? (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  aria-label="Clear search"
+                  className={cn(
+                    "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors",
+                    isHero ? "right-14" : "right-8"
+                  )}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : voice.supported ? (
+                <button
+                  type="button"
+                  onClick={voice.start}
+                  disabled={voice.status === "requesting"}
+                  aria-label="Search by voice"
+                  title="Search by voice"
+                  className={cn(
+                    "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-[hsl(var(--color-accent))] transition-colors disabled:opacity-50",
+                    isHero ? "right-14" : "right-8"
+                  )}
+                >
+                  {voice.status === "requesting" ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Mic className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              ) : null}
+              <button
+                type="submit"
+                className={cn(
+                  "absolute top-1/2 -translate-y-1/2 flex items-center justify-center transition-colors",
+                  isHero
+                    ? "right-2.5 h-9 w-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                    : "right-1.5 h-7 w-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/80"
+                )}
+              >
+                {isHero ? <ArrowRight className="h-4 w-4" /> : <ArrowRight className="h-3.5 w-3.5" />}
+              </button>
+            </>
           )}
-          <button
-            type="submit"
-            className={cn(
-              "absolute top-1/2 -translate-y-1/2 flex items-center justify-center transition-colors",
-              isHero
-                ? "right-2.5 h-9 w-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
-                : "right-1.5 h-7 w-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/80"
-            )}
-          >
-            {isHero ? <ArrowRight className="h-4 w-4" /> : <ArrowRight className="h-3.5 w-3.5" />}
-          </button>
         </div>
+
+        {/* Voice permission/error note — transient, self-dismissing, never
+            blocks typed search which keeps working throughout. */}
+        {(voice.status === "denied" || voice.status === "error") && voice.errorMessage && (
+          <div
+            role="status"
+            className="mt-1.5 flex items-center justify-between gap-2 rounded-lg glass-surface px-2.5 py-1.5 text-[11px] text-muted-foreground"
+          >
+            <span>{voice.errorMessage}</span>
+            <button
+              type="button"
+              onClick={voice.dismissError}
+              aria-label="Dismiss"
+              className="shrink-0 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        )}
       </form>
 
       {/* ═══ DROPDOWN ═══ */}

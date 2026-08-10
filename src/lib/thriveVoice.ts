@@ -37,6 +37,13 @@ export function isRecording() {
   return activeRecorder?.state === "recording";
 }
 
+/** The live MediaStream while recording — for callers that want to attach
+ *  their own AnalyserNode for a real audio-level visualization (see
+ *  useVoiceSearch.ts). Null when not recording. */
+export function getActiveStream(): MediaStream | null {
+  return activeStream;
+}
+
 export async function startRecording(): Promise<void> {
   if (activeRecorder) throw new Error("Already recording");
   if (!navigator.mediaDevices?.getUserMedia) {

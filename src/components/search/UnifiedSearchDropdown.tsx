@@ -79,10 +79,17 @@ export function UnifiedSearchDropdown({
   const [highlightedCreator, setHighlightedCreator] = useState<SearchResult | null>(null);
   const [knowledgeCard, setKnowledgeCard] = useState<KnowledgeCard | null>(null);
   const [alternativeMatches, setAlternativeMatches] = useState<AlternativeMatch[]>([]);
+  const [error, setError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Escape should close and stay closed — without this, refocusing the
+  // input (to return focus after Escape) would immediately reopen the
+  // dropdown via onFocus, since the query text is still present.
+  const suppressReopenRef = useRef(false);
   const query = value ?? internalQuery;
+  const listboxId = useRef(`search-results-${Math.random().toString(36).slice(2)}`).current;
 
   const setQuery = useCallback((nextValue: string) => {
     if (value === undefined) setInternalQuery(nextValue);
@@ -108,6 +115,7 @@ export function UnifiedSearchDropdown({
       setOpen(false);
       onOpenChange?.(false);
       setResults([]);
+      setError(false);
       setHighlightedCreator(null);
       setKnowledgeCard(null);
       setAlternativeMatches([]);
@@ -126,6 +134,7 @@ export function UnifiedSearchDropdown({
 
     setLoading(true);
     setWebLoading(true);
+    setError(false);
     setHighlightedCreator(null);
     setKnowledgeCard(null);
     setAlternativeMatches([]);
@@ -268,6 +277,7 @@ export function UnifiedSearchDropdown({
       if (!controller.signal.aborted) {
         console.error("Search error:", err);
         setResults([]);
+        setError(true);
         setLoading(false);
         setWebLoading(false);
       }
@@ -319,10 +329,54 @@ export function UnifiedSearchDropdown({
   const handleClear = () => {
     setQuery("");
     setResults([]);
+    setError(false);
     setHighlightedCreator(null);
     setKnowledgeCard(null);
     setAlternativeMatches([]);
     inputRef.current?.focus();
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      if (open) {
+        e.stopPropagation();
+        setOpen(false);
+        onOpenChange?.(false);
+      } else if (query) {
+        handleClear();
+      }
+      return;
+    }
+    if ((e.key === "ArrowDown" || e.key === "ArrowUp") && open) {
+      e.preventDefault();
+      const focusable = resultsRef.current?.querySelectorAll<HTMLButtonElement>("button[data-search-result]");
+      if (!focusable || focusable.length === 0) return;
+      if (e.key === "ArrowDown") focusable[0].focus();
+      else focusable[focusable.length - 1].focus();
+    }
+  };
+
+  const handleResultKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "Escape") {
+      setOpen(false);
+      onOpenChange?.(false);
+      suppressReopenRef.current = true;
+      inputRef.current?.focus();
+      return;
+    }
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const focusable = Array.from(
+      resultsRef.current?.querySelectorAll<HTMLButtonElement>("button[data-search-result]") ?? [],
+    );
+    const currentIndex = focusable.indexOf(e.currentTarget);
+    if (currentIndex === -1) return;
+    const nextIndex = e.key === "ArrowDown" ? currentIndex + 1 : currentIndex - 1;
+    if (nextIndex < 0) {
+      inputRef.current?.focus();
+    } else if (nextIndex < focusable.length) {
+      focusable[nextIndex].focus();
+    }
   };
 
   const isHero = variant === "hero";
@@ -348,13 +402,21 @@ export function UnifiedSearchDropdown({
               onOpenChange?.(true);
             }}
             onFocus={() => {
+              if (suppressReopenRef.current) {
+                suppressReopenRef.current = false;
+                return;
+              }
               if (query.trim().length >= 2) {
                 setOpen(true);
                 onOpenChange?.(true);
               }
             }}
+            onKeyDown={handleInputKeyDown}
             placeholder={placeholder}
             autoFocus={autoFocus}
+            aria-label="Search a name, project or opportunity"
+            aria-expanded={open}
+            aria-controls={listboxId}
             className={cn(
               "w-full border text-foreground transition-all placeholder:text-muted-foreground/50 focus:outline-none",
               isHero
@@ -393,12 +455,15 @@ export function UnifiedSearchDropdown({
       {/* ═══ DROPDOWN ═══ */}
       {open && query.trim().length >= 2 && (
         <div
+          id={listboxId}
+          role="region"
+          aria-label="Search results"
           className={cn(
-            "absolute left-0 right-0 mt-2 rounded-xl border border-border bg-popover shadow-xl z-[100] overflow-hidden backdrop-blur-lg",
+            "absolute left-0 right-0 mt-2 rounded-xl glass-surface-elevated shadow-xl z-[100] overflow-hidden",
             isNavbar ? "max-h-[70vh]" : "max-h-[60vh]"
           )}
         >
-          <div className="overflow-y-auto max-h-[inherit]">
+          <div ref={resultsRef} className="overflow-y-auto max-h-[inherit]">
             {/* Loading state — show when either loading or webLoading with no results yet */}
             {(loading || (webLoading && results.length === 0 && !knowledgeCard)) && (
               <div className="px-4 py-6 flex flex-col items-center gap-3">
@@ -419,16 +484,18 @@ export function UnifiedSearchDropdown({
 
             {/* ═══ KNOWLEDGE CARD (from AI) ═══ */}
             {knowledgeCard && !highlightedCreator && (
-              <div className="border-b border-border bg-gradient-to-b from-primary/5 to-transparent">
+              <div className="border-b border-border bg-primary/[0.03]">
                 <button
                   type="button"
+                  data-search-result
+                  onKeyDown={handleResultKeyDown}
                   onClick={() => {
                     setOpen(false);
                     setQuery("");
                     onOpenChange?.(false);
                     submitQuery(knowledgeCard.name);
                   }}
-                  className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors"
+                  className="w-full text-left px-4 py-3 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none transition-colors"
                 >
                   <div className="flex items-start gap-3">
                     {knowledgeCard.image_url ? (
@@ -494,8 +561,10 @@ export function UnifiedSearchDropdown({
             {highlightedCreator && (
               <div className="border-b border-border">
                 <button
+                  data-search-result
+                  onKeyDown={handleResultKeyDown}
                   onClick={() => handleSelect(highlightedCreator)}
-                  className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors"
+                  className="w-full text-left px-4 py-3 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none transition-colors"
                 >
                   <div className="flex items-start gap-3">
                     <Avatar className="h-11 w-11 shrink-0 ring-2 ring-primary/20">
@@ -593,13 +662,15 @@ export function UnifiedSearchDropdown({
                 {alternativeMatches.slice(0, 4).map((alt, i) => (
                   <button
                     key={`alt-match-${i}`}
+                    data-search-result
+                    onKeyDown={handleResultKeyDown}
                     onClick={() => {
                       setOpen(false);
                       setQuery("");
                       onOpenChange?.(false);
                       submitQuery(alt.name);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none transition-colors text-left"
                   >
                     {alt.image_url ? (
                       <Avatar className="h-8 w-8 shrink-0">
@@ -641,8 +712,10 @@ export function UnifiedSearchDropdown({
                   {otherCreators.slice(0, 3).map((r, i) => (
                     <button
                       key={`alt-${r.id}-${i}`}
+                      data-search-result
+                      onKeyDown={handleResultKeyDown}
                       onClick={() => handleSelect(r)}
-                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none transition-colors text-left"
                     >
                       <Avatar className="h-8 w-8 shrink-0">
                         <AvatarImage src={r.avatar || ""} />
@@ -679,8 +752,10 @@ export function UnifiedSearchDropdown({
                 return (
                   <button
                     key={`${r.type}-${r.id}-${i}`}
+                    data-search-result
+                    onKeyDown={handleResultKeyDown}
                     onClick={() => handleSelect(r)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none transition-colors text-left"
                   >
                     {r.avatar ? (
                       <Avatar className="h-8 w-8 shrink-0">
@@ -716,7 +791,7 @@ export function UnifiedSearchDropdown({
                             onOpenChange?.(false);
                             navigate(`/profile/${r.id}?showClaim=true`);
                           }}
-                          className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+                          className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-[hsl(var(--color-accent))] text-white"
                         >
                           <UserCheck className="h-2.5 w-2.5" />
                           Claim
@@ -742,8 +817,26 @@ export function UnifiedSearchDropdown({
               </div>
             )}
 
+            {/* Error state — distinct from "no results" so a failed search
+                isn't mistaken for a genuinely empty result set. */}
+            {!loading && !webLoading && error && (
+              <div className="px-4 py-4 text-center">
+                <p className="text-sm text-destructive">Search failed</p>
+                <p className="text-xs text-muted-foreground/60 mt-0.5">
+                  Something went wrong reaching search — check your connection and try again.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => doSearch(query.trim())}
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--color-accent))] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--color-accent))] rounded"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
             {/* Empty state */}
-            {!loading && !webLoading && results.length === 0 && !knowledgeCard && query.trim().length >= 2 && (
+            {!loading && !webLoading && !error && results.length === 0 && !knowledgeCard && query.trim().length >= 2 && (
               <div className="px-4 py-4 text-center">
                 <Sparkles className="h-5 w-5 text-primary/50 mx-auto mb-1.5" />
                 <p className="text-sm text-muted-foreground">No results found</p>
@@ -757,9 +850,11 @@ export function UnifiedSearchDropdown({
             {(results.length > 0 || knowledgeCard) && (
               <button
                 type="button"
+                data-search-result
+                onKeyDown={handleResultKeyDown}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => submitQuery(query)}
-                className="w-full px-4 py-2.5 text-sm text-primary font-medium hover:bg-muted/50 transition-colors border-t border-border flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 text-sm text-primary font-medium hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none transition-colors border-t border-border flex items-center justify-center gap-2"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 Deep search for "{query}"

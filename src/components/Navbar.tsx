@@ -185,13 +185,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
         </div>
 
         {/* Global search — reachable from every route, not just Today.
-            Fixed width so the results dropdown (absolutely positioned,
-            already built into UnifiedSearchDropdown) never shifts layout. */}
+            Compact width by default, expands smoothly on focus
+            (focus-within) without shifting neighboring nav items — the
+            results dropdown itself is absolutely positioned so it never
+            pushes layout regardless of the input's width. */}
         {!isLandingPage && (
-          <div className="hidden lg:block w-40 xl:w-64 mx-3 shrink-0">
+          <div className="hidden lg:block w-40 focus-within:w-64 xl:w-64 xl:focus-within:w-80 mx-3 shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none">
             <UnifiedSearchDropdown
               variant="navbar"
-              placeholder="Search your name, stage name or creative work..."
+              placeholder="Search a name, project or opportunity..."
             />
           </div>
         )}
@@ -277,7 +279,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <div className="mt-4">
                   <UnifiedSearchDropdown
                     variant="hero"
-                    placeholder="Search your name, stage name or creative work..."
+                    placeholder="Search a name, project or opportunity..."
                     autoFocus
                   />
                 </div>

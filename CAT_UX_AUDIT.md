@@ -1,5 +1,7 @@
 # CAT — UX Audit
 
+> **Correction:** the user clarified mid-session that "CAT" was a typo for **"CTA"** (call to action) — there is no distinct product feature by either name. This document is retained as an honest record of the search performed (the instruction was explicit about not fabricating a feature), but no further work targets "CAT." The actual intent — auditing and strengthening each major route's primary call-to-action — is carried forward into `PRIMARY_SURFACE_AUDIT.md`, which already covers exactly this (a `Primary CTA` column per route) as part of the information-hierarchy pass.
+
 ## Method
 
 Per the explicit instruction not to invent or guess, this audit used whole-word/word-boundary searches only (`grep -rnw "CAT"`, `grep -rnw "Cat"`, `\bCAT\b` regex sweeps), not a naive substring search — a plain case-insensitive `cat` search would return hundreds of false positives from words like *Category*, *Location*, *Verification*, *Notification*, *Duplicate*, *Indicator*, *Certificate*, *Concatenate*. Every hit below was manually checked against its surrounding code/context.

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAutoHideNavbar } from "@/hooks/useAutoHideNavbar";
-// UnifiedSearchDropdown removed from top nav — Thrive bar owns search
+import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { StorageMeter } from "@/components/storage/StorageMeter";
 import { useCrewUnread } from "@/hooks/useCrewUnread";
 import { MessagesDrawer } from "@/components/messages/MessagesDrawer";
+import { SettingsDrawer } from "@/components/SettingsDrawer";
 
 // useNavMode removed — single unified nav
 import {
@@ -46,6 +47,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
@@ -65,9 +67,18 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const { hiddenByScroll, idle, idleOpacity, forceVisible } = useAutoHideNavbar();
   const [navHovered, setNavHovered] = useState(false);
   const [navFocused, setNavFocused] = useState(false);
-  const navKeepVisible = navHovered || navFocused || forceVisible || isOpen || guestMenuOpen;
+  const navKeepVisible = navHovered || navFocused || forceVisible || isOpen || guestMenuOpen || mobileSearchOpen;
   const navHidden = hiddenByScroll && !navKeepVisible;
   const navOpacity = !navKeepVisible && idle ? idleOpacity : 1;
+
+  // UnifiedSearchDropdown's onSelect/onQuerySubmit fully replace its default
+  // navigate() calls when provided, so hooking them to close the sheet would
+  // break the actual navigation. Closing on route change instead covers
+  // every way a search result can be opened (click, submit, "deep search").
+  useEffect(() => {
+    if (mobileSearchOpen) setMobileSearchOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!user) return;
@@ -126,14 +137,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/thrivepay", icon: Wallet, label: "Pay" },
       ]
     : [
+        // Prioritized set — Today/Studio/Scout/Passport stay in the primary
+        // row; Stages, Kreto (the dedicated page — the floating launcher
+        // and ThriveBar already give one-tap chat access everywhere) and
+        // Perks moved into the Menu's Explore section so nothing becomes
+        // unreachable, just less crowded up top.
         { path: "/", icon: Sun, label: "Today" },
         { path: "/desk", icon: LayoutGrid, label: "Studio" },
         { path: "/scout", icon: Compass, label: "Scout" },
-        { path: "/circle", icon: Theater, label: "Stages" },
         { path: "/profile", icon: BadgeCheck, label: "Passport" },
-        { path: "/kreto", icon: Sparkles, label: "Kreto" },
-        { path: "/perks", icon: Gift, label: "Perks" },
-        { path: "/settings", icon: Settings, label: "Settings" },
       ];
 
   // search moved to Thrive bar — keep state stub removed
@@ -151,7 +163,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         "sticky top-0 z-50 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none",
         isLandingPage
           ? "dark-surface border-b border-white/10 bg-[#05070D] text-white"
-          : "border-b border-border/60 bg-background",
+          : "border-b border-border/60 glass-surface-elevated rounded-none border-x-0 border-t-0",
       )}
       style={{
         transform: navHidden ? "translateY(-100%)" : "translateY(0)",
@@ -172,7 +184,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <BrandLogo size="md" showBeta linkToHome onDark={isLandingPage} />
         </div>
 
-        {/* Search lives in Thrive bar — top nav is bell + menu only */}
+        {/* Global search — reachable from every route, not just Today.
+            Compact width by default, expands smoothly on focus
+            (focus-within) without shifting neighboring nav items — the
+            results dropdown itself is absolutely positioned so it never
+            pushes layout regardless of the input's width. */}
+        {!isLandingPage && (
+          <div className="hidden lg:block w-40 focus-within:w-64 xl:w-64 xl:focus-within:w-80 mx-3 shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none">
+            <UnifiedSearchDropdown
+              variant="navbar"
+              placeholder="Search a name, project or opportunity..."
+            />
+          </div>
+        )}
 
         {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
         {!user && (
@@ -197,7 +221,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
         {/* Desktop Navigation - Mode Aware */}
         {user && !isLandingPage && (
-          <div className="hidden lg:flex items-center gap-1 mx-6 pl-6 border-l border-border/50">
+          <div className="hidden lg:flex items-center gap-2 mx-6 pl-6 border-l border-border/50">
 
             {/* Mode toggle removed — single unified nav */}
 
@@ -241,9 +265,31 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
         <div className="flex items-center gap-0.5 sm:gap-2 ml-auto shrink-0">
           {/* Top nav: Logo · · · ✉ 🔔 ☰ */}
+          {!isLandingPage && (
+            <Sheet open={mobileSearchOpen} onOpenChange={setMobileSearchOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10 lg:hidden" aria-label="Search">
+                  <Search className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="top" className="w-full">
+                <SheetHeader>
+                  <SheetTitle>Search</SheetTitle>
+                </SheetHeader>
+                <div className="mt-4">
+                  <UnifiedSearchDropdown
+                    variant="hero"
+                    placeholder="Search a name, project or opportunity..."
+                    autoFocus
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
           {!isLandingPage && user && <MessagesDrawer />}
 
           {!isLandingPage && user && <NotificationCenter />}
+          {!isLandingPage && user && <SettingsDrawer />}
           {!user && !isLandingPage && <ThemeToggle />}
           
           {user && !isLandingPage ? (
@@ -324,6 +370,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       {/* PILLARS — live surfaces not in bottom nav */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
+                      <MenuButton icon={Theater} label="Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
+                      <MenuButton icon={Sparkles} label="Kreto" onClick={() => handleNavigation("/kreto")} path="/kreto" />
                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
                       <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} path="/search" />
                       <MenuButton icon={Users} label="Kretopia" onClick={() => handleNavigation("/thrivein")} path="/thrivein" />
@@ -466,7 +514,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
           ) : null}
         </div>
       </div>
-      {/* Mobile search removed — Thrive bar handles search & intent */}
     </nav>
   );
 });

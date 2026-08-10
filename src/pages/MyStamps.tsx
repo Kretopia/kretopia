@@ -1,26 +1,60 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Loader2, ArrowLeft, Search } from "lucide-react";
+import { Loader2, ArrowLeft, Search, Code2 } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
+import { EmbeddableCreditsWidget } from "@/components/profile/EmbeddableCreditsWidget";
 
 /**
  * /credits/mine — the user's personal Stamps page.
  * Split out of /credits (public search) — Muso/IMDb-style:
  * /credits = search & discover, /credits/mine = your work.
  */
+interface EmbedData {
+  displayName: string;
+  thriveId?: string;
+  creditCount: number;
+  topCredits: Array<{ project_name: string; role: string; verification_status?: string }>;
+}
+
 const MyStamps = () => {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
+  const [embedOpen, setEmbedOpen] = useState(false);
+  const [embedData, setEmbedData] = useState<EmbedData | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserId(data?.user?.id ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const [{ data: profile }, { data: topCredits }, { count }] = await Promise.all([
+        supabase.from("profiles").select("full_name, icdb_creator_id").eq("user_id", userId).maybeSingle(),
+        supabase
+          .from("credits")
+          .select("project_name, role, verification_status")
+          .eq("user_id", userId)
+          .order("verification_status", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(3),
+        supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", userId),
+      ]);
+      setEmbedData({
+        displayName: profile?.full_name || "Creator",
+        thriveId: profile?.icdb_creator_id || undefined,
+        creditCount: count || 0,
+        topCredits: topCredits || [],
+      });
+    })();
+  }, [userId]);
 
   if (userId === undefined) {
     return (
@@ -60,15 +94,26 @@ const MyStamps = () => {
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Creative Passport</p>
               <h1 className="text-2xl font-black tracking-[-0.02em]">My Stamps</h1>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/credits")}
-              className="gap-1.5 shrink-0"
-            >
-              <Search className="h-3.5 w-3.5" />
-              Search
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEmbedOpen(true)}
+                className="gap-1.5"
+              >
+                <Code2 className="h-3.5 w-3.5" />
+                Embed
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/credits")}
+                className="gap-1.5"
+              >
+                <Search className="h-3.5 w-3.5" />
+                Search
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -77,6 +122,23 @@ const MyStamps = () => {
           <UnifiedWorkHistory userId={userId} isOwnProfile={true} onRefresh={() => {}} />
         </div>
       </div>
+
+      <Dialog open={embedOpen} onOpenChange={setEmbedOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Embed your Stamps</DialogTitle>
+          </DialogHeader>
+          {embedData && (
+            <EmbeddableCreditsWidget
+              userId={userId}
+              displayName={embedData.displayName}
+              thriveId={embedData.thriveId}
+              creditCount={embedData.creditCount}
+              topCredits={embedData.topCredits}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

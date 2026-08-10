@@ -87,23 +87,13 @@ export default function CopilotMemory() {
     if (!user || !newContent.trim()) return;
     setAdding(true);
     try {
-      // Embed via the extract function isn't ideal for manual adds — insert without embedding.
-      // The next chat turn that touches this topic will surface it via keyword fallback only,
-      // but we'll re-embed it on first use through a backfill (TODO). For now insert raw.
-      const { error } = await supabase.from("copilot_memories").insert({
-        user_id: user.id,
-        kind: newKind,
-        content: newContent.trim().slice(0, 600),
-        source: "manual",
-        confidence: 1.0,
+      const { data, error } = await supabase.functions.invoke("embed-copilot-memory", {
+        body: { kind: newKind, content: newContent.trim() },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      // Backfill embedding via the extractor's embed endpoint indirectly: easiest is to
-      // call an embed-only edge function. We don't have one yet — server-side trigger
-      // not built. UX is fine: the memory still shows in the list and gets embedded the
-      // next time the user mentions it (planned: nightly backfill cron).
-      toast.success("Saved to memory");
+      toast.success(data?.deduped ? "Merged with an existing memory" : "Saved to memory");
       setNewContent("");
       await load();
     } catch (e) {

@@ -6,7 +6,7 @@ import {
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock,
   DollarSign, Zap, Target, GraduationCap, AlertTriangle,
   Gift, ArrowRight, Shield, User, Verified, Radar, Sparkles,
-  Globe, Lock,
+  Globe, Lock, Camera,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
@@ -54,16 +54,7 @@ const TYPE_CONFIG: Record<string, { label: string; chip: string; icon: typeof Br
   project:        { label: "Project",       chip: "bg-violet-500/15 text-violet-400 border-violet-500/25",             icon: Target },
   internship:     { label: "Internship",    chip: "bg-orange-500/15 text-orange-400 border-orange-500/25",    icon: GraduationCap },
   barter:         { label: "Barter",        chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25", icon: ArrowRightLeft },
-};
-
-// Deterministic Smart Match score
-const getAiMatchScore = (id: string): number => {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 5) - hash) + id.charCodeAt(i);
-    hash |= 0;
-  }
-  return 70 + Math.abs(hash % 28);
+  casting:        { label: "Casting Call",  chip: "bg-rose-500/15 text-rose-400 border-rose-500/25",          icon: Camera },
 };
 
 const USAGE_LABELS: Record<string, string> = {
@@ -106,16 +97,19 @@ interface GigCardProps {
   opportunity: GigOpportunity;
   creator?: GigCreatorProfile | null;
   compact?: boolean;
+  /** Real match score (0-100) computed from the viewer's profile — see
+   *  computeOpportunityMatch(). Omit or pass null when there's no real
+   *  signal; the badge is hidden rather than showing a fabricated number. */
+  matchScore?: number | null;
 }
 
-const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) => {
+const GigCard = ({ opportunity: opp, creator, compact = false, matchScore = null }: GigCardProps) => {
   const navigate = useNavigate();
   const config = TYPE_CONFIG[opp.type] || TYPE_CONFIG.job;
   const TypeIcon = config.icon;
   const isClosingSoon = opp.created_at && differenceInDays(new Date(), parseISO(opp.created_at)) >= 14;
   const isBarter = opp.type === "barter";
   const isPaid = ["job", "paid", "gig", "project"].includes(opp.type);
-  const matchScore = getAiMatchScore(opp.id);
   const hasImage = !!opp.image_url;
 
   const goToDetail = () => navigate(`/opportunity/${opp.id}`);
@@ -159,10 +153,12 @@ const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) =
               )}
             </div>
             <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-              <span className="px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm border border-border text-[10px] font-bold text-energy flex items-center gap-1">
-                <Sparkles className="h-2.5 w-2.5" />
-                {matchScore}%
-              </span>
+              {matchScore != null && (
+                <span className="px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm border border-border text-[10px] font-bold text-energy flex items-center gap-1">
+                  <Sparkles className="h-2.5 w-2.5" />
+                  {matchScore}%
+                </span>
+              )}
               <BookmarkButton opportunityId={opp.id} size="sm" />
             </div>
           </div>
@@ -265,10 +261,12 @@ const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) =
             )}
           </div>
           <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-            <span className="text-[10px] font-bold text-energy flex items-center gap-1">
-              <Sparkles className="h-2.5 w-2.5" />
-              {matchScore}% match
-            </span>
+            {matchScore != null && (
+              <span className="text-[10px] font-bold text-energy flex items-center gap-1">
+                <Sparkles className="h-2.5 w-2.5" />
+                {matchScore}% match
+              </span>
+            )}
             <BookmarkButton opportunityId={opp.id} size="sm" />
           </div>
         </div>

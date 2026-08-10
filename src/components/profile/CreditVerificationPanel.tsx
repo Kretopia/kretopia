@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +64,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
   const [loading, setLoading] = useState(true);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [testimonials, setTestimonials] = useState<Record<string, string>>({});
+  const [openEndorsement, setOpenEndorsement] = useState<PendingEndorsement | null>(null);
 
   useEffect(() => {
     fetchEndorsements();
@@ -140,12 +142,16 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
       if (error) throw error;
 
       if (accept && endorsement) {
-        // Increment endorsement count
+        // increment_endorsement_count already sets verification_status
+        // correctly (verified at 2+ endorsements, pending at 1) — mirrors
+        // submit_credit_endorsement_by_token's threshold. Don't overwrite
+        // it here; this used to hardcode 'peer' regardless of count, which
+        // both stomped that correct value AND isn't an allowed
+        // verification_status per credits_verification_status_check.
         await supabase.rpc('increment_endorsement_count' as any, { credit_id_param: endorsement.credit_id });
-        // Upgrade credit verification status to 'peer' (boosts ThriveStatus)
         await supabase
           .from('credits')
-          .update({ verification_status: 'peer', verified_by_user_id: userId })
+          .update({ verified_by_user_id: userId })
           .eq('id', endorsement.credit_id);
       }
 
@@ -157,6 +163,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
           ...prev,
         ].slice(0, 5));
       }
+      setOpenEndorsement(null);
       toast.success(accept ? 'Credit endorsed! Your verification has been added.' : 'Endorsement declined.');
     } catch (error: any) {
       console.error('Error responding to endorsement:', error);
@@ -185,66 +192,100 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
         <p className="text-xs text-muted-foreground ml-auto hidden sm:block">Confirm credits from people you've worked with</p>
       </div>
 
-      {pendingEndorsements.map((endorsement) => (
-        <HoloCard key={endorsement.id} maxTilt={5}>
-          <Card className="relative overflow-hidden rounded-2xl border-[hsl(var(--signal-teal))]/20 bg-card flex flex-col min-h-[280px]">
-            {/* Status tag — same depth plane as Passport's card tag */}
-            <div
-              className="absolute top-0 left-0 px-3 py-1 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10 flex items-center gap-1"
-              style={{ transform: "translateZ(10px)" }}
+      {/* Grid + compact-card-opens-detail-dialog — same layout and
+          interaction pattern as Scout's opportunity cards. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {pendingEndorsements.map((endorsement) => (
+          <HoloCard key={endorsement.id} maxTilt={5}>
+            <Card
+              className="relative overflow-hidden rounded-2xl border-[hsl(var(--signal-teal))]/20 bg-card flex flex-col min-h-[150px] cursor-pointer transition-all hover:border-[hsl(var(--signal-teal))]/40 hover:shadow-2xl hover:shadow-[hsl(var(--signal-teal))]/10"
+              onClick={() => setOpenEndorsement(endorsement)}
             >
-              <Clock className="h-2.5 w-2.5" aria-hidden />
-              Pending — awaits your co-sign
-            </div>
-
-            <div className="relative flex-1 flex flex-col p-4 pt-9 space-y-3">
-              <div className="flex items-start gap-3">
-                <div style={{ transform: "translateZ(24px)" }} className="shrink-0">
-                  <Avatar className="h-10 w-10 ring-1 ring-white/15">
-                    <AvatarImage src={endorsement.requester_profile?.avatar_url || ''} />
-                    <AvatarFallback>{endorsement.requester_profile?.full_name?.[0] || '?'}</AvatarFallback>
-                  </Avatar>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium line-clamp-1">
-                    {endorsement.requester_profile?.full_name || 'Someone'} wants you to verify:
-                  </p>
-                  <p className="text-sm text-muted-foreground line-clamp-1">
-                    <strong>{endorsement.credits?.project_name}</strong> — {endorsement.credits?.role}
-                    {endorsement.credits?.year && <span> ({endorsement.credits.year})</span>}
-                  </p>
-                  {endorsement.relationship && (
-                    <Badge variant="outline" className="mt-1 text-[10px]" style={{ transform: "translateZ(14px)" }}>
-                      {endorsement.relationship}
-                    </Badge>
-                  )}
-                  <p className="mt-1.5 text-xs text-muted-foreground/80 line-clamp-2">
-                    {smartEndorsementDescription(endorsement)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                  <Clock className="h-3 w-3" aria-hidden />
-                  {new Date(endorsement.requested_at).toLocaleDateString()}
-                </div>
+              <div
+                className="absolute top-0 left-0 px-3 py-1 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-br-lg z-10 flex items-center gap-1"
+                style={{ transform: "translateZ(10px)" }}
+              >
+                <Clock className="h-2.5 w-2.5" aria-hidden />
+                Pending
               </div>
 
-              {/* Optional testimonial */}
+              <div className="relative flex-1 flex flex-col p-4 pt-9 gap-2">
+                <div className="flex items-start gap-3">
+                  <div style={{ transform: "translateZ(24px)" }} className="shrink-0">
+                    <Avatar className="h-9 w-9 ring-1 ring-white/15">
+                      <AvatarImage src={endorsement.requester_profile?.avatar_url || ''} />
+                      <AvatarFallback>{endorsement.requester_profile?.full_name?.[0] || '?'}</AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium line-clamp-1">
+                      {endorsement.requester_profile?.full_name || 'Someone'} wants you to verify
+                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      <strong>{endorsement.credits?.project_name}</strong> — {endorsement.credits?.role}
+                      {endorsement.credits?.year && <span> ({endorsement.credits.year})</span>}
+                    </p>
+                  </div>
+                </div>
+                {endorsement.relationship && (
+                  <Badge variant="outline" className="w-fit text-[10px]" style={{ transform: "translateZ(14px)" }}>
+                    {endorsement.relationship}
+                  </Badge>
+                )}
+                <p className="mt-auto text-[11px] font-semibold text-[hsl(var(--signal-teal))]">
+                  Tap to review &amp; respond
+                </p>
+              </div>
+            </Card>
+          </HoloCard>
+        ))}
+      </div>
+
+      {/* Detail + response dialog — centered, matches Scout's gig-card modal */}
+      <Dialog open={!!openEndorsement} onOpenChange={(o) => !o && setOpenEndorsement(null)}>
+        <DialogContent className="max-w-md">
+          {openEndorsement && (
+            <>
+              <DialogHeader>
+                <div className="flex items-start gap-3">
+                  <Avatar className="h-10 w-10 ring-1 ring-white/15 shrink-0">
+                    <AvatarImage src={openEndorsement.requester_profile?.avatar_url || ''} />
+                    <AvatarFallback>{openEndorsement.requester_profile?.full_name?.[0] || '?'}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1 text-left">
+                    <DialogTitle className="text-base font-bold leading-tight">
+                      {openEndorsement.requester_profile?.full_name || 'Someone'} wants you to verify
+                    </DialogTitle>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      <strong>{openEndorsement.credits?.project_name}</strong> — {openEndorsement.credits?.role}
+                      {openEndorsement.credits?.year && <span> ({openEndorsement.credits.year})</span>}
+                    </p>
+                    {openEndorsement.relationship && (
+                      <Badge variant="outline" className="mt-1.5 text-[10px]">{openEndorsement.relationship}</Badge>
+                    )}
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <p className="text-xs text-muted-foreground/80">
+                {smartEndorsementDescription(openEndorsement)}
+              </p>
+
               <Textarea
                 placeholder="Add a testimonial (optional) — e.g., 'Great to work with, delivered exceptional results'"
-                value={testimonials[endorsement.id] || ''}
-                onChange={(e) => setTestimonials(prev => ({ ...prev, [endorsement.id]: e.target.value }))}
-                className="text-sm min-h-[60px] resize-none"
+                value={testimonials[openEndorsement.id] || ''}
+                onChange={(e) => setTestimonials(prev => ({ ...prev, [openEndorsement.id]: e.target.value }))}
+                className="text-sm min-h-[70px] resize-none"
               />
 
-              {/* Controls sit at a slight lift so tilt never occludes click targets */}
-              <div className="flex gap-2 mt-auto" style={{ transform: "translateZ(8px)" }}>
+              <div className="flex gap-2">
                 <Button
                   size="sm"
-                  className="flex-1 relative z-10"
-                  onClick={() => respondToEndorsement(endorsement.id, true)}
-                  disabled={respondingId === endorsement.id}
+                  className="flex-1"
+                  onClick={() => respondToEndorsement(openEndorsement.id, true)}
+                  disabled={respondingId === openEndorsement.id}
                 >
-                  {respondingId === endorsement.id ? (
+                  {respondingId === openEndorsement.id ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-1" />
                   ) : (
                     <Check className="h-4 w-4 mr-1" />
@@ -254,18 +295,17 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
                 <Button
                   size="sm"
                   variant="outline"
-                  className="relative z-10"
-                  onClick={() => respondToEndorsement(endorsement.id, false)}
-                  disabled={respondingId === endorsement.id}
+                  onClick={() => respondToEndorsement(openEndorsement.id, false)}
+                  disabled={respondingId === openEndorsement.id}
                 >
                   <X className="h-4 w-4 mr-1" />
                   Decline
                 </Button>
               </div>
-            </div>
-          </Card>
-        </HoloCard>
-      ))}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
         </>
       )}
 
@@ -276,6 +316,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
             <h3 className="text-xs font-semibold text-muted-foreground">Recently responded</h3>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {resolvedEndorsements.map((endorsement) => {
             const meta = RESOLVED_STATUS_META[endorsement.status];
             const StatusIcon = meta.icon;
@@ -342,6 +383,7 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
               </HoloCard>
             );
           })}
+          </div>
         </div>
       )}
     </div>

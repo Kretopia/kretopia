@@ -11,6 +11,7 @@ import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportunitiesDialog";
 import { ScoutGigDialog } from "@/components/opportunity/ScoutGigDialog";
 import GigCard, { type GigCreatorProfile } from "@/components/opportunity/GigCard";
+import { computeOpportunityMatch, type ViewerProfileForMatch } from "@/lib/opportunityMatch";
 import { 
   Briefcase, Handshake, ArrowRightLeft,
   Plus, Sparkles, Zap, Target, GraduationCap, X,
@@ -81,6 +82,26 @@ export const OpportunitiesFeed = () => {
   const [locationFilter, setLocationFilter] = useState("all");
   const [compensationFilter, setCompensationFilter] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [viewerProfile, setViewerProfile] = useState<ViewerProfileForMatch | null>(null);
+
+  useEffect(() => {
+    if (!user) { setViewerProfile(null); return; }
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("professional_skills, role, location")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const raw = data.professional_skills;
+        const skills = Array.isArray(raw)
+          ? raw.map((s) => (typeof s === "string" ? s : (s as { skill?: string } | null)?.skill || "")).filter(Boolean)
+          : [];
+        setViewerProfile({ skills, role: data.role || "", location: data.location || "" });
+      });
+    return () => { cancelled = true; };
+  }, [user]);
 
   const activeFilterCount = [activeFilter !== "all", selectedSkill !== "all", locationFilter !== "all", compensationFilter !== "all"].filter(Boolean).length;
 
@@ -413,7 +434,7 @@ export const OpportunitiesFeed = () => {
 
             return (
               <DiscoveryGate key={opp.id} totalItems={opportunities.length} freePreviewCount={4} index={index} itemLabel="gigs">
-                <GigCard opportunity={opp} creator={creator} />
+                <GigCard opportunity={opp} creator={creator} matchScore={computeOpportunityMatch(opp, viewerProfile)} />
               </DiscoveryGate>
             );
           })}

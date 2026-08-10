@@ -15,7 +15,7 @@ export interface AchievementCardProps {
   year?: number | string;
   imageUrl?: string;
   url?: string;
-  verificationStatus?: "unverified" | "pending" | "verified";
+  verificationStatus?: "unverified" | "pending" | "pending_review" | "verified" | "auto_discovered" | "rejected" | "disputed";
   endorsementCount?: number;
   isFeatured?: boolean;
   isOwnProfile?: boolean;
@@ -56,7 +56,7 @@ export const AchievementCard = ({
   // hues than the old amber/primary/muted split, same real distinction.
   const VerificationBadge = () => {
     const isVerified = verificationStatus === "verified";
-    const isPending = verificationStatus === "pending" || (verificationStatus as string) === "pending_review";
+    const isPending = verificationStatus === "pending" || verificationStatus === "pending_review";
     const hasPeers = endorsementCount > 0;
 
     let label = "Self-claimed";

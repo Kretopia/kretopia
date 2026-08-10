@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertCanReleaseMilestone, EscrowAuthError, loadMilestoneForIntent } from "../_shared/escrowAuth.ts";
+import { syncProjectStatusIfAllMilestonesPaid } from "../_shared/milestoneProjectSync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -334,8 +335,16 @@ serve(async (req) => {
       logStep("WARNING: notification dispatch failed", { error: String(notifErr) });
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    if (action === 'capture') {
+      try {
+        await syncProjectStatusIfAllMilestonesPaid(supabaseAdmin, milestone.project_id);
+      } catch (syncErr) {
+        logStep("WARNING: project status sync failed", { error: String(syncErr) });
+      }
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
       action,
       status: result.status,
       escrowStatus: newEscrowStatus

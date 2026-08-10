@@ -58,6 +58,19 @@ import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
+import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
+import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
+import { CastingCallsRail } from "@/components/opportunity/CastingCallsRail";
+import { RecentRecordingsRail } from "@/components/calls/RecentRecordingsRail";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+
+interface ProjectPersonRow {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: string | null;
+  collaborator_status: string | null;
+}
 
 interface WidgetProps {
   title: string;
@@ -345,6 +358,17 @@ const CreatorWorkHome = () => {
   const [wrapWeekOpen, setWrapWeekOpen] = useState(false);
   const [folders, setFolders] = useState<StudioFolder[]>([]);
   const [folderFilter, setFolderFilter] = useState<string>("all");
+  const [recentCollaborators, setRecentCollaborators] = useState<
+    { id: string; full_name: string; avatar_url: string | null; role: string | null }[]
+  >([]);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const onChange = () => setReducedMotion(mq.matches);
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
 
   const fetchFolders = async () => {
     if (!user) return;
@@ -394,6 +418,42 @@ const CreatorWorkHome = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  // Recent collaborators across the user's most recently active projects.
+  // Reuses the existing get_project_people RPC (same one useProjectData
+  // calls for a single project) rather than adding a new aggregate query
+  // or RPC -- just runs it over a few projects and dedupes client-side.
+  useEffect(() => {
+    if (!user || projects.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const topProjects = projects.slice(0, 5);
+      const results = await Promise.all(
+        topProjects.map((p) =>
+          supabase
+            .rpc("get_project_people" as any, { _project_id: p.id })
+            .then(
+              ({ data }) => (data ?? []) as ProjectPersonRow[],
+              () => [] as ProjectPersonRow[]
+            )
+        )
+      );
+      if (cancelled) return;
+      const seen = new Set<string>();
+      const people: { id: string; full_name: string; avatar_url: string | null; role: string | null }[] = [];
+      for (const rows of results) {
+        for (const p of rows) {
+          if (p.collaborator_status !== "accepted") continue;
+          if (p.user_id === user.id) continue;
+          if (seen.has(p.user_id)) continue;
+          seen.add(p.user_id);
+          people.push({ id: p.user_id, full_name: p.full_name || "Member", avatar_url: p.avatar_url, role: p.role });
+        }
+      }
+      setRecentCollaborators(people.slice(0, 10));
+    })();
+    return () => { cancelled = true; };
+  }, [user, projects]);
+
   if (loading) {
     return <WorkHomeSkeleton variant="studio" />;
   }
@@ -436,32 +496,55 @@ const CreatorWorkHome = () => {
                 {activeProjects.length} Active
               </Badge>
             )}
-            <div className="ml-auto flex items-center gap-2">
-              <Button
-                onClick={() => setShowCreateProject(true)}
-                size="sm"
-                className="gap-1.5 rounded-full font-semibold"
-              >
-                <Plus className="h-4 w-4" />
-                <span>New project</span>
-              </Button>
-            </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            Built for creatives. Save time — use your voice.
-            <span className="hidden md:inline"> · Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono ml-1">⌘K</kbd> to jump anywhere</span>
-          </p>
+          {/* Voice as a primary interaction, not a passive tip — real mic
+              button wired to the existing VoiceCommandSheet, styled with
+              Kreto's solid accent treatment (formerly a sunset gradient,
+              flattened in the design system reset). */}
+          <button
+            type="button"
+            onClick={() => setVoiceCmdOpen(true)}
+            className="group mt-3 inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-card/60 pl-1.5 pr-4 py-1.5 transition-all hover:border-primary/40 hover:bg-card"
+          >
+            <span
+              className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white"
+              style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
+            >
+              <span
+                className="absolute inset-0 rounded-full animate-ping opacity-40 motion-reduce:animate-none"
+                style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
+                aria-hidden
+              />
+              <Mic className="relative h-3.5 w-3.5" />
+            </span>
+            <span className="text-sm font-semibold text-foreground">Just talk — Kreto's listening</span>
+            <span className="hidden md:inline text-xs text-muted-foreground">
+              · <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd> anywhere
+            </span>
+          </button>
         </div>
 
-        {/* Today Strip — what needs me right now */}
-        <TodayStrip
-          onVoice={() => setVoiceCmdOpen(true)}
-          onCommandPalette={() => setPaletteOpen(true)}
-          onWrapWeek={() => setWrapWeekOpen(true)}
-        />
-
-        {/* Pending invites */}
-        <MyPendingInvitations />
+        {/* Dominant creation CTA — Studio creation is the primary action on
+            this page, so it's the first thing after the title, not a small
+            button competing with the header. */}
+        <button
+          type="button"
+          onClick={() => setShowCreateProject(true)}
+          className="group w-full rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6 text-left transition-all hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10"
+        >
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+              <Plus className="h-6 w-6" strokeWidth={2.5} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-base sm:text-lg font-black tracking-tight">New project</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Tell Kreto what you're making — voice or text — and we'll set up the room.
+              </p>
+            </div>
+            <ArrowRight className="h-5 w-5 text-primary shrink-0 transition-transform group-hover:translate-x-0.5" />
+          </div>
+        </button>
 
         {(() => {
           const moveProject = async (projectId: string, folderId: string | null) => {
@@ -587,6 +670,72 @@ const CreatorWorkHome = () => {
             </>
           );
         })()}
+
+        {/* Live & upcoming — real Sound Stages data (own loading/empty
+            states, realtime-subscribed), reused as-is from Circle rather
+            than rebuilt here. Joining sends you to the real room-joining
+            flow at /soundstages instead of a second, duplicate
+            implementation of the Daily.co join/render logic. */}
+        <div className="space-y-2 pt-2">
+          <h2 className="text-base font-bold">Live &amp; upcoming</h2>
+          <SoundStagesRail onJoin={() => navigate("/soundstages")} />
+        </div>
+
+        <SpeedTonightCard />
+
+        {/* Casting calls — real open opportunities of type "casting",
+            shortcut/filter for parity with the Live & upcoming and Recent
+            collaborators rails. Reuses GigRailCard as-is (same card used
+            in OpportunitiesFeed's grid) rather than a new card design. */}
+        <div className="space-y-2">
+          <h2 className="text-base font-bold">Casting calls</h2>
+          <CastingCallsRail />
+        </div>
+
+        <RecentRecordingsRail />
+
+        {/* Recent collaborators — real people from the user's most
+            recently active projects, via the same get_project_people RPC
+            useProjectData already calls per-project; just run over a few
+            projects and deduped here. Self-hides when there's nobody yet. */}
+        {recentCollaborators.length > 0 && (
+          <div className="space-y-2">
+            <h2 className="text-base font-bold">Recent collaborators</h2>
+            <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full">
+              <CarouselContent className="-ml-3">
+                {recentCollaborators.map((c) => (
+                  <CarouselItem key={c.id} className="pl-3 basis-auto">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/profile/${c.id}`)}
+                      className="w-28 rounded-2xl border border-border bg-card p-3 text-center transition-all hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <div className="h-14 w-14 mx-auto rounded-full overflow-hidden bg-muted mb-2">
+                        {c.avatar_url ? (
+                          <img src={c.avatar_url} alt={c.full_name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-sm font-bold text-muted-foreground">
+                            {c.full_name[0]}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs font-semibold truncate">{c.full_name}</p>
+                      {c.role && <p className="text-[10px] text-muted-foreground truncate">{c.role}</p>}
+                    </button>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
+        )}
+
+        {/* Today Strip + pending invites — secondary, below the rooms themselves */}
+        <TodayStrip
+          onVoice={() => setVoiceCmdOpen(true)}
+          onCommandPalette={() => setPaletteOpen(true)}
+          onWrapWeek={() => setWrapWeekOpen(true)}
+        />
+        <MyPendingInvitations />
       </div>
 
 

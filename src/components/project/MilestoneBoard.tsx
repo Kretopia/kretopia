@@ -54,6 +54,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
   const [getPaidName, setGetPaidName] = useState('');
   const [getPaidMessage, setGetPaidMessage] = useState('');
   const [talentConnectActive, setTalentConnectActive] = useState<boolean | null>(null);
+  const [payingMilestoneId, setPayingMilestoneId] = useState<string | null>(null);
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
@@ -185,11 +186,36 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Payment recorded!" });
+      // Milestone completion -> project status. Mirrors the same
+      // all-paid check the payment edge functions run server-side; this
+      // is the client-triggered "Mark Paid (offline)" path, so it isn't
+      // covered by either of those.
+      try {
+        const { data: allMilestones } = await supabase
+          .from('milestones')
+          .select('status')
+          .eq('project_id', projectId);
+        const allPaid = !!allMilestones?.length && allMilestones.every((m) => m.status === 'paid');
+        if (allPaid) {
+          const { data: proj } = await supabase.from('projects').select('status').eq('id', projectId).maybeSingle();
+          if (proj?.status === 'active') {
+            await supabase.from('projects').update({ status: 'completed' }).eq('id', projectId);
+          }
+        }
+      } catch (syncErr) {
+        console.error('project status sync failed', syncErr);
+      }
       onUpdate();
     }
   };
 
   const handleStripePayment = async (milestone: Milestone, useEscrow: boolean = false) => {
+    // Guard against double-clicks / two tabs racing to create two Stripe
+    // sessions for the same milestone -- the server (create-milestone-
+    // payment) is the authoritative check, this just avoids the obvious
+    // case of a single impatient click firing the request twice.
+    if (payingMilestoneId === milestone.id) return;
+    setPayingMilestoneId(milestone.id);
     try {
       // Track the attempt
       if (useEscrow) {
@@ -205,7 +231,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
       }
 
       toast({ title: useEscrow ? "Creating escrow payment..." : "Creating payment session..." });
-      
+
       const { data, error } = await supabase.functions.invoke('create-milestone-payment', {
         body: {
           milestoneId: milestone.id,
@@ -225,7 +251,19 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
       }
     } catch (error: any) {
       console.error('Error creating payment:', error);
-      toast({ title: "Error", description: error.message || "Failed to create payment session", variant: "destructive" });
+      // supabase-js throws non-2xx edge function responses as an error whose
+      // body (our { error: "..." } message) lives on error.context, not on
+      // the resolved data -- extract it so "already paid" is actually shown
+      // instead of a generic "non-2xx status code" message.
+      let description = error?.message || "Failed to create payment session";
+      try {
+        const body = await error?.context?.json?.();
+        if (body?.error) description = body.error;
+      } catch { /* fall back to error.message above */ }
+      toast({ title: "Can't process payment", description, variant: "destructive" });
+      if (description.toLowerCase().includes("already been paid")) onUpdate();
+    } finally {
+      setPayingMilestoneId(null);
     }
   };
 
@@ -671,15 +709,21 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
                              <Button
                                size="sm"
                                onClick={() => handleStripePayment(milestone, false)}
+                               disabled={payingMilestoneId === milestone.id}
                                className="gap-2"
                              >
-                               <CreditCard className="h-4 w-4" />
+                               {payingMilestoneId === milestone.id ? (
+                                 <Loader2 className="h-4 w-4 animate-spin" />
+                               ) : (
+                                 <CreditCard className="h-4 w-4" />
+                               )}
                                Pay Now ${Number(milestone.amount).toFixed(2)}
                              </Button>
                              <Button
                                size="sm"
                                variant="outline"
                                onClick={() => handleStripePayment(milestone, true)}
+                               disabled={payingMilestoneId === milestone.id}
                                className="gap-2"
                              >
                                Pay with Escrow
@@ -688,6 +732,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
                                size="sm"
                                variant="outline"
                                onClick={() => handleMarkAsPaid(milestone.id)}
+                               disabled={payingMilestoneId === milestone.id}
                                className="gap-2 text-xs"
                              >
                                <DollarSign className="h-4 w-4" />

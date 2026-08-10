@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Loader2, Menu, X, PanelRightOpen, PanelLeftClose, PanelLeftOpen, FolderKanban } from "lucide-react";
@@ -25,13 +26,12 @@ import { useProjectData } from "@/hooks/useProjectData";
 import { useProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
 import { useProjectFlowExtras } from "@/hooks/useProjectFlowExtras";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const ThriveDesk = () => {
   const { projectId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     loading, project, collaborators, files, messages, tasks, milestones,
     projects, userRole, isPro, user, fetchProjectData,
@@ -90,6 +90,34 @@ const ThriveDesk = () => {
       document.getElementById("studio-sponsors")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 300);
   }, [project, searchParams]);
+
+  // Returning from a Stripe Checkout redirect (create-milestone-payment's
+  // success_url/cancel_url). The milestone itself updates via the realtime
+  // subscription in useProjectData once the webhook lands -- this is just
+  // giving the user immediate, honest feedback instead of silently dropping
+  // them back on the page with an ignored ?payment= param.
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment");
+    if (!paymentStatus) return;
+
+    if (paymentStatus === "success") {
+      toast.success("Payment received", {
+        description: "Confirming with Stripe — the milestone will update automatically in a moment.",
+      });
+      setActiveTab("finance");
+    } else if (paymentStatus === "cancelled") {
+      toast("Payment cancelled", { description: "No charge was made." });
+    }
+
+    const next = new URLSearchParams(searchParams);
+    next.delete("payment");
+    next.delete("milestone");
+    next.delete("escrow");
+    setSearchParams(next, { replace: true });
+    // Intentionally run once on mount -- this reads the redirect params from
+    // Stripe, not something that should re-fire as searchParams change later.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Broadcast tab changes so global UI (e.g. Copilot FAB) can react.
   useEffect(() => {

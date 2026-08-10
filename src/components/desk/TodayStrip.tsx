@@ -15,7 +15,6 @@ interface TodayStripProps {
 interface Stats {
   dueToday: number;
   overdue: number;
-  unreadMessages: number;
   pendingInvoices: number;
   pendingAmount: number;
   upcomingCalls: number;
@@ -35,7 +34,6 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
   const [stats, setStats] = useState<Stats & { weekEarned: number }>({
     dueToday: 0,
     overdue: 0,
-    unreadMessages: 0,
     pendingInvoices: 0,
     pendingAmount: 0,
     upcomingCalls: 0,
@@ -64,12 +62,25 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
         .eq("issued_by", user.id)
         .then((r: any) => r, () => ({ data: [] }));
 
-      const [tasksRes, invoicesRes] = await Promise.all([tasksPromise, invoicesPromise]);
+      const upcomingCallsPromise = (supabase as any)
+        .from("meetings")
+        .select("id", { count: "exact", head: true })
+        .eq("host_id", user.id)
+        .is("started_at", null)
+        .gte("scheduled_for", new Date().toISOString())
+        .then((r: any) => r, () => ({ count: 0 }));
+
+      const [tasksRes, invoicesRes, callsRes] = await Promise.all([
+        tasksPromise,
+        invoicesPromise,
+        upcomingCallsPromise,
+      ]);
 
       if (cancelled) return;
 
       const tasks = (tasksRes as any).data || [];
       const allInvoices = (invoicesRes as any).data || [];
+      const upcomingCalls = (callsRes as any).count || 0;
       const pending = allInvoices.filter((i: any) => ["pending", "sent", "overdue"].includes(i.status));
       const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const weekEarned = allInvoices
@@ -79,10 +90,9 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
       setStats({
         dueToday: tasks.filter((t: any) => t.due_date === today).length,
         overdue: tasks.filter((t: any) => t.due_date < today).length,
-        unreadMessages: 0,
         pendingInvoices: pending.length,
         pendingAmount: pending.reduce((s: number, i: any) => s + (Number(i.total_amount) || 0), 0),
-        upcomingCalls: 0,
+        upcomingCalls,
         weekEarned,
       });
     };
@@ -145,9 +155,9 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
     {
       key: "calls",
       icon: Calendar,
-      label: "Schedule",
-      value: "Today",
-      tone: "muted",
+      label: stats.upcomingCalls > 0 ? "Upcoming calls" : "Schedule",
+      value: stats.upcomingCalls > 0 ? `${stats.upcomingCalls}` : "None set",
+      tone: stats.upcomingCalls > 0 ? "energy" : "muted",
       onClick: () => navigate("/calendar"),
     },
     {

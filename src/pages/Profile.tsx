@@ -34,7 +34,7 @@ import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
-import { KretoTip } from "@/components/agent/KretoTip";
+import { PassportKretoEntry } from "@/components/passport/PassportKretoEntry";
 import { PassportOverview } from "@/components/passport/PassportOverview";
 import { PassportMomentum } from "@/components/passport/PassportMomentum";
 import { ThriveRemembersChip } from "@/components/passport/ThriveRemembersChip";
@@ -469,8 +469,8 @@ const ProfileContent = () => {
           </div>
         )}
 
-        {/* Kreto whisper — Passport surface */}
-        <KretoTip surface="passport" compact className="mb-4" />
+        {/* Kreto entry point — Passport-native, not the generic whisper card */}
+        <PassportKretoEntry className="mb-4" />
 
         {/* Post-claim "we found X credits" nudge — was built, never mounted. */}
         <ClaimContinueBanner onRefresh={fetchData} />

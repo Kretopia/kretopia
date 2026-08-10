@@ -15,13 +15,16 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-sm",
         ghost: "hover:bg-muted text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Brand gradient — cinematic violet→magenta with glow
+        // Solid accent CTA — flattened from a violet→magenta gradient in
+        // the design system reset (gradient-primary is now a flat color).
         gradient: "gradient-primary text-primary-foreground font-bold hover:opacity-95 hover:scale-[1.02] shadow-glow",
-        // Hero — signature lime, our loudest CTA (rebrand)
+        // Hero — signature accent (#FF2DA1), our loudest CTA
         hero: "bg-energy text-energy-foreground font-black uppercase tracking-wider hover:scale-[1.03] shadow-glow-lime",
-        // Lime — same energy as hero but reusable name
+        // Lime — same accent as hero but reusable name
         lime: "bg-energy text-energy-foreground font-black uppercase tracking-wider hover:scale-[1.03] shadow-glow-lime",
         glow: "bg-primary text-primary-foreground hover:bg-primary/90 animate-glow",
+        // Liquid Glass — translucent surface, hairline border, accent on hover/active.
+        glass: "glass-surface text-foreground hover:border-[hsl(var(--color-accent)_/_0.5)] hover:text-[hsl(var(--color-accent))] data-[state=open]:border-[hsl(var(--color-accent)_/_0.6)] data-[state=open]:text-[hsl(var(--color-accent))]",
       },
       size: {
         default: "h-10 px-4 py-2",

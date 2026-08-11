@@ -489,7 +489,7 @@ export function UnifiedSearchDropdown({
                   onClick={handleClear}
                   aria-label="Clear search"
                   className={cn(
-                    "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors",
+                    "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors before:absolute before:-inset-2.5 before:content-['']",
                     isHero ? "right-14" : "right-8"
                   )}
                 >
@@ -503,7 +503,7 @@ export function UnifiedSearchDropdown({
                   aria-label="Search by voice"
                   title="Search by voice"
                   className={cn(
-                    "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-[hsl(var(--color-accent))] transition-colors disabled:opacity-50",
+                    "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-[hsl(var(--color-accent))] transition-colors disabled:opacity-50 before:absolute before:-inset-2.5 before:content-['']",
                     isHero ? "right-14" : "right-8"
                   )}
                 >

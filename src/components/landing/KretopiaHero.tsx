@@ -16,6 +16,7 @@
  */
 import { motion } from "framer-motion";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import portraitImage from "@/assets/kretopia-hero-portrait.jpg";
 
 const EXAMPLE_SEARCHES = ["Ethan Auguste", "Event Producer in Bali", "Creative Director"];
@@ -25,6 +26,12 @@ interface KretopiaHeroProps {
 }
 
 export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
+  const reducedMotion = useReducedMotion();
+  // The global CSS reduced-motion rule (src/index.css) only collapses
+  // CSS transitions/@keyframes — framer-motion's initial/animate props
+  // move via inline styles/WAAPI and aren't touched by it. Skipping
+  // `initial` here renders every block directly in its final state.
+  const entrance = reducedMotion ? false : undefined;
   return (
     <section
       className="relative overflow-hidden"
@@ -43,7 +50,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
       <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 lg:px-12 pt-10 sm:pt-14 lg:pt-16 pb-16 sm:pb-24 lg:pb-28">
         {/* Eyebrow */}
         <motion.div
-          initial={{ opacity: 0, y: -6 }}
+          initial={reducedMotion ? false : { opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
           className="flex items-center justify-center gap-3 mb-6 sm:mb-8"
@@ -60,7 +67,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
 
         {/* Headline — the promise, understandable at a glance */}
         <motion.h1
-          initial={{ opacity: 0, y: 16 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.2, 0.65, 0.3, 0.95] }}
           className="font-serif text-white text-center leading-[1.02] tracking-[-0.02em] max-w-3xl mx-auto"
@@ -76,7 +83,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
         </motion.h1>
 
         <motion.p
-          initial={{ opacity: 0, y: 10 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15 }}
           className="mt-5 sm:mt-6 max-w-xl mx-auto text-center text-sm sm:text-base leading-relaxed"
@@ -94,7 +101,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
             (voice included), not a hand-rolled input.
         ────────────────────────────────────────────────────────────── */}
         <motion.div
-          initial={{ opacity: 0, y: 14 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
           className="mt-8 sm:mt-10 max-w-xl mx-auto"
@@ -153,7 +160,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
 
         {/* Supporting portrait — below the search, not blocking it */}
         <motion.div
-          initial={{ opacity: 0, scale: 1.02 }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.2 }}
           className="mt-14 sm:mt-16 lg:mt-20 relative max-w-3xl mx-auto"

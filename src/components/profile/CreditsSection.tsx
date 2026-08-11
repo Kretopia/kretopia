@@ -14,6 +14,9 @@ import { MediaPlayerModal } from "./MediaPlayerModal";
 import { getBestPlayableMediaUrl, getModalMediaType } from "@/lib/mediaUtils";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useNavigate } from "react-router-dom";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
+import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface Credit {
   id: string;
@@ -53,6 +56,8 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
     url: "",
     credit_type: "",
   });
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     fetchCredits();
@@ -322,31 +327,50 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
           />
         )
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {credits.map((credit) => {
-            const playableUrl = getBestPlayableMediaUrl(credit);
-            return (
-              <AchievementCard
-                key={credit.id}
-                variant="credit"
-                title={credit.project_name}
-                subtitle={credit.role}
-                year={credit.year}
-                url={credit.url}
-                imageUrl={credit.thumbnail_url}
-                verificationStatus={credit.verification_status}
-                endorsementCount={credit.endorsement_count || 0}
-                isFeatured={credit.is_featured}
-                isOwnProfile={isOwnProfile}
-                onDelete={() => handleDelete(credit.id)}
-                onRequestEndorsement={() => setEndorsementCredit(credit)}
-                onCardClick={playableUrl ? () => setMediaCredit(credit) : undefined}
-                icon={<Film className="h-16 w-16" />}
-                metadata={credit.platform ? { Platform: credit.platform } : undefined}
-                category={credit.credit_category || credit.project_type}
-              />
-            );
-          })}
+        <div className="relative">
+          <Carousel
+            setApi={setCarouselApi}
+            opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }}
+            className="w-full"
+            aria-label="Stamps"
+          >
+            <CarouselContent className="-ml-4">
+              {credits.map((credit) => {
+                const playableUrl = getBestPlayableMediaUrl(credit);
+                return (
+                  <CarouselItem key={credit.id} className="pl-4 basis-auto">
+                    <div className="w-72">
+                      <AchievementCard
+                        variant="credit"
+                        title={credit.project_name}
+                        subtitle={credit.role}
+                        year={credit.year}
+                        url={credit.url}
+                        imageUrl={credit.thumbnail_url}
+                        verificationStatus={credit.verification_status}
+                        endorsementCount={credit.endorsement_count || 0}
+                        isFeatured={credit.is_featured}
+                        isOwnProfile={isOwnProfile}
+                        onDelete={() => handleDelete(credit.id)}
+                        onRequestEndorsement={() => setEndorsementCredit(credit)}
+                        onCardClick={playableUrl ? () => setMediaCredit(credit) : undefined}
+                        icon={<Film className="h-16 w-16" />}
+                        metadata={credit.platform ? { Platform: credit.platform } : undefined}
+                        category={credit.credit_category || credit.project_type}
+                      />
+                    </div>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+            {credits.length > 2 && (
+              <>
+                <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous — stamps" />
+                <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next — stamps" />
+              </>
+            )}
+          </Carousel>
+          {credits.length > 1 && <CarouselPositionDots api={carouselApi} label="Stamps" className="mt-2" />}
         </div>
       )}
 

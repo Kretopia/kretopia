@@ -59,6 +59,7 @@ import { MyPendingInvitations } from "@/components/project/MyPendingInvitations"
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
 import { FeatureHeader } from "@/components/ui/feature-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
 import { CastingCallsRail } from "@/components/opportunity/CastingCallsRail";
@@ -680,8 +681,7 @@ const CreatorWorkHome = () => {
             to be four independent stacked sections; same components, same
             data, one shared surface. Each inner piece keeps its own real
             data-fetching and self-hiding-when-empty behavior untouched. */}
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Session &amp; Activity</p>
+        <SectionCard title="Session & Activity">
           <div>
             <h3 className="text-sm font-semibold mb-2">Live &amp; upcoming</h3>
             {/* Real Sound Stages data (own loading/empty states, realtime-
@@ -698,13 +698,12 @@ const CreatorWorkHome = () => {
             onWrapWeek={() => setWrapWeekOpen(true)}
           />
           <MyPendingInvitations />
-        </div>
+        </SectionCard>
 
         {/* Casting & Collaborators — control-room block. Open casting
             calls, recent recordings, and the people you've worked with
             most recently used to be three independent stacked sections. */}
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Casting &amp; Collaborators</p>
+        <SectionCard title="Casting & Collaborators">
           <div>
             <h3 className="text-sm font-semibold mb-2">Casting calls</h3>
             {/* Real open opportunities of type "casting". Reuses
@@ -752,7 +751,7 @@ const CreatorWorkHome = () => {
               </div>
             </div>
           )}
-        </div>
+        </SectionCard>
       </div>
 
 

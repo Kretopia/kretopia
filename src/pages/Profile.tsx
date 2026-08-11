@@ -15,7 +15,7 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 
 // Components
-import { ProfileHero } from "@/components/profile/ProfileHero";
+import { PassportHero } from "@/components/passport/PassportHero";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
@@ -41,7 +41,6 @@ import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 import { LevelUpCard } from "@/components/passport/LevelUpCard";
 import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
-import { PassportClaimHero } from "@/components/passport/PassportClaimHero";
 import { PassportCommandCenter } from "@/components/passport/PassportCommandCenter";
 import { KretoPassportBuilder } from "@/components/passport/KretoPassportBuilder";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -486,37 +485,8 @@ const ProfileContent = () => {
         {/* Identity section — who you are */}
         <section id="identity" className="scroll-mt-20">
 
-        {/* Profile Hero — compact, Instagram-style */}
-        <ProfileHero
-          profile={profile}
-          stats={stats}
-          isOwnProfile={true}
-          creditsCount={credits?.length || 0}
-          verifiedCreditsCount={credits?.filter((c: any) => c.verification_status === 'verified').length || 0}
-          awardsCount={awards?.length || 0}
-          creditsData={credits || []}
-          onEdit={() => {
-            setEditForm({
-              full_name: profile.full_name || "",
-              role: profile.role || "",
-              bio: profile.bio || "",
-              location: profile.location || "",
-              avatar_url: profile.avatar_url || "",
-              company_size: profile.company_size || "",
-              collab_intent: (profile as any).collab_intent || "seeking_collaborators",
-              company_tagline: "",
-              cover_image_url: "",
-            });
-            setIsEditOpen(true);
-          }}
-          onShare={handleShare}
-          onAvatarClick={() => fileInputRef.current?.click()}
-          isUploadingAvatar={isUploadingAvatar}
-          onShowQR={() => setIsQRDialogOpen(true)}
-          onCreatorCard={() => setIsCreatorCardOpen(true)}
-        />
-
-        {/* Standing ribbon — earned, motivational, never gamey */}
+        {/* The one dominant Passport surface — merges the old ProfileHero +
+            PassportClaimHero pair into a single 3D HoloCard-wrapped hero. */}
         {profile && (() => {
           const verifiedCreditsList = credits?.filter((c: any) => c.verification_status === 'verified') || [];
           const verified = verifiedCreditsList.length;
@@ -545,26 +515,35 @@ const ProfileContent = () => {
           });
           return (
             <>
-              <div className="mt-4">
-                <PassportClaimHero
-                  fullName={profile.full_name}
-                  handle={(profile as any).username || (profile as any).handle}
-                  passportId={(profile as any).icdb_creator_id}
-                  userId={profile.user_id}
-                  standing={standing}
-                  verifiedCredits={verified}
-                  totalCredits={credits?.length || 0}
-                  cosigns={cosigns}
-                  taggedCount={taggedCount}
-                  avatarUrl={profile.avatar_url}
-
-
-                  onShare={handleShare}
-                  onShowQR={() => setIsQRDialogOpen(true)}
-                  onDownloadEPK={() => setIsEPKEditorOpen(true)}
-                  onCosignWall={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
-                />
-              </div>
+              <PassportHero
+                profile={profile}
+                standing={standing}
+                credits={credits || []}
+                verifiedCredits={verified}
+                totalCredits={credits?.length || 0}
+                cosigns={cosigns}
+                taggedCount={taggedCount}
+                onEdit={() => {
+                  setEditForm({
+                    full_name: profile.full_name || "",
+                    role: profile.role || "",
+                    bio: profile.bio || "",
+                    location: profile.location || "",
+                    avatar_url: profile.avatar_url || "",
+                    company_size: profile.company_size || "",
+                    collab_intent: (profile as any).collab_intent || "seeking_collaborators",
+                    company_tagline: "",
+                    cover_image_url: "",
+                  });
+                  setIsEditOpen(true);
+                }}
+                onShare={handleShare}
+                onAvatarClick={() => fileInputRef.current?.click()}
+                isUploadingAvatar={isUploadingAvatar}
+                onShowQR={() => setIsQRDialogOpen(true)}
+                onDownloadEPK={() => setIsEPKEditorOpen(true)}
+                onCosignWall={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
+              />
               <div className="mt-3">
                 <LevelUpCard standing={standing} />
               </div>

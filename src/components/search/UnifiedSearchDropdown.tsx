@@ -516,6 +516,7 @@ export function UnifiedSearchDropdown({
               ) : null}
               <button
                 type="submit"
+                aria-label="Search"
                 className={cn(
                   "absolute top-1/2 -translate-y-1/2 flex items-center justify-center transition-colors",
                   isHero

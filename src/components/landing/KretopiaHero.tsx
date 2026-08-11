@@ -108,7 +108,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
         >
           <p
             className="text-center text-[11px] font-medium uppercase tracking-[0.2em] mb-3"
-            style={{ color: "rgba(255,255,255,0.45)", fontFamily: "'Work Sans', sans-serif" }}
+            style={{ color: "rgba(255,255,255,0.55)", fontFamily: "'Work Sans', sans-serif" }}
           >
             Discover your creative record
           </p>
@@ -152,7 +152,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
 
           <p
             className="mt-4 text-center text-xs"
-            style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Work Sans', sans-serif" }}
+            style={{ color: "rgba(255,255,255,0.55)", fontFamily: "'Work Sans', sans-serif" }}
           >
             Free. No card. Built for creators.
           </p>

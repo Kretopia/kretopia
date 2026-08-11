@@ -80,10 +80,11 @@ const ImageLightbox = ({ src, alt, open, onClose, senderName, timestamp }: {
               a.target = '_blank';
               a.click();
             }}
+            aria-label="Download image"
           >
             <Download className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={onClose}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={onClose} aria-label="Close image">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -219,14 +220,14 @@ export const CircleMessageBubble = ({
 
         {/* Actions */}
         <div className={cn("flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mb-1", isOwn && "flex-row-reverse")}>
-          <button className="p-1 rounded hover:bg-muted/80 text-muted-foreground" onClick={() => onReply(msg)} title="Reply">
+          <button className="p-1 rounded hover:bg-muted/80 text-muted-foreground" onClick={() => onReply(msg)} title="Reply" aria-label="Reply to message">
             <Reply className="h-3 w-3" />
           </button>
-          <button className="p-1 rounded hover:bg-muted/80 text-muted-foreground relative" onClick={() => onReact(msg.id)} title="React">
+          <button className="p-1 rounded hover:bg-muted/80 text-muted-foreground relative" onClick={() => onReact(msg.id)} title="React" aria-label="Add reaction">
             <Smile className="h-3 w-3" />
           </button>
           {isAdmin && onPin && (
-            <button className="p-1 rounded hover:bg-muted/80 text-muted-foreground" onClick={() => onPin(msg.id, !msg.is_pinned)} title={msg.is_pinned ? "Unpin" : "Pin"}>
+            <button className="p-1 rounded hover:bg-muted/80 text-muted-foreground" onClick={() => onPin(msg.id, !msg.is_pinned)} title={msg.is_pinned ? "Unpin" : "Pin"} aria-label={msg.is_pinned ? "Unpin message" : "Pin message"}>
               <Pin className="h-3 w-3" />
             </button>
           )}

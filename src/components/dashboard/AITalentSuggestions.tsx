@@ -208,7 +208,7 @@ export function AITalentSuggestions() {
                 </SelectContent>
               </Select>
             )}
-            <Button variant="ghost" size="icon" onClick={generateSuggestions} disabled={loading} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={generateSuggestions} disabled={loading} className="h-8 w-8" aria-label="Refresh talent suggestions">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             </Button>
           </div>

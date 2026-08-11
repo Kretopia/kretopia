@@ -214,14 +214,14 @@ export const OpportunitiesFeed = () => {
             className="pl-9 pr-8"
           />
           {searchQuery && (
-            <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6" onClick={() => setSearchQuery("")}>
+            <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6" onClick={() => setSearchQuery("")} aria-label="Clear search query">
               <X className="h-3 w-3" />
             </Button>
           )}
         </div>
         <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="relative shrink-0">
+            <Button variant="outline" size="icon" className="relative shrink-0" aria-label="Open gig filters">
               <SlidersHorizontal className="h-4 w-4" />
               {activeFilterCount > 0 && (
                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] text-primary-foreground flex items-center justify-center font-bold">

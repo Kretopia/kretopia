@@ -202,7 +202,7 @@ export const DirectMessageDialog = ({
                 <DialogDescription className="text-xs text-muted-foreground">Active now</DialogDescription>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
+            <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} aria-label="Close dialog">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -263,7 +263,7 @@ export const DirectMessageDialog = ({
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             disabled={isLoading}
           />
-          <Button onClick={sendMessage} disabled={isLoading || !input.trim()} size="icon">
+          <Button onClick={sendMessage} disabled={isLoading || !input.trim()} size="icon" aria-label="Send message">
             <Send className="h-4 w-4" />
           </Button>
         </div>

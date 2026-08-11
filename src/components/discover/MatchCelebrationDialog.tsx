@@ -67,6 +67,7 @@ export const MatchCelebrationDialog = ({
           size="icon"
           className="absolute right-2 top-2 z-10"
           onClick={() => onOpenChange(false)}
+          aria-label="Close"
         >
           <X className="h-4 w-4" />
         </Button>

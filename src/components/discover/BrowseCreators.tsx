@@ -240,7 +240,7 @@ export function BrowseCreators() {
           </div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 relative">
+              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 relative" aria-label="Open creator filters">
                 <SlidersHorizontal className="h-4 w-4" />
                 {activeFilterCount > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
@@ -314,10 +314,10 @@ export function BrowseCreators() {
           {savedSearches.map(s => (
             <div key={s.id} className="shrink-0 flex items-center gap-1 bg-muted/60 rounded-full pl-2.5 pr-1 py-0.5">
               <button onClick={() => applySaved(s)} className="text-xs font-medium">{s.name}</button>
-              <button onClick={() => toggleAlerts(s)} className="p-1 hover:bg-background rounded-full" title={s.alerts_enabled ? "Alerts on" : "Alerts off"}>
+              <button onClick={() => toggleAlerts(s)} className="p-1 hover:bg-background rounded-full" title={s.alerts_enabled ? "Alerts on" : "Alerts off"} aria-label={s.alerts_enabled ? `Turn off alerts for "${s.name}"` : `Turn on alerts for "${s.name}"`}>
                 {s.alerts_enabled ? <Bell className="h-3 w-3 text-primary" /> : <BellOff className="h-3 w-3 text-muted-foreground" />}
               </button>
-              <button onClick={() => deleteSaved(s.id)} className="p-1 hover:bg-background rounded-full">
+              <button onClick={() => deleteSaved(s.id)} className="p-1 hover:bg-background rounded-full" aria-label={`Delete saved search "${s.name}"`}>
                 <X className="h-3 w-3 text-muted-foreground" />
               </button>
             </div>

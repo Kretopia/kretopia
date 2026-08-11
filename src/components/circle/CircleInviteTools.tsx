@@ -103,7 +103,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
         </div>
         <div className="flex gap-2">
           <Input value={inviteLink} readOnly className="text-xs bg-muted/50 font-mono" />
-          <Button size="icon" variant="outline" onClick={copyLink} className="shrink-0">
+          <Button size="icon" variant="outline" onClick={copyLink} className="shrink-0" aria-label={copied ? "Link copied" : "Copy invite link"}>
             {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
           </Button>
         </div>

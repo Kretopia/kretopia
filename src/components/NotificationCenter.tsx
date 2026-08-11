@@ -63,7 +63,7 @@ export const NotificationCenter = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label="Open notifications">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge 
@@ -278,6 +278,7 @@ export const NotificationCenter = () => {
                               e.stopPropagation();
                               markAsRead(notification.id);
                             }}
+                            aria-label={`Mark "${notification.title}" as read`}
                           >
                             <Check className="h-4 w-4" />
                           </Button>
@@ -290,6 +291,7 @@ export const NotificationCenter = () => {
                             e.stopPropagation();
                             deleteNotification(notification.id);
                           }}
+                          aria-label={`Delete notification: ${notification.title}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

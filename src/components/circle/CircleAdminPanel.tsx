@@ -390,6 +390,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                               className="h-7 w-7 text-destructive hover:bg-destructive/10"
                               disabled={removingId === member.user_id}
                               title="Remove from Crew"
+                              aria-label={`Remove ${member.full_name || "member"} from Crew`}
                             >
                               <UserMinus className="h-3.5 w-3.5" />
                             </Button>

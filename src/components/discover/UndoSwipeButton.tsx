@@ -21,6 +21,7 @@ export const UndoSwipeButton = ({ onClick, disabled, userTier, undosRemaining }:
             size="icon"
             disabled
             className="relative opacity-50"
+            aria-label="Undo swipe (Pro feature — upgrade to unlock)"
           >
             <RotateCcw className="h-5 w-5" />
             <Crown className="h-3 w-3 absolute -top-1 -right-1 text-yellow-500" />
@@ -42,6 +43,7 @@ export const UndoSwipeButton = ({ onClick, disabled, userTier, undosRemaining }:
           onClick={onClick}
           disabled={disabled || undosRemaining <= 0}
           className="relative"
+          aria-label={undosRemaining > 0 ? `Undo last swipe (${undosRemaining} left today)` : "Undo last swipe (no undos left today)"}
         >
           <RotateCcw className="h-5 w-5" />
           {undosRemaining > 0 && (

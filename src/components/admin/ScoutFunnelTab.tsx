@@ -89,7 +89,7 @@ export function ScoutFunnelTab() {
                 {r.label}
               </Button>
             ))}
-            <Button size="icon" variant="ghost" onClick={() => void load()} title="Refresh">
+            <Button size="icon" variant="ghost" onClick={() => void load()} title="Refresh" aria-label="Refresh funnel data">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>

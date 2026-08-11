@@ -45,7 +45,7 @@ export function PageTip({ id, title, message, className }: PageTipProps) {
           <p className="font-medium text-sm">{title}</p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{message}</p>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={dismiss}>
+        <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={dismiss} aria-label="Dismiss tip">
           <X className="h-3.5 w-3.5" />
         </Button>
       </div>

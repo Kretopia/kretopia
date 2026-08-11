@@ -73,6 +73,7 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
               size="icon"
               onClick={() => setExpanded(!expanded)}
               className="h-8 w-8"
+              aria-label={expanded ? "Collapse profile completion details" : "Expand profile completion details"}
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>

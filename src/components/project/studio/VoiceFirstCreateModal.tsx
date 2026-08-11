@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mic, Square, Loader2, X, ArrowRight, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -65,12 +65,23 @@ export const VoiceFirstCreateModal = ({
   const [trackAsCredit, setTrackAsCredit] = useState<boolean>(false);
   const [workspaceType, setWorkspaceType] = useState<WorkspaceType>("general");
   const [rawInput, setRawInput] = useState<string>("");
+  const [deadline, setDeadline] = useState<string>("");
+  const [budget, setBudget] = useState<string>("");
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const tickRef = useRef<number | null>(null);
 
-  // Reset on close
+  // A review-step draft (title/summary/type/deadline/budget/payments/credit)
+  // survives a refresh or an accidental close — nothing here is saved to the
+  // DB until "Create". Recording audio itself is NOT persisted (can't
+  // serialize a live MediaRecorder stream to sessionStorage), only the
+  // brief once extracted. Same pattern as Onboarding.tsx's draft.
+  const draftKey = user ? `new_room_draft:${user.id}` : null;
+  const hydratedRef = useRef(false);
+
+  // Reset on close, but restore a fresh-enough draft on open instead of
+  // always starting blank.
   useEffect(() => {
     if (!open) {
       stopTimer();
@@ -88,8 +99,49 @@ export const VoiceFirstCreateModal = ({
       setTrackAsCredit(false);
       setWorkspaceType("general");
       setRawInput("");
+      setDeadline("");
+      setBudget("");
+      hydratedRef.current = false;
+      return;
     }
-  }, [open]);
+    if (!draftKey) return;
+    try {
+      const raw = sessionStorage.getItem(draftKey);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        const isFresh = draft.ts && Date.now() - draft.ts < 24 * 60 * 60 * 1000;
+        if (isFresh && draft.brief?.project?.title) {
+          setBrief(draft.brief);
+          setSelected(new Set(draft.selected ?? []));
+          setWorkspaceType(draft.workspaceType ?? "general");
+          setPaymentsInvolved(draft.paymentsInvolved ?? null);
+          setTrackAsCredit(!!draft.trackAsCredit);
+          setDeadline(draft.deadline ?? "");
+          setBudget(draft.budget ?? "");
+          setMode("review");
+        } else if (!isFresh) {
+          sessionStorage.removeItem(draftKey);
+        }
+      }
+    } catch { /* corrupt draft — ignore, start fresh */ }
+    hydratedRef.current = true;
+  }, [open, draftKey]);
+
+  // Save the review-step draft on every relevant change.
+  useEffect(() => {
+    if (!hydratedRef.current || !draftKey || mode !== "review" || !brief) return;
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({
+        ts: Date.now(),
+        brief, selected: Array.from(selected), workspaceType,
+        paymentsInvolved, trackAsCredit, deadline, budget,
+      }));
+    } catch { /* sessionStorage unavailable — draft just won't persist */ }
+  }, [draftKey, mode, brief, selected, workspaceType, paymentsInvolved, trackAsCredit, deadline, budget]);
+
+  const clearDraft = useCallback(() => {
+    if (draftKey) { try { sessionStorage.removeItem(draftKey); } catch { /* ignore */ } }
+  }, [draftKey]);
 
   const startTimer = () => {
     setSeconds(0);
@@ -224,6 +276,8 @@ export const VoiceFirstCreateModal = ({
           workspace_type: workspaceType,
           deal_type: paymentsInvolved ? "paid" : "personal",
           track_as_credit: trackAsCredit,
+          deadline: deadline || null,
+          budget: budget.trim() || null,
           setup_completed: false,
         })
         .select()
@@ -275,6 +329,7 @@ export const VoiceFirstCreateModal = ({
       }
 
       toast({ title: "Studio room ready" });
+      clearDraft();
       onCreated();
       onOpenChange(false);
       setTimeout(() => navigate(`/desk/${project.id}`), 80);
@@ -623,6 +678,33 @@ export const VoiceFirstCreateModal = ({
                 </span>
               </label>
             </div>
+
+            {/* Target date + budget — optional, both real project fields */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Target date
+                </label>
+                <input
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  className="w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Budget (optional)
+                </label>
+                <input
+                  type="text"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  placeholder="e.g. $2,000"
+                  className="w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -637,6 +719,7 @@ export const VoiceFirstCreateModal = ({
               setBrief(null);
               setSelected(new Set());
               setMode("prompt");
+              clearDraft();
             }}
             disabled={creating}
           >

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
@@ -36,7 +37,6 @@ interface PassportHeroProps {
   isUploadingAvatar?: boolean;
   onShowQR: () => void;
   onDownloadEPK: () => void;
-  onCosignWall?: () => void;
   onRefresh?: () => void;
 }
 
@@ -64,7 +64,6 @@ export function PassportHero({
   isUploadingAvatar,
   onShowQR,
   onDownloadEPK,
-  onCosignWall,
   onRefresh,
 }: PassportHeroProps) {
   const displayName = profile.full_name;
@@ -309,17 +308,17 @@ export function PassportHero({
             </Button>
           </div>
 
-          {/* One intelligent next action */}
+          {/* One intelligent next action — goes to the action's real deeplink,
+              not a generic scroll, since different actions lead different places. */}
           {nextAction && (
-            <button
-              type="button"
-              onClick={() => onCosignWall?.()}
+            <Link
+              to={nextAction.deeplink}
               className="w-full flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 px-3.5 py-3 text-left hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
             >
               <ShieldCheck className="h-4 w-4 text-[hsl(var(--signal-teal))] shrink-0" />
               <span className="text-xs font-medium flex-1 min-w-0 truncate">{nextAction.label}</span>
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            </button>
+            </Link>
           )}
 
           <SocialStatsInline

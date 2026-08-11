@@ -33,15 +33,11 @@ import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletio
 import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
-import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
 import { PassportKretoEntry } from "@/components/passport/PassportKretoEntry";
-import { PassportMomentum } from "@/components/passport/PassportMomentum";
-import { ThriveRemembersChip } from "@/components/passport/ThriveRemembersChip";
-import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
-import { LevelUpCard } from "@/components/passport/LevelUpCard";
 import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
-import { PassportCommandCenter } from "@/components/passport/PassportCommandCenter";
+import { KretoActionCenter } from "@/components/passport/KretoActionCenter";
+import { TrustOpportunityCenter } from "@/components/passport/TrustOpportunityCenter";
 import { KretoPassportBuilder } from "@/components/passport/KretoPassportBuilder";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { computeStanding } from "@/lib/passport/standing";
@@ -542,43 +538,27 @@ const ProfileContent = () => {
                 isUploadingAvatar={isUploadingAvatar}
                 onShowQR={() => setIsQRDialogOpen(true)}
                 onDownloadEPK={() => setIsEPKEditorOpen(true)}
-                onCosignWall={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
               />
+              {/* Block 1 of 2 — Kreto Action Center: everything "what should I do next" */}
               <div className="mt-3">
-                <LevelUpCard standing={standing} />
+                <KretoActionCenter
+                  credits={credits || []}
+                  standing={standing}
+                  onReviewCredits={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
+                />
               </div>
             </>
           );
         })()}
 
-        {/* Last-30-day momentum strip — only renders when something happened */}
-        <div className="mt-3">
-          <PassportMomentum />
-        </div>
-
-        {/* Quiet trust signal — what Thrive remembers about the owner. */}
-        <div className="mt-3">
-          <ThriveRemembersChip />
-        </div>
-
-
-        {/* Recently worked with — IMDb-style collaborator avatar strip */}
+        {/* Block 2 of 2 — Trust & Opportunity Center: recent momentum,
+            collaborators, what Kreto remembers. Nothing after the Passport
+            beyond these two blocks. */}
         {profile?.user_id && (
           <div className="mt-3">
-            <RecentlyWorkedWith userId={profile.user_id} />
+            <TrustOpportunityCenter userId={profile.user_id} />
           </div>
         )}
-
-        {/* Personalized next-step cards — real data, no invented counts */}
-        <div className="mt-3">
-          <PassportCommandCenter
-            credits={credits || []}
-            hasBio={!!profile?.bio}
-            hasAvatar={!!profile?.avatar_url}
-            cosignCount={reviews?.filter((r: any) => r.status === 'approved').length || 0}
-            onReviewCredits={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
-          />
-        </div>
 
         {/* Owner tools — preview public Passport + private dashboard */}
         <div className="mt-3 flex items-center gap-2">

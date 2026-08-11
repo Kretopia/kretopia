@@ -9,11 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, X, Star, Sparkles, Briefcase, ThumbsUp, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Skill {
   skill: string;
   level: number;
   category: string;
+  /** Absent/"confirmed" = user-added or user-confirmed. "ai_suggested" =
+   * drafted by Kreto (onboarding autofill, Passport builder) and not yet
+   * reviewed — shown separately until the user confirms or removes it. */
+  source?: "confirmed" | "ai_suggested";
 }
 
 interface SkillsSectionProps {
@@ -236,6 +241,24 @@ export const SkillsSection = ({
     }
   };
 
+  // Confirm or remove a single Kreto-suggested skill directly from the main
+  // view — no need to open the full edit dialog just to triage a suggestion.
+  const respondToSuggestion = async (type: "professional" | "passion", skillName: string, action: "confirm" | "remove") => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const source = type === "professional" ? professionalSkills : passionSkills;
+    const updated = action === "remove"
+      ? source.filter((s) => s.skill !== skillName)
+      : source.map((s) => (s.skill === skillName ? { ...s, source: "confirmed" as const } : s));
+    const column = type === "professional" ? "professional_skills" : "passion_skills";
+    const { error } = await supabase.from('profiles').update({ [column]: updated as any }).eq('user_id', user.id);
+    if (error) {
+      toast({ title: "Error", description: "Failed to update skill", variant: "destructive" });
+    } else {
+      onRefresh();
+    }
+  };
+
   const handleGenerateEndorsementLink = async () => {
     setSubmitting(true);
     try {
@@ -288,10 +311,14 @@ Thank you so much!`;
     }
   };
 
-  const SkillBadge = ({ skill }: { skill: Skill }) => {
+  const SkillBadge = ({ skill, type }: { skill: Skill; type: "professional" | "passion" }) => {
     const endorsements = endorsementCounts[skill.skill] || 0;
+    const isSuggested = skill.source === "ai_suggested";
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2">
+      <div className={cn(
+        "flex items-center gap-2 rounded-xl border px-4 py-2",
+        isSuggested ? "border-dashed border-primary/40 bg-primary/5" : "border-border bg-card",
+      )}>
         <div className="flex-1">
           <p className="font-medium text-sm">{skill.skill}</p>
           <p className="text-xs text-muted-foreground">{skill.category}</p>
@@ -301,6 +328,24 @@ Thank you so much!`;
               <span className="text-xs text-muted-foreground">
                 {endorsements} {endorsements === 1 ? 'endorsement' : 'endorsements'}
               </span>
+            </div>
+          )}
+          {isSuggested && isOwnProfile && (
+            <div className="flex items-center gap-2 mt-1.5">
+              <button
+                type="button"
+                onClick={() => respondToSuggestion(type, skill.skill, "confirm")}
+                className="text-[11px] font-semibold text-primary hover:underline"
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                onClick={() => respondToSuggestion(type, skill.skill, "remove")}
+                className="text-[11px] font-semibold text-muted-foreground hover:underline"
+              >
+                Remove
+              </button>
             </div>
           )}
         </div>
@@ -526,33 +571,65 @@ Thank you so much!`;
         </div>
       )}
 
-      {professionalSkills.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="font-semibold flex items-center gap-2 text-sm">
-            <Briefcase className="h-4 w-4 text-primary" />
-            Professional Skills
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {professionalSkills.map((skill, idx) => (
-              <SkillBadge key={idx} skill={skill} />
-            ))}
+      {professionalSkills.length > 0 && (() => {
+        const suggested = professionalSkills.filter((s) => s.source === "ai_suggested");
+        const confirmed = professionalSkills.filter((s) => s.source !== "ai_suggested");
+        return (
+          <div className="space-y-3">
+            <h4 className="font-semibold flex items-center gap-2 text-sm">
+              <Briefcase className="h-4 w-4 text-primary" />
+              Professional Skills
+            </h4>
+            {suggested.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Suggested by Kreto — review these</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {suggested.map((skill) => (
+                    <SkillBadge key={skill.skill} skill={skill} type="professional" />
+                  ))}
+                </div>
+              </div>
+            )}
+            {confirmed.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {confirmed.map((skill) => (
+                  <SkillBadge key={skill.skill} skill={skill} type="professional" />
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
-      {passionSkills.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="font-semibold flex items-center gap-2 text-sm">
-            <Sparkles className="h-4 w-4 text-secondary" />
-            Passion Projects & Hobbies
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {passionSkills.map((skill, idx) => (
-              <SkillBadge key={idx} skill={skill} />
-            ))}
+      {passionSkills.length > 0 && (() => {
+        const suggested = passionSkills.filter((s) => s.source === "ai_suggested");
+        const confirmed = passionSkills.filter((s) => s.source !== "ai_suggested");
+        return (
+          <div className="space-y-3">
+            <h4 className="font-semibold flex items-center gap-2 text-sm">
+              <Sparkles className="h-4 w-4 text-secondary" />
+              Passion Projects & Hobbies
+            </h4>
+            {suggested.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Suggested by Kreto — review these</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {suggested.map((skill) => (
+                    <SkillBadge key={skill.skill} skill={skill} type="passion" />
+                  ))}
+                </div>
+              </div>
+            )}
+            {confirmed.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {confirmed.map((skill) => (
+                  <SkillBadge key={skill.skill} skill={skill} type="passion" />
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {professionalSkills.length === 0 && passionSkills.length === 0 && !isOwnProfile && (
         <div className="rounded-2xl border border-border bg-card p-8 text-center">

@@ -112,22 +112,22 @@ Thank you so much!`;
       <div className="flex items-center justify-between gap-2">
         <div className="space-y-0.5">
           <p className="text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] font-semibold">Trust</p>
-          <h3 className="text-xl md:text-2xl font-black tracking-[-0.02em]">Co-signs</h3>
+          <h3 className="text-xl md:text-2xl font-black tracking-[-0.02em]">Reviews</h3>
         </div>
         {isOwnProfile && (
           <Dialog open={isRequestOpen} onOpenChange={setIsRequestOpen}>
             <DialogTrigger asChild>
               <Button variant="gradient" size="sm" className="text-xs md:text-sm">
                 <MessageSquarePlus className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Request Co-sign</span>
+                <span className="hidden sm:inline">Request Review</span>
                 <span className="sm:hidden">Request</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Request a Co-sign</DialogTitle>
+                <DialogTitle>Request a Review</DialogTitle>
                 <DialogDescription>
-                  Generate a shareable message with a co-sign link — perfect for email, WhatsApp, or any messaging app
+                  Generate a shareable message with a review link — perfect for email, WhatsApp, or any messaging app
                 </DialogDescription>
               </DialogHeader>
 
@@ -178,7 +178,7 @@ Thank you so much!`;
         <div className="rounded-xl md:rounded-2xl border border-accent bg-accent/5 p-3 md:p-4">
           <h4 className="font-semibold mb-2 md:mb-3 flex items-center gap-2 text-sm md:text-base">
             <Star className="h-4 w-4 md:h-5 md:w-5 text-accent" />
-            Pending Co-signs ({pendingReviews.length})
+            Pending Reviews ({pendingReviews.length})
           </h4>
           <div className="space-y-2 md:space-y-3">
             {pendingReviews.map((review) => (
@@ -210,8 +210,8 @@ Thank you so much!`;
         <EmptyState
           icon={Star}
           eyebrow="Trust"
-          title="No co-signs yet"
-          description="After your next collab wraps, ask a client or collaborator to co-sign — one strong co-sign beats a wall of followers."
+          title="No reviews yet"
+          description="After your next collab wraps, ask a client or collaborator to leave a review — one strong review beats a wall of followers."
         />
       ) : (
         <div className="space-y-3 md:space-y-4">

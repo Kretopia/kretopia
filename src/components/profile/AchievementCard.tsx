@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils";
 import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
 import { HoloCard } from "@/components/passport/HoloCard";
+import { classifyCreditEvidence } from "@/lib/passport/creditEvidence";
 
 export interface AchievementCardProps {
   variant: "credit" | "press" | "award" | "stat";
@@ -55,26 +56,26 @@ export const AchievementCard = ({
   // or peer-vouched), neutral = not yet (pending or self-claimed). Fewer
   // hues than the old amber/primary/muted split, same real distinction.
   const VerificationBadge = () => {
-    const isVerified = verificationStatus === "verified";
     const isPending = verificationStatus === "pending" || verificationStatus === "pending_review";
     const hasPeers = endorsementCount > 0;
+    const evidence = classifyCreditEvidence({ verification_status: verificationStatus, endorsement_count: endorsementCount });
 
     let label = "Self-claimed";
     let why = "Added by the creator. Not yet verified by collaborators or an authoritative source.";
     let Icon: any = Shield;
     let cls = "bg-muted text-muted-foreground border-border";
 
-    if (isVerified && hasPeers) {
+    if (evidence === "verified" && hasPeers) {
       label = "Verified";
       why = `Sourced from an authoritative platform and vouched by ${endorsementCount} collaborator${endorsementCount === 1 ? "" : "s"}.`;
       Icon = ShieldCheck;
       cls = "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40";
-    } else if (isVerified) {
+    } else if (evidence === "verified") {
       label = "Verified";
       why = "Sourced from an authoritative platform (e.g. IMDb, Spotify, Behance).";
       Icon = ShieldCheck;
       cls = "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40";
-    } else if (verificationStatus === "auto_discovered") {
+    } else if (evidence === "publicly_sourced") {
       label = "Publicly Sourced";
       why = "Kreto found this from public information and you confirmed it's yours. Not yet independently verified.";
       Icon = Shield;

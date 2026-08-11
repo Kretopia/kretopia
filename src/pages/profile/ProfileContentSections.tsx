@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, Star, Zap, DollarSign, Shield } from "lucide-react";
+import { Briefcase, Star, Zap, DollarSign, Shield, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
+import { CoSignsSection } from "@/components/profile/CoSignsSection";
 import { SkillsSection } from "@/components/profile/SkillsSection";
 import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
@@ -30,11 +31,16 @@ interface ProfileContentSectionsProps {
 }
 
 // Stamps surfaced first — proof of work is the primary signal on Passport.
+// "Co-signs" is evidence status on specific credits (classifyCreditEvidence);
+// "Reviews" is the separate star-rating testimonial system — these used to
+// share the "Co-signs" label on one tab pointing at the testimonial data,
+// which is exactly why they're split here.
 const PROFILE_TABS = [
   { id: "stamps", label: "Stamps", icon: Shield },
   { id: "hire", label: "Book Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
-  { id: "reviews", label: "Co-signs", icon: Star },
+  { id: "cosigns", label: "Co-signs", icon: ShieldCheck },
+  { id: "reviews", label: "Reviews", icon: Star },
 ] as const;
 
 type TabId = typeof PROFILE_TABS[number]["id"];
@@ -91,6 +97,12 @@ export const ProfileContentSections = ({
       case "hire":
         return (
           <>
+            <div className="mb-4">
+              <h3 className="text-sm font-bold">Book Me</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                How people book and hire you — availability, rates, and the services you offer.
+              </p>
+            </div>
             <HireMeTrustBar
               userId={profile.user_id}
               avgResponseHours={profile.avg_response_hours}
@@ -122,6 +134,14 @@ export const ProfileContentSections = ({
             isOwnProfile={true}
             userId={profile.user_id}
             onRefresh={onRefresh}
+          />
+        );
+
+      case "cosigns":
+        return (
+          <CoSignsSection
+            credits={credits || []}
+            userId={profile.user_id}
           />
         );
 

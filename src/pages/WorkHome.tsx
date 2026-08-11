@@ -58,6 +58,7 @@ import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
+import { FeatureHeader } from "@/components/ui/feature-header";
 import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
 import { CastingCallsRail } from "@/components/opportunity/CastingCallsRail";
@@ -487,18 +488,19 @@ const CreatorWorkHome = () => {
 
       {/* Wider on desktop, capped for readability */}
       <div className="max-w-6xl mx-auto px-4 pt-4 pb-36 md:pb-12 space-y-5">
-        {/* Hero header */}
-        <div className="border-b-2 border-primary/20 pb-4">
-          <p className="brand-eyebrow mb-2">Projects & Workspaces</p>
-          <div className="flex items-center gap-3 flex-wrap">
-            <FolderKanban className="h-9 w-9 md:h-10 md:w-10 text-primary shrink-0" strokeWidth={2.5} />
-            <h1 className="text-3xl md:text-5xl font-black tracking-[-0.04em] leading-none">Studios</h1>
-            {activeProjects.length > 0 && (
-              <Badge className="bg-energy text-energy-foreground hover:bg-energy gap-1 font-bold border-0">
-                {activeProjects.length} Active
-              </Badge>
-            )}
-          </div>
+        {/* Hero header — shared FeatureHeader, matches Scout/Passport */}
+        <div className="border-b border-border/60 pb-4">
+          <FeatureHeader eyebrow="Projects & Workspaces" className="pt-0">
+            <span className="inline-flex items-center gap-2.5 flex-wrap">
+              <FolderKanban className="h-7 w-7 text-[hsl(var(--signal-teal))] shrink-0" strokeWidth={2.5} />
+              Studios
+              {activeProjects.length > 0 && (
+                <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0 align-middle">
+                  {activeProjects.length} Active
+                </Badge>
+              )}
+            </span>
+          </FeatureHeader>
           {/* Voice as a primary interaction, not a passive tip — real mic
               button wired to the existing VoiceCommandSheet, styled with
               Kreto's solid accent treatment (formerly a sunset gradient,

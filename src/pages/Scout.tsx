@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
@@ -8,13 +8,12 @@ import { ShortlistedGigs } from "@/components/opportunity/ShortlistedGigs";
 import { Radar, Store, UserSearch, ArrowRight, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tab = "scouted" | "shortlist" | "marketplace" | "talent";
+type Tab = "scouted" | "shortlist" | "marketplace";
 
 const TABS: { id: Tab; label: string; icon: typeof Radar; hint: string }[] = [
   { id: "scouted", label: "For You", icon: Radar, hint: "Real gigs scouted from across the web" },
   { id: "shortlist", label: "Shortlist", icon: Bookmark, hint: "Gigs you saved for later" },
   { id: "marketplace", label: "Open Gigs", icon: Store, hint: "All open gigs on Kretopia" },
-  { id: "talent", label: "Hire Talent", icon: UserSearch, hint: "Open Talent Scout" },
 ];
 
 /**
@@ -23,16 +22,12 @@ const TABS: { id: Tab; label: string; icon: typeof Radar; hint: string }[] = [
  */
 const Scout = () => {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
-  const initial = (params.get("tab") as Tab) || "scouted";
+  const requestedTab = params.get("tab");
+  const initial = TABS.some((t) => t.id === requestedTab) ? (requestedTab as Tab) : "scouted";
   const contextQuery = params.get("q") || "";
-  const [tab, setTab] = useState<Tab>(initial === "talent" ? "scouted" : initial);
+  const [tab, setTab] = useState<Tab>(initial);
 
   const switchTab = (next: Tab) => {
-    if (next === "talent") {
-      navigate(contextQuery ? `/talent-finder?q=${encodeURIComponent(contextQuery)}` : "/talent-finder");
-      return;
-    }
     setTab(next);
     const p = new URLSearchParams(params);
     p.set("tab", next);
@@ -89,7 +84,7 @@ const Scout = () => {
             })}
           </div>
 
-          {/* Quick links */}
+          {/* Secondary navigation — deliberately not styled as tabs: these leave the page */}
           <div className="mt-3 flex items-center gap-4 flex-wrap">
             <Link
               to="/circle"
@@ -97,6 +92,15 @@ const Scout = () => {
               aria-label="Find collaborators in Circle"
             >
               Looking for collaborators? Open Circle
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+            <Link
+              to={contextQuery ? `/talent-finder?q=${encodeURIComponent(contextQuery)}` : "/talent-finder"}
+              className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Open Talent Scout to hire talent"
+            >
+              <UserSearch className="h-3 w-3" />
+              Hiring? Open Talent Scout
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>

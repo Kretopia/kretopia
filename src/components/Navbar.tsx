@@ -313,7 +313,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <MenuButton icon={Inbox} label="Inbox" onClick={() => handleNavigation("/inbox")} path="/inbox" badge={inboxBadge} />
                       <Separator className="my-3" />
                       <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
-                      <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} path="/talent-finder" />
+                      {/* "Find Talent" removed — already one tap away via bottom nav (mobile)
+                          and the top desktop nav, at every breakpoint this menu is reachable from. */}
                       {/* Events hidden from nav — /meetup route alive, event Studios cover the workflow. */}
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
@@ -370,6 +371,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       {/* PILLARS — live surfaces not in bottom nav */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
+                      {/* "Stages" -> /circle is the one entry point here. /soundstages
+                          renders the same live-stages feed with no other chrome (confirmed
+                          duplicate content, not just a duplicate label) -- it stays reachable
+                          from inside /circle and from every in-app "Join"/"Start Stage" button,
+                          it just doesn't need its own top-level menu entry too. */}
                       <MenuButton icon={Theater} label="Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
                       <MenuButton icon={Sparkles} label="Kreto" onClick={() => handleNavigation("/kreto")} path="/kreto" />
                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
@@ -377,7 +383,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <MenuButton icon={Users} label="Kretopia" onClick={() => handleNavigation("/thrivein")} path="/thrivein" />
                       <MenuButton icon={Gift} label="Perks" onClick={() => handleNavigation("/perks")} path="/perks" />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={Theater} label="Sound Stages" onClick={() => handleNavigation("/soundstages")} path="/soundstages" />
                       <MenuButton icon={Video} label="Recordings" onClick={() => handleNavigation("/recordings")} path="/recordings" />
 
                       <Separator className="my-3" />

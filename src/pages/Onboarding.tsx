@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -93,6 +93,27 @@ export default function Onboarding() {
     if (user) checkOnboardingStatus();
   }, [user]);
 
+  // Nothing here is written to the DB until the final submit (handleSaveProfile) —
+  // so without a client-side draft, a mid-flow refresh (or a mobile browser reloading
+  // a backgrounded tab) silently wipes everything the user just typed or discovered.
+  // Gate saves on hydratedRef so we never overwrite a real draft with the empty
+  // initial state before checkOnboardingStatus has had a chance to restore it.
+  const hydratedRef = useRef(false);
+  const draftKey = userId ? `onboarding_draft:${userId}` : null;
+
+  useEffect(() => {
+    if (!hydratedRef.current || !draftKey) return;
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({
+        ts: Date.now(),
+        phase, fullName, profileUrl, role, location, bio, skills,
+        avatarUrl, username, discoveredCredits,
+        selectedCredits: Array.from(selectedCredits),
+        primaryIntents,
+      }));
+    } catch (e) { console.error("Save onboarding draft:", e); }
+  }, [draftKey, phase, fullName, profileUrl, role, location, bio, skills, avatarUrl, username, discoveredCredits, selectedCredits, primaryIntents]);
+
   useEffect(() => {
     if (user?.email) setEmailToVerify(user.email);
   }, [user]);
@@ -167,6 +188,34 @@ export default function Onboarding() {
         }
       }
     }
+
+    // Restore an in-progress draft (e.g. after a refresh). DB fields above take
+    // priority wherever they're already populated — the draft only fills gaps
+    // for fields that never get saved until the final submit.
+    try {
+      const draftRaw = sessionStorage.getItem(`onboarding_draft:${user.id}`);
+      if (draftRaw) {
+        const draft = JSON.parse(draftRaw);
+        const isFresh = draft.ts && Date.now() - draft.ts < 24 * 60 * 60 * 1000;
+        if (isFresh) {
+          if (draft.fullName && !resolvedName) setFullName(draft.fullName);
+          if (draft.profileUrl) setProfileUrl(draft.profileUrl);
+          if (draft.role && !profileData?.role) setRole(draft.role);
+          if (draft.location && !profileData?.location) setLocation(draft.location);
+          if (draft.bio && !profileData?.bio) setBio(draft.bio);
+          if (draft.skills?.length) setSkills(draft.skills);
+          if (draft.avatarUrl && !profileData?.avatar_url) setAvatarUrl(draft.avatarUrl);
+          if (draft.username && !profileData?.username) setUsername(draft.username);
+          if (draft.discoveredCredits?.length) setDiscoveredCredits(draft.discoveredCredits);
+          if (draft.selectedCredits?.length) setSelectedCredits(new Set(draft.selectedCredits));
+          if (draft.primaryIntents?.length) setPrimaryIntents(draft.primaryIntents);
+          if (draft.phase && draft.phase !== "discover") setPhase(draft.phase);
+        } else {
+          sessionStorage.removeItem(`onboarding_draft:${user.id}`);
+        }
+      }
+    } catch (e) { console.error("Restore onboarding draft:", e); }
+    hydratedRef.current = true;
 
     if (!profileData?.onboarding_started_at) {
       await supabase.from("profiles").update({
@@ -448,6 +497,9 @@ export default function Onboarding() {
           intent_week_start: weekStart,
         } : {}),
       } as any).eq("user_id", user.id);
+
+      // Profile is durably saved now — the draft's job is done.
+      try { sessionStorage.removeItem(`onboarding_draft:${user.id}`); } catch (e) { console.error("Clear onboarding draft:", e); }
 
       // Insert selected discovered credits
       const creditsToInsert = discoveredCredits

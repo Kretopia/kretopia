@@ -39,7 +39,6 @@ import { PassportMomentum } from "@/components/passport/PassportMomentum";
 import { ThriveRemembersChip } from "@/components/passport/ThriveRemembersChip";
 import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
-import { PassportHeroRibbon } from "@/components/passport/PassportHeroRibbon";
 import { LevelUpCard } from "@/components/passport/LevelUpCard";
 import { PassportShareSheet } from "@/components/passport/PassportShareSheet";
 import { PassportClaimHero } from "@/components/passport/PassportClaimHero";
@@ -565,9 +564,6 @@ const ProfileContent = () => {
                   onDownloadEPK={() => setIsEPKEditorOpen(true)}
                   onCosignWall={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
                 />
-              </div>
-              <div className="mt-3">
-                <PassportHeroRibbon standing={standing} />
               </div>
               <div className="mt-3">
                 <LevelUpCard standing={standing} />

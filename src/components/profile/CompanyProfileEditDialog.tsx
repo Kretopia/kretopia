@@ -176,7 +176,7 @@ const CompanyEditForm = memo(({
           {galleryPreviews.length > 0 && (
             <div className="grid grid-cols-3 gap-2 mt-3">
               {galleryPreviews.map((preview, index) => (
-                <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                <div key={preview} className="relative aspect-square rounded-lg overflow-hidden">
                   <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
                   <Button size="sm" variant="destructive" className="absolute top-1 right-1 h-6 w-6 p-0" onClick={() => onRemoveGalleryImage(index)}>×</Button>
                 </div>

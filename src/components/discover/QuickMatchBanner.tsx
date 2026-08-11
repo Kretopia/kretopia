@@ -78,15 +78,13 @@ export const QuickMatchBanner = ({ userId, className }: QuickMatchBannerProps) =
       "relative overflow-hidden border-primary/30 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10",
       className
     )}>
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 animate-pulse" />
-      
       <div className="relative p-4 sm:p-6">
         <Button
           variant="ghost"
           size="icon"
           className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-foreground"
           onClick={handleDismiss}
+          aria-label="Dismiss"
         >
           <X className="h-4 w-4" />
         </Button>
@@ -94,7 +92,7 @@ export const QuickMatchBanner = ({ userId, className }: QuickMatchBannerProps) =
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {/* Icon */}
           <div className="flex-shrink-0 p-3 rounded-2xl bg-primary/20">
-            <Zap className="h-8 w-8 text-primary animate-pulse" />
+            <Zap className="h-8 w-8 text-primary" />
           </div>
 
           {/* Content */}

@@ -118,6 +118,7 @@ export const CircleMemberDirectory = ({ members, onMessage }: CircleMemberDirect
                       size="icon"
                       className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={e => { e.stopPropagation(); onMessage(m.user_id); }}
+                      aria-label={`Message ${m.full_name}`}
                     >
                       <MessageSquare className="h-3 w-3" />
                     </Button>

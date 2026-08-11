@@ -108,6 +108,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
           onClick={() => onLike(profile, { type: 'photo', label: 'their photo' })}
           className="absolute bottom-3 right-3 h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-primary/60 transition-colors group"
           title="Like their photo"
+          aria-label="Like their photo"
         >
           <Heart className="h-5 w-5 text-white group-hover:fill-white transition-all" />
         </button>
@@ -125,6 +126,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
               onClick={() => onLike(profile, { type: 'bio', label: 'their bio' })}
               className="absolute -right-1 -bottom-1 h-7 w-7 rounded-full bg-muted flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20"
               title="Like their bio"
+              aria-label="Like their bio"
             >
               <Heart className="h-3.5 w-3.5 text-primary" />
             </button>
@@ -217,6 +219,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
             size="icon"
             className="h-10 w-10 rounded-full shrink-0 border-destructive/30 hover:bg-destructive/10 hover:border-destructive"
             onClick={() => onPass(profile)}
+            aria-label={`Pass on ${profile.full_name}`}
           >
             <X className="h-4 w-4 text-destructive" />
           </Button>
@@ -225,6 +228,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
             size="icon"
             className="h-10 w-10 rounded-full shrink-0"
             onClick={() => onViewProfile(profile)}
+            aria-label={`View ${profile.full_name}'s full profile`}
           >
             <Eye className="h-4 w-4" />
           </Button>

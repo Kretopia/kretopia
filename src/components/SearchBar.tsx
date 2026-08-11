@@ -65,20 +65,21 @@ export const SearchBar = ({
                 setQuery("");
                 onSearch("", filters);
               }}
+              aria-label="Clear search query"
             >
               <X className="h-4 w-4" />
             </Button>
           )}
         </div>
-        
-        <Button onClick={handleSearch} size="icon">
+
+        <Button onClick={handleSearch} size="icon" aria-label="Search">
           <Search className="h-4 w-4" />
         </Button>
 
         {showFilters && (
           <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
+              <Button variant="outline" size="icon" className="relative" aria-label="Open search filters">
                 <SlidersHorizontal className="h-4 w-4" />
                 {activeFilterCount > 0 && (
                   <Badge 

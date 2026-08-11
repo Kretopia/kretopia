@@ -1,7 +1,7 @@
 import { PassportMomentum } from "./PassportMomentum";
 import { ThriveRemembersChip } from "./ThriveRemembersChip";
 import { RecentlyWorkedWith } from "./RecentlyWorkedWith";
-import { cn } from "@/lib/utils";
+import { SectionCard } from "@/components/ui/section-card";
 
 interface TrustOpportunityCenterProps {
   userId: string;
@@ -18,17 +18,16 @@ interface TrustOpportunityCenterProps {
  */
 export function TrustOpportunityCenter({ userId, className }: TrustOpportunityCenterProps) {
   return (
-    <div className={cn("rounded-2xl border border-border bg-card p-4 space-y-3", className)}>
-      <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Trust &amp; Opportunity</p>
-        <p className="text-xs text-muted-foreground/70 mt-0.5">
-          Recent momentum, who you've worked with, and what Kreto remembers — fills in as it happens.
-        </p>
-      </div>
+    <SectionCard
+      title="Trust & Opportunity"
+      subtitle="Recent momentum, who you've worked with, and what Kreto remembers — fills in as it happens."
+      gap="3"
+      className={className}
+    >
       <PassportMomentum />
       <RecentlyWorkedWith userId={userId} />
       <ThriveRemembersChip />
-    </div>
+    </SectionCard>
   );
 }
 

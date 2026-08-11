@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, ShieldAlert, TrendingDown, Lock } from "lucide-react";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
 import { analytics } from "@/lib/analytics";
-import { cn } from "@/lib/utils";
+import { SectionCard } from "@/components/ui/section-card";
 import type { Standing } from "@/lib/passport/standing";
 
 interface Credit {
@@ -33,9 +33,7 @@ export function KretoActionCenter({ credits, standing, onReviewCredits, classNam
     unconfirmedCount > 0 || standing.decaying || !!standing.gatedAt || standing.nextActions.length > 0;
 
   return (
-    <div className={cn("rounded-2xl border border-border bg-card p-4 space-y-2.5", className)}>
-      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Kreto Action Center</p>
-
+    <SectionCard title="Kreto Action Center" gap="2.5" className={className}>
       <SurfaceProactiveCards surface="passport" limit={2} className="px-0" />
 
       {unconfirmedCount > 0 && (
@@ -103,7 +101,7 @@ export function KretoActionCenter({ credits, standing, onReviewCredits, classNam
       {!hasAnything && (
         <p className="text-xs text-muted-foreground">You're all caught up — nothing needs attention right now.</p>
       )}
-    </div>
+    </SectionCard>
   );
 }
 

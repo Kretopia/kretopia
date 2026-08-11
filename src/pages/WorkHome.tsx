@@ -58,6 +58,8 @@ import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
+import { FeatureHeader } from "@/components/ui/feature-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
 import { CastingCallsRail } from "@/components/opportunity/CastingCallsRail";
@@ -487,18 +489,19 @@ const CreatorWorkHome = () => {
 
       {/* Wider on desktop, capped for readability */}
       <div className="max-w-6xl mx-auto px-4 pt-4 pb-36 md:pb-12 space-y-5">
-        {/* Hero header */}
-        <div className="border-b-2 border-primary/20 pb-4">
-          <p className="brand-eyebrow mb-2">Projects & Workspaces</p>
-          <div className="flex items-center gap-3 flex-wrap">
-            <FolderKanban className="h-9 w-9 md:h-10 md:w-10 text-primary shrink-0" strokeWidth={2.5} />
-            <h1 className="text-3xl md:text-5xl font-black tracking-[-0.04em] leading-none">Studios</h1>
-            {activeProjects.length > 0 && (
-              <Badge className="bg-energy text-energy-foreground hover:bg-energy gap-1 font-bold border-0">
-                {activeProjects.length} Active
-              </Badge>
-            )}
-          </div>
+        {/* Hero header — shared FeatureHeader, matches Scout/Passport */}
+        <div className="border-b border-border/60 pb-4">
+          <FeatureHeader eyebrow="Projects & Workspaces" className="pt-0">
+            <span className="inline-flex items-center gap-2.5 flex-wrap">
+              <FolderKanban className="h-7 w-7 text-[hsl(var(--signal-teal))] shrink-0" strokeWidth={2.5} />
+              Studios
+              {activeProjects.length > 0 && (
+                <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0 align-middle">
+                  {activeProjects.length} Active
+                </Badge>
+              )}
+            </span>
+          </FeatureHeader>
           {/* Voice as a primary interaction, not a passive tip — real mic
               button wired to the existing VoiceCommandSheet, styled with
               Kreto's solid accent treatment (formerly a sunset gradient,
@@ -678,8 +681,7 @@ const CreatorWorkHome = () => {
             to be four independent stacked sections; same components, same
             data, one shared surface. Each inner piece keeps its own real
             data-fetching and self-hiding-when-empty behavior untouched. */}
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Session &amp; Activity</p>
+        <SectionCard title="Session & Activity">
           <div>
             <h3 className="text-sm font-semibold mb-2">Live &amp; upcoming</h3>
             {/* Real Sound Stages data (own loading/empty states, realtime-
@@ -696,13 +698,12 @@ const CreatorWorkHome = () => {
             onWrapWeek={() => setWrapWeekOpen(true)}
           />
           <MyPendingInvitations />
-        </div>
+        </SectionCard>
 
         {/* Casting & Collaborators — control-room block. Open casting
             calls, recent recordings, and the people you've worked with
             most recently used to be three independent stacked sections. */}
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Casting &amp; Collaborators</p>
+        <SectionCard title="Casting & Collaborators">
           <div>
             <h3 className="text-sm font-semibold mb-2">Casting calls</h3>
             {/* Real open opportunities of type "casting". Reuses
@@ -750,7 +751,7 @@ const CreatorWorkHome = () => {
               </div>
             </div>
           )}
-        </div>
+        </SectionCard>
       </div>
 
 

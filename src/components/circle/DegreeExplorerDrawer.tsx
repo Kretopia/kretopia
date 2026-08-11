@@ -234,6 +234,7 @@ export function DegreeExplorerDrawer({ open, onOpenChange, initialDegree = 1 }: 
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => handleMessage(profile.user_id)}
+                        aria-label={`Message ${profile.full_name}`}
                       >
                         <MessageCircle className="h-4 w-4" />
                       </Button>
@@ -243,6 +244,7 @@ export function DegreeExplorerDrawer({ open, onOpenChange, initialDegree = 1 }: 
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => handleViewProfile(profile.user_id)}
+                      aria-label={`View ${profile.full_name}'s profile`}
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>

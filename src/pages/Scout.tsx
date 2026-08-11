@@ -7,6 +7,7 @@ import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection"
 import { ShortlistedGigs } from "@/components/opportunity/ShortlistedGigs";
 import { Radar, Store, UserSearch, ArrowRight, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FeatureHeader } from "@/components/ui/feature-header";
 
 type Tab = "scouted" | "shortlist" | "marketplace";
 
@@ -44,15 +45,12 @@ const Scout = () => {
 
       {/* Calm header */}
       <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">
-        <div className="container mx-auto max-w-5xl px-4 pt-7 pb-4 sm:pt-9 sm:pb-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--accent-scout))] mb-2">
-            Scout
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
+        <div className="container mx-auto max-w-5xl px-4">
+          <FeatureHeader eyebrow="Scout">
             Gigs &amp; talent,{" "}
-            <span className="italic text-[hsl(var(--accent-scout))]">scouted</span>
+            <span className="italic text-[hsl(var(--signal-teal))]">scouted</span>
             <span className="text-foreground/60"> for you.</span>
-          </h1>
+          </FeatureHeader>
 
           {/* Segmented tabs — teal outline on active */}
           <div

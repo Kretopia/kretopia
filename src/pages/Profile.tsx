@@ -16,6 +16,7 @@ import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 
 // Components
 import { PassportHero } from "@/components/passport/PassportHero";
+import { FeatureHeader } from "@/components/ui/feature-header";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
@@ -405,18 +406,13 @@ const ProfileContent = () => {
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
-        {/* Calm Passport header — matches Scout/About pattern */}
+        {/* Calm Passport header — shared FeatureHeader, matches Scout/Studio */}
         <header className="pt-[env(safe-area-inset-top)]">
-          <div className="pt-5 sm:pt-7 pb-4 sm:pb-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-2">
-              Passport
-            </p>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
-              Your work,{" "}
-              <span className="italic text-[hsl(var(--signal-teal))]">verified</span>
-              <span className="text-foreground/60">.</span>
-            </h1>
-          </div>
+          <FeatureHeader eyebrow="Passport">
+            Your work,{" "}
+            <span className="italic text-[hsl(var(--signal-teal))]">verified</span>
+            <span className="text-foreground/60">.</span>
+          </FeatureHeader>
         </header>
 
         {/* Passport reveal — the reward moment right after Kreto builds the

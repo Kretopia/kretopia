@@ -345,19 +345,35 @@ export const VoiceFirstCreateModal = ({
     }
   };
 
+  // This is a full-screen custom overlay, not a Radix Dialog, so it needs
+  // its own Escape handling and ARIA role — neither came for free.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onOpenChange]);
+
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (open) closeButtonRef.current?.focus();
+  }, [open]);
+
   if (!open) return null;
 
   const fmtSec = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-background flex flex-col">
+    <div className="fixed inset-0 z-[60] bg-background flex flex-col" role="dialog" aria-modal="true" aria-label="New room">
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 h-14 shrink-0 border-b border-border/40">
         <span className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
           New room
         </span>
-        <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
+        <Button ref={closeButtonRef} variant="ghost" size="icon" onClick={() => onOpenChange(false)} aria-label="Close">
           <X className="h-5 w-5" />
         </Button>
       </div>

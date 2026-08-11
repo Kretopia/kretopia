@@ -195,7 +195,7 @@ export function FeedbackTab() {
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="More status actions">
                           <ChevronDown className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -246,7 +246,7 @@ export function FeedbackTab() {
                     {selectedItem.page_url && <span className="text-muted-foreground font-normal text-sm ml-2">on {selectedItem.page_url}</span>}
                   </CardTitle>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedItem(null)}>
+                <Button variant="ghost" size="icon" onClick={() => setSelectedItem(null)} aria-label="Close feedback details">
                   <X className="h-4 w-4" />
                 </Button>
               </div>

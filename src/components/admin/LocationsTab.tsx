@@ -163,6 +163,7 @@ export function LocationsTab() {
                       size="icon"
                       onClick={() => showQRCode(location)}
                       title="View QR Code"
+                      aria-label={`View QR code for ${location.name}`}
                     >
                       <QrCode className="h-4 w-4" />
                     </Button>
@@ -170,6 +171,7 @@ export function LocationsTab() {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleEdit(location)}
+                      aria-label={`Edit ${location.name}`}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -177,6 +179,7 @@ export function LocationsTab() {
                       variant="ghost"
                       size="icon"
                       onClick={() => confirmDelete(location.id)}
+                      aria-label={`Delete ${location.name}`}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>

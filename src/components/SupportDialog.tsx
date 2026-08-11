@@ -200,7 +200,7 @@ export const SupportDialog = ({ open: controlledOpen, onOpenChange }: SupportDia
     <Dialog open={open} onOpenChange={setOpen}>
       {controlledOpen === undefined && (
         <DialogTrigger asChild>
-          <Button variant="outline" size="icon" className="relative">
+          <Button variant="outline" size="icon" className="relative" aria-label="Open support chat">
             <MessageCircle className="h-5 w-5" />
           </Button>
         </DialogTrigger>
@@ -275,7 +275,7 @@ export const SupportDialog = ({ open: controlledOpen, onOpenChange }: SupportDia
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
             disabled={isLoading}
           />
-          <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>
+          <Button onClick={sendMessage} disabled={isLoading || !input.trim()} aria-label="Send message">
             <Send className="h-4 w-4" />
           </Button>
         </div>

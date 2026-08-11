@@ -353,7 +353,7 @@ export const EditOpportunityDialog = ({
                     {imageFile ? "Change Image" : existingImageUrl ? "Replace Image" : "Upload Image"}
                   </Button>
                   {(imageFile || existingImageUrl) && (
-                    <Button type="button" variant="ghost" size="icon" onClick={() => { setImageFile(null); setImagePreview(""); setExistingImageUrl(""); }}>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => { setImageFile(null); setImagePreview(""); setExistingImageUrl(""); }} aria-label="Remove cover image">
                       <X className="h-4 w-4" />
                     </Button>
                   )}

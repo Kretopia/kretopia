@@ -122,3 +122,12 @@ Credits, skills (existing entries — only additive `source` tagging), portfolio
 ## Rollback plan
 
 Every phase lands as its own commit on `feature/creative-passport-rearchitecture` (never `main`), verified with `tsc`/`eslint`-diff/`build` before commit, matching this branch's established discipline. Any phase can be reverted independently with `git revert <commit>` without affecting the others, since components are being merged/converted in place rather than having their underlying data or routes restructured. Nothing in this plan requires a database migration, so there is no live-database rollback concern — the entire rollback surface is git history.
+
+## Outcome — what actually happened vs. this plan
+
+Written after all 10 phases (0–9) landed; see [FINAL_QA_REPORT.md](FINAL_QA_REPORT.md)'s Charter C section for the full commit-by-commit account. Recording the deltas from this plan specifically, since a before-state audit is only useful if it's checked against what really shipped:
+
+- **Followed as planned:** the `ProfileHero`+`PassportClaimHero` merge, the two-block post-Passport consolidation, the Co-Signs vs. Reviews split, the Stamps carousel conversion, the Studio control-room condensing, and the `VoiceFirstCreateModal`-only New Room enhancement (not merging in `CreateProjectWizard`).
+- **Went further than planned:** extracted two shared components not originally scoped here — `FeatureHeader` (Phase 6, discovered Scout/Passport already duplicated one pattern exactly) and `SectionCard` (Phase 8, discovered the post-Passport/Studio blocks had independently converged on an identical shell). Both were "only if it genuinely reduces duplication" calls made in the moment, not predicted here.
+- **Scoped down from the literal ask:** Skills' confirmed/suggested/inferred distinction shipped as a real, working mechanism, but no current code path produces an `ai_suggested` skill — both places skills get written already require user confirmation first, so there was nothing to retrofit without inventing an artificial trigger. Book Me's CTA rework was judged out of scope once Phase 3 established this tab is the owner's management view, not the visitor "hire" flow.
+- **Not attempted:** merging `CreateProjectWizard` into `VoiceFirstCreateModal` (flagged here as a real, deliberate risk call, not an oversight), and the remaining ~95 files in the icon-button-labeling list (bounded, mechanical, continuable in further batches).

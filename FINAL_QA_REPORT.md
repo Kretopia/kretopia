@@ -1,7 +1,91 @@
 # Kretopia — Autonomous UI/UX Optimization Final QA Report
 
 **Branch:** `feature/creative-passport-rearchitecture` (never merged, never touched `main`)
-**Scope:** Two sequential autonomous charters run on this branch, both executed and committed phase-by-phase with verification (`tsc --noEmit`, `eslint` diff-checked against baseline, `npm run build`, live browser verification where feasible) at each step. This report was updated in place rather than recreated — the original charter's section below is unchanged history; the second charter's work is appended after it.
+**Scope:** Three sequential autonomous charters run on this branch, each executed and committed phase-by-phase with verification (`tsc --noEmit`, `eslint` diff-checked against baseline, `npm run build`, live browser verification where feasible) at every step. This report is updated in place rather than recreated — each charter's section is unchanged history once written; the newest charter is appended at the top.
+
+---
+
+# Charter C — Creative Passport + Pro Music Studio Rearchitecture
+
+Continuation on the same branch, current HEAD `202200c0`. Ten phases (0–9), each its own commit(s), covering `0e111925` through `202200c0`. No `typecheck` or test script exists in this repo's `package.json` (`dev`/`build`/`build:dev`/`lint`/`preview` only) — `npx tsc --noEmit -p tsconfig.app.json` is the typecheck equivalent used throughout, and there is no unit-test suite to run; this is disclosed rather than silently skipped.
+
+## Commits (newest first)
+
+| Commit | Phase | Summary |
+|---|---|---|
+| `202200c0` | 8 | Extract `SectionCard` — dedupe the 4×-repeated control-room shell |
+| `60d1191b` | 7 | docs: update ACCESSIBILITY_AUDIT.md |
+| `3490e0e3` | 7 | aria-label icon-only buttons, batch 1 of 5 (25 files, 46 buttons) |
+| `0c2a812d` | 7 | New Room modal — Escape-to-close, focus management, ARIA role |
+| `ab49be87` | 6 | Align Studio/Scout/Passport titles into shared `FeatureHeader` |
+| `aaeb94be` | 5 | New Room — draft persistence, target date + budget fields |
+| `dc09c23d` | 4 | Studio — condense into a control-room structure |
+| `a9d9d770` | 3 | Passport child features — Stamps carousel, real Co-Signs, Skills triage |
+| `91e7f976` | 2 | Passport — consolidate everything after the hero into two blocks |
+| `98b0a4df` | 1 | Passport — one unified 3D hero (merges `ProfileHero` + `PassportClaimHero`) |
+| `0e111925` | 0 | docs: before-state audit ([PASSPORT_STUDIO_REARCHITECTURE_AUDIT.md](PASSPORT_STUDIO_REARCHITECTURE_AUDIT.md)) |
+
+## Files changed (new files this charter)
+
+`src/components/passport/PassportHero.tsx`, `KretoActionCenter.tsx`, `TrustOpportunityCenter.tsx`, `src/components/profile/CoSignsSection.tsx`, `src/lib/passport/creditEvidence.ts`, `src/components/ui/feature-header.tsx`, `src/components/ui/section-card.tsx`, plus `PASSPORT_STUDIO_REARCHITECTURE_AUDIT.md`. Modified: `Profile.tsx`, `ProfileContentSections.tsx`, `CreditsSection.tsx`, `AchievementCard.tsx`, `SkillsSection.tsx`, `ReviewsSection.tsx`, `WorkHome.tsx`, `Scout.tsx`, `VoiceFirstCreateModal.tsx`, `ACCESSIBILITY_AUDIT.md`, plus the 25 files from the accessibility batch (see `3490e0e3`'s own commit message for the full list).
+
+## What changed, by phase
+
+**Phase 0 — Audit.** Full component-tree mapping of Passport and Studio before any change; see [PASSPORT_STUDIO_REARCHITECTURE_AUDIT.md](PASSPORT_STUDIO_REARCHITECTURE_AUDIT.md) for the complete before-state, decisions, and rollback plan.
+
+**Phase 1 — Unified Passport hero.** `ProfileHero` + `PassportClaimHero` (two separate hero blocks) merged into one `HoloCard`-wrapped `PassportHero`: portrait/cover (edit affordances preserved), name, role, location, availability, bio (now integrated, previously a separate block), trust badges, strongest verified credits, stamps+co-signs line, skills chips, one Passport Strength meter, one primary action (Share), one intelligent next action (`standing.nextActions[0]`, reused not reinvented). `ProfileHero.tsx` itself untouched — still used as-is by `ViewProfile.tsx` (the public/visitor route), confirmed zero shared code path with `Profile.tsx` (always `isOwnProfile`) before merging, so zero regression risk there.
+
+**Phase 2 — Two post-Passport blocks.** Five separate mounts (`LevelUpCard`, `PassportMomentum`, `ThriveRemembersChip`, `RecentlyWorkedWith`, `PassportCommandCenter`) consolidated into exactly two: `KretoActionCenter` (Kreto's AI suggestions + unconfirmed-credits nudge + Standing's decay/gate/next-action rows) and `TrustOpportunityCenter` (momentum, collaborators, memory chip). Also fixed a bug from Phase 1: the Hero's next-action teaser always scrolled to `#hire` regardless of the action; now follows the real deeplink.
+
+**Phase 3 — Child features.** Stamps: grid → real `Carousel`. Co-Signs: the tab was rendering `ReviewsSection` (a star-rating testimonial system) under a misleading label; built the real thing — four evidence-state carousels (Verified/Pending/Self-claimed/Publicly Sourced) bucketed via a new shared `classifyCreditEvidence()`, with `AchievementCard` refactored to use the same function instead of duplicating the branching. `ReviewsSection` moved to its own "Reviews" tab, all internal "Co-sign" copy relabeled to "Review". Skills: added an optional `source: "confirmed" | "ai_suggested"` field (no migration — the column is `Json`) with a UI split and Confirm/Remove actions; checked both places skills get written and found both already require user confirmation before persisting, so nothing currently produces an `ai_suggested` skill — shipped the real mechanism rather than fabricating a demo trigger. Book Me: added a section header; noted this tab is the owner's own management view, not the visitor "hire" flow the charter's CTA language was describing.
+
+**Phase 4 — Studio control room.** WorkHome's 7 independent stacked sections below the project grid condensed into two labeled blocks (Session & Activity; Casting & Collaborators), zero changes to any inner component's data or logic.
+
+**Phase 5 — New Room.** Inspected before editing: two independently-wired create flows exist (`VoiceFirstCreateModal`, `CreateProjectWizard`); enhanced the primary one (Studio home's "New project" button) rather than merging both, per the audit's documented risk call. Added sessionStorage draft persistence for the review step (mirrors the `Onboarding.tsx` pattern), plus target-date and budget fields (both pre-existing `projects` columns, no schema change). Live-verified end-to-end: closed mid-review, reopened, exact same AI-extracted brief + a manually-typed budget value came back; "Start over" correctly cleared the draft.
+
+**Phase 6 — Title alignment.** Discovered Scout and Passport already shared byte-identical header markup; extracted it into `FeatureHeader` and pointed Studio at it too (previously a different scale/weight entirely). Caught and fixed a real mistake in the same pass — the first draft used `text-primary`, which resolves to near-black in this theme, not the brand pink; corrected to `--signal-teal` before verification.
+
+**Phase 7 — Interaction/animation/accessibility.** Found and fixed a real gap: `VoiceFirstCreateModal` is a custom full-screen overlay, not a Radix Dialog, so it had none of Radix's free Escape/focus/ARIA handling — added all three, live-verified via `document.activeElement` and a DOM check after Escape. Ran a scoped background pass adding real `aria-label`s to 46 icon-only buttons across 25 files (batch 1 of the ~120-file list from Charter B's audit); see [ACCESSIBILITY_AUDIT.md](ACCESSIBILITY_AUDIT.md) for the reproducible list and remaining count (95).
+
+**Phase 8 — Scalability.** Found the exact same card-shell pattern (`rounded-2xl border border-border bg-card p-4` + uppercase label) had been written independently four times across Phases 2 and 4; extracted `SectionCard`, zero behavior change, live-verified pixel-identical rendering at all four call sites.
+
+**Phase 9 — This section.**
+
+## Verification
+
+- `npx tsc --noEmit -p tsconfig.app.json`: clean after every single commit in this charter, and clean on a final full-repo run at the end.
+- `eslint`: diff-checked against baseline before every commit (file-scoped for most phases, one full-repo run at the end). Final full-repo count: **3496 problems (3186 errors, 310 warnings)** — 2 *fewer* errors than the Charter B baseline (3498/3188/310) captured at this charter's Phase 0. Zero net-new issues across the entire charter; several phases were net-negative (e.g. Phase 1 alone took `Profile.tsx` from 31 to 27 `any`-errors by removing more casts than it added).
+- `npm run build`: succeeded after every commit, including the final full-repo run.
+- Live browser verification (real authenticated account, "Gabriel Auguste"): every phase's changed surface was screenshotted and/or DOM-inspected after the change, not just after the whole charter. Additional end-of-charter spot checks: `/profile` and `/desk` on mobile viewport (375×812) — Passport Strength meter, Kreto Action Center, and the Stamps carousel all reflow correctly with no overflow or clipping; `/circle` and `/perks` (untouched routes) confirmed still healthy; the public Passport route (`ViewProfile.tsx`) was not live-reloaded but is confirmed untouched by any commit in this charter via `git log`, so carries zero regression risk from this work.
+- `prefers-reduced-motion` on the 3D Passport tilt: not re-verified live this charter (same limitation as Charter A/B — this sandbox's `.focus()`/media-query emulation is unreliable for this specific check), but `HoloCard.tsx` itself was not modified — its existing `interactive()` guard (checks both `prefers-reduced-motion` and `(hover: hover) and (pointer: fine)` before enabling tilt) was read and confirmed present in source, not newly verified at runtime.
+
+## Acceptance criteria — self-assessment against the charter's own list
+
+**PASSPORT:** ✅ one unified 3D Passport; ✅ bio integrated; ✅ no duplicate hero; ✅ maximum two blocks after it; ✅ no repeated Passport Strength (was duplicated between Hero and `PassportCommandCenter` immediately after Phase 1, fixed in Phase 2); ✅ no repeated Share action; all information remains reachable (nothing deleted, only consolidated or relabeled).
+
+**CHILD FEATURES:** ✅ Stamps modernized (real carousel); ✅ Skills distinguish confirmed/suggested (mechanism real, currently empty in practice — disclosed above); ✅ Co-Signs have four status carousels with keyboard+button+swipe support (inherited from the shared `Carousel` primitive); ⚠️ Book Me's "clear hiring CTA" — partially addressed (header added), full CTA rework judged out of scope for the owner-facing view this tab actually is (see Phase 3 notes and the audit doc).
+
+**STUDIO:** ✅ minimal major surfaces (2 control-room blocks + the project grid, down from 7+); ✅ active project immediately visible (grid stays the dominant surface, untouched); ✅ New Room creates a real project (pre-existing capability, unchanged) with draft persistence added; ✅ no core functionality lost (verified per-phase, not just claimed).
+
+**NAVIGATION:** ✅ no duplicate SoundStages / no duplicate primary hamburger routes (both already fixed in Charter B, re-confirmed not regressed).
+
+**DESIGN:** ✅ consistent Liquid Glass (HoloCard reused, not rebuilt); ✅ single accent (`--signal-teal` = `#FF2DA1`, confirmed and corrected where a mistake crept in); ✅ no new decorative gradients; ✅ aligned feature titles (Phase 6); ✅ subtle pink light emission (static text-shadow, no animation); responsive (mobile-verified) and accessible (Phase 7 gaps closed where found, remainder documented not hidden).
+
+## Remaining, honestly (Charter C)
+
+- Icon-button labeling: 95 of the original ~120 files still unlabeled (exact reproducible list in `ACCESSIBILITY_AUDIT.md`).
+- `VoiceFirstCreateModal`'s Escape/focus fix does not include full tab-focus-cycling (wrapping from last element back to first) — a smaller remaining gap, not full parity with Radix's built-in trap.
+- `CreateProjectWizard` (the FAB/in-room-sidebar/ProjectsList entry point for new projects) was not touched — still has no draft persistence, still uses the old "What are you making?" copy. Documented as a deliberate scope decision in the Phase 0 audit, not an oversight.
+- Skills' confirmed/suggested mechanism has no current code path that actually produces an `ai_suggested` skill (see Phase 3) — real and correct, but not yet exercised by any live data.
+- Book Me's visitor-facing "Request to book" CTA (as opposed to the owner's management view this pass touched) was out of scope — `ViewProfile.tsx` side of this feature not audited in this charter.
+- `prefers-reduced-motion` on `HoloCard`'s tilt: confirmed present in source, not re-verified live this charter (tooling limitation, not a code gap).
+- All items still open from Charter B's own "Remaining, honestly" section below remain open unless explicitly closed above.
+
+## Manual actions still required (Charter C)
+
+1. Decide whether to continue the icon-button-labeling batches (recommend ~25-file batches, same process as batch 1) or accept the current state.
+2. Decide whether `CreateProjectWizard` should eventually be merged into the same enhanced flow as `VoiceFirstCreateModal`, or intentionally kept as a separate, simpler path.
+3. No database, RLS, auth, or payment changes were made in this charter — nothing new to apply on the live database.
 
 ---
 

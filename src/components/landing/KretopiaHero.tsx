@@ -2,8 +2,9 @@
  * KretopiaHero — Section 1 of the Kretopia landing page.
  *
  * Search-first. The hierarchy is deliberate and fixed:
- *   eyebrow → headline → one supporting sentence → dominant search →
- *   primary CTA → secondary CTA.
+ *   eyebrow → headline → one supporting sentence → dominant search, whose
+ *   own submit button IS the primary action — no competing CTA row sits
+ *   underneath it.
  *
  * Search itself is the app's real global search (UnifiedSearchDropdown,
  * variant="hero") — same debounced/cancelled queries, same voice input,
@@ -11,9 +12,7 @@
  * Nothing here reimplements search, and nothing fakes a result.
  */
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Search } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -26,12 +25,6 @@ interface KretopiaHeroProps {
 export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
   const [query, setQuery] = useState("");
-
-  const submit = () => {
-    const q = query.trim();
-    if (q.length < 2) return;
-    onSearchSubmit(q);
-  };
 
   return (
     <section
@@ -57,7 +50,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           className="flex items-center justify-center gap-3 mb-6 sm:mb-8"
         >
           <span className="h-px w-8 bg-white/25" />
-          <span className="landing-eyebrow">Kretopia Creative Infrastructure</span>
+          <span className="landing-eyebrow">Kretopia — The Creative Economy OS</span>
           <span className="h-px w-8 bg-white/25" />
         </motion.div>
 
@@ -80,7 +73,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center"
         >
           Talent is everywhere. Opportunity is not. Search your name to discover your
-          creative record and start building your trusted Passport.
+          creative record and turn it into a trusted Creative Passport.
         </motion.p>
 
         {/* ─────────────────────────────────────────────────────────────
@@ -109,27 +102,16 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
             />
           </div>
 
-          {/* Primary + secondary CTA */}
-          <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={submit}
-              disabled={query.trim().length < 2}
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ backgroundColor: "#FF2DA1", fontFamily: "'Work Sans', sans-serif" }}
-            >
-              <Search className="h-4 w-4" aria-hidden />
-              Search my name
-            </button>
-            <Link
-              to="/auth?tab=signup"
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/40 hover:text-white"
-              style={{ fontFamily: "'Work Sans', sans-serif" }}
-            >
-              Create my Passport
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-          </div>
+          {/* No competing CTA row here — the searchbar's own submit button
+              (an arrow, aria-label="Search") is the primary action. Two
+              buttons directly underneath used to compete with it; removed
+              rather than replaced. */}
+          <p
+            className="mt-5 text-center text-sm text-white/55"
+            style={{ fontFamily: "'Work Sans', sans-serif" }}
+          >
+            Find your record, confirm your work and open your next opportunity.
+          </p>
 
           {/* Example searches — safe, generic, no private data */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">

@@ -78,6 +78,9 @@ const RsvpConfirmed = ({
         <Text style={footer}>
           Can't make it? <Link href={sessionUrl} style={footerLink}>Cancel your RSVP</Link> so we can match someone else.
         </Text>
+        <Text style={footer}>
+          Questions? <Link href="mailto:info@kretopia.com" style={footerLink}>info@kretopia.com</Link>
+        </Text>
         <Text style={footerBrand}>© {new Date().getFullYear()} Kretopia · kretopia.com</Text>
       </Container>
     </Body>

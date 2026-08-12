@@ -97,7 +97,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const handleSignOut = async () => {
     try {
       setIsOpen(false);
-      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('[Navbar] Sign out error:', error);
         localStorage.removeItem('sb-kwmcocsitwssrtzkdojh-auth-token');

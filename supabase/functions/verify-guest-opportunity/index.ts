@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       }
 
       // Send verification email
-      const siteUrl = Deno.env.get("SITE_URL") || "https://thrivein-new-beta.lovable.app";
+      const siteUrl = Deno.env.get("SITE_URL") || "https://www.kretopia.com";
       const verifyUrl = `${siteUrl}/verify-opportunity?token=${token}`;
 
       // Send verification email via Resend
@@ -90,14 +90,14 @@ Deno.serve(async (req) => {
             Authorization: `Bearer ${resendKey}`,
           },
           body: JSON.stringify({
-            from: "ThriveIN <noreply@thrivein.io>",
+            from: "Kretopia <noreply@thrivein.io>",
             to: [email],
             subject: `Verify your opportunity: ${title}`,
             html: `
               <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
                 <h1 style="color: #1a1a1a; font-size: 24px;">Almost there, ${company_name}! 🎉</h1>
                 <p style="color: #555; font-size: 16px; line-height: 1.6;">
-                  Click below to verify your email and publish <strong>"${title}"</strong> on ThriveIN's Discover page where thousands of creatives will see it.
+                  Click below to verify your email and publish <strong>"${title}"</strong> on Kretopia's Discover page where thousands of creatives will see it.
                 </p>
                 <a href="${verifyUrl}" style="display: inline-block; background: #7c3aed; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin: 20px 0;">
                   Verify & Publish
@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
       const { data: profileId } = await adminClient.rpc("create_unclaimed_profile", {
         p_full_name: opp.guest_company_name,
         p_role: "Company",
-        p_bio: `${opp.guest_company_name} is hiring on ThriveIN`,
+        p_bio: `${opp.guest_company_name} is hiring on Kretopia`,
         p_avatar_url: opp.guest_logo_url,
         p_source: "guest_opportunity",
         p_imported_data: JSON.stringify({ guest_email: opp.guest_email }),

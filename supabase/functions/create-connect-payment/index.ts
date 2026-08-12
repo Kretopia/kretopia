@@ -88,7 +88,7 @@ serve(async (req) => {
     let customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
     // Create payment with Connect transfer and application fee
-    const origin = req.headers.get("origin") || "https://www.thrivein.io";
+    const origin = req.headers.get("origin") || "https://www.kretopia.com";
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -97,7 +97,7 @@ serve(async (req) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: description || 'ThriveIN Payment',
+              name: description || 'Kretopia Payment',
               description: `Platform fee: ${(platformFeePercentage * 100).toFixed(0)}%`,
             },
             unit_amount: amountInCents,

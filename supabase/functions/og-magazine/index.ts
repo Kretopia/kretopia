@@ -40,13 +40,13 @@ Deno.serve(async (req) => {
   }
 
   if (!article) {
-    return Response.redirect("https://www.thrivein.io/magazine", 302);
+    return Response.redirect("https://www.kretopia.com/magazine", 302);
   }
 
-  const canonicalUrl = `https://www.thrivein.io/magazine/${slug}`;
+  const canonicalUrl = `https://www.kretopia.com/magazine/${slug}`;
   const description = article.subtitle || (article.content?.slice(0, 155).replace(/[#*>\n]/g, "") + "...");
-  const image = article.cover_image_url || "https://www.thrivein.io/lovable-uploads/thrivein-logo.png";
-  const title = `${article.title} | ThriveIN Magazine`;
+  const image = article.cover_image_url || "https://www.kretopia.com/og-image.png";
+  const title = `${article.title} | Kretopia Magazine`;
 
   // Check if this is a bot/crawler
   const userAgent = (req.headers.get("user-agent") || "").toLowerCase();
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
   <meta property="og:title" content="${escapeHtml(article.title)}" />
   <meta property="og:description" content="${escapeHtml(description)}" />
   <meta property="og:url" content="${canonicalUrl}" />
-  <meta property="og:site_name" content="ThriveIN Magazine" />
+  <meta property="og:site_name" content="Kretopia Magazine" />
   <meta property="og:image" content="${escapeHtml(image)}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
 <body>
   <h1>${escapeHtml(article.title)}</h1>
   <p>${escapeHtml(description)}</p>
-  <a href="${canonicalUrl}">Read on ThriveIN Magazine</a>
+  <a href="${canonicalUrl}">Read on Kretopia Magazine</a>
 </body>
 </html>`;
 

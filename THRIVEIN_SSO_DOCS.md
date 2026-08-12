@@ -1,5 +1,17 @@
 # Kretopia SSO — Integration Guide for Anansi
 
+> ⚠️ **SECURITY NOTICE (see docs/SECURITY_RELEASE_GATE.md):** This file previously
+> contained a live, working OAuth client secret for the Anansi integration, committed
+> to git and present on `main` and every other branch across multiple historical
+> commits. It has been redacted below but **the underlying secret has not yet been
+> rotated in the database** — redacting this file does not invalidate the old value,
+> and git history still contains it. Rotation of the `oauth_apps` row's
+> `client_secret` (and updating Anansi's server-side config to match) is a required,
+> human-driven action before this integration can be considered safe. Do not restore
+> the real value to this file once rotated — distribute new credentials to the Anansi
+> team out-of-band instead (e.g. a password manager or a one-time secure share), never
+> via a committed file.
+
 ## Overview
 "Sign in with Kretopia" lets Anansi users authenticate using their Kretopia creative profile. This uses a standard OAuth 2.0 Authorization Code flow.
 
@@ -10,7 +22,7 @@
 | Field | Value |
 |-------|-------|
 | **Client ID** | `4f76281af0b789acc26f07555383af44` |
-| **Client Secret** | `08d793bd4c9382f11c1832b8042eb40cc84a0f06ffe46fb0a9f2ef63beda8955` |
+| **Client Secret** | `[REDACTED — rotated value must be shared out-of-band, never committed. See docs/SECURITY_RELEASE_GATE.md]` |
 | **Registered Redirect URIs** | `http://localhost:3000/auth/callback`, `https://anansi.app/auth/callback` |
 
 > ⚠️ **Keep the client secret on your server only.** Never expose it in frontend code.
@@ -64,7 +76,7 @@ Content-Type: application/json
   "grant_type": "authorization_code",
   "code": "AUTH_CODE",
   "client_id": "4f76281af0b789acc26f07555383af44",
-  "client_secret": "08d793bd4c9382f11c1832b8042eb40cc84a0f06ffe46fb0a9f2ef63beda8955",
+  "client_secret": "[REDACTED — see security notice at top of this file]",
   "redirect_uri": "https://anansi.app/auth/callback"
 }
 ```

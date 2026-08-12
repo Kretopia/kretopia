@@ -143,6 +143,9 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
         href="/auth?next=/circle?tab=live"
       />
 
+      {/* Auditions — how an open call actually runs */}
+      <AuditionRoadmapSection />
+
       {/* VIII. Kreto — the sunset moment */}
       <MeetKretoSection />
 

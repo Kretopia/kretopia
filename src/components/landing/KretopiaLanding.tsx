@@ -20,6 +20,7 @@
 import { KretopiaHero } from "@/components/landing/KretopiaHero";
 import { ManifestoSection } from "@/components/landing/kretopia/ManifestoSection";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
+import { AuditionRoadmapSection } from "@/components/landing/kretopia/AuditionRoadmapSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
 import { ClosingSection } from "@/components/landing/kretopia/ClosingSection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";

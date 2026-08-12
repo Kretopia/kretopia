@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Headphones, ExternalLink, Play, ChevronDown, ChevronUp } from "lucide-react";
+import { Headphones, ExternalLink, Play, ChevronDown, ChevronUp, AlertCircle, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { SocialShareButtons } from "@/components/SocialShareButtons";
 
 const PLAYLIST_ID = "PL3IHAVyb_6H2OpHnvwDa7EubXaanmXfOY";
 
@@ -20,28 +21,31 @@ interface Episode {
 export const PodcastPlayer = () => {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [activeEpisode, setActiveEpisode] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  useEffect(() => {
-    const fetchEpisodes = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("fetch-youtube-playlist", {
-          body: { playlistId: PLAYLIST_ID },
-        });
-        if (error) throw error;
-        if (data?.episodes?.length) {
-          setEpisodes(data.episodes);
-          setActiveEpisode(data.episodes[0].videoId);
-        }
-      } catch (e) {
-        console.error("Failed to fetch episodes:", e);
-      } finally {
-        setLoading(false);
+  const fetchEpisodes = async () => {
+    setLoading(true);
+    setFetchError(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-youtube-playlist", {
+        body: { playlistId: PLAYLIST_ID },
+      });
+      if (error) throw error;
+      if (data?.episodes?.length) {
+        setEpisodes(data.episodes);
+        setActiveEpisode(data.episodes[0].videoId);
       }
-    };
-    fetchEpisodes();
-  }, []);
+    } catch (e) {
+      console.error("Failed to fetch episodes:", e);
+      setFetchError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchEpisodes(); }, []);
 
   const visibleEpisodes = showAll ? episodes : episodes.slice(0, 4);
   const activeEp = episodes.find(e => e.videoId === activeEpisode);
@@ -81,11 +85,18 @@ export const PodcastPlayer = () => {
             />
           </div>
           {activeEp && (
-            <div className="p-3 border-t border-border/50">
-              <h4 className="text-xs font-semibold line-clamp-1">{activeEp.title}</h4>
-              {activeEp.description && (
-                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{activeEp.description}</p>
-              )}
+            <div className="p-3 border-t border-border/50 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h4 className="text-xs font-semibold line-clamp-1">{activeEp.title}</h4>
+                {activeEp.description && (
+                  <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{activeEp.description}</p>
+                )}
+              </div>
+              <SocialShareButtons
+                url={`https://youtube.com/watch?v=${activeEp.videoId}`}
+                title={activeEp.title}
+                description="Discover A Thriver — Kretopia's podcast"
+              />
             </div>
           )}
         </Card>
@@ -97,6 +108,18 @@ export const PodcastPlayer = () => {
           {[1, 2, 3].map(i => (
             <Skeleton key={i} className="h-20 rounded-xl" />
           ))}
+        </div>
+      ) : fetchError ? (
+        <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
+          <AlertCircle className="h-8 w-8 text-destructive/60" />
+          <p className="text-xs font-medium">Couldn't load episodes</p>
+          <button
+            onClick={fetchEpisodes}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Try again
+          </button>
         </div>
       ) : (
         <div className="space-y-2">

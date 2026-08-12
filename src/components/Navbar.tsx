@@ -202,21 +202,30 @@ const Navbar = memo(({ user }: NavbarProps) => {
         {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
         {!user && (
           <div className="hidden md:flex items-center gap-1 mx-4">
-            {guestNavItems.map(({ path, label }) => (
-              <Link
-                key={path}
-                to={path}
-                className={cn(
-                  "px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
-                  isLandingPage
-                    ? "text-white/70 hover:text-white hover:bg-white/5"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-                  location.pathname === path && (isLandingPage ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
-                )}
-              >
-                {label}
-              </Link>
-            ))}
+            {guestNavItems.map(({ path, label, icon: Icon }) => {
+              const active = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                    isLandingPage
+                      ? "text-white/70 hover:text-white hover:bg-white/5"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                    active && (isLandingPage ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
+                  )}
+                >
+                  <Icon
+                    className="h-4 w-4 shrink-0"
+                    style={active ? { color: "#FF2DA1" } : undefined}
+                    aria-hidden
+                  />
+                  {label}
+                </Link>
+              );
+            })}
           </div>
         )}
 

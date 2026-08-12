@@ -199,7 +199,7 @@ export const VoiceCommandSheet = ({ open, onOpenChange }: VoiceCommandSheetProps
             .limit(1)
             .single();
           if (fetchErr || !invoice) throw new Error("No open invoice for that project");
-          const { error: updErr } = await supabase.rpc("confirm_invoice_paid_manually" as any, {
+          const { error: updErr } = await supabase.rpc("confirm_invoice_paid_manually", {
             p_invoice_id: invoice.id,
             p_payment_method: "Voice command",
           });

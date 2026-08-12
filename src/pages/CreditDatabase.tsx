@@ -272,7 +272,7 @@ const CreditDatabase = () => {
     if (!claimDialog || !currentUserId) return;
     setClaiming(true);
     try {
-      const { error } = await supabase.rpc('claim_icdb_role' as any, { p_role_id: claimDialog.role.id });
+      const { error } = await supabase.rpc('claim_icdb_role', { p_role_id: claimDialog.role.id });
       if (error) throw error;
 
       toast.success("Credit claimed! It's pending review before it shows as verified on your profile.");

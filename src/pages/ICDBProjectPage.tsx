@@ -111,7 +111,7 @@ const ICDBProjectPage = () => {
     setClaiming(role.id);
     try {
       const extractedThumb = extractThumbnailForStorage(project!.external_url || null);
-      const { error } = await supabase.rpc("claim_icdb_role" as any, { p_role_id: role.id, p_thumbnail_url: extractedThumb });
+      const { error } = await supabase.rpc("claim_icdb_role", { p_role_id: role.id, p_thumbnail_url: extractedThumb });
       if (error) throw error;
       toast.success("Credit claimed! It's pending review before it shows as verified.");
       fetchProject();

@@ -534,7 +534,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const handleMarkAsPaid = async (invoice: any) => {
     try {
       // Update invoice status
-      const { error: updateError } = await supabase.rpc("confirm_invoice_paid_manually" as any, {
+      const { error: updateError } = await supabase.rpc("confirm_invoice_paid_manually", {
         p_invoice_id: invoice.id,
         p_payment_method: "Marked paid manually",
       });

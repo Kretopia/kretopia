@@ -120,7 +120,7 @@ export function MarkPaidBankTransferDialog({
       // audited RPC requiring a payment-method note rather than a bare
       // client-side column flip (see migration
       // 20260812120000_close_self_verification_rls_gaps.sql).
-      const { error: invErr } = await supabase.rpc("confirm_invoice_paid_manually" as any, {
+      const { error: invErr } = await supabase.rpc("confirm_invoice_paid_manually", {
         p_invoice_id: invoice.id,
         p_payment_method: `Bank transfer${(transfer as any)?.reference_code ? ` (ref ${(transfer as any).reference_code})` : ""}`,
       });

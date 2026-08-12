@@ -65,7 +65,7 @@ export function ImportReviewBanner({ userId, onResolved }: ImportReviewBannerPro
     if (selected.size === 0) return;
     setBusy(true);
     const results = await Promise.all(
-      Array.from(selected).map((id) => supabase.rpc("reject_discovered_credit" as any, { credit_id_param: id }))
+      Array.from(selected).map((id) => supabase.rpc("reject_discovered_credit", { credit_id_param: id }))
     );
     setBusy(false);
     const error = results.find((r) => r.error)?.error;
@@ -98,7 +98,7 @@ export function ImportReviewBanner({ userId, onResolved }: ImportReviewBannerPro
     // Mark all remaining as 'unverified' so they stop showing in the review banner
     setBusy(true);
     await Promise.all(
-      pending.map((p) => supabase.rpc("reject_discovered_credit" as any, { credit_id_param: p.id }))
+      pending.map((p) => supabase.rpc("reject_discovered_credit", { credit_id_param: p.id }))
     );
     setBusy(false);
     setOpen(false);

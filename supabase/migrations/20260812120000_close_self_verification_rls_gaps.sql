@@ -275,6 +275,149 @@ $$;
 REVOKE ALL ON FUNCTION public.claim_icdb_role(uuid, text) FROM public, anon;
 GRANT EXECUTE ON FUNCTION public.claim_icdb_role(uuid, text) TO authenticated;
 
+-- Two pre-existing, legitimate SECURITY DEFINER RPCs write 'verified'/
+-- 'auto_discovered' to credits.verification_status directly and would be
+-- blocked by the trigger above the moment it's added — neither previously
+-- needed to authorize itself for anything, because nothing was guarding
+-- this column before. Re-declaring both here with the one line each needs
+-- (PERFORM set_config(...)) added immediately before their existing write;
+-- everything else is byte-for-byte identical to their current definitions
+-- (20260807120000_discovered_credit_not_verified.sql and
+-- 20260806054700_prevent_self_cosign.sql respectively) — this is not a
+-- behavior change to either function, only an unblock.
+
+-- approve_discovered_credit: the real "confirm this AI-found credit is
+-- mine" action (DiscoveriesInbox.tsx / PendingDiscoveriesDialog.tsx).
+CREATE OR REPLACE FUNCTION public.approve_discovered_credit(_discovery_id UUID)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  _d RECORD;
+  _new_credit_id UUID;
+  _existing UUID;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Not authenticated');
+  END IF;
+
+  SELECT * INTO _d FROM public.discovered_credits
+  WHERE id = _discovery_id AND user_id = auth.uid();
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Discovery not found');
+  END IF;
+
+  IF _d.status <> 'pending' THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Already ' || _d.status);
+  END IF;
+
+  SELECT id INTO _existing FROM public.credits
+  WHERE user_id = auth.uid()
+    AND lower(project_name) = lower(_d.project_name)
+    AND lower(coalesce(role,'')) = lower(coalesce(_d.role,''))
+  LIMIT 1;
+
+  IF _existing IS NOT NULL THEN
+    UPDATE public.discovered_credits
+    SET status = 'approved', approved_credit_id = _existing, approved_at = now()
+    WHERE id = _discovery_id;
+    RETURN jsonb_build_object('success', true, 'credit_id', _existing, 'note', 'already_existed');
+  END IF;
+
+  PERFORM set_config('app.credit_verification_authorized', 'true', true);
+
+  INSERT INTO public.credits (
+    user_id, project_name, role, year, credit_category, platform, url,
+    thumbnail_url, description, ai_confidence, source, verification_status
+  ) VALUES (
+    auth.uid(), _d.project_name, _d.role, _d.year, _d.credit_category, _d.platform, _d.url,
+    _d.thumbnail_url, _d.description, _d.ai_confidence, COALESCE(_d.source, 'discovery'), 'auto_discovered'
+  )
+  RETURNING id INTO _new_credit_id;
+
+  UPDATE public.discovered_credits
+  SET status = 'approved', approved_credit_id = _new_credit_id, approved_at = now()
+  WHERE id = _discovery_id;
+
+  RETURN jsonb_build_object('success', true, 'credit_id', _new_credit_id);
+END;
+$$;
+
+-- submit_credit_endorsement_by_token: the actual Co-Sign completion path
+-- (token/anon flow for external collaborators without a Kretopia account).
+-- This is the RPC the whole Co-Sign feature depends on — without this fix,
+-- the second accepted co-sign on any credit would throw and roll back.
+CREATE OR REPLACE FUNCTION public.submit_credit_endorsement_by_token(
+  _token TEXT,
+  _accepted BOOLEAN,
+  _endorser_name TEXT DEFAULT NULL,
+  _relationship TEXT DEFAULT NULL,
+  _testimonial TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  _endorsement RECORD;
+  _new_count INTEGER;
+  _caller UUID := auth.uid();
+BEGIN
+  SELECT ce.id, ce.credit_id, ce.status, ce.requested_by
+  INTO _endorsement
+  FROM public.credit_endorsements ce
+  WHERE ce.token = _token;
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Verification link not found');
+  END IF;
+
+  IF _endorsement.status <> 'pending' THEN
+    RETURN jsonb_build_object('success', false, 'error', 'This request has already been answered', 'status', _endorsement.status);
+  END IF;
+
+  IF _caller IS NOT NULL AND _caller = _endorsement.requested_by THEN
+    RETURN jsonb_build_object('success', false, 'error', 'You cannot co-sign your own credit');
+  END IF;
+
+  UPDATE public.credit_endorsements
+  SET
+    status = CASE WHEN _accepted THEN 'accepted' ELSE 'declined' END,
+    endorser_name = COALESCE(NULLIF(_endorser_name, ''), endorser_name),
+    relationship = COALESCE(NULLIF(_relationship, ''), relationship),
+    testimonial = CASE WHEN _accepted THEN NULLIF(_testimonial, '') ELSE NULL END,
+    endorser_id = COALESCE(endorser_id, _caller),
+    responded_at = now()
+  WHERE id = _endorsement.id;
+
+  IF _accepted THEN
+    PERFORM set_config('app.credit_verification_authorized', 'true', true);
+
+    UPDATE public.credits
+    SET
+      endorsement_count = COALESCE(endorsement_count, 0) + 1,
+      verification_status = CASE
+        WHEN COALESCE(endorsement_count, 0) + 1 >= 2 THEN 'verified'
+        ELSE 'peer'
+      END
+    WHERE id = _endorsement.credit_id
+    RETURNING endorsement_count INTO _new_count;
+  END IF;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'status', CASE WHEN _accepted THEN 'accepted' ELSE 'declined' END,
+    'endorsement_count', COALESCE(_new_count, 0)
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.submit_credit_endorsement_by_token(TEXT, BOOLEAN, TEXT, TEXT, TEXT) TO anon, authenticated;
+
 
 -- ============================================================================
 -- C6 — milestones: only the paying client/project owner may confirm an

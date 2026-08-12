@@ -62,19 +62,18 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
 
     // Belt and braces: if the visitor never scrolls, load once idle so the
     // page is complete for crawlers and for anyone who jumps to the footer.
-    const ric = (window as any).requestIdleCallback as
-      | ((cb: () => void, o?: { timeout: number }) => number)
-      | undefined;
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (h: number) => void;
+    };
+    const ric = w.requestIdleCallback;
     if (ric) idle = ric(reveal, { timeout: 2500 });
     else idle = window.setTimeout(reveal, 1200);
 
     return () => {
       io?.disconnect();
       if (idle !== undefined) {
-        const cic = (window as any).cancelIdleCallback as
-          | ((h: number) => void)
-          | undefined;
-        if (ric && cic) cic(idle);
+        if (ric && w.cancelIdleCallback) w.cancelIdleCallback(idle);
         else clearTimeout(idle);
       }
     };

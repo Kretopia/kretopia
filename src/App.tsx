@@ -27,7 +27,6 @@ import { trackPlatformPageview, attachPlatformAnalyticsListeners } from "@/lib/p
 import { NetworkStatus } from "./components/NetworkStatus";
 import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 import { useActivityPing } from "./hooks/useActivityPing";
-import { GuestBanner } from "./components/GuestBanner";
 import { AuthGate } from "./components/AuthGate";
 // OnboardingTour removed — real /onboarding page is the single source of truth.
 import { NewsletterPopup } from "./components/NewsletterPopup";
@@ -280,7 +279,6 @@ const AppContent = () => {
   // Hide everything during onboarding so users focus on setup
   const showBottomNav = !isPublicEPK && !isCreatorSite && !isAuthPage && !isOnboardingPage && !isDeckPage && !!user;
   const showNavbar = !isPublicEPK && !isCreatorSite && !isAuthPage && !isOnboardingPage && !isDeckPage;
-  const showGuestBanner = !user && (isPublicBrowse || isLandingPage) && !isAuthPage;
   
   // Don't add bottom padding when on individual project pages or desk list
   const shouldAddBottomPadding = showBottomNav && !location.pathname.startsWith('/desk');
@@ -304,7 +302,6 @@ const AppContent = () => {
       {user && <RoomKnockToast />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
-      {showGuestBanner && <GuestBanner />}
       <main
         id="main-content"
         className={cn(shouldAddBottomPadding ? "pb-36 lg:pb-0" : "")}

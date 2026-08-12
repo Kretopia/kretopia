@@ -108,7 +108,7 @@ Verified on the landing hero: empty state, typing (`test` accepted, value echoed
 **Automated**
 - Typecheck (`tsgo --noEmit -p tsconfig.app.json`): pass, 0 errors.
 - Unit tests (`vitest run`): 5 files, 62 tests, all passing.
-- Lint on touched files (`src/components/landing/**`, `src/components/Navbar.tsx`): 0 new errors introduced. Pre-existing `no-explicit-any` errors remain in `SocialProofSection.tsx`, `WaitlistForm.tsx` and two long-standing spots in `Navbar.tsx`; they are outside this pass's scope.
+- Lint on `src/components/landing/**`: 0 errors, 0 warnings. The pre-existing `no-explicit-any` / `no-empty` / `no-unused-expressions` errors were cleaned up in Phase 11 (see below). Two long-standing `no-explicit-any` spots remain in `Navbar.tsx`, outside this pass's scope.
 - Production build: succeeds.
 
 **Desktop (1280×900 / 1280×1800)**
@@ -143,4 +143,22 @@ Verified on the landing hero: empty state, typing (`test` accepted, value echoed
 
 1. Run one real end-to-end call on iOS Safari and Android Chrome (create → join → leave → rejoin) and confirm the camera indicator turns off on leave.
 2. Re-run Lighthouse against the **published** build for real LCP/TBT numbers.
-3. Decide whether the pre-existing `no-explicit-any` lint errors in the older landing components should be cleaned up in a separate pass.
+3. None outstanding for the landing pass.
+
+---
+
+## 11. Phase 11 — dead code and lint cleanup
+
+**Deleted (verified zero references anywhere in `src/`):**
+`src/components/landing/HeroSection.tsx`, `ActivityFeed.tsx`, `PillarMockups.tsx`, `ComparisonSection.tsx`, `CloseSection.tsx` — all superseded by the `src/components/landing/kretopia/*` editorial sections.
+
+**Typed properly (no behaviour change):**
+| File | Fix |
+|---|---|
+| `SocialProofSection.tsx` | `supabase.functions.invoke<{ stats?: … }>("public-stats")` replaces `(data as any).stats`. |
+| `OneWedgeLanding.tsx` | Same generic on `public-stats`; `featured` and `stats.creators` now read type-safely. |
+| `DiscoverCreativesRow.tsx` | `(supabase as any).rpc(...)` replaced with a narrowly typed cast returning `Creator[] | null`. |
+| `WaitlistForm.tsx` | `catch (error: unknown)` with an `instanceof Error` narrowing; toast copy unchanged. |
+| `OAuthQuickButtons.tsx` | Ternary-as-statement replaced with an `if/else`. |
+
+Post-cleanup: typecheck clean, 62/62 tests pass, landing renders with 0 page errors on desktop and mobile, and the first Tab now lands on "Skip to main content".

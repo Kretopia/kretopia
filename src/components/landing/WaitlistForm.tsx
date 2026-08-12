@@ -122,10 +122,11 @@ export const WaitlistForm = () => {
 
         console.log(`AI Decision: ${decision}, Score: ${score}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Submission error:', error);
       
-      if (error.message?.includes("duplicate key")) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("duplicate key")) {
         toast({
           title: "Already on Waitlist",
           description: "You're already signed up! Check your email for your invite code.",
@@ -134,7 +135,7 @@ export const WaitlistForm = () => {
       } else {
         toast({
           title: "Error",
-          description: error.message || "Failed to submit application",
+          description: message || "Failed to submit application",
           variant: "destructive",
         });
       }

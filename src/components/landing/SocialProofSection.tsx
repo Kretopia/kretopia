@@ -27,9 +27,16 @@ export const SocialProofSection = () => {
     (async () => {
       try {
         // public-stats edge fn uses service role — only way to read real counts past RLS
-        const { data, error } = await supabase.functions.invoke("public-stats");
+        const { data, error } = await supabase.functions.invoke<{
+          stats?: {
+            creators?: number;
+            connections?: number;
+            credits?: number;
+            countries?: number;
+          };
+        }>("public-stats");
         if (!alive || error || !data) return;
-        const s = (data as any).stats ?? {};
+        const s = data.stats ?? {};
         setStats({
           creators: s.creators ?? 0,
           connections: s.connections ?? 0,

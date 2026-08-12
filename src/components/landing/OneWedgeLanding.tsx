@@ -38,13 +38,16 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
       try {
         // Counts + featured creators come from the public-stats edge fn (service-role,
         // so it bypasses RLS on profiles). Anon SELECT on profiles only returns 1 row.
-        const { data: statsData } = await supabase.functions.invoke("public-stats");
+        const { data: statsData } = await supabase.functions.invoke<{
+          featured?: FoundingCreator[];
+          stats?: { creators?: number };
+        }>("public-stats");
         if (!alive) return;
-        const featured = (statsData as any)?.featured as FoundingCreator[] | undefined;
+        const featured = statsData?.featured;
         if (featured && featured.length) {
           setCreators(featured.slice(0, 6));
         }
-        const c = (statsData as any)?.stats?.creators;
+        const c = statsData?.stats?.creators;
         if (typeof c === "number") setCreatorCount(c);
       } catch {
         /* silent — landing must never crash */

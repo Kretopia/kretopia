@@ -272,26 +272,10 @@ const CreditDatabase = () => {
     if (!claimDialog || !currentUserId) return;
     setClaiming(true);
     try {
-      const { error } = await supabase
-        .from('icdb_project_roles')
-        .update({ claimed_by: currentUserId, is_claimed: true })
-        .eq('id', claimDialog.role.id);
+      const { error } = await supabase.rpc('claim_icdb_role' as any, { p_role_id: claimDialog.role.id });
       if (error) throw error;
 
-      await supabase.from('credits').insert({
-        user_id: currentUserId,
-        project_name: claimDialog.project.title,
-        role: claimDialog.role.role_title,
-        year: claimDialog.project.year,
-        platform: claimDialog.project.platform,
-        location: claimDialog.project.location,
-        client_brand: claimDialog.project.client_brand,
-        project_type: claimDialog.project.type,
-        verification_status: 'verified',
-        url: claimDialog.project.external_url,
-      });
-
-      toast.success('Credit claimed! It now appears on your profile.');
+      toast.success("Credit claimed! It's pending review before it shows as verified on your profile.");
       setClaimDialog(null);
       fetchResults();
     } catch (err) {

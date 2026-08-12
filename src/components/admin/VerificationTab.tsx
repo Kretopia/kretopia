@@ -123,14 +123,15 @@ export const VerificationTab = () => {
 
       if (requestError) throw requestError;
 
-      // Update profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          verification_status: "verified",
-          verified_at: new Date().toISOString(),
-        })
-        .eq("user_id", request.user_id);
+      // profiles.verification_status is admin-only, enforced server-side —
+      // this RPC also fixes a latent bug: the raw .update() below used to
+      // target another user's row with no admin RLS policy backing it, so
+      // it was silently affecting 0 rows even though this toast claimed
+      // success.
+      const { error: profileError } = await supabase.rpc("admin_verify_profile_identity" as any, {
+        p_user_id: request.user_id,
+        p_approved: true,
+      });
 
       if (profileError) throw profileError;
 
@@ -176,14 +177,12 @@ export const VerificationTab = () => {
 
       if (requestError) throw requestError;
 
-      // Update profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          verification_status: "rejected",
-          verification_notes: rejectionReason,
-        })
-        .eq("user_id", selectedRequest.user_id);
+      // Same admin-only path as approval above.
+      const { error: profileError } = await supabase.rpc("admin_verify_profile_identity" as any, {
+        p_user_id: selectedRequest.user_id,
+        p_approved: false,
+        p_notes: rejectionReason,
+      });
 
       if (profileError) throw profileError;
 

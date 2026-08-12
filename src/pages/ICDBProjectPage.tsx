@@ -110,22 +110,10 @@ const ICDBProjectPage = () => {
     }
     setClaiming(role.id);
     try {
-      await supabase.from("icdb_project_roles").update({ claimed_by: currentUserId, is_claimed: true }).eq("id", role.id);
       const extractedThumb = extractThumbnailForStorage(project!.external_url || null);
-      await supabase.from("credits").insert({
-        user_id: currentUserId,
-        project_name: project!.title,
-        role: role.role_title,
-        year: project!.year,
-        platform: project!.platform,
-        location: project!.location,
-        client_brand: project!.client_brand,
-        project_type: project!.type,
-        verification_status: "verified",
-        url: project!.external_url,
-        thumbnail_url: extractedThumb,
-      });
-      toast.success("Credit claimed!");
+      const { error } = await supabase.rpc("claim_icdb_role" as any, { p_role_id: role.id, p_thumbnail_url: extractedThumb });
+      if (error) throw error;
+      toast.success("Credit claimed! It's pending review before it shows as verified.");
       fetchProject();
     } catch {
       toast.error("Failed to claim");

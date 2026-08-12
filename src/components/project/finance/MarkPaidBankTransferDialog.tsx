@@ -103,19 +103,27 @@ export function MarkPaidBankTransferDialog({
           transfer_date: transferDate || null,
           proof_url: path,
           sender_notes: notes || null,
-          status: "confirmed",
-          confirmed_by: user.id,
-          confirmed_at: new Date().toISOString(),
+          // The issuer uploading proof of a bank transfer is real, useful
+          // evidence, but it's still self-reported — 'confirmed' is the
+          // status admin_confirm_bank_transfer grants after actual review,
+          // not something the reporting party can self-assign. Leaving
+          // this row 'pending' lets that existing, already-correct RPC
+          // (see migration 20260417191317...sql) remain the sole path to
+          // 'confirmed', instead of being silently bypassed here.
+          status: "pending",
         } as any)
         .select()
         .single();
       if (insErr) throw insErr;
 
-      // 3) Mark invoice paid
-      const { error: invErr } = await supabase
-        .from("invoices")
-        .update({ status: "paid", paid_at: new Date().toISOString() } as any)
-        .eq("id", invoice.id);
+      // 3) Mark invoice paid — self-reported, but now goes through an
+      // audited RPC requiring a payment-method note rather than a bare
+      // client-side column flip (see migration
+      // 20260812120000_close_self_verification_rls_gaps.sql).
+      const { error: invErr } = await supabase.rpc("confirm_invoice_paid_manually" as any, {
+        p_invoice_id: invoice.id,
+        p_payment_method: `Bank transfer${(transfer as any)?.reference_code ? ` (ref ${(transfer as any).reference_code})` : ""}`,
+      });
       if (invErr) throw invErr;
 
       toast.success("Marked as paid", {

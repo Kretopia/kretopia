@@ -107,7 +107,10 @@ export const ProjectCreditsDialog = ({
             project_name: projectTitle,
             role: ownerAssignment.role,
             year: new Date().getFullYear(),
-            verification_status: "verified",
+            // Self-assigned by the project owner — honest tier is 'pending',
+            // not 'verified'. A DB trigger also enforces this (see migration
+            // 20260812120000_close_self_verification_rls_gaps.sql).
+            verification_status: "pending",
           })
           .select("id")
           .single();

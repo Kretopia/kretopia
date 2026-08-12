@@ -172,15 +172,13 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
   };
 
   const handleMarkAsPaid = async (milestoneId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase
-      .from('milestones')
-      .update({ 
-        status: 'paid',
-        paid_at: new Date().toISOString(),
-        paid_to: user?.id
-      })
-      .eq('id', milestoneId);
+    // Only the paying client/project owner may confirm this — enforced
+    // server-side (see migration 20260812120000_close_self_verification_rls_gaps.sql),
+    // not just any project collaborator, which the raw update this replaced
+    // used to allow.
+    const { error } = await supabase.rpc('confirm_milestone_paid_offline' as any, {
+      p_milestone_id: milestoneId,
+    });
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

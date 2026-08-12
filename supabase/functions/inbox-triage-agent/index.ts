@@ -128,12 +128,12 @@ Deno.serve(async (req) => {
     const receiverIds = [...new Set(todo.map((m) => m.receiver_id))];
     const { data: senderProfiles } = await admin
       .from("profiles")
-      .select("user_id, full_name, role, company, headline")
+      .select("user_id, full_name, role, company, site_headline")
       .in("user_id", senderIds);
     const sMap = new Map((senderProfiles ?? []).map((p) => [p.user_id, p]));
     const { data: rxProfiles } = await admin
       .from("profiles")
-      .select("user_id, full_name, role, headline")
+      .select("user_id, full_name, role, site_headline")
       .in("user_id", receiverIds);
     const rMap = new Map((rxProfiles ?? []).map((p) => [p.user_id, p]));
 
@@ -176,12 +176,12 @@ Deno.serve(async (req) => {
 
 async function classify(
   content: string,
-  sender: { full_name?: string | null; role?: string | null; company?: string | null; headline?: string | null } | undefined,
-  receiver: { full_name?: string | null; role?: string | null; headline?: string | null } | undefined,
+  sender: { full_name?: string | null; role?: string | null; company?: string | null; site_headline?: string | null } | undefined,
+  receiver: { full_name?: string | null; role?: string | null; site_headline?: string | null } | undefined,
 ): Promise<Classification> {
   const sysPrompt = `You are Kreto's Inbox Triage specialist for a creator-economy platform. You read inbound DMs (often from strangers) and classify them so the recipient can act fast.
 
-Recipient: ${receiver?.full_name ?? "unknown"} — ${receiver?.role ?? ""} ${receiver?.headline ? `(${receiver.headline})` : ""}
+Recipient: ${receiver?.full_name ?? "unknown"} — ${receiver?.role ?? ""} ${receiver?.site_headline ? `(${receiver.site_headline})` : ""}
 Sender: ${sender?.full_name ?? "unknown"} — ${sender?.role ?? ""} ${sender?.company ? `at ${sender.company}` : ""}
 
 Categories:

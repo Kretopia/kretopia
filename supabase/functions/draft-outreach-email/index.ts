@@ -68,7 +68,7 @@ serve(async (req) => {
     // Pull creator context
     const { data: profile } = await admin
       .from("profiles")
-      .select("display_name, primary_role, sub_roles, skills, location, country, bio, headline")
+      .select("display_name, primary_role, sub_roles, skills, location, country, bio, site_headline")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -116,7 +116,7 @@ ${angle ? `Positioning angle: ${angle}` : ""}
 Creator:
 - Name: ${profile?.display_name || "(unnamed)"}
 - Role: ${profile?.primary_role || ""}
-- Headline: ${profile?.headline || ""}
+- Headline: ${profile?.site_headline || ""}
 - Skills: ${(profile?.skills || []).slice(0, 10).join(", ")}
 - Region: ${profile?.location || profile?.country || ""}
 - Bio: ${(profile?.bio || "").slice(0, 400)}

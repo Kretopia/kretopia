@@ -16,7 +16,7 @@ interface TrendingCreator {
 
 interface NewCredit {
   id: string;
-  title: string | null;
+  project_name: string | null;
   role: string | null;
   user_id: string;
   thumbnail_url: string | null;
@@ -41,20 +41,21 @@ export const TrendingLane = () => {
       const [vouchRes, creditRes] = await Promise.all([
         supabase
           .from("credit_vouches")
-          .select("voucher_for_user_id")
+          .select("credit_id, credits(user_id)")
           .gte("created_at", since)
           .limit(200),
         supabase
           .from("credits")
-          .select("id, title, role, user_id, thumbnail_url, created_at")
+          .select("id, project_name, role, user_id, thumbnail_url, created_at")
           .order("created_at", { ascending: false })
           .limit(6),
       ]).catch(() => [{ data: [] }, { data: [] }] as any);
 
-      // Tally vouches per user
+      // Tally vouches per credit owner
       const tally: Record<string, number> = {};
       ((vouchRes as any).data || []).forEach((v: any) => {
-        if (v.voucher_for_user_id) tally[v.voucher_for_user_id] = (tally[v.voucher_for_user_id] || 0) + 1;
+        const ownerId = v.credits?.user_id;
+        if (ownerId) tally[ownerId] = (tally[ownerId] || 0) + 1;
       });
       const topIds = Object.keys(tally)
         .sort((a, b) => tally[b] - tally[a])
@@ -159,11 +160,11 @@ export const TrendingLane = () => {
               >
                 <div className="aspect-video bg-muted">
                   {cr.thumbnail_url && (
-                    <img src={cr.thumbnail_url} alt={cr.title ?? ""} className="w-full h-full object-cover" loading="lazy" />
+                    <img src={cr.thumbnail_url} alt={cr.project_name ?? ""} className="w-full h-full object-cover" loading="lazy" />
                   )}
                 </div>
                 <div className="p-2.5">
-                  <p className="text-xs font-semibold truncate">{cr.title || "Untitled"}</p>
+                  <p className="text-xs font-semibold truncate">{cr.project_name || "Untitled"}</p>
                   <p className="text-[11px] text-muted-foreground truncate">{cr.role || "Credit"}</p>
                 </div>
               </Link>

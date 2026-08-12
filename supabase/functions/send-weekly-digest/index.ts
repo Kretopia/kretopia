@@ -88,7 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
     // 4. Featured Thriver — most credits added in last 30 days
     const { data: featuredThriver } = await supabaseAdmin
       .from("public_profiles_safe")
-      .select("user_id, full_name, headline, avatar_url, role")
+      .select("user_id, full_name, site_headline, avatar_url, role")
       .not("full_name", "is", null)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -164,7 +164,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #fbbf24; font-weight: 600; margin-bottom: 12px;">⭐ Featured Thriver</div>
           ${featuredThriver.avatar_url ? `<img src="${featuredThriver.avatar_url}" alt="" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px; display: block;" />` : ""}
           <div style="color: #ffffff; font-size: 17px; font-weight: 600;">${escapeHtml(featuredThriver.full_name || "")}</div>
-          ${featuredThriver.headline ? `<div style="color: #a0a0a0; font-size: 13px; margin-top: 4px;">${escapeHtml(featuredThriver.headline)}</div>` : ""}
+          ${featuredThriver.site_headline ? `<div style="color: #a0a0a0; font-size: 13px; margin-top: 4px;">${escapeHtml(featuredThriver.site_headline)}</div>` : ""}
           <a href="${baseUrl}/profile/${featuredThriver.user_id}" style="display: inline-block; margin-top: 12px; padding: 8px 18px; background: rgba(99,102,241,0.2); color: #a5b4fc; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 500;">View profile →</a>
         </div>
       `

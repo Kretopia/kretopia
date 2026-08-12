@@ -72,7 +72,7 @@ export const MoneySection = ({ project, isOwner, clientView = false, onOpenInvoi
   const markPaid = async () => {
     if (!invoice) return;
     setMarking(true);
-    const { error } = await supabase.rpc("confirm_invoice_paid_manually" as any, {
+    const { error } = await supabase.rpc("confirm_invoice_paid_manually", {
       p_invoice_id: invoice.id,
       p_payment_method: "Marked paid manually",
     });

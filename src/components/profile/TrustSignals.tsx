@@ -136,7 +136,7 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
       // Mark ID as submitted for admin review — id_verified itself is
       // admin-only (see admin_verify_profile_identity); this RPC only
       // records the request timestamp, it never grants the badge.
-      const { error } = await supabase.rpc("request_id_verification" as any);
+      const { error } = await supabase.rpc("request_id_verification");
       if (error) throw error;
 
       toast({ title: "ID submitted!", description: "We'll review it and confirm your verified badge soon." });

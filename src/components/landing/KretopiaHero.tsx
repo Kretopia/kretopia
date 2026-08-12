@@ -72,8 +72,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           transition={{ duration: 0.6, delay: 0.12 }}
           className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center"
         >
-          Talent is everywhere. Opportunity is not. Search your name to discover your
-          creative record and turn it into a trusted Creative Passport.
+          Search the Creative Global Record
         </motion.p>
 
         {/* ─────────────────────────────────────────────────────────────

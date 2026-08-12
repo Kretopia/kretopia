@@ -128,7 +128,7 @@ export const VerificationTab = () => {
       // target another user's row with no admin RLS policy backing it, so
       // it was silently affecting 0 rows even though this toast claimed
       // success.
-      const { error: profileError } = await supabase.rpc("admin_verify_profile_identity" as any, {
+      const { error: profileError } = await supabase.rpc("admin_verify_profile_identity", {
         p_user_id: request.user_id,
         p_approved: true,
       });
@@ -178,7 +178,7 @@ export const VerificationTab = () => {
       if (requestError) throw requestError;
 
       // Same admin-only path as approval above.
-      const { error: profileError } = await supabase.rpc("admin_verify_profile_identity" as any, {
+      const { error: profileError } = await supabase.rpc("admin_verify_profile_identity", {
         p_user_id: selectedRequest.user_id,
         p_approved: false,
         p_notes: rejectionReason,

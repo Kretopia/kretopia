@@ -7026,6 +7026,30 @@ export type Database = {
           },
         ]
       }
+      face_verification_attempts: {
+        Row: {
+          confidence: number | null
+          consumed_at: string | null
+          created_at: string
+          token: string
+          verified: boolean
+        }
+        Insert: {
+          confidence?: number | null
+          consumed_at?: string | null
+          created_at?: string
+          token?: string
+          verified: boolean
+        }
+        Update: {
+          confidence?: number | null
+          consumed_at?: string | null
+          created_at?: string
+          token?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       feed_clips: {
         Row: {
           created_at: string
@@ -12501,6 +12525,7 @@ export type Database = {
           hourly_rate: number | null
           icdb_creator_id: string | null
           id: string
+          id_verification_requested_at: string | null
           id_verified: boolean
           id_verified_at: string | null
           identity_face_verified: boolean
@@ -12681,6 +12706,7 @@ export type Database = {
           hourly_rate?: number | null
           icdb_creator_id?: string | null
           id?: string
+          id_verification_requested_at?: string | null
           id_verified?: boolean
           id_verified_at?: string | null
           identity_face_verified?: boolean
@@ -12861,6 +12887,7 @@ export type Database = {
           hourly_rate?: number | null
           icdb_creator_id?: string | null
           id?: string
+          id_verification_requested_at?: string | null
           id_verified?: boolean
           id_verified_at?: string | null
           identity_face_verified?: boolean
@@ -19332,6 +19359,10 @@ export type Database = {
         Returns: Json
       }
       admin_set_profile_coords: { Args: { coords: Json }; Returns: number }
+      admin_verify_profile_identity: {
+        Args: { p_approved: boolean; p_notes?: string; p_user_id: string }
+        Returns: Json
+      }
       approve_discovered_credit: {
         Args: { _discovery_id: string }
         Returns: Json
@@ -19396,9 +19427,21 @@ export type Database = {
           participant_count: number
         }[]
       }
+      claim_icdb_role: {
+        Args: { p_role_id: string; p_thumbnail_url?: string }
+        Returns: Json
+      }
       claim_profile: {
         Args: { p_claim_token: string; p_user_id: string }
         Returns: boolean
+      }
+      confirm_invoice_paid_manually: {
+        Args: { p_invoice_id: string; p_payment_method: string }
+        Returns: Json
+      }
+      confirm_milestone_paid_offline: {
+        Args: { p_milestone_id: string }
+        Returns: Json
       }
       consume_copilot_message: {
         Args: { _daily_cap: number; _user_id: string }
@@ -20211,6 +20254,11 @@ export type Database = {
         Args: { _email?: string; _name?: string; _token: string }
         Returns: string
       }
+      reject_discovered_credit: {
+        Args: { credit_id_param: string }
+        Returns: undefined
+      }
+      request_id_verification: { Args: never; Returns: undefined }
       resolve_project_share_link: {
         Args: { _password?: string; _token: string }
         Returns: {

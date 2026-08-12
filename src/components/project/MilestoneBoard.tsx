@@ -176,7 +176,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
     // server-side (see migration 20260812120000_close_self_verification_rls_gaps.sql),
     // not just any project collaborator, which the raw update this replaced
     // used to allow.
-    const { error } = await supabase.rpc('confirm_milestone_paid_offline' as any, {
+    const { error } = await supabase.rpc('confirm_milestone_paid_offline', {
       p_milestone_id: milestoneId,
     });
 

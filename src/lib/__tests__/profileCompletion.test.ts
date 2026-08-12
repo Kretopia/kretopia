@@ -97,7 +97,7 @@ describe("Profile Completion", () => {
       const missing = getDiscoveryMissingFields(profile, 0);
       expect(missing).toContain("Profile Picture");
       expect(missing).toContain("Bio (20+ characters)");
-      expect(missing).toContain("At least 1 Portfolio Item");
+      expect(missing).toContain("At least 1 Work Item (Portfolio or Credit)");
     });
 
     it("returns empty array when all met", () => {

@@ -17,7 +17,7 @@ export const EditorialFooter = () => {
             <p
               className="font-serif italic text-2xl text-white"
             >
-              kretopia<span style={{ color: "#FF0A78" }}>.</span>
+              kretopia<span style={{ color: "#FF2DA1" }}>.</span>
             </p>
             <p
               className="mt-3 text-[10px] font-medium uppercase tracking-[0.32em] text-white/40"

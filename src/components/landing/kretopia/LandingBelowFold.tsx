@@ -24,7 +24,7 @@ export const LandingBelowFold = () => {
       {/* II. Manifesto */}
       <ManifestoSection />
 
-      {/* III. Passport — teal */}
+      {/* III. Passport */}
       <ChapterSection
         index="III"
         kicker="Passport"
@@ -41,11 +41,11 @@ export const LandingBelowFold = () => {
         body="Your Creative Passport collects every project, every credit, every co-sign — verified by the collaborators who lived it with you. One link. Your whole career."
         caption="Passport · Chapter Three"
         image={passportImg}
-        accent="#9413D2"
+        accent="#FF2DA1"
         href="/auth?next=/profile"
       />
 
-      {/* IV. Scout — amber */}
+      {/* IV. Scout */}
       <ChapterSection
         index="IV"
         kicker="Scout"
@@ -60,12 +60,12 @@ export const LandingBelowFold = () => {
         body="Scout reads the web — gigs, briefs, calls, casting notices — and surfaces the ones that fit you. Kreto drafts the pitch. You decide if it goes."
         caption="Scout · Chapter Four"
         image={scoutImg}
-        accent="#FFC72C"
+        accent="#FF2DA1"
         href="/auth?next=/scout"
         reverse
       />
 
-      {/* V. Match — magenta */}
+      {/* V. Match */}
       <ChapterSection
         index="V"
         kicker="Match"
@@ -80,11 +80,11 @@ export const LandingBelowFold = () => {
         body="Match connects creators by skill, city, vibe, and the people you've already made things with. No cold DMs. Just collaborators who get it."
         caption="Match · Chapter Five"
         image={matchImg}
-        accent="#FF0A78"
+        accent="#FF2DA1"
         href="/auth?next=/match"
       />
 
-      {/* VI. Studio — tungsten warmth */}
+      {/* VI. Studio */}
       <ChapterSection
         index="VI"
         kicker="Studio"
@@ -99,12 +99,12 @@ export const LandingBelowFold = () => {
         body="Every shoot, drop, release, or campaign in its own Studio. Brief, files, chat, video, deliverables, payments — held together by Kreto's quiet hand."
         caption="Studio · Chapter Six"
         image={studioImg}
-        accent="#FF8C42"
+        accent="#FF2DA1"
         href="/auth?next=/desk"
         reverse
       />
 
-      {/* VII. SoundStages — teal spotlight */}
+      {/* VII. SoundStages */}
       <ChapterSection
         index="VII"
         kicker="SoundStages"
@@ -119,7 +119,7 @@ export const LandingBelowFold = () => {
         body="Open mics, speed sessions, listening parties. Drop into a SoundStage to be seen — by an audience that came for exactly what you do."
         caption="SoundStages · Chapter Seven"
         image={soundstagesImg}
-        accent="#9413D2"
+        accent="#FF2DA1"
         href="/auth?next=/circle?tab=live"
       />
 

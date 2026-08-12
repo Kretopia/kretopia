@@ -397,8 +397,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <Separator className="my-3" />
 
-                      {/* MORE — keep lean. Spotlight/Brand Vault/Referrals reachable by direct URL. */}
+                      {/* MORE — keep lean. Brand Vault/Referrals reachable by direct URL.
+                          Spotlight restored here — it's the only path to the Magazine
+                          "Write" (edit/upload article) button for editors/admins, and
+                          direct-URL-only made that undiscoverable. */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">More</p>
+                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
                       <MenuButton icon={Database} label="Verified Credits" onClick={() => handleNavigation("/credits")} path="/credits" />
                       <MenuButton icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
                       <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />

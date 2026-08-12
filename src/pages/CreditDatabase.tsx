@@ -686,7 +686,7 @@ function PosterCard({
         {/* Badges */}
         <div className="absolute top-2 left-2 flex gap-1">
           {isVerified && (
-            <span className="bg-primary/90 text-white rounded-full p-0.5">
+            <span className="bg-green-500/90 text-white rounded-full p-0.5">
               <ShieldCheck className="h-2.5 w-2.5" />
             </span>
           )}

@@ -111,7 +111,7 @@ function buildSvg(opts: {
 
   <!-- CTA pill -->
   <rect x="900" y="510" width="220" height="64" rx="32" fill="url(#accent)"/>
-  <text x="1010" y="552" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="26" font-weight="700" fill="#ffffff">thrivein.io</text>
+  <text x="1010" y="552" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="26" font-weight="700" fill="#ffffff">kretopia.com</text>
 </svg>`;
 }
 

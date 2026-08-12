@@ -1,4 +1,4 @@
-// Dynamic Open Graph image generator for ThriveIN events.
+// Dynamic Open Graph image generator for Kretopia events.
 // Returns a 1200x630 PNG suitable for WhatsApp / iMessage / Twitter / LinkedIn link previews.
 // Public function — no JWT required (verify_jwt=false).
 //
@@ -87,9 +87,9 @@ function buildSvg(opts: {
   <circle cx="1050" cy="80" r="180" fill="#7B61FF" opacity="0.18"/>
   <circle cx="100" cy="600" r="220" fill="#5B6BF5" opacity="0.12"/>
 
-  <!-- ThriveIN brand -->
+  <!-- Kretopia brand -->
   <text x="80" y="100" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">
-    ThriveIN
+    Kretopia
   </text>
   <text x="80" y="135" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="20" fill="#C6FF00" font-weight="600">
     The Creative OS · IRL Event

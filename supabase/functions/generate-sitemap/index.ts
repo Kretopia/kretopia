@@ -29,7 +29,7 @@ serve(async (req) => {
       throw error;
     }
 
-    const baseUrl = 'https://thrivein.io';
+    const baseUrl = 'https://www.kretopia.com';
     const today = new Date().toISOString().split('T')[0];
 
     // Build sitemap XML

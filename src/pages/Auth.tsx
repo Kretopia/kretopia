@@ -96,7 +96,7 @@ const Auth = () => {
             has_invite_code: !!(searchParams.get("invite") || searchParams.get("inviteCode") || sessionStorage.getItem("invite_code")),
             has_claim: !!searchParams.get("claim"),
             has_connect: !!searchParams.get("connect"),
-            entry_source: document.referrer.includes('thrivein') ? 'internal' : document.referrer ? 'external' : 'direct',
+            entry_source: document.referrer.includes('kretopia') ? 'internal' : document.referrer ? 'external' : 'direct',
           },
         });
       };

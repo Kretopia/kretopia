@@ -42,7 +42,7 @@ serve(async (req) => {
       });
     }
 
-    const epkUrl = `https://www.thrivein.io/${profile.username || user.id}`;
+    const epkUrl = `https://www.kretopia.com/${profile.username || user.id}`;
 
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

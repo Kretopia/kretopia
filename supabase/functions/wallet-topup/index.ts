@@ -75,7 +75,7 @@ serve(async (req) => {
       let customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
       const amountInCents = Math.round(amount * 100);
-      const origin = req.headers.get("origin") || "https://www.thrivein.io";
+      const origin = req.headers.get("origin") || "https://www.kretopia.com";
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
@@ -86,7 +86,7 @@ serve(async (req) => {
               currency: currency.toLowerCase(),
               product_data: {
                 name: "Wallet Top-Up",
-                description: `Add ${currency.toUpperCase()} ${amount.toFixed(2)} to your ThriveIN wallet`,
+                description: `Add ${currency.toUpperCase()} ${amount.toFixed(2)} to your Kretopia wallet`,
               },
               unit_amount: amountInCents,
             },

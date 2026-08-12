@@ -272,8 +272,6 @@ const AppContent = () => {
   const isLandingPage = location.pathname === '/';
   
   // Public browsable routes where guests see nav — expanded to show platform value
-  const publicBrowseRoutes = ['/scene', '/opportunities', '/credits', '/circle', '/search', '/event', '/profile'];
-  const isPublicBrowse = publicBrowseRoutes.some(r => location.pathname.startsWith(r));
   
   // Show bottom nav for authenticated users OR guests on public browse routes (+ landing)
   // Hide everything during onboarding so users focus on setup

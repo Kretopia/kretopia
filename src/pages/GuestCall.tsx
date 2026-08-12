@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { type DailyCall } from "@daily-co/daily-js";
-import { createDailyFrame } from "@/lib/dailyFrame";
+import { createDailyFrameAsync, teardownDailyCall } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { toast } from "sonner";
+import { extractInvokeError } from "@/lib/extractInvokeError";
 
 /**
  * Public guest join page. Mirrors the in-app VideoCallSheet experience:
@@ -57,7 +58,7 @@ export default function GuestCall() {
       await new Promise((r) => setTimeout(r, 0));
       if (!containerRef.current) throw new Error("Call container missing");
 
-      const frame = createDailyFrame(containerRef.current, {
+      const frame = await createDailyFrameAsync(containerRef.current, {
         iframeStyle: { width: "100%", height: "100%", border: "0" },
         showLeaveButton: false,
         showFullscreenButton: true,
@@ -101,7 +102,7 @@ export default function GuestCall() {
       setJoining(false);
     } catch (e: any) {
       console.error("[GuestCall]", e);
-      setErrorMsg(e?.message || "Couldn't join the call");
+      setErrorMsg((await extractInvokeError(e)) || e?.message || "Couldn't join the call");
       setPhase("error");
       setJoining(false);
     }

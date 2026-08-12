@@ -133,14 +133,13 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
         console.warn("Upload failed (bucket may not exist):", uploadError);
       }
 
-      // Mark ID as submitted (admin will review)
-      const { error } = await supabase
-        .from("profiles")
-        .update({ id_verified: true, id_verified_at: new Date().toISOString() })
-        .eq("user_id", user.id);
+      // Mark ID as submitted for admin review — id_verified itself is
+      // admin-only (see admin_verify_profile_identity); this RPC only
+      // records the request timestamp, it never grants the badge.
+      const { error } = await supabase.rpc("request_id_verification" as any);
       if (error) throw error;
 
-      toast({ title: "ID submitted!", description: "Your identity has been verified." });
+      toast({ title: "ID submitted!", description: "We'll review it and confirm your verified badge soon." });
       setActiveDialog(null);
       setIdFile(null);
       window.location.reload();

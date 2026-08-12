@@ -29,6 +29,38 @@ interface ClaimedCredit {
   location?: string;
 }
 
+/**
+ * Consumes a single-use face_verification_attempts token written by
+ * verify-profile-claim under service_role. Returns false for any missing,
+ * unrecognized, already-consumed, expired (>15 min), or unverified token —
+ * never trusts anything the client asserts about the result.
+ */
+async function resolveFaceVerification(
+  admin: ReturnType<typeof createClient>,
+  token: string | null,
+): Promise<boolean> {
+  if (!token) return false;
+
+  const { data, error } = await admin
+    .from("face_verification_attempts")
+    .select("verified, consumed_at, created_at")
+    .eq("token", token)
+    .maybeSingle();
+
+  if (error || !data) return false;
+  if (data.consumed_at) return false;
+
+  const ageMs = Date.now() - new Date(data.created_at as string).getTime();
+  if (ageMs > 15 * 60 * 1000) return false;
+
+  await admin
+    .from("face_verification_attempts")
+    .update({ consumed_at: new Date().toISOString() })
+    .eq("token", token);
+
+  return data.verified === true;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -39,13 +71,13 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { email: rawEmail, profile, credits, redirect_to, skip_magic_link, face_match_score } = (await req.json()) as {
+    const { email: rawEmail, profile, credits, redirect_to, skip_magic_link, face_verification_token } = (await req.json()) as {
       email: string;
       profile: DraftProfile;
       credits: ClaimedCredit[];
       redirect_to: string;
       skip_magic_link?: boolean;
-      face_match_score?: number | null;
+      face_verification_token?: string | null;
     };
 
     const email = (rawEmail || "").trim().toLowerCase();
@@ -56,8 +88,14 @@ Deno.serve(async (req) => {
       return json({ error: "Profile name required" }, 400);
     }
 
+    // identity_face_verified must reflect a real, server-computed
+    // verify-profile-claim result, never a client-supplied number — a bare
+    // face_match_score here used to be directly replayable by any caller.
+    // See docs/SECURITY_RELEASE_GATE.md C11.
+    const faceVerified = await resolveFaceVerification(admin, face_verification_token ?? null);
+
     const cleanRedirect = redirect_to || `${SUPABASE_URL}/profile?claimed=true`;
-    const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect, !!skip_magic_link, face_match_score ?? null);
+    const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect, !!skip_magic_link, faceVerified);
 
     return json({ success: true, ...result });
   } catch (err) {
@@ -73,7 +111,7 @@ async function checkAndProvisionUser(
   credits: ClaimedCredit[],
   redirectTo: string,
   skipMagicLink: boolean,
-  faceMatchScore: number | null,
+  faceVerified: boolean,
 ): Promise<{ is_new_user: boolean; conflicts?: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> }> {
   // 1. Check if user already exists
   const { data: existing } = await admin.auth.admin.listUsers();
@@ -90,7 +128,7 @@ async function checkAndProvisionUser(
 
     // If skipMagicLink (Google flow), upsert profile + credits so the claim isn't lost
     if (skipMagicLink) {
-      await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceMatchScore);
+      await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceVerified);
     }
   } else {
     // 2. Create new auth user (unconfirmed, magic link will confirm)
@@ -104,7 +142,7 @@ async function checkAndProvisionUser(
     isNewUser = true;
     console.log(`[claim] created new user ${userId}`);
 
-    await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceMatchScore);
+    await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceVerified);
   }
 
   // 5. Send magic link unless explicitly skipped (Google flow already authenticated)
@@ -129,7 +167,7 @@ async function upsertProfileAndCredits(
   profile: DraftProfile,
   credits: ClaimedCredit[],
   conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }>,
-  faceMatchScore: number | null,
+  faceVerified: boolean,
 ) {
   // Only upsert profile fields for brand-new profiles. Never overwrite a real, onboarded profile
   // with caller-supplied data — that would let any unauth caller silently rewrite a stranger's bio.
@@ -140,7 +178,7 @@ async function upsertProfileAndCredits(
     .maybeSingle();
 
   const safeToWriteProfile = !existingProfile || existingProfile.onboarding_completed === false;
-  const verified = (faceMatchScore ?? 0) >= 0.7;
+  const verified = faceVerified;
 
   if (safeToWriteProfile) {
     const { error: profileErr } = await admin.from("profiles").upsert(

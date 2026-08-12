@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScanLine, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { extractInvokeError } from "@/lib/extractInvokeError";
 
 export interface ScannedEventDetails {
   title?: string;
@@ -115,28 +116,6 @@ const prepareImageForScan = async (captured: CapturedFlyerFile): Promise<Prepare
       mimeType: captured.mimeType,
     };
   }
-};
-
-// Try hard to surface the real error from a Supabase Functions invoke failure.
-const extractInvokeError = async (error: any): Promise<string> => {
-  if (!error) return "";
-  // FunctionsHttpError exposes the original Response on .context
-  const ctx: Response | undefined = error.context;
-  if (ctx && typeof ctx.json === "function") {
-    try {
-      const cloned = ctx.clone();
-      const body = await cloned.json();
-      if (body?.error) return String(body.error);
-      if (body?.message) return String(body.message);
-    } catch {
-      try {
-        const cloned = ctx.clone();
-        const text = await cloned.text();
-        if (text) return text.slice(0, 240);
-      } catch { /* ignore */ }
-    }
-  }
-  return error.message || "";
 };
 
 export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDialogProps) => {

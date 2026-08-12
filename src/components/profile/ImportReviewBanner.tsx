@@ -64,11 +64,11 @@ export function ImportReviewBanner({ userId, onResolved }: ImportReviewBannerPro
   const keepSelected = async () => {
     if (selected.size === 0) return;
     setBusy(true);
-    const { error } = await supabase
-      .from("credits")
-      .update({ verification_status: "unverified" })
-      .in("id", Array.from(selected));
+    const results = await Promise.all(
+      Array.from(selected).map((id) => supabase.rpc("reject_discovered_credit" as any, { credit_id_param: id }))
+    );
     setBusy(false);
+    const error = results.find((r) => r.error)?.error;
     if (error) {
       toast({ title: "Failed to keep", description: error.message, variant: "destructive" });
       return;
@@ -97,10 +97,9 @@ export function ImportReviewBanner({ userId, onResolved }: ImportReviewBannerPro
   const dismissAll = async () => {
     // Mark all remaining as 'unverified' so they stop showing in the review banner
     setBusy(true);
-    await supabase
-      .from("credits")
-      .update({ verification_status: "unverified" })
-      .in("id", pending.map((p) => p.id));
+    await Promise.all(
+      pending.map((p) => supabase.rpc("reject_discovered_credit" as any, { credit_id_param: p.id }))
+    );
     setBusy(false);
     setOpen(false);
     setPending([]);

@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     const { data: profile } = await admin
       .from("profiles")
       .select(
-        "user_id, full_name, bio, headline, avatar_url, day_rate, verification_score, primary_role",
+        "user_id, full_name, bio, site_headline, avatar_url, day_rate, verification_score, primary_role",
       )
       .eq("user_id", user.id)
       .maybeSingle();
@@ -271,7 +271,7 @@ function computeStrength(p: any): number {
   let score = 0;
   if (p.full_name) score += 15;
   if (p.avatar_url) score += 15;
-  if (p.headline) score += 15;
+  if (p.site_headline) score += 15;
   if (p.bio && String(p.bio).length > 40) score += 15;
   if (p.primary_role) score += 15;
   if (p.day_rate) score += 15;

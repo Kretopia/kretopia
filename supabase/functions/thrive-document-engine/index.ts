@@ -528,7 +528,7 @@ serve(async (req) => {
     }
 
     const [profileRes, creditsRes, memoryRes, projectRes, factsRes, entitiesRes, brandRes, filesRes] = await Promise.all([
-      admin.from("profiles").select("display_name, username, headline, bio, location, professional_role").eq("user_id", user.id).maybeSingle(),
+      admin.from("profiles").select("display_name, username, site_headline, bio, location, professional_role").eq("user_id", user.id).maybeSingle(),
       admin.from("credits").select("project_name, role, year, project_type, thumbnail_url").eq("user_id", user.id).order("year", { ascending: false }).limit(10),
       admin.from("thrive_memory").select("kind, mem_key, label, body, importance").eq("user_id", user.id).order("importance", { ascending: false }).limit(40),
       project_id ? admin.from("projects").select("title, description, workspace_type, deadline, moodboard").eq("id", project_id).maybeSingle() : Promise.resolve({ data: null }),

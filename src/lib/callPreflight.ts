@@ -1,4 +1,4 @@
-import DailyIframe from "@daily-co/daily-js";
+import { loadDaily } from "@/lib/dailyFrame";
 
 export type PreflightIssue =
   | "no-webrtc"
@@ -110,7 +110,8 @@ export async function runCallPreflight(): Promise<PreflightResult> {
 
   let browserInfo: PreflightResult["browser"];
   try {
-    const sb = (DailyIframe as any).supportedBrowser?.();
+    const DailyIframe: any = await loadDaily();
+    const sb = DailyIframe?.supportedBrowser?.();
     if (sb) {
       browserInfo = {
         name: sb.browserName,

@@ -7,149 +7,92 @@
  *
  *   I.    Hero            — "Welcome to Kretopia. Where creativity lives."
  *   II.   Manifesto       — "Talent is everywhere. Opportunity is not."
- *   III.  Passport        — teal accent
- *   IV.   Scout           — amber accent
- *   V.    Match           — magenta accent
- *   VI.   Studio          — warm tungsten accent
- *   VII.  SoundStages     — teal-spotlight accent
- *   VIII. Kreto           — sunset (the only full-gradient moment)
+ *   III.  Passport
+ *   IV.   Scout
+ *   V.    Match
+ *   VI.   Studio
+ *   VII.  SoundStages
+ *   ...   Auditions       — how an open call actually runs
+ *   VIII. Kreto           — the Executive Producer
  *   IX.   Closing         — echo of the hero opener + single CTA
+ *
+ * Performance: only the hero (headline + search) is on the critical path.
+ * Everything below is a lazy chunk mounted when the visitor scrolls near it
+ * or when the browser goes idle — whichever comes first — so the search bar
+ * is interactive as early as possible. The placeholder reserves height so
+ * deferring costs no layout shift.
  *
  * All routes, auth and search wiring untouched.
  */
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { KretopiaHero } from "@/components/landing/KretopiaHero";
-import { ManifestoSection } from "@/components/landing/kretopia/ManifestoSection";
-import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
-import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
-import { ClosingSection } from "@/components/landing/kretopia/ClosingSection";
-import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
 
-import passportImg    from "@/assets/kretopia/chapter-passport.jpg";
-import scoutImg       from "@/assets/kretopia/chapter-scout.jpg";
-import matchImg       from "@/assets/kretopia/chapter-match.jpg";
-import studioImg      from "@/assets/kretopia/chapter-studio.jpg";
-import soundstagesImg from "@/assets/kretopia/chapter-soundstages.jpg";
+const LandingBelowFold = lazy(
+  () => import("@/components/landing/kretopia/LandingBelowFold"),
+);
 
 interface KretopiaLandingProps {
   onSearchSubmit: (query: string) => void;
 }
 
 export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [showRest, setShowRest] = useState(false);
+
+  useEffect(() => {
+    if (showRest) return;
+    let idle: number | undefined;
+    let io: IntersectionObserver | undefined;
+
+    const reveal = () => setShowRest(true);
+
+    const el = sentinelRef.current;
+    if (el && typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) reveal();
+        },
+        // start fetching a full viewport before it's needed
+        { rootMargin: "100% 0px" },
+      );
+      io.observe(el);
+    } else {
+      reveal();
+    }
+
+    // Belt and braces: if the visitor never scrolls, load once idle so the
+    // page is complete for crawlers and for anyone who jumps to the footer.
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (h: number) => void;
+    };
+    const ric = w.requestIdleCallback;
+    if (ric) idle = ric(reveal, { timeout: 2500 });
+    else idle = window.setTimeout(reveal, 1200);
+
+    return () => {
+      io?.disconnect();
+      if (idle !== undefined) {
+        if (ric && w.cancelIdleCallback) w.cancelIdleCallback(idle);
+        else clearTimeout(idle);
+      }
+    };
+  }, [showRest]);
+
   return (
     <div className="dark-surface relative" style={{ backgroundColor: "#05070D" }}>
-      {/* I. Hero (already cinematic — left intact) */}
+      {/* I. Hero — critical path */}
       <KretopiaHero onSearchSubmit={onSearchSubmit} />
 
-      {/* II. Manifesto */}
-      <ManifestoSection />
+      <div ref={sentinelRef} aria-hidden className="h-px w-full" />
 
-      {/* III. Passport — teal */}
-      <ChapterSection
-        index="III"
-        kicker="Passport"
-        title={
-          <>
-            Every credit. <br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Co-signed by the
-            </span>{" "}
-            <br className="hidden sm:block" />
-            people who were there
-          </>
-        }
-        body="Your Creative Passport collects every project, every credit, every co-sign — verified by the collaborators who lived it with you. One link. Your whole career."
-        caption="Passport · Chapter Three"
-        image={passportImg}
-        accent="#9413D2"
-        href="/auth?next=/profile"
-      />
-
-      {/* IV. Scout — amber */}
-      <ChapterSection
-        index="IV"
-        kicker="Scout"
-        title={
-          <>
-            The opportunity finds<br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
-              you
-            </span>
-          </>
-        }
-        body="Scout reads the web — gigs, briefs, calls, casting notices — and surfaces the ones that fit you. Kreto drafts the pitch. You decide if it goes."
-        caption="Scout · Chapter Four"
-        image={scoutImg}
-        accent="#FFC72C"
-        href="/auth?next=/scout"
-        reverse
-      />
-
-      {/* V. Match — magenta */}
-      <ChapterSection
-        index="V"
-        kicker="Match"
-        title={
-          <>
-            The right person<br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
-              for the work
-            </span>
-          </>
-        }
-        body="Match connects creators by skill, city, vibe, and the people you've already made things with. No cold DMs. Just collaborators who get it."
-        caption="Match · Chapter Five"
-        image={matchImg}
-        accent="#FF0A78"
-        href="/auth?next=/match"
-      />
-
-      {/* VI. Studio — tungsten warmth */}
-      <ChapterSection
-        index="VI"
-        kicker="Studio"
-        title={
-          <>
-            From idea to invoice<br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
-              in one room
-            </span>
-          </>
-        }
-        body="Every shoot, drop, release, or campaign in its own Studio. Brief, files, chat, video, deliverables, payments — held together by Kreto's quiet hand."
-        caption="Studio · Chapter Six"
-        image={studioImg}
-        accent="#FF8C42"
-        href="/auth?next=/desk"
-        reverse
-      />
-
-      {/* VII. SoundStages — teal spotlight */}
-      <ChapterSection
-        index="VII"
-        kicker="SoundStages"
-        title={
-          <>
-            Live rooms.<br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Real conversations
-            </span>
-          </>
-        }
-        body="Open mics, speed sessions, listening parties. Drop into a SoundStage to be seen — by an audience that came for exactly what you do."
-        caption="SoundStages · Chapter Seven"
-        image={soundstagesImg}
-        accent="#9413D2"
-        href="/auth?next=/circle?tab=live"
-      />
-
-      {/* VIII. Kreto — the sunset moment */}
-      <MeetKretoSection />
-
-      {/* IX. Closing */}
-      <ClosingSection />
-
-      {/* Footer */}
-      <EditorialFooter />
+      {showRest ? (
+        <Suspense fallback={<div aria-hidden className="min-h-[60vh]" />}>
+          <LandingBelowFold />
+        </Suspense>
+      ) : (
+        <div aria-hidden className="min-h-[60vh]" />
+      )}
     </div>
   );
 };

@@ -1,9 +1,38 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// Records the real, server-computed result under service_role and returns
+// an opaque single-use token. claim-and-create-profile consumes that token
+// to decide identity_face_verified — it never trusts a client-supplied
+// confidence number again (that was spoofable: nothing bound the claim
+// step's face_match_score to this function having actually run). See
+// docs/SECURITY_RELEASE_GATE.md C11.
+async function recordAttempt(verified: boolean, confidence: number | null): Promise<string | null> {
+  try {
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!SUPABASE_URL || !SERVICE_KEY) return null;
+    const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+    const { data, error } = await admin
+      .from("face_verification_attempts")
+      .insert({ verified, confidence })
+      .select("token")
+      .single();
+    if (error) {
+      console.error("[verify-profile-claim] failed to record attempt:", error);
+      return null;
+    }
+    return data.token as string;
+  } catch (e) {
+    console.error("[verify-profile-claim] recordAttempt error:", e);
+    return null;
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -143,11 +172,15 @@ Be conservative but fair. Only verify if you're reasonably confident (>70%) that
 
     console.log('Verification result:', result);
 
+    const finalVerified = result.verified === true && result.confidence >= 0.7;
+    const token = await recordAttempt(finalVerified, result.confidence ?? null);
+
     return new Response(
       JSON.stringify({
-        verified: result.verified === true && result.confidence >= 0.7,
+        verified: finalVerified,
         confidence: result.confidence,
-        reason: result.reason
+        reason: result.reason,
+        token,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

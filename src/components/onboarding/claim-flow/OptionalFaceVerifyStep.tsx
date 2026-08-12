@@ -9,7 +9,7 @@ interface Props {
   profile: DraftProfile;
   credits: ClaimedCredit[];
   onSkip: () => void;
-  onVerified: (faceMatchScore: number) => void;
+  onVerified: (faceMatchScore: number, verificationToken: string | null) => void;
   onBack: () => void;
 }
 
@@ -88,7 +88,7 @@ export const OptionalFaceVerifyStep = ({ profile, credits, onSkip, onVerified, o
 
       if (data?.verified) {
         toast.success("Identity verified");
-        onVerified(Number(data.confidence) || 0.8);
+        onVerified(Number(data.confidence) || 0.8, data.token ?? null);
       } else {
         setStep("failed");
       }

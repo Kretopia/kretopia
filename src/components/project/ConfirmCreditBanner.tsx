@@ -59,7 +59,10 @@ export const ConfirmCreditBanner = ({
             project_name: projectTitle,
             role: pendingCredit.role,
             year: new Date().getFullYear(),
-            verification_status: "verified",
+            // Confirmed internally (owner assigned, collaborator accepted) —
+            // real evidence, but not third-party/authoritative verification.
+            // Honest tier is 'pending', enforced server-side by a DB trigger.
+            verification_status: "pending",
           })
           .select("id")
           .single();

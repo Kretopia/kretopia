@@ -48,8 +48,8 @@ export function HireMeTrustBar({
         const sinceISO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         const { data: msgs } = await supabase
           .from("messages")
-          .select("sender_id, recipient_id, created_at, conversation_id")
-          .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+          .select("sender_id, receiver_id, created_at, match_id")
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
           .gte("created_at", sinceISO)
           .order("created_at", { ascending: true })
           .limit(500)
@@ -58,7 +58,7 @@ export function HireMeTrustBar({
         if (msgs && msgs.length > 0) {
           const byConv = new Map<string, any[]>();
           for (const m of msgs as any[]) {
-            const k = m.conversation_id || `${m.sender_id}:${m.recipient_id}`;
+            const k = m.match_id || `${m.sender_id}:${m.receiver_id}`;
             if (!byConv.has(k)) byConv.set(k, []);
             byConv.get(k)!.push(m);
           }

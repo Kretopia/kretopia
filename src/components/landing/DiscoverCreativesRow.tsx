@@ -39,7 +39,7 @@ export const DiscoverCreativesRow = () => {
   useEffect(() => {
     (async () => {
       try {
-        const { data, error } = await (supabase as any).rpc("get_public_creator_showcase", {
+        const { data, error } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ data: Creator[] | null; error: unknown }>)("get_public_creator_showcase", {
           _viewer_id: user?.id ?? null,
           _limit: 80,
         });

@@ -35,7 +35,7 @@ export const ManifestoSection = () => {
           <br />
           Opportunity is{" "}
           <span className="italic">not</span>
-          <span style={{ color: "#FF0A78" }}>.</span>
+          <span style={{ color: "#FF2DA1" }}>.</span>
         </motion.h2>
 
         <motion.p

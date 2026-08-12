@@ -33,8 +33,8 @@ export function ReplySLABadge({
         const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         const { data } = await (supabase as any)
           .from("messages")
-          .select("sender_id, recipient_id, created_at, conversation_id")
-          .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+          .select("sender_id, receiver_id, created_at, match_id")
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
           .gte("created_at", since)
           .order("created_at", { ascending: true })
           .limit(400)
@@ -44,7 +44,7 @@ export function ReplySLABadge({
         // Group by conversation; find inbound→outbound reply deltas
         const byConv = new Map<string, any[]>();
         for (const m of data as any[]) {
-          const k = m.conversation_id || `${m.sender_id}:${m.recipient_id}`;
+          const k = m.match_id || `${m.sender_id}:${m.receiver_id}`;
           if (!byConv.has(k)) byConv.set(k, []);
           byConv.get(k)!.push(m);
         }
@@ -52,7 +52,7 @@ export function ReplySLABadge({
         for (const msgs of byConv.values()) {
           let pendingInbound: string | null = null;
           for (const m of msgs) {
-            if (m.recipient_id === userId) {
+            if (m.receiver_id === userId) {
               if (!pendingInbound) pendingInbound = m.created_at;
             } else if (m.sender_id === userId && pendingInbound) {
               const diff = (new Date(m.created_at).getTime() - new Date(pendingInbound).getTime()) / 3600000;

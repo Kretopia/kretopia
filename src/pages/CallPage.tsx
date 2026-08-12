@@ -1,11 +1,12 @@
-// /call/:meetingId — universal entry point for hosts, members, and guests.
+// /meet/:meetingId — universal entry point for hosts, members, and guests.
 // Guests must include ?t=<share_token>.
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { type DailyCall } from "@daily-co/daily-js";
-import { createDailyFrame } from "@/lib/dailyFrame";
+import { createDailyFrameAsync, teardownDailyCall } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { extractInvokeError } from "@/lib/extractInvokeError";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -75,7 +76,7 @@ export default function CallPage() {
         );
         if (cancelled) return;
         if (error || !data?.token) {
-          setError(data?.error || error?.message || "Couldn't load meeting");
+          setError(data?.error || (await extractInvokeError(error)) || "Couldn't load meeting");
           setPhase("error");
           return;
         }
@@ -84,7 +85,7 @@ export default function CallPage() {
         setRole(data.role || null);
         setPhase("lobby");
       } catch (e: any) {
-        setError(e?.message || "Couldn't load meeting");
+        setError((await extractInvokeError(e)) || e?.message || "Couldn't load meeting");
         setPhase("error");
       }
     })();
@@ -96,11 +97,26 @@ export default function CallPage() {
   // Spin up Daily once we're "live"
   useEffect(() => {
     if (phase !== "live" || !tokenInfo || !containerRef.current) return;
-    const frame = createDailyFrame(containerRef.current, {
-      iframeStyle: { width: "100%", height: "100%", border: "0" },
-      showLeaveButton: false,
-      showFullscreenButton: true,
-    });
+    let cancelled = false;
+    let frame: import("@daily-co/daily-js").DailyCall | null = null;
+    const container = containerRef.current;
+
+    (async () => {
+    try {
+      frame = await createDailyFrameAsync(container, {
+        iframeStyle: { width: "100%", height: "100%", border: "0" },
+        showLeaveButton: false,
+        showFullscreenButton: true,
+      });
+    } catch (err: any) {
+      console.error("[CallPage] createFrame failed", err);
+      if (!cancelled) {
+        setError(err?.message || "Couldn't start the call");
+        setPhase("error");
+      }
+      return;
+    }
+    if (cancelled) { await teardownDailyCall(frame); return; }
     callRef.current = frame;
 
     const userName =
@@ -153,11 +169,13 @@ export default function CallPage() {
     frame.on("recording-stopped", () => setRecording(false));
     frame.on("local-screen-share-started", () => setSharing(true));
     frame.on("local-screen-share-stopped", () => setSharing(false));
+    })();
 
     return () => {
-      try { frame.leave(); } catch {}
-      try { frame.destroy(); } catch {}
+      cancelled = true;
+      const f = frame ?? callRef.current;
       callRef.current = null;
+      void teardownDailyCall(f);
     };
   }, [phase, tokenInfo, user, guestName, joinPrefs, toast]);
 

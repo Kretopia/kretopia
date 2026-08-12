@@ -75,9 +75,9 @@ export default function SpeedRecap() {
       const opener = `Hey ${peer.full_name?.split(" ")[0] ?? ""} — great meeting you at ${title}. Let's keep the convo going 👋`;
       await supabase.from("messages").insert({
         sender_id: user.id,
-        recipient_id: peer.id,
+        receiver_id: peer.id,
         content: opener,
-        message_type: "text",
+        read: false,
       } as any);
       trackDeckEvent("speed_recap_message_sent", "speed", { session_id: id, peer_id: peer.id });
       toast({ title: "Sent", description: "Opened your chat with them." });

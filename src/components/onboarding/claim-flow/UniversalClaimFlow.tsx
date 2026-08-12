@@ -95,6 +95,7 @@ export const UniversalClaimFlow = ({
   };
 
   const [faceMatchScore, setFaceMatchScore] = useState<number | null>(null);
+  const [faceVerificationToken, setFaceVerificationToken] = useState<string | null>(null);
 
   const handleConfirmProfile = (p: DraftProfile, credits: ClaimedCredit[]) => {
     setDraft(p);
@@ -159,8 +160,9 @@ export const UniversalClaimFlow = ({
           credits={selected}
           onBack={() => setStep("preview")}
           onSkip={() => setStep("reveal")}
-          onVerified={(score) => {
+          onVerified={(score, token) => {
             setFaceMatchScore(score);
+            setFaceVerificationToken(token);
             setStep("reveal");
           }}
         />
@@ -180,6 +182,7 @@ export const UniversalClaimFlow = ({
           onBack={() => setStep("reveal")}
           redirectAfter={finalRedirect}
           faceMatchScore={faceMatchScore}
+          faceVerificationToken={faceVerificationToken}
         />
       )}
     </div>

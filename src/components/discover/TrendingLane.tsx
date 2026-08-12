@@ -16,7 +16,7 @@ interface TrendingCreator {
 
 interface NewCredit {
   id: string;
-  title: string | null;
+  project_name: string | null;
   role: string | null;
   user_id: string;
   thumbnail_url: string | null;
@@ -160,11 +160,11 @@ export const TrendingLane = () => {
               >
                 <div className="aspect-video bg-muted">
                   {cr.thumbnail_url && (
-                    <img src={cr.thumbnail_url} alt={cr.title ?? ""} className="w-full h-full object-cover" loading="lazy" />
+                    <img src={cr.thumbnail_url} alt={cr.project_name ?? ""} className="w-full h-full object-cover" loading="lazy" />
                   )}
                 </div>
                 <div className="p-2.5">
-                  <p className="text-xs font-semibold truncate">{cr.title || "Untitled"}</p>
+                  <p className="text-xs font-semibold truncate">{cr.project_name || "Untitled"}</p>
                   <p className="text-[11px] text-muted-foreground truncate">{cr.role || "Credit"}</p>
                 </div>
               </Link>

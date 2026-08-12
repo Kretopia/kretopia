@@ -1,11 +1,52 @@
 import { SEO } from "@/components/SEO";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  MapPin, Calendar, Users, Globe, ArrowRight, Quote, 
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  MapPin, Calendar, Users, Globe, ArrowRight, Quote,
   Rocket, Music, Film, Palette, Camera, Mic, Sparkles,
-  Building2, Plane, Heart, Wifi, RefreshCw, Zap
+  Building2, Plane, Heart, Wifi, RefreshCw, Zap,
+  Fingerprint, ShieldCheck, Compass, LayoutGrid, Theater, Search,
+  ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
+
+const PILLARS = [
+  {
+    icon: Fingerprint,
+    title: "Creative Passport",
+    body: "Every project, every credit, every co-sign — collected into one link that is your whole career, verified by the people who lived it with you.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Verified Credits",
+    body: "A credit isn't called verified without evidence behind it. Claimed, evidence-backed, co-signed, or organization-confirmed — always honestly labeled.",
+  },
+  {
+    icon: Compass,
+    title: "Scout",
+    body: "Scout reads the web for gigs, briefs and casting calls, and surfaces the ones that actually fit your Passport.",
+  },
+  {
+    icon: LayoutGrid,
+    title: "Studio",
+    body: "Every shoot, drop or campaign gets its own Studio — brief, files, chat, deliverables and payment in one room.",
+  },
+  {
+    icon: Theater,
+    title: "SoundStages",
+    body: "Live rooms, speed sessions and auditions — a way to be seen by an audience that came for exactly what you do.",
+  },
+  {
+    icon: Sparkles,
+    title: "Kreto",
+    body: "The Executive Producer for your creative career — reads your Passport, explains opportunities, and turns conversations into action. Everything it produces stays editable and only becomes official once you confirm it.",
+  },
+];
+
+const LOOP_STEPS = ["Search", "Passport", "Trust", "Opportunity", "Studio", "Payment", "Stronger Passport"];
 
 const timeline = [
   { year: "2013", location: "Dubai", icon: Building2, title: "The Beginning", desc: "ThriveIN begins as Industry Night, a weekly after-work gathering for creatives at Holiday Inn Internet City. A space designed for connection, collaboration, and community." },
@@ -35,6 +76,98 @@ const cities = [
   { name: "Bali", flag: "🇮🇩" },
 ];
 
+/**
+ * ProductLoopSection — "The problem / The system / The loop / The
+ * invitation" narrative the charter asks for, kept separate from the
+ * ThriveIN origin story below it. Product-first, then "why us" history.
+ * Reuses useScrollReveal (same primitive as the landing chapters) rather
+ * than a fifth hand-rolled reveal implementation.
+ */
+const ProductLoopSection = () => {
+  const [loopRef, loopVisible] = useScrollReveal<HTMLDivElement>();
+
+  return (
+    <section className="border-y border-border bg-card/30">
+      <div className="container mx-auto max-w-4xl px-4 py-16 sm:py-20">
+        {/* The problem */}
+        <div className="text-center mb-12">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">The Problem</p>
+          <h2 className="text-2xl sm:text-4xl font-bold text-foreground leading-tight">
+            Talent is everywhere.<br />
+            <span className="text-muted-foreground">Opportunity is </span>
+            <span className="italic text-[hsl(var(--signal-teal))]">not</span>.
+          </h2>
+        </div>
+
+        {/* The system */}
+        <div className="max-w-2xl mx-auto text-center mb-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">The System</p>
+          <p className="text-lg sm:text-xl font-medium text-foreground leading-relaxed">
+            Kretopia turns creative history into trusted opportunity.
+          </p>
+        </div>
+
+        {/* Expandable pillars */}
+        <div className="max-w-2xl mx-auto mb-16">
+          <Accordion type="single" collapsible className="w-full">
+            {PILLARS.map((p) => (
+              <AccordionItem key={p.title} value={p.title} className="border-border/60">
+                <AccordionTrigger className="hover:no-underline">
+                  <span className="flex items-center gap-3 text-left">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <p.icon className="h-4 w-4 text-primary" />
+                    </span>
+                    <span className="font-semibold text-sm sm:text-base">{p.title}</span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="pl-11 text-sm text-muted-foreground leading-relaxed">
+                  {p.body}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+
+        {/* The loop */}
+        <div ref={loopRef} className="text-center mb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-6">The Loop</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-3 max-w-2xl mx-auto">
+            {LOOP_STEPS.map((step, i) => (
+              <span key={step} className="flex items-center">
+                <span
+                  className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-background border border-border whitespace-nowrap transition-all duration-500"
+                  style={{
+                    opacity: loopVisible ? 1 : 0,
+                    transform: loopVisible ? "none" : "translateY(6px)",
+                    transitionDelay: `${i * 80}ms`,
+                  }}
+                >
+                  {step}
+                </span>
+                {i < LOOP_STEPS.length - 1 && (
+                  <ChevronRight className="h-3.5 w-3.5 text-primary/50 mx-0.5" aria-hidden />
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* The invitation */}
+        <div className="text-center mt-14">
+          <p className="text-xl sm:text-2xl font-bold text-foreground mb-6">Search your name.</p>
+          <Link
+            to="/credits"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all"
+          >
+            <Search className="h-4 w-4" aria-hidden />
+            Search the Creative Record
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const About = () => {
   return (
     <div className="min-h-screen bg-background">
@@ -62,6 +195,10 @@ const About = () => {
           </p>
         </div>
       </section>
+
+      {/* The Problem / The System / The Loop / The Invitation — product
+          narrative, ahead of the ThriveIN origin story below. */}
+      <ProductLoopSection />
 
       {/* Global Footprint */}
       <section className="container mx-auto max-w-4xl px-4 pb-12">

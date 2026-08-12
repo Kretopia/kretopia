@@ -28,6 +28,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
 
   return (
     <section
+      id="kretopia-hero"
       className="relative overflow-hidden"
       style={{ backgroundColor: "#05070D" }}
     >

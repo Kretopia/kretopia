@@ -16,13 +16,15 @@ export interface ChapterProps {
   accent: string;       // hex
   href: string;
   reverse?: boolean;    // flip layout
+  id?: string;          // scroll-to anchor for chapter nav
 }
 
 export const ChapterSection = ({
-  index, kicker, title, body, caption, image, accent, href, reverse,
+  index, kicker, title, body, caption, image, accent, href, reverse, id,
 }: ChapterProps) => {
   return (
     <section
+      id={id}
       className="relative overflow-hidden border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
     >

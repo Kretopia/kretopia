@@ -26,6 +26,7 @@
  */
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { KretopiaHero } from "@/components/landing/KretopiaHero";
+import { ChapterProgressNav } from "@/components/landing/kretopia/ChapterProgressNav";
 
 const LandingBelowFold = lazy(
   () => import("@/components/landing/kretopia/LandingBelowFold"),
@@ -93,6 +94,8 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
       ) : (
         <div aria-hidden className="min-h-[60vh]" />
       )}
+
+      <ChapterProgressNav ready={showRest} />
     </div>
   );
 };

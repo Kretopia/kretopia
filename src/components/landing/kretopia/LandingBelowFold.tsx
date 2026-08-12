@@ -7,6 +7,7 @@
  */
 import { ManifestoSection } from "@/components/landing/kretopia/ManifestoSection";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
+import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
 import { AuditionRoadmapSection } from "@/components/landing/kretopia/AuditionRoadmapSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
 import { ClosingSection } from "@/components/landing/kretopia/ClosingSection";
@@ -26,6 +27,7 @@ export const LandingBelowFold = () => {
 
       {/* III. Passport */}
       <ChapterSection
+        id="chapter-passport"
         index="III"
         kicker="Passport"
         title={
@@ -45,9 +47,13 @@ export const LandingBelowFold = () => {
         href="/auth?next=/profile"
       />
 
-      {/* IV. Scout */}
+      {/* IV. Verified Credits */}
+      <VerifiedCreditsChapterSection />
+
+      {/* V. Scout */}
       <ChapterSection
-        index="IV"
+        id="chapter-scout"
+        index="V"
         kicker="Scout"
         title={
           <>
@@ -58,16 +64,17 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Scout reads the web — gigs, briefs, calls, casting notices — and surfaces the ones that fit you. Kreto drafts the pitch. You decide if it goes."
-        caption="Scout · Chapter Four"
+        caption="Scout · Chapter Five"
         image={scoutImg}
         accent="#FF2DA1"
         href="/auth?next=/scout"
         reverse
       />
 
-      {/* V. Match */}
+      {/* VI. Match */}
       <ChapterSection
-        index="V"
+        id="chapter-match"
+        index="VI"
         kicker="Match"
         title={
           <>
@@ -78,15 +85,16 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Match connects creators by skill, city, vibe, and the people you've already made things with. No cold DMs. Just collaborators who get it."
-        caption="Match · Chapter Five"
+        caption="Match · Chapter Six"
         image={matchImg}
         accent="#FF2DA1"
         href="/auth?next=/match"
       />
 
-      {/* VI. Studio */}
+      {/* VII. Studio */}
       <ChapterSection
-        index="VI"
+        id="chapter-studio"
+        index="VII"
         kicker="Studio"
         title={
           <>
@@ -97,16 +105,17 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Every shoot, drop, release, or campaign in its own Studio. Brief, files, chat, video, deliverables, payments — held together by Kreto's quiet hand."
-        caption="Studio · Chapter Six"
+        caption="Studio · Chapter Seven"
         image={studioImg}
         accent="#FF2DA1"
         href="/auth?next=/desk"
         reverse
       />
 
-      {/* VII. SoundStages */}
+      {/* VIII. SoundStages */}
       <ChapterSection
-        index="VII"
+        id="chapter-soundstages"
+        index="VIII"
         kicker="SoundStages"
         title={
           <>
@@ -117,7 +126,7 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Open mics, speed sessions, listening parties. Drop into a SoundStage to be seen — by an audience that came for exactly what you do."
-        caption="SoundStages · Chapter Seven"
+        caption="SoundStages · Chapter Eight"
         image={soundstagesImg}
         accent="#FF2DA1"
         href="/auth?next=/circle?tab=live"
@@ -126,7 +135,7 @@ export const LandingBelowFold = () => {
       {/* Auditions — how an open call actually runs */}
       <AuditionRoadmapSection />
 
-      {/* VIII. Kreto — the sunset moment */}
+      {/* IX. Kreto — the sunset moment */}
       <MeetKretoSection />
 
       {/* IX. Closing */}

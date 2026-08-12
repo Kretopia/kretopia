@@ -61,6 +61,7 @@ export const MeetKretoSection = () => {
 
   return (
     <section
+      id="chapter-kreto"
       className="landing-section relative overflow-hidden border-t border-white/[0.06]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="kreto-title"
@@ -84,7 +85,7 @@ export const MeetKretoSection = () => {
             transition={{ duration: 0.7 }}
             className="lg:col-span-7"
           >
-            <p className="landing-eyebrow mb-4">VII · Kreto</p>
+            <p className="landing-eyebrow mb-4">IX · Kreto</p>
 
             <h2 id="kreto-title" className="landing-h2 landing-glow">
               The Executive Producer for your{" "}

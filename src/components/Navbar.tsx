@@ -194,7 +194,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <div className="hidden lg:block w-40 focus-within:w-64 xl:w-64 xl:focus-within:w-80 mx-3 shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none">
             <UnifiedSearchDropdown
               variant="navbar"
-              placeholder="Search a name, project or opportunity..."
+              placeholder="Search people, work or opportunities"
             />
           </div>
         )}
@@ -289,7 +289,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <div className="mt-4">
                   <UnifiedSearchDropdown
                     variant="hero"
-                    placeholder="Search a name, project or opportunity..."
+                    placeholder="Search Kretopia"
                     autoFocus
                   />
                 </div>

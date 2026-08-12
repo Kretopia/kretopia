@@ -20,6 +20,7 @@
 import { KretopiaHero } from "@/components/landing/KretopiaHero";
 import { ManifestoSection } from "@/components/landing/kretopia/ManifestoSection";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
+import { AuditionRoadmapSection } from "@/components/landing/kretopia/AuditionRoadmapSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
 import { ClosingSection } from "@/components/landing/kretopia/ClosingSection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
@@ -141,6 +142,9 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
         accent="#9413D2"
         href="/auth?next=/circle?tab=live"
       />
+
+      {/* Auditions — how an open call actually runs */}
+      <AuditionRoadmapSection />
 
       {/* VIII. Kreto — the sunset moment */}
       <MeetKretoSection />

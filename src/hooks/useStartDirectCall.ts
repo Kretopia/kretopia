@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ringUsers } from "@/hooks/useIncomingCall";
+import { prefetchDaily } from "@/lib/dailyFrame";
 
 export interface DirectCallSession {
   roomUrl: string;
@@ -27,6 +28,10 @@ export const useStartDirectCall = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [starting, setStarting] = useState(false);
+  // Ref guard: `starting` state only flips on the next render, so a fast
+  // double-click (or two handlers in the same tick) could otherwise fire two
+  // create-call requests and spawn two rooms.
+  const inFlightRef = useRef(false);
   const [session, setSession] = useState<DirectCallSession | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -38,8 +43,10 @@ export const useStartDirectCall = () => {
     recipientName: string,
     opts: StartOptions = {},
   ): Promise<DirectCallSession | null> => {
-    if (!recipientId || starting || !user) return null;
+    if (!recipientId || inFlightRef.current || !user) return null;
+    inFlightRef.current = true;
     setStarting(true);
+    const t0 = performance.now();
     try {
       const { data, error } = await supabase.functions.invoke(
         "create-direct-video-call",
@@ -47,6 +54,8 @@ export const useStartDirectCall = () => {
       );
       if (error) throw error;
       if (!data?.room_url || !data?.token) throw new Error("No room");
+      // Warm the video SDK now that we know a room exists — no media access.
+      prefetchDaily();
 
       const next: DirectCallSession = {
         roomUrl: data.room_url,
@@ -88,7 +97,11 @@ export const useStartDirectCall = () => {
       });
       return null;
     } finally {
+      inFlightRef.current = false;
       setStarting(false);
+      console.info(
+        `[call] create finished in ${Math.round(performance.now() - t0)}ms`,
+      );
     }
   };
 

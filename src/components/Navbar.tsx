@@ -5,7 +5,7 @@ import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, LayoutDashboard, Radar, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
   MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox,
-  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database, Heart, Video
+  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database, Heart, Video, Info, LogIn
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAutoHideNavbar } from "@/hooks/useAutoHideNavbar";
@@ -150,11 +150,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   // search moved to Thrive bar — keep state stub removed
 
-  // Guest navigation items
+  // Guest navigation items — each carries an icon that reflects the actual
+  // destination (no icons implying features the route doesn't have).
   const guestNavItems = [
-    { path: "/credits", label: "Verified Credits" },
-    { path: "/spotlight", label: "Spotlight" },
-    { path: "/about", label: "About Us" },
+    { path: "/credits", label: "Verified Credits", icon: BadgeCheck },
+    { path: "/spotlight", label: "Spotlight", icon: Sparkles },
+    { path: "/about", label: "About Us", icon: Info },
   ];
 
   return (
@@ -201,21 +202,30 @@ const Navbar = memo(({ user }: NavbarProps) => {
         {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
         {!user && (
           <div className="hidden md:flex items-center gap-1 mx-4">
-            {guestNavItems.map(({ path, label }) => (
-              <Link
-                key={path}
-                to={path}
-                className={cn(
-                  "px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
-                  isLandingPage
-                    ? "text-white/70 hover:text-white hover:bg-white/5"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-                  location.pathname === path && (isLandingPage ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
-                )}
-              >
-                {label}
-              </Link>
-            ))}
+            {guestNavItems.map(({ path, label, icon: Icon }) => {
+              const active = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                    isLandingPage
+                      ? "text-white/70 hover:text-white hover:bg-white/5"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                    active && (isLandingPage ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
+                  )}
+                >
+                  <Icon
+                    className="h-4 w-4 shrink-0"
+                    style={active ? { color: "#FF2DA1" } : undefined}
+                    aria-hidden
+                  />
+                  {label}
+                </Link>
+              );
+            })}
           </div>
         )}
 
@@ -459,29 +469,39 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <div className="flex flex-col gap-1 mt-6">
                     <Button
                       variant="ghost"
-                      className={cn("justify-start h-12 text-sm font-medium", location.pathname === "/" && "bg-accent/30")}
+                      className={cn("justify-start h-12 gap-2 text-sm font-medium", location.pathname === "/" && "bg-accent/30")}
                       onClick={() => { setGuestMenuOpen(false); navigate("/"); }}
                     >
+                      <Home className="h-4 w-4" aria-hidden />
                       Home
                     </Button>
-                    {guestNavItems.map(({ path, label }) => (
+                    {guestNavItems.map(({ path, label, icon: Icon }) => (
                       <Button
                         key={path}
                         variant="ghost"
-                        className={cn("justify-start h-12 text-sm font-medium", location.pathname === path && "bg-accent/30")}
+                        className={cn("justify-start h-12 gap-2 text-sm font-medium", location.pathname === path && "bg-accent/30")}
                         onClick={() => { setGuestMenuOpen(false); navigate(path); }}
                       >
+                        <Icon className="h-4 w-4" aria-hidden />
                         {label}
                       </Button>
                     ))}
                     <Separator className="my-3" />
                     <Button
                       variant="ghost"
-                      className="justify-start h-12 text-sm font-medium"
+                      className="justify-start h-12 gap-2 text-sm font-medium"
                       onClick={() => { setGuestMenuOpen(false); navigate("/post-opportunity"); }}
                     >
-                      <Briefcase className="h-4 w-4 mr-2" />
+                      <Briefcase className="h-4 w-4" aria-hidden />
                       Hire Talent
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start h-12 gap-2 text-sm font-medium"
+                      onClick={() => { setGuestMenuOpen(false); navigate("/auth"); }}
+                    >
+                      <LogIn className="h-4 w-4" aria-hidden />
+                      Sign In
                     </Button>
                   </div>
                 </SheetContent>
@@ -496,7 +516,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     isLandingPage && "border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white",
                   )}
                 >
-                  <Briefcase className="h-4 w-4" />
+                  <Briefcase className="h-4 w-4" aria-hidden />
                   Hire Talent
                 </Button>
               </Link>
@@ -505,15 +525,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "text-xs sm:text-sm px-2 sm:px-4",
+                    "gap-1.5 text-xs sm:text-sm px-2 sm:px-4",
                     isLandingPage && "text-white hover:bg-white/10 hover:text-white",
                   )}
                 >
+                  <LogIn className="h-4 w-4" aria-hidden />
                   Sign In
                 </Button>
               </Link>
-              <Link to="/auth">
-                <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>
+              <Link to="/auth?tab=signup">
+                <Button variant="gradient" size="sm" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-4">
+                  <Sparkles className="h-4 w-4" aria-hidden />
+                  Get Started
+                </Button>
               </Link>
             </>
           ) : null}

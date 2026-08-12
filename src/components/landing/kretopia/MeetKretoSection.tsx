@@ -1,118 +1,237 @@
 /**
- * MeetKretoSection — the AI Executive Producer chapter.
- * Editorial, restrained. Sunset only here — Kreto is the one moment
- * the full brand gradient is allowed to breathe.
+ * MeetKretoSection — the Kreto (Executive Producer) chapter.
+ *
+ * Restrained "liquid glass" command surface. Magenta (#FF2DA1) is the only
+ * accent. Every capability listed here maps to something the product
+ * actually does, and every generated output is described as editable and
+ * user-confirmed — Kreto never writes to the record on its own.
+ *
+ * Nothing here auto-opens Kreto, requests permissions, or fakes a response.
  */
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  BadgeCheck,
+  FileText,
+  ListChecks,
+  Radar,
+  ShieldQuestion,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+
+const ACCENT = "#FF2DA1";
 
 const LINES = [
-  "I found three opportunities for you.",
-  "Your Passport is 84% complete.",
-  "I drafted your proposal — want to review?",
-  "This collaborator fits your brief.",
+  "I found three opportunities that match your Passport.",
+  "Two credits are missing evidence — want me to draft the ask?",
+  "I turned yesterday's call into six tasks. Review them?",
+  "Here's a bio you can edit before it goes on your Passport.",
+];
+
+const CAPABILITIES: { icon: LucideIcon; label: string; body: string }[] = [
+  { icon: BadgeCheck, label: "Reads your Passport", body: "Knows your credits, roles and co-signs as context." },
+  { icon: Radar, label: "Explains matches", body: "Says why an opportunity fits — not just that it does." },
+  { icon: ShieldQuestion, label: "Spots missing evidence", body: "Flags credits that still need a co-sign or proof." },
+  { icon: FileText, label: "Drafts editable bios", body: "Writes a first pass in your voice. You approve it." },
+  { icon: ListChecks, label: "Turns briefs into tasks", body: "Calls, docs and voice notes become a real plan." },
+  { icon: Users, label: "Suggests collaborators", body: "Surfaces people from your network for the brief." },
+];
+
+const PROMPTS = [
+  "What should I fix on my Passport first?",
+  "Draft an intro for this brief.",
+  "Who have I worked with on music videos?",
+  "Turn this call into next steps.",
 ];
 
 export const MeetKretoSection = () => {
+  const reducedMotion = useReducedMotion();
   const [i, setI] = useState(0);
+
   useEffect(() => {
-    const id = setInterval(() => setI((n) => (n + 1) % LINES.length), 3400);
+    if (reducedMotion) return;
+    const id = setInterval(() => setI((n) => (n + 1) % LINES.length), 4200);
     return () => clearInterval(id);
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <section
-      className="relative overflow-hidden border-t border-white/[0.05]"
+      className="landing-section relative overflow-hidden border-t border-white/[0.06]"
       style={{ backgroundColor: "#05070D" }}
+      aria-labelledby="kreto-title"
     >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(50% 60% at 30% 50%, rgba(75,44,245,0.22), transparent 60%), radial-gradient(40% 50% at 70% 60%, rgba(255,44,167,0.18), transparent 60%)",
+            "radial-gradient(45% 55% at 25% 45%, rgba(255,45,161,0.13), transparent 62%)",
         }}
       />
 
-      <div className="relative mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12 py-24 sm:py-32 lg:py-40">
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-20 items-center">
-          {/* Avatar */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 1.1 }}
-            className="lg:col-span-5 flex items-center justify-center order-2 lg:order-1"
-          >
-            <div className="relative">
-              <KretoAvatar size="xl" />
-              {/* whisper line, like a subtitle under the avatar */}
-              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-72 text-center">
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={i}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 0.75, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.5 }}
-                    className="font-serif italic text-base text-white/75"
-                  >
-                    "{LINES[i]}"
-                  </motion.p>
-                </AnimatePresence>
-              </div>
-            </div>
-          </motion.div>
-
+      <div className="relative mx-auto max-w-[1100px]">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Copy */}
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.9 }}
-            className="lg:col-span-7 order-1 lg:order-2"
+            transition={{ duration: 0.7 }}
+            className="lg:col-span-7"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <span className="font-serif italic text-2xl" style={{ color: "#FF2DA1" }}>VII.</span>
-              <span
-                className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/55"
-                style={{ fontFamily: "'Work Sans', sans-serif" }}
-              >
-                Kreto · The Executive Producer
-              </span>
-            </div>
+            <p className="landing-eyebrow mb-4">VII · Kreto</p>
 
-            <h2
-              className="font-serif font-normal text-white leading-[0.98] tracking-[-0.025em]"
-              style={{ fontSize: "clamp(2.25rem, 5.5vw, 4.75rem)" }}
-            >
-              Not an assistant.<br />
-              <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>A producer who</span><br />
-              knows everyone<span style={{ color: "#FF0A78" }}>.</span>
+            <h2 id="kreto-title" className="landing-h2 landing-glow">
+              The Executive Producer for your{" "}
+              <span className="italic" style={{ color: ACCENT }}>creative career</span>.
             </h2>
 
+            <p className="landing-sub mt-6 max-w-xl">
+              Kreto understands your Passport, organizes your work, explains opportunities
+              and helps turn creative conversations into action.
+            </p>
+
             <p
-              className="mt-8 max-w-lg text-base sm:text-lg leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Work Sans', sans-serif" }}
+              className="mt-4 max-w-xl text-sm text-white/45"
+              style={{ fontFamily: "'Work Sans', sans-serif" }}
             >
-              Kreto scouts the work you'd actually want, drafts in your voice,
-              and connects you to the people who get it. Quiet, always-on,
-              built into every surface of Kretopia.
+              Not a generic chatbot. A context-aware career and production agent.
+            </p>
+
+            {/* Capabilities */}
+            <ul className="mt-9 grid sm:grid-cols-2 gap-x-6 gap-y-4">
+              {CAPABILITIES.map(({ icon: Icon, label, body }) => (
+                <li key={label} className="flex gap-3">
+                  <span
+                    className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: "rgba(255,45,161,0.10)", border: "1px solid rgba(255,45,161,0.22)" }}
+                  >
+                    <Icon className="h-3.5 w-3.5" style={{ color: ACCENT }} aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p
+                      className="text-sm font-semibold text-white"
+                      style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+                    >
+                      {label}
+                    </p>
+                    <p
+                      className="text-[13px] leading-snug text-white/48"
+                      style={{ fontFamily: "'Work Sans', sans-serif" }}
+                    >
+                      {body}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <p
+              className="mt-7 max-w-xl text-xs leading-relaxed text-white/40"
+              style={{ fontFamily: "'Work Sans', sans-serif" }}
+            >
+              Everything Kreto produces is labelled AI-assisted, stays editable, can be
+              removed, and only becomes part of your official record once you confirm it.
             </p>
 
             <Link
-              to="/auth"
-              className="group inline-flex items-center gap-2 mt-10 text-sm tracking-wide"
-              style={{ fontFamily: "'Work Sans', sans-serif", color: "rgba(255,255,255,0.9)" }}
+              to="/auth?next=/circle"
+              className="group inline-flex items-center gap-2 mt-9 rounded-full px-6 py-3 text-sm font-semibold text-white"
+              style={{ backgroundColor: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
             >
-              <span className="border-b border-white/30 group-hover:border-white pb-0.5 transition-colors">
-                Meet Kreto
-              </span>
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ color: "#FF2DA1" }} />
+              Meet Kreto
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
             </Link>
+          </motion.div>
+
+          {/* Command surface */}
+          <motion.div
+            initial={reducedMotion ? false : { opacity: 0, scale: 0.97 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.8 }}
+            className="lg:col-span-5 w-full"
+          >
+            <div
+              className="rounded-2xl overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015))",
+                border: "1px solid rgba(255,255,255,0.10)",
+                boxShadow: "0 30px 80px -40px rgba(255,45,161,0.35)",
+              }}
+            >
+              <div
+                className="flex items-center gap-3 px-4 py-3"
+                style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+              >
+                <KretoAvatar size="sm" />
+                <div className="min-w-0">
+                  <p
+                    className="text-sm font-semibold text-white"
+                    style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+                  >
+                    Kreto
+                  </p>
+                  <p
+                    className="text-[10px] uppercase tracking-[0.22em] text-white/35"
+                    style={{ fontFamily: "'Work Sans', sans-serif" }}
+                  >
+                    Executive Producer
+                  </p>
+                </div>
+                <span
+                  className="ml-auto rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em]"
+                  style={{ color: ACCENT, backgroundColor: "rgba(255,45,161,0.12)" }}
+                >
+                  AI-assisted
+                </span>
+              </div>
+
+              <div className="px-4 py-5 min-h-[92px] flex items-center">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={i}
+                    initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
+                    transition={{ duration: 0.45 }}
+                    className="text-[15px] leading-relaxed text-white/85"
+                    style={{ fontFamily: "'Work Sans', sans-serif" }}
+                  >
+                    {LINES[i]}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+
+              <div
+                className="px-4 py-4"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
+              >
+                <p
+                  className="text-[10px] uppercase tracking-[0.24em] text-white/30 mb-3"
+                  style={{ fontFamily: "'Work Sans', sans-serif" }}
+                >
+                  Try asking
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {PROMPTS.map((p) => (
+                    <Link
+                      key={p}
+                      to={`/auth?next=${encodeURIComponent("/circle")}`}
+                      className="rounded-full border border-white/12 px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white/90"
+                      style={{ fontFamily: "'Work Sans', sans-serif" }}
+                    >
+                      {p}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>

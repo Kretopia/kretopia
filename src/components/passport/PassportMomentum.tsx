@@ -63,7 +63,7 @@ export function PassportMomentum({ userId }: PassportMomentumProps = {}) {
     const messagesP = (supabase as any)
       .from("messages")
       .select("id", { count: "exact", head: true })
-      .eq("recipient_id", targetId)
+      .eq("receiver_id", targetId)
       .gte("created_at", cutoff)
       .then((r: any) => r.count || 0, () => 0);
 

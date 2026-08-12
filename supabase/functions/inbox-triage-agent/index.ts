@@ -128,12 +128,12 @@ Deno.serve(async (req) => {
     const receiverIds = [...new Set(todo.map((m) => m.receiver_id))];
     const { data: senderProfiles } = await admin
       .from("profiles")
-      .select("user_id, full_name, role, company, headline")
+      .select("user_id, full_name, role, company, site_headline")
       .in("user_id", senderIds);
     const sMap = new Map((senderProfiles ?? []).map((p) => [p.user_id, p]));
     const { data: rxProfiles } = await admin
       .from("profiles")
-      .select("user_id, full_name, role, headline")
+      .select("user_id, full_name, role, site_headline")
       .in("user_id", receiverIds);
     const rMap = new Map((rxProfiles ?? []).map((p) => [p.user_id, p]));
 

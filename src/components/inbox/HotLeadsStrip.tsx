@@ -62,9 +62,9 @@ export function HotLeadsStrip() {
         const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
         const { data } = await (supabase as any)
           .from("messages")
-          .select("id, sender_id, recipient_id, content, created_at, conversation_id, read_at")
-          .eq("recipient_id", user.id)
-          .is("read_at", null)
+          .select("id, sender_id, receiver_id, content, created_at, match_id, read")
+          .eq("receiver_id", user.id)
+          .eq("read", false)
           .gte("created_at", since)
           .order("created_at", { ascending: false })
           .limit(80)
@@ -79,11 +79,11 @@ export function HotLeadsStrip() {
           const text = String(m.content || "");
           const hit = HOT_PATTERNS.find(rx => rx.test(text));
           if (!hit) continue;
-          const key = m.conversation_id || m.sender_id;
+          const key = m.match_id || m.sender_id;
           if (seen.has(key)) continue;
           seen.add(key);
           hot.push({
-            conversation_id: m.conversation_id,
+            conversation_id: m.match_id,
             sender_id: m.sender_id,
             preview: text.slice(0, 240),
             created_at: m.created_at,

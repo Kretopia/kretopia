@@ -53,7 +53,7 @@ serve(async (req) => {
 
     const { data: profile } = await admin
       .from("profiles")
-      .select("display_name, headline")
+      .select("display_name, site_headline")
       .eq("user_id", userId)
       .maybeSingle();
 

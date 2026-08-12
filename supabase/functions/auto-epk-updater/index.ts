@@ -13,7 +13,7 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 async function processUser(supabase: any, userId: string) {
   const { data: profile } = await supabase
     .from("profiles")
-    .select("user_id, display_name, primary_role, bio, headline, skills, location")
+    .select("user_id, display_name, primary_role, bio, site_headline, skills, location")
     .eq("user_id", userId)
     .maybeSingle();
   if (!profile) return { ok: false, reason: "no_profile" };
@@ -67,7 +67,7 @@ async function processUser(supabase: any, userId: string) {
         { role: "system", content: "You are a creator's PR manager. Suggest concise, high-impact EPK updates based on new credits. Be specific. Never invent facts beyond what's provided." },
         {
           role: "user",
-          content: `Creator: ${profile.display_name} (${profile.primary_role})\nCurrent headline: ${profile.headline || "—"}\nCurrent bio: ${(profile.bio || "").slice(0, 500)}\n\nNew credits (last 30d):\n${credits.map((c: any) => `- ${c.role || "Contributor"} on "${c.project_title}"`).join("\n")}\n\nReturn 2-4 EPK refresh suggestions (bio rewrite, headline tweak, featured credit pick).`,
+          content: `Creator: ${profile.display_name} (${profile.primary_role})\nCurrent headline: ${profile.site_headline || "—"}\nCurrent bio: ${(profile.bio || "").slice(0, 500)}\n\nNew credits (last 30d):\n${credits.map((c: any) => `- ${c.role || "Contributor"} on "${c.project_title}"`).join("\n")}\n\nReturn 2-4 EPK refresh suggestions (bio rewrite, headline tweak, featured credit pick).`,
         },
       ],
       tools,
@@ -83,7 +83,7 @@ async function processUser(supabase: any, userId: string) {
   const rows = (parsed.suggestions || []).slice(0, 4).map((s: any) => ({
     user_id: userId,
     kind: s.kind,
-    current_value: s.kind === "bio" ? profile.bio : s.kind === "headline" ? profile.headline : null,
+    current_value: s.kind === "bio" ? profile.bio : s.kind === "headline" ? profile.site_headline : null,
     suggested_value: s.suggested_value,
     reason: s.reason,
     trigger_event: `new_credits:${credits.length}`,

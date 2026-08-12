@@ -135,7 +135,7 @@ export const WaitlistForm = () => {
       } else {
         toast({
           title: "Error",
-          description: error.message || "Failed to submit application",
+          description: message || "Failed to submit application",
           variant: "destructive",
         });
       }

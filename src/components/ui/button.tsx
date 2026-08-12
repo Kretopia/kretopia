@@ -4,6 +4,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+const HERO_LIME_CLASSES =
+  "bg-energy text-energy-foreground font-black uppercase tracking-wider hover:scale-[1.03] shadow-glow-lime";
+
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-all duration-200 ease-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
   {
@@ -18,10 +21,11 @@ const buttonVariants = cva(
         // Solid accent CTA — flattened from a violet→magenta gradient in
         // the design system reset (gradient-primary is now a flat color).
         gradient: "gradient-primary text-primary-foreground font-bold hover:opacity-95 hover:scale-[1.02] shadow-glow",
-        // Hero — signature accent (#FF2DA1), our loudest CTA
-        hero: "bg-energy text-energy-foreground font-black uppercase tracking-wider hover:scale-[1.03] shadow-glow-lime",
-        // Lime — same accent as hero but reusable name
-        lime: "bg-energy text-energy-foreground font-black uppercase tracking-wider hover:scale-[1.03] shadow-glow-lime",
+        // Hero / Lime — identical loudest-CTA treatment (signature accent,
+        // #FF2DA1) kept as two variant names for call-site readability.
+        // Shared string so the two can't drift apart.
+        hero: HERO_LIME_CLASSES,
+        lime: HERO_LIME_CLASSES,
         glow: "bg-primary text-primary-foreground hover:bg-primary/90 animate-glow",
         // Liquid Glass — translucent surface, hairline border, accent on hover/active.
         glass: "glass-surface text-foreground hover:border-[hsl(var(--color-accent)_/_0.5)] hover:text-[hsl(var(--color-accent))] data-[state=open]:border-[hsl(var(--color-accent)_/_0.6)] data-[state=open]:text-[hsl(var(--color-accent))]",

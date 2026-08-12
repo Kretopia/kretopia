@@ -9,7 +9,6 @@
  * shift, no blocking work on first paint, fully collapsed under
  * prefers-reduced-motion.
  */
-import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -24,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const ACCENT = "#FF2DA1";
 
@@ -78,31 +78,7 @@ const STEPS: Step[] = [
 
 export const AuditionRoadmapSection = () => {
   const reducedMotion = useReducedMotion();
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (reducedMotion) {
-      setVisible(true);
-      return;
-    }
-    const el = ref.current;
-    if (!el || typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setVisible(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "-10% 0px -10% 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [reducedMotion]);
+  const [ref, visible] = useScrollReveal<HTMLDivElement>();
 
   return (
     <section

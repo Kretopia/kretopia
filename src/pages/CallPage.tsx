@@ -1,4 +1,4 @@
-// /call/:meetingId — universal entry point for hosts, members, and guests.
+// /meet/:meetingId — universal entry point for hosts, members, and guests.
 // Guests must include ?t=<share_token>.
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import { type DailyCall } from "@daily-co/daily-js";
 import { createDailyFrameAsync, teardownDailyCall } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { extractInvokeError } from "@/lib/extractInvokeError";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -75,7 +76,7 @@ export default function CallPage() {
         );
         if (cancelled) return;
         if (error || !data?.token) {
-          setError(data?.error || error?.message || "Couldn't load meeting");
+          setError(data?.error || (await extractInvokeError(error)) || "Couldn't load meeting");
           setPhase("error");
           return;
         }
@@ -84,7 +85,7 @@ export default function CallPage() {
         setRole(data.role || null);
         setPhase("lobby");
       } catch (e: any) {
-        setError(e?.message || "Couldn't load meeting");
+        setError((await extractInvokeError(e)) || e?.message || "Couldn't load meeting");
         setPhase("error");
       }
     })();

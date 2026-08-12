@@ -63,8 +63,9 @@ serve(async (req) => {
           .maybeSingle();
         if (pRow) {
           participantRole = pRow.role;
-        } else {
-          // Auto-add as attendee — knocking gates entry on Daily side.
+        } else if (share_token && share_token === meeting.share_token) {
+          // Logged-in user opening a legitimate shared link — same trust
+          // level as the anonymous guest path below, just authenticated.
           await admin.from("meeting_participants").insert({
             meeting_id,
             user_id: userId,
@@ -72,6 +73,13 @@ serve(async (req) => {
             status: "invited",
           });
           participantRole = "attendee";
+        } else {
+          // No prior invite and no valid share_token: being logged in to
+          // *some* Kretopia account is not, by itself, authorization to
+          // join *this* meeting. Previously this branch auto-enrolled any
+          // authenticated caller as an attendee — see
+          // docs/SECURITY_FINDINGS.md for the finding this closes.
+          return json({ error: "You are not invited to this meeting" }, 403);
         }
       } else {
         participantRole = "host";

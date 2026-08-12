@@ -33,7 +33,7 @@ serve(async (req) => {
       .maybeSingle();
 
     const inviterName = inviterProfile?.full_name || 'A creative professional';
-    const baseUrl = Deno.env.get('SITE_URL') || 'https://thrivein-new-beta.lovable.app';
+    const baseUrl = Deno.env.get('SITE_URL') || 'https://www.kretopia.com';
 
     const results = [];
 
@@ -50,7 +50,7 @@ serve(async (req) => {
 
       const claimUrl = `${baseUrl}/auth?claim=${token}&credit=${credit_id}`;
       const whatsappText = encodeURIComponent(
-        `Hey ${name}! ${inviterName} credited you as part of "${project_name}" on ThriveIN. Claim your credit and build your verified creative profile: ${claimUrl}`
+        `Hey ${name}! ${inviterName} credited you as part of "${project_name}" on Kretopia. Claim your credit and build your verified creative profile: ${claimUrl}`
       );
       const whatsappUrl = `https://wa.me/?text=${whatsappText}`;
 

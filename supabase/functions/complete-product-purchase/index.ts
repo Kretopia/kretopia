@@ -265,7 +265,7 @@ serve(async (req) => {
               ${listingType === 'digital' ? `
                 <div style="margin-bottom:20px;">
                   <h3 style="margin:0 0 12px 0;">Your Downloads</h3>
-                  ${downloadLinksHtml || '<p style="color:#6b7280;">Your files are available in your <a href="https://www.thrivein.io/purchases">Purchases</a> dashboard.</p>'}
+                  ${downloadLinksHtml || '<p style="color:#6b7280;">Your files are available in your <a href="https://www.kretopia.com/purchases">Purchases</a> dashboard.</p>'}
                   <p style="color:#9ca3af;font-size:12px;margin-top:12px;">Download links expire in 7 days. You can always access them from your purchases.</p>
                 </div>
               ` : `
@@ -280,7 +280,7 @@ serve(async (req) => {
               `}
 
               <div style="text-align:center;margin-top:24px;">
-                <a href="https://www.thrivein.io/purchases" style="display:inline-block;background:#7c3aed;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;">View Your Purchases</a>
+                <a href="https://www.kretopia.com/purchases" style="display:inline-block;background:#7c3aed;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;">View Your Purchases</a>
               </div>
 
               <p style="color:#9ca3af;font-size:12px;text-align:center;margin-top:24px;">
@@ -291,7 +291,7 @@ serve(async (req) => {
           `;
 
           await resend.emails.send({
-            from: 'ThriveIN <noreply@thrivein.io>',
+            from: 'Kretopia <noreply@thrivein.io>',
             to: buyerEmail,
             subject: `Purchase Confirmed: ${product.title}`,
             html: emailHtml,

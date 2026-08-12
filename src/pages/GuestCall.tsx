@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { toast } from "sonner";
+import { extractInvokeError } from "@/lib/extractInvokeError";
 
 /**
  * Public guest join page. Mirrors the in-app VideoCallSheet experience:
@@ -101,7 +102,7 @@ export default function GuestCall() {
       setJoining(false);
     } catch (e: any) {
       console.error("[GuestCall]", e);
-      setErrorMsg(e?.message || "Couldn't join the call");
+      setErrorMsg((await extractInvokeError(e)) || e?.message || "Couldn't join the call");
       setPhase("error");
       setJoining(false);
     }

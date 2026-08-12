@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const APP_URL = "https://www.thrivein.io";
+const APP_URL = "https://www.kretopia.com";
 
 /**
  * Host-only: invite emails to a private/unlisted curated stage.
@@ -87,7 +87,7 @@ serve(async (req) => {
     // Host name for the email
     const { data: hostProfile } = await admin
       .from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
-    const hostName = hostProfile?.full_name || "A host on ThriveIN";
+    const hostName = hostProfile?.full_name || "A host on Kretopia";
 
     // Best-effort transactional email per invitee
     const stageLink = `${APP_URL}/circle/stage/${stage_id}?invite=${inviteToken}`;

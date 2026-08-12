@@ -150,11 +150,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   // search moved to Thrive bar — keep state stub removed
 
-  // Guest navigation items
+  // Guest navigation items — each carries an icon that reflects the actual
+  // destination (no icons implying features the route doesn't have).
   const guestNavItems = [
-    { path: "/credits", label: "Verified Credits" },
-    { path: "/spotlight", label: "Spotlight" },
-    { path: "/about", label: "About Us" },
+    { path: "/credits", label: "Verified Credits", icon: BadgeCheck },
+    { path: "/spotlight", label: "Spotlight", icon: Sparkles },
+    { path: "/about", label: "About Us", icon: Info },
   ];
 
   return (

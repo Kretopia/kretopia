@@ -13,7 +13,7 @@ const Magazine = () => {
     <PageTransition>
       <Helmet>
         <title>Creative Industry Magazine | Kretopia</title>
-        <meta name="description" content="Read stories, interviews and features from creatives shaping the industry. Kretopia Magazine covers film, music, design, fashion and more." />
+        <meta name="description" content="Read stories, interviews and features from creatives shaping the industry. ThriveIN Magazine covers film, music, design, fashion and more." />
         <link rel="canonical" href={canonicalUrl} />
         <meta name="robots" content="index, follow" />
 
@@ -34,7 +34,7 @@ const Magazine = () => {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
-            "name": "Kretopia Magazine",
+            "name": "ThriveIN Magazine",
             "description": "Stories, interviews and features from creatives shaping the industry.",
             "url": canonicalUrl,
             "publisher": {

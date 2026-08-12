@@ -36,7 +36,8 @@ export const OAuthQuickButtons = ({
 
   const handle = async (provider: "google" | "apple") => {
     if (controlled) {
-      provider === "google" ? onGoogle?.() : onApple?.();
+      if (provider === "google") onGoogle?.();
+      else onApple?.();
       return;
     }
     setInternalLoading(provider);

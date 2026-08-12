@@ -469,29 +469,39 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <div className="flex flex-col gap-1 mt-6">
                     <Button
                       variant="ghost"
-                      className={cn("justify-start h-12 text-sm font-medium", location.pathname === "/" && "bg-accent/30")}
+                      className={cn("justify-start h-12 gap-2 text-sm font-medium", location.pathname === "/" && "bg-accent/30")}
                       onClick={() => { setGuestMenuOpen(false); navigate("/"); }}
                     >
+                      <Home className="h-4 w-4" aria-hidden />
                       Home
                     </Button>
-                    {guestNavItems.map(({ path, label }) => (
+                    {guestNavItems.map(({ path, label, icon: Icon }) => (
                       <Button
                         key={path}
                         variant="ghost"
-                        className={cn("justify-start h-12 text-sm font-medium", location.pathname === path && "bg-accent/30")}
+                        className={cn("justify-start h-12 gap-2 text-sm font-medium", location.pathname === path && "bg-accent/30")}
                         onClick={() => { setGuestMenuOpen(false); navigate(path); }}
                       >
+                        <Icon className="h-4 w-4" aria-hidden />
                         {label}
                       </Button>
                     ))}
                     <Separator className="my-3" />
                     <Button
                       variant="ghost"
-                      className="justify-start h-12 text-sm font-medium"
+                      className="justify-start h-12 gap-2 text-sm font-medium"
                       onClick={() => { setGuestMenuOpen(false); navigate("/post-opportunity"); }}
                     >
-                      <Briefcase className="h-4 w-4 mr-2" />
+                      <Briefcase className="h-4 w-4" aria-hidden />
                       Hire Talent
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start h-12 gap-2 text-sm font-medium"
+                      onClick={() => { setGuestMenuOpen(false); navigate("/auth"); }}
+                    >
+                      <LogIn className="h-4 w-4" aria-hidden />
+                      Sign In
                     </Button>
                   </div>
                 </SheetContent>
@@ -506,7 +516,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     isLandingPage && "border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white",
                   )}
                 >
-                  <Briefcase className="h-4 w-4" />
+                  <Briefcase className="h-4 w-4" aria-hidden />
                   Hire Talent
                 </Button>
               </Link>
@@ -515,15 +525,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "text-xs sm:text-sm px-2 sm:px-4",
+                    "gap-1.5 text-xs sm:text-sm px-2 sm:px-4",
                     isLandingPage && "text-white hover:bg-white/10 hover:text-white",
                   )}
                 >
+                  <LogIn className="h-4 w-4" aria-hidden />
                   Sign In
                 </Button>
               </Link>
-              <Link to="/auth">
-                <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>
+              <Link to="/auth?tab=signup">
+                <Button variant="gradient" size="sm" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-4">
+                  <Sparkles className="h-4 w-4" aria-hidden />
+                  Get Started
+                </Button>
               </Link>
             </>
           ) : null}

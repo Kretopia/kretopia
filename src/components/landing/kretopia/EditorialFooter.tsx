@@ -11,7 +11,7 @@ export const EditorialFooter = () => {
       className="relative border-t border-white/[0.08]"
       style={{ backgroundColor: "#05070D" }}
     >
-      <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12 py-16 sm:py-20">
+      <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12 pt-16 sm:pt-20 pb-6 sm:pb-8">
         <div className="grid sm:grid-cols-3 gap-10 sm:gap-6 items-start">
           <div>
             <p

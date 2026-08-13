@@ -144,7 +144,7 @@ serve(async (req) => {
 
       return sendViaResend(
         resendApiKey,
-        `${senderProfile?.full_name || "Kretopia User"} via Kretopia <noreply@thrivein.io>`,
+        `${senderProfile?.full_name || "Kretopia User"} via Kretopia <info@kretopia.com>`,
         to,
         subject,
         htmlBody,

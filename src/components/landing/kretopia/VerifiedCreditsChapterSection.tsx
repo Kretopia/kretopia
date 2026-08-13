@@ -14,13 +14,13 @@
  * itself ("Documentary · Sound Design") is illustrative.
  */
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Fingerprint, Link2, ShieldCheck, UserCheck } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
 import { EVIDENCE_STATE_ORDER, type EvidenceState } from "@/lib/creditEvidence";
-import { FeatureTutorial } from "./FeatureTutorial";
+import { TutorialStepper } from "./TutorialStepper";
 import { VERIFIED_CREDITS_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
 
@@ -35,18 +35,9 @@ const WHY_IT_MATTERS = [
 
 export const VerifiedCreditsChapterSection = () => {
   const reducedMotion = useReducedMotion();
-  const [step, setStep] = useState(0);
-  const isStamped = step === DEMO_SEQUENCE.length - 1;
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    const id = setInterval(() => {
-      setStep((n) => (n + 1) % (DEMO_SEQUENCE.length + 1));
-    }, 2000);
-    return () => clearInterval(id);
-  }, [reducedMotion]);
-
-  const currentState = DEMO_SEQUENCE[Math.min(step, DEMO_SEQUENCE.length - 1)];
+  const [activeStep, setActiveStep] = useState(0);
+  const isStamped = activeStep === DEMO_SEQUENCE.length - 1;
+  const currentState = DEMO_SEQUENCE[Math.min(activeStep, DEMO_SEQUENCE.length - 1)];
 
   return (
     <section
@@ -135,7 +126,7 @@ export const VerifiedCreditsChapterSection = () => {
             >
               <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                 <span
-                  className="flex h-7 w-7 items-center justify-center rounded-full"
+                  className="flex h-7 w-7 items-center justify-center rounded-full ai-ambient-breathe"
                   style={{ backgroundColor: "rgba(255,45,161,0.14)" }}
                 >
                   <Fingerprint className="h-3.5 w-3.5" style={{ color: ACCENT }} aria-hidden />
@@ -191,8 +182,8 @@ export const VerifiedCreditsChapterSection = () => {
                       key={s}
                       className="h-1 rounded-full transition-all duration-300"
                       style={{
-                        width: i <= step && !isStamped ? "18px" : i < step || isStamped ? "18px" : "6px",
-                        backgroundColor: i <= step || isStamped ? ACCENT : "rgba(255,255,255,0.15)",
+                        width: i <= activeStep || isStamped ? "18px" : "6px",
+                        backgroundColor: i <= activeStep || isStamped ? ACCENT : "rgba(255,255,255,0.15)",
                       }}
                     />
                   ))}
@@ -209,15 +200,20 @@ export const VerifiedCreditsChapterSection = () => {
           </motion.div>
         </div>
 
-        {/* Interactive tutorial — the canonical pattern every other chapter follows */}
+        {/* Interactive tutorial — full width, drives the evidence mockup above */}
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-12 lg:mt-16 max-w-xl"
+          className="mt-16 lg:mt-20 max-w-2xl"
         >
-          <FeatureTutorial steps={VERIFIED_CREDITS_TUTORIAL} label="Verified Credits tutorial" />
+          <TutorialStepper
+            steps={VERIFIED_CREDITS_TUTORIAL}
+            label="Verified Credits tutorial"
+            activeStep={activeStep}
+            onStepChange={setActiveStep}
+          />
         </motion.div>
       </div>
     </section>

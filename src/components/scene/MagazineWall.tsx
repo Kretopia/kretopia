@@ -16,6 +16,7 @@ import { MagazineArticleViewer } from "./MagazineArticleViewer";
 import { MagazineEditor } from "./MagazineEditor";
 import { coverImageStyle } from "./CoverImageEditor";
 import { SmartCover } from "@/components/ui/smart-cover";
+import { SmartWidget } from "@/components/ui/smart-widget";
 
 interface Article {
   id: string;
@@ -250,6 +251,7 @@ export const MagazineWall = () => {
         <div className="space-y-4">
           {/* Featured Article */}
           {featured && (
+            <SmartWidget className="rounded-xl" scanLine>
             <Card
               className="relative overflow-hidden rounded-xl cursor-pointer group border-0"
               onClick={() => setSelectedArticle(featured)}
@@ -300,14 +302,15 @@ export const MagazineWall = () => {
                 </div>
               </div>
             </Card>
+            </SmartWidget>
           )}
 
           {/* Grid */}
           <div className="grid grid-cols-2 gap-3">
             {rest.map(article => (
+              <SmartWidget key={article.id} className="rounded-xl" scanLine={false}>
               <Card
-                key={article.id}
-                className="overflow-hidden rounded-xl cursor-pointer group border-border/50 hover:border-primary/30 transition-colors"
+                className="overflow-hidden rounded-xl cursor-pointer group border-border/50 hover:border-primary/30 transition-colors border-0"
                 onClick={() => setSelectedArticle(article)}
               >
                 <div className="aspect-[4/3] relative">
@@ -345,6 +348,7 @@ export const MagazineWall = () => {
                   </span>
                 </div>
               </Card>
+              </SmartWidget>
             ))}
           </div>
         </div>

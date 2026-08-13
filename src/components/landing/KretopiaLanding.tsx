@@ -14,7 +14,6 @@
  *   VI.   Studio
  *   VII.  SoundStages
  *   VIII. Kreto             — the Executive Producer
- *         Closing           — echo of the hero opener + single CTA
  *
  * Chapter numbers are computed from chapterRegistry.ts, not hand-typed —
  * see that file for the single source of truth ChapterProgressNav also

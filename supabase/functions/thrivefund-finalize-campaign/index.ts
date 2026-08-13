@@ -125,7 +125,7 @@ serve(async (req) => {
     // Fire-and-forget result emails to creator + all backers
     try {
       const templateName = goalMet ? "thrivefund-campaign-funded" : "thrivefund-campaign-failed";
-      const origin = "https://www.thrivein.io";
+      const origin = "https://www.kretopia.com";
       const campaignUrl = `${origin}/fund/${(campaign as any).slug || campaignId}`;
       const exploreUrl = `${origin}/fund`;
       const totalRaised = new Intl.NumberFormat("en-US", {

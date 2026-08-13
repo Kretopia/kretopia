@@ -134,7 +134,7 @@ serve(async (req) => {
 
           ${invoice.status !== 'paid' ? `
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://www.thrivein.io/pay/invoice/${invoice.id}"
+              <a href="https://www.kretopia.com/pay/invoice/${invoice.id}"
                  style="display: inline-block; background-color: #111827; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                 Pay $${Number(invoice.total_amount).toFixed(2)} securely
               </a>
@@ -157,7 +157,7 @@ serve(async (req) => {
         "Authorization": `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: "Kretopia <noreply@thrivein.io>",
+        from: "Kretopia <info@kretopia.com>",
         to: [recipientEmail],
         subject: `Invoice ${invoice.invoice_number} from ${invoice.brand_name || 'Kretopia'}`,
         html: emailHtml,

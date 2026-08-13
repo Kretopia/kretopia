@@ -49,7 +49,7 @@ export const ClosingSection = () => {
           <span style={{ color: "rgba(255,255,255,0.6)" }}>Where</span>{" "}
           <span className="italic">creativity</span>{" "}
           <span style={{ color: "rgba(255,255,255,0.6)" }}>lives</span>
-          <span style={{ color: "#FF2DA1" }}>.</span>
+          <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>.</span>
         </motion.h2>
 
         <motion.div

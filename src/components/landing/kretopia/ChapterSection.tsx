@@ -91,7 +91,7 @@ export const ChapterSection = ({
           >
             <div className="flex items-center gap-3 mb-6">
               <span
-                className="font-serif italic text-2xl"
+                className="font-serif italic text-2xl pink-glow-breathe"
                 style={{ color: accent }}
               >
                 {index}.
@@ -109,7 +109,7 @@ export const ChapterSection = ({
               style={{ fontSize: "clamp(2rem, 4.6vw, 4rem)" }}
             >
               {title}
-              <span style={{ color: accent }}>.</span>
+              <span className="pink-glow-breathe" style={{ color: accent }}>.</span>
             </h2>
 
             <p

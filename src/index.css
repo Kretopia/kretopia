@@ -902,6 +902,74 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   .landing-glow { text-shadow: none; }
 }
 
+/* Smooth breathing brightness for pink accent text/words specifically (not
+   whole headings) — a slow, gentle intensity shift, not a flash or pulse.
+   4.5s so it never competes with reading pace. Falls back to the same
+   static emission as .landing-glow under reduced motion. */
+.pink-glow-breathe {
+  animation: pink-glow-breathe 4.5s ease-in-out infinite;
+}
+@keyframes pink-glow-breathe {
+  0%, 100% {
+    text-shadow: 0 0 18px rgba(255, 45, 161, 0.35), 0 0 42px rgba(255, 45, 161, 0.14);
+    filter: brightness(1);
+  }
+  50% {
+    text-shadow: 0 0 28px rgba(255, 45, 161, 0.6), 0 0 64px rgba(255, 45, 161, 0.26);
+    filter: brightness(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pink-glow-breathe {
+    animation: none;
+    text-shadow: 0 0 24px rgba(255, 45, 161, 0.18), 0 0 60px rgba(255, 45, 161, 0.08);
+  }
+}
+
+/* Slow orbiting ring — the "AI is active" visual around a tutorial step
+   icon. Deliberately slow (6s) so it reads as ambient presence, not a
+   loading spinner. */
+@keyframes ai-orbit-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.ai-orbit-ring {
+  animation: ai-orbit-spin 6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-orbit-ring { animation: none; }
+}
+
+/* Breathing ambient glow behind an AI surface — same slow, restrained
+   cadence as pink-glow-breathe, applied to opacity instead of text. */
+@keyframes ai-ambient-breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.ai-ambient-breathe {
+  animation: ai-ambient-breathe 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-ambient-breathe { animation: none; opacity: 0.8; }
+}
+
+/* Continuous scan-line sweep along an AI surface's top edge — a thin
+   gradient bar drifting left to right, pausing, then repeating. Reads as
+   "actively scanning" without being a loud, attention-grabbing motion. */
+@keyframes ai-scan-sweep {
+  0% { transform: translateX(-120%); opacity: 0; }
+  8% { opacity: 1; }
+  45% { opacity: 1; }
+  55% { transform: translateX(220%); opacity: 0; }
+  100% { transform: translateX(220%); opacity: 0; }
+}
+.ai-scan-line {
+  animation: ai-scan-sweep 3.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-scan-line { display: none; }
+}
+
 /* Shared vertical rhythm + horizontal padding for landing sections. */
 .landing-section {
   padding-left: 1.25rem;

@@ -64,7 +64,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
         >
           Welcome to Kretopia.
           <br />
-          Where <span className="italic" style={{ color: "#FF2DA1" }}>creativity lives</span>.
+          Where <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>creativity lives</span>.
         </motion.h1>
 
         <motion.p

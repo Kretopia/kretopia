@@ -92,7 +92,7 @@ export const MeetKretoSection = () => {
 
             <h2 id="kreto-title" className="landing-h2 landing-glow">
               The Executive Producer for your{" "}
-              <span className="italic" style={{ color: ACCENT }}>creative career</span>.
+              <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>creative career</span>.
             </h2>
 
             <p className="landing-sub mt-6 max-w-xl">

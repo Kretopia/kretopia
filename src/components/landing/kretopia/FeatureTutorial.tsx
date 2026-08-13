@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { cn } from "@/lib/utils";
 
 const ACCENT = "#FF2DA1";
 const SWIPE_THRESHOLD_PX = 40;
@@ -106,12 +107,20 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
         outlineColor: ACCENT,
       }}
     >
-      {/* ambient glow — static, not a looping animation */}
+      {/* ambient glow — breathes slowly, an "always-on" AI presence */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{ background: "radial-gradient(60% 80% at 15% 0%, rgba(255,45,161,0.10), transparent 65%)" }}
+        className="pointer-events-none absolute inset-0 ai-ambient-breathe"
+        style={{ background: "radial-gradient(60% 80% at 15% 0%, rgba(255,45,161,0.14), transparent 65%)" }}
       />
+
+      {/* Continuous scan-line sweep along the top edge */}
+      <div aria-hidden className="pointer-events-none absolute top-0 left-0 right-0 h-px overflow-hidden">
+        <div
+          className="ai-scan-line h-full w-1/3"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(255,45,161,0.9), transparent)" }}
+        />
+      </div>
 
       {/* Header — AI-guided badge, matches MeetKretoSection's command-surface header */}
       <div
@@ -119,13 +128,13 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
         style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
       >
         <span
-          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+          className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full ai-ambient-breathe"
           style={{ backgroundColor: "rgba(255,45,161,0.16)" }}
         >
           <Sparkles className="h-2.5 w-2.5" style={{ color: ACCENT }} aria-hidden />
         </span>
         <span
-          className="text-[9px] font-semibold uppercase tracking-[0.22em]"
+          className="text-[9px] font-semibold uppercase tracking-[0.22em] pink-glow-breathe"
           style={{ color: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
         >
           AI-guided
@@ -138,7 +147,7 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
         </span>
       </div>
 
-      <div className="relative px-5 py-6 sm:px-6 min-h-[168px] flex flex-col justify-center">
+      <div className="relative px-5 py-7 sm:px-6 sm:py-8 min-h-[184px] flex flex-col justify-center">
         <AnimatePresence mode="wait">
           {showThinking ? (
             <motion.div
@@ -170,22 +179,37 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
               className="flex items-start gap-3.5"
             >
               {Icon && (
-                <motion.span
-                  className="relative mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: "rgba(255,45,161,0.12)", border: "1px solid rgba(255,45,161,0.28)" }}
-                  initial={reducedMotion ? false : { scale: 0.7, rotate: -8 }}
-                  animate={{ scale: 1, rotate: 0 }}
+                <motion.div
+                  className="relative mt-0.5 h-14 w-14 shrink-0"
+                  initial={reducedMotion ? false : { scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.4, ease: [0.2, 0.65, 0.3, 0.95] }}
                 >
-                  <span
+                  {/* Slowly orbiting gradient ring — the "AI is active" signal */}
+                  <div
                     aria-hidden
-                    className="absolute inset-0 rounded-xl"
-                    style={{ boxShadow: "0 0 0 5px rgba(255,45,161,0.08)" }}
+                    className="absolute inset-0 rounded-full ai-orbit-ring"
+                    style={{
+                      background:
+                        "conic-gradient(from 0deg, transparent 0%, rgba(255,45,161,0.95) 12%, transparent 32%, transparent 58%, rgba(255,45,161,0.75) 74%, transparent 94%)",
+                    }}
                   />
-                  <Icon className="h-[18px] w-[18px]" style={{ color: ACCENT }} aria-hidden />
-                </motion.span>
+                  {/* Breathing halo behind the ring */}
+                  <div
+                    aria-hidden
+                    className="absolute -inset-1.5 rounded-full ai-ambient-breathe"
+                    style={{ background: "radial-gradient(circle, rgba(255,45,161,0.28), transparent 70%)" }}
+                  />
+                  {/* Icon box, inset so the ring peeks out around its edge */}
+                  <span
+                    className="absolute inset-[3px] flex items-center justify-center rounded-full"
+                    style={{ backgroundColor: "#0b0e16", border: "1px solid rgba(255,45,161,0.3)" }}
+                  >
+                    <Icon className="h-[18px] w-[18px]" style={{ color: ACCENT }} aria-hidden />
+                  </span>
+                </motion.div>
               )}
-              <div className="min-w-0 pt-0.5">
+              <div className="min-w-0 pt-1.5">
                 <h3 className="text-base sm:text-lg font-semibold text-white" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                   {step.title}
                 </h3>
@@ -223,7 +247,10 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
               aria-selected={i === index}
               aria-label={`Go to step ${i + 1}: ${s.title}`}
               onClick={() => goTo(i)}
-              className="relative h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2"
+              className={cn(
+                "relative h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2",
+                i === index && "ai-ambient-breathe",
+              )}
               style={{
                 width: i === index ? "22px" : "6px",
                 backgroundColor: i <= index ? ACCENT : "rgba(255,255,255,0.18)",

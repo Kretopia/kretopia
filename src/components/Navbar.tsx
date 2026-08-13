@@ -200,9 +200,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
           </div>
         )}
 
-        {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
+        {/* ═══ GUEST INLINE NAV (desktop) ═══
+            lg:, matching the authenticated desktop nav's own breakpoint below —
+            at md: (768px) this plus the search icon, Hire Talent and Get
+            Started together overflow the viewport and clip the CTA button
+            off-screen. Tablets get the hamburger menu instead, same as the
+            authenticated experience already does. */}
         {!user && (
-          <div className="hidden md:flex items-center gap-1 mx-4">
+          <div className="hidden lg:flex items-center gap-1 mx-4">
             {guestNavItems.map(({ path, label, icon: Icon }) => {
               const active = location.pathname === path;
               return (
@@ -460,10 +465,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
             </Sheet>
           ) : !user ? (
             <>
-              {/* Mobile hamburger for guests — all pages */}
+              {/* Hamburger for guests below lg: — matches the inline nav's
+                  own breakpoint above so tablets always have one working
+                  way to reach these links, never neither. */}
               <Sheet open={guestMenuOpen} onOpenChange={setGuestMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Open menu" className="h-9 w-9 md:hidden">
+                  <Button variant="ghost" size="icon" aria-label="Open menu" className="h-9 w-9 lg:hidden">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>

@@ -126,7 +126,7 @@ export const VerifiedCreditsChapterSection = () => {
             >
               <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                 <span
-                  className="flex h-7 w-7 items-center justify-center rounded-full"
+                  className="flex h-7 w-7 items-center justify-center rounded-full ai-ambient-breathe"
                   style={{ backgroundColor: "rgba(255,45,161,0.14)" }}
                 >
                   <Fingerprint className="h-3.5 w-3.5" style={{ color: ACCENT }} aria-hidden />

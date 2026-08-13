@@ -112,7 +112,7 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange }: Tuto
               <div className="min-w-0 flex-1 pt-1.5 pb-1">
                 <div className="flex items-center gap-2.5">
                   <span
-                    className="text-[10px] font-medium tabular-nums"
+                    className={cn("text-[10px] font-medium tabular-nums", isActive && "pink-glow-breathe")}
                     style={{ color: isActive ? ACCENT : "rgba(255,255,255,0.32)" }}
                   >
                     {String(i + 1).padStart(2, "0")}
@@ -142,7 +142,7 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange }: Tuto
                       </p>
                       {!isLast && (
                         <span
-                          className="mt-3 inline-flex items-center gap-1 text-xs font-medium"
+                          className="mt-3 inline-flex items-center gap-1 text-xs font-medium pink-glow-breathe"
                           style={{ color: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
                         >
                           Next: {steps[i + 1].title}

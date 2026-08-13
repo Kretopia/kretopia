@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
-const EXAMPLE_SEARCHES = ["Ethan Auguste", "Event Producer in Bali", "Creative Director"];
+const EXAMPLE_SEARCHES = ["Maya Solano", "Event Producer in Bali", "Creative Director"];
 
 interface KretopiaHeroProps {
   onSearchSubmit: (query: string) => void;

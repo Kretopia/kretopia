@@ -170,7 +170,9 @@ export const MeetKretoSection = () => {
                 className="flex items-center gap-3 px-4 py-3"
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
               >
-                <KretoAvatar size="sm" />
+                <span className="ai-ambient-breathe rounded-full">
+                  <KretoAvatar size="sm" />
+                </span>
                 <div className="min-w-0">
                   <p
                     className="text-sm font-semibold text-white"

@@ -16,7 +16,6 @@ import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutor
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
 import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
-import { ClosingSection } from "@/components/landing/kretopia/ClosingSection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
 import { chapterRoman } from "@/components/landing/kretopia/chapterRegistry";
 import {
@@ -159,9 +158,6 @@ export const LandingBelowFold = () => {
 
       {/* Kreto — the sunset moment */}
       <MeetKretoSection />
-
-      {/* Closing */}
-      <ClosingSection />
 
       {/* Footer */}
       <EditorialFooter />

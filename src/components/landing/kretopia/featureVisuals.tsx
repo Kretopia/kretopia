@@ -36,7 +36,7 @@ export const SearchVisual = ({ activeStep }: { activeStep: number }) => {
         style={{ border: "1px solid rgba(255,45,161,0.3)", color: "rgba(255,255,255,0.85)" }}
       >
         <Search className="h-4 w-4 shrink-0" style={{ color: ACCENT }} aria-hidden />
-        <span>Ethan Auguste</span>
+        <span>Maya Solano</span>
       </div>
       <AnimatePresence mode="wait">
         {activeStep === 0 && (
@@ -46,9 +46,9 @@ export const SearchVisual = ({ activeStep }: { activeStep: number }) => {
         )}
         {activeStep === 1 && (
           <motion.div key="s1" {...fade(reducedMotion)} className="flex items-center gap-3 rounded-xl bg-white/[0.04] p-3.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white">EA</span>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white">MS</span>
             <div className="min-w-0">
-              <p className="text-[15px] font-medium text-white truncate">Ethan Auguste</p>
+              <p className="text-[15px] font-medium text-white truncate">Maya Solano</p>
               <p className="text-xs text-white/45 truncate">Event Producer · Bali</p>
             </div>
           </motion.div>
@@ -80,9 +80,9 @@ export const PassportVisual = ({ activeStep }: { activeStep: number }) => {
   return (
     <VisualCardShell icon={UserCheck} label="Passport preview" tag="Illustrative — not live data">
       <div className="rounded-xl p-4 flex items-center gap-3.5" style={ring(0)}>
-        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white shrink-0">EA</span>
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white shrink-0">MS</span>
         <div className="min-w-0">
-          <p className="text-[15px] font-semibold text-white">Ethan Auguste</p>
+          <p className="text-[15px] font-semibold text-white">Maya Solano</p>
           <p className="text-xs text-white/45">Event Producer · Bali</p>
         </div>
       </div>
@@ -213,7 +213,7 @@ export const StudioVisual = ({ activeStep }: { activeStep: number }) => {
       <AnimatePresence mode="wait">
         {activeStep === 1 && (
           <motion.div key="s1" {...fade(reducedMotion)} className="flex -space-x-2.5">
-            {["EA", "RK", "MP"].map((i) => (
+            {["MS", "RK", "MP"].map((i) => (
               <span key={i} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-white border-2" style={{ borderColor: "#0b0e16" }}>{i}</span>
             ))}
           </motion.div>

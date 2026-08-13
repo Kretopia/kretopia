@@ -970,31 +970,6 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   .ai-scan-line { display: none; }
 }
 
-/* FeatureTutorialSection layout — mobile stacks identity -> visual ->
-   content (matches the charter's explicit mobile order); desktop pairs
-   them into two columns via named areas, with the visual spanning both
-   the identity and content rows regardless of which side it lands on. */
-.feature-section-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-areas: "identity" "visual" "content";
-  gap: 2rem;
-}
-@media (min-width: 1024px) {
-  .feature-section-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas: "visual identity" "visual content";
-    gap: 4rem;
-    align-items: start;
-  }
-  .feature-section-grid--reverse {
-    grid-template-areas: "identity visual" "content visual";
-  }
-}
-.feature-section-grid > .fsg-identity { grid-area: identity; }
-.feature-section-grid > .fsg-visual { grid-area: visual; }
-.feature-section-grid > .fsg-content { grid-area: content; }
-
 /* Shared vertical rhythm + horizontal padding for landing sections. */
 .landing-section {
   padding-left: 1.25rem;

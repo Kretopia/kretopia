@@ -1,9 +1,7 @@
 /**
  * FeatureTutorial — the one shared, interactive tutorial surface used by
- * every landing-page feature chapter. Styled as an "AI presenter" command
- * surface — same visual language as MeetKretoSection (glowing icon ring,
- * AI-guided badge, a brief typing-indicator flourish before each step's
- * text reveals) — rather than a plain step counter.
+ * every landing-page feature chapter. A glowing icon ring and a brief
+ * typing-indicator flourish precede each step's text reveal.
  *
  * Static content (steps are authored, not fetched), so there's no
  * loading/error state to model. Every interaction contract still holds:
@@ -20,7 +18,7 @@
  */
 import { useEffect, useRef, useState, type KeyboardEvent, type TouchEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
@@ -133,25 +131,13 @@ export const FeatureTutorial = ({ steps, label, activeStep, onStepChange }: Feat
         />
       </div>
 
-      {/* Header — AI-guided badge, matches MeetKretoSection's command-surface header */}
+      {/* Header — just the step counter, no AI badge */}
       <div
-        className="relative flex items-center gap-2 px-4 py-2.5 sm:px-5"
+        className="relative flex items-center justify-end px-4 py-2.5 sm:px-5"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
       >
         <span
-          className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full ai-ambient-breathe"
-          style={{ backgroundColor: "rgba(255,45,161,0.16)" }}
-        >
-          <Sparkles className="h-2.5 w-2.5" style={{ color: ACCENT }} aria-hidden />
-        </span>
-        <span
-          className="text-[9px] font-semibold uppercase tracking-[0.22em] pink-glow-breathe"
-          style={{ color: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
-        >
-          AI-guided
-        </span>
-        <span
-          className="ml-auto text-[10px] font-medium tabular-nums"
+          className="text-[10px] font-medium tabular-nums"
           style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Work Sans', sans-serif" }}
         >
           {String(index + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}

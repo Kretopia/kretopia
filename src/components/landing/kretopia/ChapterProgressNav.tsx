@@ -14,24 +14,9 @@
  */
 import { useEffect, useState } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { CHAPTER_REGISTRY as CHAPTERS } from "./chapterRegistry";
 
 const ACCENT = "#FF2DA1";
-
-interface ChapterDef {
-  id: string;
-  label: string;
-}
-
-const CHAPTERS: ChapterDef[] = [
-  { id: "kretopia-hero", label: "Search" },
-  { id: "chapter-passport", label: "Passport" },
-  { id: "chapter-verified-credits", label: "Verified Credits" },
-  { id: "chapter-scout", label: "Scout" },
-  { id: "chapter-match", label: "Match" },
-  { id: "chapter-studio", label: "Studio" },
-  { id: "chapter-soundstages", label: "SoundStages" },
-  { id: "chapter-kreto", label: "Kreto" },
-];
 
 interface ChapterProgressNavProps {
   /** Whether the below-fold chapters have mounted yet — re-scans anchors once true. */

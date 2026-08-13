@@ -1,0 +1,80 @@
+/**
+ * Tutorial step copy for every landing-page feature chapter. Each entry
+ * describes real product behavior — nothing here claims functionality the
+ * app doesn't have, and no step describes Kreto or any AI surface acting
+ * autonomously; every AI-touched step is framed as suggest-then-confirm.
+ */
+import {
+  Search, UserCheck, FileEdit, Rocket,
+  Fingerprint, ListChecks, Sparkles as SparklesIcon, Send,
+  Link2, ShieldCheck, HandHeart, Stamp,
+  Radar, Target, Bookmark, FolderKanban,
+  Users, MessageCircle, HeartHandshake, Handshake,
+  ClipboardList, Users2, Milestone, Banknote,
+  DoorOpen, Video, UserPlus2, Share2,
+  MessageSquareText, Lightbulb, ThumbsUp, CheckCircle2,
+} from "lucide-react";
+import type { TutorialStep } from "./FeatureTutorial";
+
+export const SEARCH_TUTORIAL: TutorialStep[] = [
+  { icon: Search, title: "Search your name", body: "Type your name, stage name, or a project you've worked on into the search bar above." },
+  { icon: Fingerprint, title: "Discover your record", body: "Kretopia surfaces any public work already associated with you — credits, projects, mentions." },
+  { icon: UserCheck, title: "Claim or create a Passport", body: "Found your record? Claim it. Nothing yet? Start a fresh Creative Passport instead." },
+  { icon: Rocket, title: "Continue to the next action", body: "From there you're in — confirm credits, explore Scout, or open Studio for your next project." },
+];
+
+export const PASSPORT_TUTORIAL: TutorialStep[] = [
+  { icon: UserCheck, title: "Review your identity", body: "Check your name, role, avatar, and bio — the basics that appear on your public Passport." },
+  { icon: ListChecks, title: "Confirm your credits", body: "Go through each imported or claimed credit and confirm it's actually yours before it counts." },
+  { icon: FileEdit, title: "Edit AI-generated content", body: "Any AI-drafted bio or summary stays fully editable — nothing publishes without your changes reviewed." },
+  { icon: SparklesIcon, title: "Publish your Passport", body: "Once you're happy with it, publish — your Passport becomes your one shareable link." },
+];
+
+export const VERIFIED_CREDITS_TUTORIAL: TutorialStep[] = [
+  { icon: Link2, title: "Understand the evidence", body: "Every credit shows its real evidence tier — Claimed, Publicly Sourced, Evidence-backed, Co-Signed, or Organization Confirmed." },
+  { icon: ListChecks, title: "Add or confirm a credit", body: "Add a project you worked on, or confirm one Kretopia found — with a link or detail backing it up." },
+  { icon: HandHeart, title: "Request a Co-Sign", body: "Ask a collaborator who was there to confirm it. Their co-sign moves the credit forward honestly." },
+  { icon: Stamp, title: "Earn a Passport Stamp", body: "Once fully confirmed, the credit becomes a Passport Stamp — visible proof on your public record." },
+];
+
+export const SCOUT_TUTORIAL: TutorialStep[] = [
+  { icon: Radar, title: "Understand an opportunity", body: "Scout reads real gigs, briefs, and casting calls from across the web and surfaces the ones that fit." },
+  { icon: Target, title: "See why it matched", body: "Each match shows the reasoning — the skills, credits, or history that made it relevant to you." },
+  { icon: Bookmark, title: "Save or apply", body: "Save it for later, or apply directly. Kreto can draft a pitch — you decide if it goes." },
+  { icon: FolderKanban, title: "Move into a project", body: "Once you're in, the opportunity becomes a real Studio project you can manage end to end." },
+];
+
+export const MATCH_TUTORIAL: TutorialStep[] = [
+  { icon: Users, title: "Set what you're looking for", body: "Skill, city, vibe, or people you've already worked with — Match narrows to real fits, not cold lists." },
+  { icon: MessageCircle, title: "See who's suggested", body: "Browse collaborators Match surfaces, each with the shared context that connects you." },
+  { icon: HeartHandshake, title: "Start a real conversation", body: "No cold DMs — reach out with the shared project or connection already in view." },
+  { icon: Handshake, title: "Turn it into work", body: "When it's a fit, bring them into a Studio project together." },
+];
+
+export const STUDIO_TUTORIAL: TutorialStep[] = [
+  { icon: ClipboardList, title: "Create a project", body: "Start a Studio for the shoot, drop, release, or campaign you're working on." },
+  { icon: Users2, title: "Add a brief and collaborators", body: "Bring in the brief, the files, and the people working on it with you." },
+  { icon: Milestone, title: "Define milestones", body: "Break the project into milestones so progress and payment stay tied to real deliverables." },
+  { icon: Banknote, title: "Deliver and get paid", body: "Mark milestones complete, send invoices, and get paid — all inside the same room." },
+];
+
+export const SOUNDSTAGES_TUTORIAL: TutorialStep[] = [
+  { icon: DoorOpen, title: "Join a room", body: "Drop into a live SoundStage — an open mic, speed session, or listening party." },
+  { icon: Video, title: "Audition or speed-network", body: "Perform, pitch, or meet a fresh face every few minutes depending on the room format." },
+  { icon: UserPlus2, title: "Meet participants", body: "See who else is in the room — their Passport is one tap away." },
+  { icon: Share2, title: "Connect afterwards", body: "Follow up with the people you clicked with — the connection doesn't end when the room closes." },
+];
+
+export const KRETO_TUTORIAL: TutorialStep[] = [
+  { icon: MessageSquareText, title: "Ask Kreto", body: "Ask about your Passport, an opportunity, or what to do next — in plain language." },
+  { icon: Lightbulb, title: "Get context-aware guidance", body: "Kreto answers using your real Passport and history — not a generic script." },
+  { icon: ThumbsUp, title: "Review the suggestion", body: "Drafts, plans, or shortlists Kreto proposes are always shown to you first, clearly labeled AI-assisted." },
+  { icon: CheckCircle2, title: "Confirm the action", body: "Nothing becomes part of your record or gets sent until you confirm it." },
+];
+
+export const MESSAGES_TUTORIAL: TutorialStep[] = [
+  { icon: DoorOpen, title: "Open your inbox", body: "See every conversation in one place, with unread messages clearly marked." },
+  { icon: MessageCircle, title: "Choose a conversation", body: "Select a thread — the person's Passport context is right there alongside it." },
+  { icon: Send, title: "Send a message", body: "Type and send — delivery and read state update in the thread." },
+  { icon: Video, title: "Start a call safely", body: "When you're ready, start a call with one click — camera and mic access is requested only then." },
+];

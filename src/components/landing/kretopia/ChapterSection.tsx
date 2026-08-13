@@ -5,6 +5,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import { FeatureTutorial, type TutorialStep } from "./FeatureTutorial";
 
 export interface ChapterProps {
   index: string;        // "I", "II", "III"…
@@ -17,10 +18,12 @@ export interface ChapterProps {
   href: string;
   reverse?: boolean;    // flip layout
   id?: string;          // scroll-to anchor for chapter nav
+  /** Interactive tutorial steps, rendered directly below the image/text grid. */
+  tutorialSteps?: TutorialStep[];
 }
 
 export const ChapterSection = ({
-  index, kicker, title, body, caption, image, accent, href, reverse, id,
+  index, kicker, title, body, caption, image, accent, href, reverse, id, tutorialSteps,
 }: ChapterProps) => {
   return (
     <section
@@ -129,6 +132,19 @@ export const ChapterSection = ({
             </Link>
           </motion.div>
         </div>
+
+        {/* Interactive tutorial — immediately follows its feature, never detached */}
+        {tutorialSteps && tutorialSteps.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="mt-12 lg:mt-16 max-w-xl lg:ml-auto lg:mr-0"
+          >
+            <FeatureTutorial steps={tutorialSteps} label={`${kicker} tutorial`} />
+          </motion.div>
+        )}
       </div>
     </section>
   );

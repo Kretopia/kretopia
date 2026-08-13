@@ -20,6 +20,9 @@ import { ArrowUpRight, Fingerprint, Link2, ShieldCheck, UserCheck } from "lucide
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
 import { EVIDENCE_STATE_ORDER, type EvidenceState } from "@/lib/creditEvidence";
+import { FeatureTutorial } from "./FeatureTutorial";
+import { VERIFIED_CREDITS_TUTORIAL } from "./tutorialContent";
+import { chapterRoman } from "./chapterRegistry";
 
 const ACCENT = "#FF2DA1";
 const DEMO_SEQUENCE: EvidenceState[] = [...EVIDENCE_STATE_ORDER];
@@ -70,7 +73,7 @@ export const VerifiedCreditsChapterSection = () => {
             transition={{ duration: 0.7 }}
             className="lg:col-span-7 lg:order-2"
           >
-            <p className="landing-eyebrow mb-4">IV · Verified Credits</p>
+            <p className="landing-eyebrow mb-4">{chapterRoman("chapter-verified-credits")} · Verified Credits</p>
 
             <h2 id="verified-credits-title" className="landing-h2 landing-glow">
               Confirm the work that{" "}
@@ -205,6 +208,17 @@ export const VerifiedCreditsChapterSection = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Interactive tutorial — the canonical pattern every other chapter follows */}
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="mt-12 lg:mt-16 max-w-xl"
+        >
+          <FeatureTutorial steps={VERIFIED_CREDITS_TUTORIAL} label="Verified Credits tutorial" />
+        </motion.div>
       </div>
     </section>
   );

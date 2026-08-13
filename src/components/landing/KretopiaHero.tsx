@@ -13,10 +13,13 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { cn } from "@/lib/utils";
 
-const EXAMPLE_SEARCHES = ["Maya Solano", "Event Producer in Bali", "Creative Director"];
+const ACCENT = "#FF2DA1";
+const EXAMPLE_SEARCHES = ["Maya Solano", "Event Producer in Bali", "Creative Director", "Sound Designer"];
 
 interface KretopiaHeroProps {
   onSearchSubmit: (query: string) => void;
@@ -25,6 +28,14 @@ interface KretopiaHeroProps {
 export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
   const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+
+  const runExample = (example: string) => {
+    // Visually fill the search bar first so the click reads as "this typed
+    // in", not a silent jump straight to results.
+    setQuery(example);
+    onSearchSubmit(example);
+  };
 
   return (
     <section
@@ -86,20 +97,43 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           transition={{ duration: 0.6, delay: 0.22 }}
           className="mt-9 sm:mt-11 max-w-2xl mx-auto"
         >
-          {/* This hero is always dark (hardcoded #05070D background,
-              regardless of the app's theme setting), but
-              UnifiedSearchDropdown is theme-aware and reads the
-              --foreground/--card CSS variables that flip with the .dark
-              class. Scoping just this wrapper to .dark keeps the input
-              legible without fighting the component's own classes. */}
-          <div className="dark">
-            <UnifiedSearchDropdown
-              variant="hero"
-              placeholder="Search your name, stage name or creative work..."
-              value={query}
-              onValueChange={setQuery}
-              onQuerySubmit={onSearchSubmit}
+          {/* AI-glow ring — an ambient breathing halo behind the search bar,
+              intensifying while the dropdown is actively open, plus a
+              scan-line sweep along the top edge. Purely decorative: sits
+              behind/around the real search component, never intercepts
+              its clicks. */}
+          <div className="relative">
+            <div
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute -inset-3 sm:-inset-4 rounded-[28px] blur-xl transition-opacity duration-500 ai-ambient-breathe",
+                focused ? "opacity-100" : "opacity-60",
+              )}
+              style={{ background: `radial-gradient(60% 100% at 50% 50%, ${ACCENT}33, transparent 70%)` }}
             />
+            <div aria-hidden className="pointer-events-none absolute inset-x-3 top-0 h-px overflow-hidden rounded-full">
+              <div
+                className="ai-scan-line h-full w-1/3"
+                style={{ background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)` }}
+              />
+            </div>
+
+            {/* This hero is always dark (hardcoded #05070D background,
+                regardless of the app's theme setting), but
+                UnifiedSearchDropdown is theme-aware and reads the
+                --foreground/--card CSS variables that flip with the .dark
+                class. Scoping just this wrapper to .dark keeps the input
+                legible without fighting the component's own classes. */}
+            <div className="dark relative" onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
+              <UnifiedSearchDropdown
+                variant="hero"
+                placeholder="Search your name, stage name or creative work..."
+                value={query}
+                onValueChange={setQuery}
+                onQuerySubmit={onSearchSubmit}
+                onOpenChange={setFocused}
+              />
+            </div>
           </div>
 
           {/* No competing CTA row here — the searchbar's own submit button
@@ -107,13 +141,14 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
               buttons directly underneath used to compete with it; removed
               rather than replaced. */}
           <p
-            className="mt-5 text-center text-sm text-white/55"
+            className="mt-5 flex items-center justify-center gap-1.5 text-center text-sm text-white/55"
             style={{ fontFamily: "'Work Sans', sans-serif" }}
           >
+            <Sparkles className="h-3.5 w-3.5 shrink-0 pink-glow-breathe" style={{ color: ACCENT }} aria-hidden />
             Find your record, confirm your work and open your next opportunity.
           </p>
 
-          {/* Example searches — safe, generic, no private data */}
+          {/* Example searches — click fills the bar visually, then submits */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             <span
               className="text-[11px] uppercase tracking-[0.18em] text-white/35"
@@ -122,15 +157,17 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
               Try
             </span>
             {EXAMPLE_SEARCHES.map((example) => (
-              <button
+              <motion.button
                 key={example}
                 type="button"
-                onClick={() => onSearchSubmit(example)}
+                whileHover={reducedMotion ? undefined : { scale: 1.04 }}
+                whileTap={reducedMotion ? undefined : { scale: 0.97 }}
+                onClick={() => runExample(example)}
                 className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/55 transition-colors hover:border-white/35 hover:text-white/90"
                 style={{ fontFamily: "'Work Sans', sans-serif" }}
               >
                 {example}
-              </button>
+              </motion.button>
             ))}
           </div>
 

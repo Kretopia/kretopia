@@ -3,6 +3,7 @@
  * Monocle-coded: thin rules, all caps micro-type, generous whitespace.
  */
 import { Link } from "react-router-dom";
+import { BrandLogo } from "@/components/BrandLogo";
 import { BRAND } from "@/lib/brandLexicon";
 
 export const EditorialFooter = () => {
@@ -14,11 +15,7 @@ export const EditorialFooter = () => {
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12 pt-16 sm:pt-20 pb-6 sm:pb-8">
         <div className="grid sm:grid-cols-3 gap-10 sm:gap-6 items-start">
           <div>
-            <p
-              className="font-serif italic text-2xl text-white"
-            >
-              kretopia<span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>.</span>
-            </p>
+            <BrandLogo size="md" showBeta linkToHome />
             <p
               className="mt-3 text-[10px] font-medium uppercase tracking-[0.32em] text-white/40"
               style={{ fontFamily: "'Work Sans', sans-serif" }}

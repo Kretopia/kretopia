@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { FeatureTutorial, type TutorialStep } from "./FeatureTutorial";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export interface ChapterProps {
   index: string;        // "I", "II", "III"…
@@ -25,6 +26,7 @@ export interface ChapterProps {
 export const ChapterSection = ({
   index, kicker, title, body, caption, image, accent, href, reverse, id, tutorialSteps,
 }: ChapterProps) => {
+  const reducedMotion = useReducedMotion();
   return (
     <section
       id={id}
@@ -36,7 +38,7 @@ export const ChapterSection = ({
 
           {/* IMAGE */}
           <motion.div
-            initial={{ opacity: 0, scale: 1.03 }}
+            initial={reducedMotion ? false : { opacity: 0, scale: 1.03 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1.1, ease: [0.2, 0.65, 0.3, 0.95] }}
@@ -81,7 +83,7 @@ export const ChapterSection = ({
 
           {/* TEXT */}
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.9, delay: 0.15 }}
@@ -136,7 +138,7 @@ export const ChapterSection = ({
         {/* Interactive tutorial — immediately follows its feature, never detached */}
         {tutorialSteps && tutorialSteps.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, delay: 0.1 }}

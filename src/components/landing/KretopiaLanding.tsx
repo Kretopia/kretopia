@@ -1,20 +1,24 @@
 /**
  * KretopiaLanding — the cinematic editorial spine.
  *
- * Each section is a chapter. No SaaS bloat — no comparison tables,
- * no pricing grids, no feature checklists. The user feels they've
- * walked into a film, not a product page.
+ * Each section is a chapter, every chapter followed immediately by its own
+ * interactive tutorial. No SaaS bloat — no comparison tables, no pricing
+ * grids, no feature checklists. The user feels they've walked into a film,
+ * not a product page.
  *
- *   I.    Hero            — "Welcome to Kretopia. Where creativity lives."
- *   II.   Manifesto       — "Talent is everywhere. Opportunity is not."
- *   III.  Passport
+ *   I.    Search           — the Hero's live search bar + its tutorial
+ *   II.   Passport
+ *   III.  Verified Credits — the canonical tutorial reference
  *   IV.   Scout
  *   V.    Match
  *   VI.   Studio
  *   VII.  SoundStages
- *   ...   Auditions       — how an open call actually runs
- *   VIII. Kreto           — the Executive Producer
- *   IX.   Closing         — echo of the hero opener + single CTA
+ *   VIII. Kreto             — the Executive Producer
+ *         Closing           — echo of the hero opener + single CTA
+ *
+ * Chapter numbers are computed from chapterRegistry.ts, not hand-typed —
+ * see that file for the single source of truth ChapterProgressNav also
+ * reads from.
  *
  * Performance: only the hero (headline + search) is on the critical path.
  * Everything below is a lazy chunk mounted when the visitor scrolls near it

@@ -5,8 +5,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export const ClosingSection = () => {
+  const reducedMotion = useReducedMotion();
   return (
     <section
       className="relative overflow-hidden border-t border-white/[0.05]"
@@ -24,7 +26,7 @@ export const ClosingSection = () => {
 
       <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 lg:px-12 py-28 sm:py-40 lg:py-48 text-center">
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={reducedMotion ? false : { opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
@@ -35,7 +37,7 @@ export const ClosingSection = () => {
         </motion.p>
 
         <motion.h2
-          initial={{ opacity: 0, y: 18 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 1.1, ease: [0.2, 0.65, 0.3, 0.95] }}
@@ -51,7 +53,7 @@ export const ClosingSection = () => {
         </motion.h2>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9, delay: 0.3 }}

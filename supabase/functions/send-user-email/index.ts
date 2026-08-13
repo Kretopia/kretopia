@@ -288,7 +288,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Helper: send email
     const sendEmail = async (to: string, subject: string, html: string) => {
       const response = await resend.emails.send({
-        from: "Kretopia <noreply@thrivein.io>",
+        from: "Kretopia <info@kretopia.com>",
         to: [to],
         subject,
         html,

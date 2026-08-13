@@ -127,7 +127,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     try {
       const emailResponse = await resend.emails.send({
-        from: "Kretopia <noreply@thrivein.io>",
+        from: "Kretopia <info@kretopia.com>",
         to: [email],
         subject: `${inviterName} invited you to "${projectTitle}" on Kretopia`,
         html: `

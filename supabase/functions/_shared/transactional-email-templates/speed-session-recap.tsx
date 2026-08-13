@@ -5,7 +5,7 @@ import {
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'Kretopia'
-const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
+const LOGO_URL = 'https://www.kretopia.com/apple-touch-icon.png'
 
 interface PersonCard {
   name: string

@@ -38,7 +38,7 @@ export const InviteEmail = ({ siteUrl, confirmationUrl }: InviteEmailProps) => (
 
 export default InviteEmail
 
-const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
+const LOGO_URL = 'https://www.kretopia.com/apple-touch-icon.png'
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }
 const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }

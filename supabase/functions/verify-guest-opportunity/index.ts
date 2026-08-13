@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
             Authorization: `Bearer ${resendKey}`,
           },
           body: JSON.stringify({
-            from: "Kretopia <noreply@thrivein.io>",
+            from: "Kretopia <info@kretopia.com>",
             to: [email],
             subject: `Verify your opportunity: ${title}`,
             html: `

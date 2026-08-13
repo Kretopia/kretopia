@@ -252,7 +252,7 @@ const handler = async (req: Request): Promise<Response> => {
         if (prof?.full_name) previewName = prof.full_name.split(" ")[0];
       }
       const { error } = await resend.emails.send({
-        from: "Kretopia <noreply@thrivein.io>",
+        from: "Kretopia <info@kretopia.com>",
         to: [recipient],
         subject: `[PREVIEW] ${subjectLine}`,
         html: buildEmailHtml(previewName),
@@ -293,7 +293,7 @@ const handler = async (req: Request): Promise<Response> => {
         sentEmails.add(email.toLowerCase());
 
         const { error } = await resend.emails.send({
-          from: "Kretopia <noreply@thrivein.io>",
+          from: "Kretopia <info@kretopia.com>",
           to: [email],
           subject: subjectLine,
           html: buildEmailHtml(profile.full_name?.split(" ")[0] || "Creative"),
@@ -311,7 +311,7 @@ const handler = async (req: Request): Promise<Response> => {
       sentEmails.add(e);
       try {
         const { error } = await resend.emails.send({
-          from: "Kretopia <noreply@thrivein.io>",
+          from: "Kretopia <info@kretopia.com>",
           to: [sub.email],
           subject: subjectLine,
           html: buildEmailHtml("Creative"),

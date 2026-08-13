@@ -285,13 +285,13 @@ serve(async (req) => {
 
               <p style="color:#9ca3af;font-size:12px;text-align:center;margin-top:24px;">
                 Order ID: ${order.id}<br/>
-                If you have any issues, contact us at support@thrivein.io
+                If you have any issues, contact us at info@kretopia.com
               </p>
             </div>
           `;
 
           await resend.emails.send({
-            from: 'Kretopia <noreply@thrivein.io>',
+            from: 'Kretopia <info@kretopia.com>',
             to: buyerEmail,
             subject: `Purchase Confirmed: ${product.title}`,
             html: emailHtml,

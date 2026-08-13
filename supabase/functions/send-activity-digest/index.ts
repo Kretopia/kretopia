@@ -82,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
           : `https://www.thrivein.io/unsubscribe`;
 
         const emailResult = await resend.emails.send({
-          from: "Kretopia <noreply@thrivein.io>",
+          from: "Kretopia <info@kretopia.com>",
           to: [email],
           subject: `📬 ${userName}, you have ${unreadCount} notifications waiting`,
           html: `

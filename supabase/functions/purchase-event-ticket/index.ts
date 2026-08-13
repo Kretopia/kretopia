@@ -116,7 +116,7 @@ serve(async (req) => {
       applicationFee: applicationFee / 100,
     });
 
-    const origin = req.headers.get("origin") || "https://www.thrivein.io";
+    const origin = req.headers.get("origin") || "https://www.kretopia.com";
     const currency = (event.ticket_currency || 'usd').toLowerCase();
 
     const session = await stripe.checkout.sessions.create({

@@ -1,14 +1,42 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mic, Square, Loader2, X, ArrowRight, Type } from "lucide-react";
+import { motion } from "framer-motion";
+import { Mic, Square, Loader2, X, ArrowRight, Type, Search, Sparkles, MessageSquareText, FileEdit, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CreativeLoader } from "@/components/ui/creative-loader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceConfigs";
+
+const ACCENT = "#FF2DA1";
+
+/** Real example prompts per workspace type — the same examples already used
+ * as placeholder text, promoted to visible, tappable chips so they teach by
+ * example instead of disappearing the moment someone starts typing. */
+const EXAMPLE_PROMPTS: Record<WorkspaceType, string> = {
+  event_production: "Bali Carnival — 2-day beach festival, Aug 2026, 5k guests, 3 stages.",
+  music_project: "Debut EP — 5 tracks, summer release, lo-fi beats with vocal features.",
+  brand_collab: "Spring brand launch for Acme — paid + organic across IG, TikTok, YouTube.",
+  photo_shoot: "Editorial shoot — 3 looks, 2 models, studio + rooftop, deliver in 10 days.",
+  video_shoot: "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday.",
+  content_series: "Weekly podcast — 8 episodes, guest interviews, publish every Thursday.",
+  fashion_show: "Runway show — 12 looks, 6 models, backstage roll call at 6pm.",
+  commissioned_art: "Custom illustration — client portrait, digital, 2 revision rounds.",
+  dj_live_gig: "3-hour opening set, house/techno, Saturday night, load-in at 8.",
+  edit_job: "Color grade a 10-minute short film, deliver by next Friday.",
+  general: "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday.",
+};
+
+const HOW_IT_WORKS = [
+  { icon: MessageSquareText, label: "Describe it", body: "Speak or type what you're making." },
+  { icon: Sparkles, label: "Kreto builds a brief", body: "AI drafts a title, summary and starter tasks." },
+  { icon: FileEdit, label: "Review & edit", body: "Everything stays fully editable before it's real." },
+  { icon: Rocket, label: "Launch the room", body: "Your Studio room opens, ready to work in." },
+];
 
 /** Lightweight keyword inference so the room shape matches what was said. */
 function inferWorkspaceType(text: string): WorkspaceType {
@@ -53,6 +81,7 @@ export const VoiceFirstCreateModal = ({
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const reducedMotion = useReducedMotion();
 
   const [mode, setMode] = useState<Mode>("prompt");
   const [showText, setShowText] = useState(false);
@@ -388,9 +417,39 @@ export const VoiceFirstCreateModal = ({
             <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
               What are you making?
             </h1>
-            <p className="text-sm text-muted-foreground max-w-sm mb-6">
+            <p className="text-sm text-muted-foreground max-w-sm mb-5">
               Pick the kind of room — or just speak. We'll shape it around you.
             </p>
+
+            {/* How it works — compact, explains the flow before anyone commits to it */}
+            <div className="w-full max-w-lg mb-7 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {HOW_IT_WORKS.map((step, i) => {
+                const StepIcon = step.icon;
+                return (
+                  <motion.div
+                    key={step.label}
+                    initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: i * 0.06 }}
+                    className="rounded-xl border border-border/60 bg-muted/20 px-2.5 py-2.5 text-left"
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span
+                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
+                        style={{ backgroundColor: "rgba(255,45,161,0.14)", color: ACCENT }}
+                      >
+                        {i + 1}
+                      </span>
+                      <StepIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                    </div>
+                    <p className="text-[11px] font-semibold leading-tight">{step.label}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 hidden sm:block">
+                      {step.body}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
 
             {/* Workspace type chips — visible from the start */}
             <div className="w-full max-w-md mb-8">
@@ -447,26 +506,58 @@ export const VoiceFirstCreateModal = ({
                   <Type className="h-3.5 w-3.5" />
                   Or type it instead
                 </button>
+
+                {/* Example prompt — real example for the selected room type, tap to jump into text mode with it pre-filled */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTextInput(EXAMPLE_PROMPTS[workspaceType]);
+                    setShowText(true);
+                  }}
+                  className="mt-5 max-w-sm rounded-full border border-border/60 bg-muted/20 px-4 py-2 text-left text-[11px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors inline-flex items-center gap-2"
+                >
+                  <Sparkles className="h-3 w-3 shrink-0" style={{ color: ACCENT }} />
+                  <span className="truncate">"{EXAMPLE_PROMPTS[workspaceType]}"</span>
+                </button>
               </>
             ) : (
               <div className="w-full max-w-md space-y-3">
-                <Textarea
-                  autoFocus
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                  placeholder={
-                    workspaceType === "event_production"
-                      ? "Bali Carnival — 2-day beach festival, Aug 2026, 5k guests, 3 stages."
-                      : workspaceType === "music_project"
-                      ? "Debut EP — 5 tracks, summer release, lo-fi beats with vocal features."
-                      : workspaceType === "brand_collab"
-                      ? "Spring brand launch for Acme — paid + organic across IG, TikTok, YouTube."
-                      : workspaceType === "photo_shoot"
-                      ? "Editorial shoot — 3 looks, 2 models, studio + rooftop, deliver in 10 days."
-                      : "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday."
-                  }
-                  className="min-h-[140px] text-base text-left"
-                />
+                {/* AI-search-styled entry surface */}
+                <div
+                  className="rounded-2xl border transition-shadow focus-within:shadow-lg"
+                  style={{
+                    borderColor: "rgba(255,45,161,0.25)",
+                    boxShadow: "0 0 0 1px rgba(255,45,161,0.08)",
+                  }}
+                >
+                  <div className="flex items-center gap-1.5 px-3.5 pt-3">
+                    <Search className="h-3 w-3" style={{ color: ACCENT }} />
+                    <span
+                      className="text-[9px] font-semibold uppercase tracking-[0.18em]"
+                      style={{ color: ACCENT }}
+                    >
+                      Describe your project
+                    </span>
+                  </div>
+                  <Textarea
+                    autoFocus
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    placeholder={EXAMPLE_PROMPTS[workspaceType]}
+                    className="min-h-[130px] text-base text-left border-0 focus-visible:ring-0 shadow-none resize-none"
+                  />
+                </div>
+
+                {/* Tappable example — quick-fill, still fully editable before submit */}
+                <button
+                  type="button"
+                  onClick={() => setTextInput(EXAMPLE_PROMPTS[workspaceType])}
+                  className="w-full rounded-lg border border-dashed border-border/60 px-3 py-1.5 text-left text-[11px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+                >
+                  <Sparkles className="h-3 w-3 shrink-0" style={{ color: ACCENT }} />
+                  <span className="truncate">Try: "{EXAMPLE_PROMPTS[workspaceType]}"</span>
+                </button>
+
                 <div className="flex items-center justify-between">
                   <button
                     type="button"

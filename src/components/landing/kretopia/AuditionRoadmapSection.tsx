@@ -9,8 +9,10 @@
  * shift, no blocking work on first paint, fully collapsed under
  * prefers-reduced-motion.
  */
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  ArrowLeft,
   ArrowRight,
   BadgeCheck,
   CalendarPlus,
@@ -31,6 +33,8 @@ interface Step {
   title: string;
   body: string;
   icon: LucideIcon;
+  /** Where this actually happens. `href` only set for real, static, linkable routes. */
+  surface: { label: string; href?: string };
 }
 
 const STEPS: Step[] = [
@@ -38,47 +42,58 @@ const STEPS: Step[] = [
     title: "Create & Share",
     body: "A host opens an audition, sets what they're looking for and shares one link.",
     icon: CalendarPlus,
+    surface: { label: "Studio", href: "/auth?next=/desk" },
   },
   {
     title: "Build a Passport",
     body: "Participants create or claim their Creative Passport so their record travels with them.",
     icon: BadgeCheck,
+    surface: { label: "Passport", href: "/auth?next=/profile" },
   },
   {
     title: "Submit Your Work",
     body: "Upload the asset the audition asks for — a video, a song, images or a portfolio.",
     icon: UploadCloud,
+    surface: { label: "Inside the audition's own page" },
   },
   {
     title: "Kreto Shortlists",
     body: "Kreto reads the submissions against the brief and proposes a shortlist for the host to edit.",
     icon: Sparkles,
+    surface: { label: "Automatic — nothing to visit" },
   },
   {
     title: "Join the Live",
     body: "Shortlisted participants receive access to the live audition room.",
     icon: Video,
+    surface: { label: "The audition's live room" },
   },
   {
     title: "Review Candidates",
     body: "The host meets shortlisted candidates one by one, with the brief and Passport side by side.",
     icon: ListChecks,
+    surface: { label: "Host's audition dashboard" },
   },
   {
     title: "Rate & Select",
     body: "Kreto suggests notes and a rating. The host confirms, adjusts and records the final decision.",
     icon: Star,
+    surface: { label: "Host's audition dashboard" },
   },
   {
     title: "Connect After",
     body: "The host sees the final selection list and can message or book the people they picked.",
     icon: Handshake,
+    surface: { label: "Messages", href: "/auth?next=/messages" },
   },
 ];
 
 export const AuditionRoadmapSection = () => {
   const reducedMotion = useReducedMotion();
   const [ref, visible] = useScrollReveal<HTMLDivElement>();
+  const [activeStep, setActiveStep] = useState<number | null>(null);
+
+  const selectStep = (i: number) => setActiveStep((current) => (current === i ? null : i));
 
   return (
     <section
@@ -121,6 +136,8 @@ export const AuditionRoadmapSection = () => {
 
           {STEPS.map((step, i) => {
             const Icon = step.icon;
+            const isActive = activeStep === i;
+            const next = STEPS[i + 1];
             return (
               <li
                 key={step.title}
@@ -136,9 +153,9 @@ export const AuditionRoadmapSection = () => {
                 <span
                   className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full sm:h-12 sm:w-12"
                   style={{
-                    backgroundColor: "#0C0F18",
-                    border: `1px solid ${visible ? "rgba(255,45,161,0.45)" : "rgba(255,255,255,0.14)"}`,
-                    transition: reducedMotion ? "none" : `border-color 0.6s ease ${i * 90}ms`,
+                    backgroundColor: isActive ? "rgba(255,45,161,0.16)" : "#0C0F18",
+                    border: `1px solid ${isActive ? ACCENT : visible ? "rgba(255,45,161,0.45)" : "rgba(255,255,255,0.14)"}`,
+                    transition: reducedMotion ? "none" : `border-color 0.6s ease ${i * 90}ms, background-color 0.2s ease`,
                   }}
                 >
                   <Icon
@@ -148,25 +165,77 @@ export const AuditionRoadmapSection = () => {
                   />
                 </span>
 
-                <div className="pt-1 min-w-0">
-                  <p
-                    className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/35"
-                    style={{ fontFamily: "'Work Sans', sans-serif" }}
+                <div className="pt-1 min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => selectStep(i)}
+                    aria-expanded={isActive}
+                    className="text-left w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2DA1] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded-sm"
                   >
-                    Step {String(i + 1).padStart(2, "0")}
-                  </p>
-                  <h3
-                    className="mt-1.5 text-base sm:text-lg font-semibold text-white"
-                    style={{ fontFamily: "'Satoshi', 'Inter', sans-serif", letterSpacing: "-0.01em" }}
-                  >
-                    {step.title}
-                  </h3>
-                  <p
-                    className="mt-1.5 text-sm leading-relaxed text-white/55 max-w-lg"
-                    style={{ fontFamily: "'Work Sans', sans-serif" }}
-                  >
-                    {step.body}
-                  </p>
+                    <p
+                      className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/35"
+                      style={{ fontFamily: "'Work Sans', sans-serif" }}
+                    >
+                      Step {String(i + 1).padStart(2, "0")}
+                    </p>
+                    <h3
+                      className="mt-1.5 text-base sm:text-lg font-semibold text-white"
+                      style={{ fontFamily: "'Satoshi', 'Inter', sans-serif", letterSpacing: "-0.01em" }}
+                    >
+                      {step.title}
+                    </h3>
+                    <p
+                      className="mt-1.5 text-sm leading-relaxed text-white/55 max-w-lg"
+                      style={{ fontFamily: "'Work Sans', sans-serif" }}
+                    >
+                      {step.body}
+                    </p>
+                  </button>
+
+                  {isActive && (
+                    <div
+                      className="mt-4 max-w-lg rounded-xl p-4"
+                      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    >
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                        <span className="text-white/40 uppercase tracking-wider text-[10px] font-semibold" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                          Where
+                        </span>
+                        {step.surface.href ? (
+                          <Link to={step.surface.href} className="font-medium hover:underline" style={{ color: ACCENT }}>
+                            {step.surface.label}
+                          </Link>
+                        ) : (
+                          <span className="text-white/70">{step.surface.label}</span>
+                        )}
+                      </div>
+                      {next && (
+                        <p className="mt-2 text-xs text-white/45" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                          Next: {next.title}
+                        </p>
+                      )}
+                      <div className="mt-3 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setActiveStep(Math.max(0, i - 1))}
+                          disabled={i === 0}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-white/60 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                        >
+                          <ArrowLeft className="h-3 w-3" aria-hidden />
+                          Previous
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveStep(Math.min(STEPS.length - 1, i + 1))}
+                          disabled={i === STEPS.length - 1}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-white/60 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                        >
+                          Next
+                          <ArrowRight className="h-3 w-3" aria-hidden />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </li>
             );

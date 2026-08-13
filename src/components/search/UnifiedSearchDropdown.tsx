@@ -61,21 +61,21 @@ const TYPE_META = {
   web: { label: "Discovered", icon: Sparkles, color: "text-amber-500" },
 };
 
-// Group headers for the mixed results list — "Creative Records" and
-// "Opportunities" match the product's own terminology; "web" results are
+// Group headers for the mixed results list — "Users", "Creative Work" and
+// "Opportunities" are the three canonical groups; "web" results are
 // literally raw web discoveries, not formal project records, so they keep
 // their own honest "Discovered" heading rather than being folded into
-// "Projects" (a category this search doesn't actually return).
+// "Creative Work" (which would overclaim their provenance).
 const RESULT_GROUP_LABEL: Record<SearchResult["type"], string> = {
-  creator: "People",
-  credit: "Creative Records",
+  creator: "Users",
+  credit: "Creative Work",
   gig: "Opportunities",
   web: "Discovered",
 };
 
 export function UnifiedSearchDropdown({
   variant = "navbar",
-  placeholder = "Search people, work or opportunities",
+  placeholder = "Search users, work and opportunities",
   value,
   onValueChange,
   autoFocus = false,

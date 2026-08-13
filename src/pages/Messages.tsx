@@ -23,6 +23,8 @@ import { MessageBubble } from "./messages/MessageBubble";
 import { MessageComposer } from "./messages/MessageComposer";
 import { EmptyChatState } from "./messages/EmptyChatState";
 import { VibeCheckPrompt } from "@/components/calls/VibeCheckPrompt";
+import { FeatureTutorial } from "@/components/landing/kretopia/FeatureTutorial";
+import { MESSAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import type { Attachment, ReplyTo, Message } from "./messages/types";
 
 const Messages = () => {
@@ -299,11 +301,15 @@ const Messages = () => {
             />
           </div>
         ) : (
-          <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground bg-background">
-            <div className="text-center space-y-2">
-              <div className="text-4xl mb-4"></div>
-              <p className="text-xl font-semibold">Your Messages</p>
-              <p className="text-sm">Send messages to creators you've connected with</p>
+          <div className="hidden md:flex flex-1 items-center justify-center p-8 bg-background">
+            <div className="w-full max-w-md">
+              <div className="text-center mb-8">
+                <p className="text-xl font-semibold">Your Messages</p>
+                <p className="text-sm text-muted-foreground mt-1">Send messages to creators you've connected with</p>
+              </div>
+              <div className="dark-surface rounded-2xl p-1" style={{ backgroundColor: "#05070D" }}>
+                <FeatureTutorial steps={MESSAGES_TUTORIAL} label="Messages tutorial" />
+              </div>
             </div>
           </div>
         )}

@@ -22,6 +22,8 @@ import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
 import { deriveEvidenceState, EVIDENCE_STATE_ORDER } from "@/lib/creditEvidence";
 import { SmartWidget } from "@/components/ui/smart-widget";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -136,6 +138,7 @@ interface WebResult {
 }
 
 const CreditDatabase = () => {
+  const reducedMotion = useReducedMotion();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
@@ -328,7 +331,7 @@ const CreditDatabase = () => {
         })}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-background pb-20">
+      <div className="dark min-h-screen bg-background pb-20" style={{ backgroundColor: "#05070D" }}>
         {currentUserId && (
           <div className="container mx-auto px-4 pt-3 flex justify-end">
             <button
@@ -354,14 +357,14 @@ const CreditDatabase = () => {
           <div className="container mx-auto px-4">
             {!isSearchActive && (
               <div className="mb-5 max-w-xl mx-auto">
-                <p className="brand-eyebrow mb-2 flex items-center gap-2">
-                  <Fingerprint className="h-3 w-3 text-energy" />
+                <p className="landing-eyebrow mb-3 flex items-center justify-center gap-2">
+                  <Fingerprint className="h-3 w-3" style={{ color: "#FF2DA1" }} />
                   Creative Passport
                 </p>
-                <h1 className="text-3xl md:text-4xl font-black tracking-[-0.03em] leading-[1.05] mb-2">
-                  Kretopia Credits
+                <h1 className="landing-h2 landing-glow text-center">
+                  Kretopia <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>Credits</span>
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="landing-sub mt-3 text-center">
                   Search any project, person, or production across the global creative industry.
                 </p>
 
@@ -444,36 +447,42 @@ const CreditDatabase = () => {
                       <h2 className="text-sm font-semibold">Projects</h2>
                       <span className="text-[11px] text-muted-foreground">({icdbProjects.length + aiSuggestions.length})</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {icdbProjects.map(project => (
-                        <PosterCard
-                          key={project.id}
-                          title={project.title}
-                          type={project.type}
-                          year={project.year}
-                          imageUrl={project.cover_image_url}
-                          isVerified={project.is_verified}
-                          roleCount={project.icdb_project_roles?.length || 0}
-                          claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
-                          clientBrand={project.client_brand}
-                          onClick={() => navigate(`/credits/project/${project.id}`)}
-                          formatType={formatType}
-                          getCategoryForType={getCategoryForType}
-                        />
-                      ))}
-                      {aiSuggestions.map((s, i) => (
-                        <PosterCard
-                          key={`ai-${i}`}
-                          title={s.title}
-                          type={s.type}
-                          year={s.year}
-                          isAI
-                          clientBrand={s.client_brand}
-                          formatType={formatType}
-                          getCategoryForType={getCategoryForType}
-                        />
-                      ))}
-                    </div>
+                    <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Projects">
+                      <CarouselContent className="-ml-3">
+                        {icdbProjects.map(project => (
+                          <CarouselItem key={project.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
+                            <PosterCard
+                              title={project.title}
+                              type={project.type}
+                              year={project.year}
+                              imageUrl={project.cover_image_url}
+                              isVerified={project.is_verified}
+                              roleCount={project.icdb_project_roles?.length || 0}
+                              claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
+                              clientBrand={project.client_brand}
+                              onClick={() => navigate(`/credits/project/${project.id}`)}
+                              formatType={formatType}
+                              getCategoryForType={getCategoryForType}
+                            />
+                          </CarouselItem>
+                        ))}
+                        {aiSuggestions.map((s, i) => (
+                          <CarouselItem key={`ai-${i}`} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
+                            <PosterCard
+                              title={s.title}
+                              type={s.type}
+                              year={s.year}
+                              isAI
+                              clientBrand={s.client_brand}
+                              formatType={formatType}
+                              getCategoryForType={getCategoryForType}
+                            />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous projects" />
+                      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next projects" />
+                    </Carousel>
                   </section>
                 )}
 
@@ -484,21 +493,26 @@ const CreditDatabase = () => {
                       <Users className="h-4 w-4 text-primary" />
                       <h2 className="text-sm font-semibold">Creators</h2>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {userCredits.map(credit => {
-                        const profile = profiles.get(credit.user_id);
-                        return (
-                          <CreditPosterCard
-                            key={credit.id}
-                            credit={credit}
-                            profile={profile}
-                            onClick={() => navigate(`/profile/${credit.user_id}`)}
-                            formatType={formatType}
-                            getCategoryForType={getCategoryForType}
-                          />
-                        );
-                      })}
-                    </div>
+                    <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Creators">
+                      <CarouselContent className="-ml-3">
+                        {userCredits.map(credit => {
+                          const profile = profiles.get(credit.user_id);
+                          return (
+                            <CarouselItem key={credit.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
+                              <CreditPosterCard
+                                credit={credit}
+                                profile={profile}
+                                onClick={() => navigate(`/profile/${credit.user_id}`)}
+                                formatType={formatType}
+                                getCategoryForType={getCategoryForType}
+                              />
+                            </CarouselItem>
+                          );
+                        })}
+                      </CarouselContent>
+                      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous creators" />
+                      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next creators" />
+                    </Carousel>
                   </section>
                 )}
 
@@ -509,22 +523,27 @@ const CreditDatabase = () => {
                       <Globe className="h-4 w-4 text-primary" />
                       <h2 className="text-sm font-semibold">Discovered on the Web</h2>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {webResults.map((result, i) => (
-                        <PosterCard
-                          key={`web-${i}`}
-                          title={result.title}
-                          type={result.type || 'project'}
-                          year={result.year}
-                          imageUrl={result.image_url}
-                          platform={result.platform}
-                          onClick={() => result.url && window.open(result.url, '_blank')}
-                          formatType={formatType}
-                          getCategoryForType={getCategoryForType}
-                          isExternal
-                        />
-                      ))}
-                    </div>
+                    <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Discovered on the web">
+                      <CarouselContent className="-ml-3">
+                        {webResults.map((result, i) => (
+                          <CarouselItem key={`web-${i}`} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
+                            <PosterCard
+                              title={result.title}
+                              type={result.type || 'project'}
+                              year={result.year}
+                              imageUrl={result.image_url}
+                              platform={result.platform}
+                              onClick={() => result.url && window.open(result.url, '_blank')}
+                              formatType={formatType}
+                              getCategoryForType={getCategoryForType}
+                              isExternal
+                            />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous web results" />
+                      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next web results" />
+                    </Carousel>
                   </section>
                 )}
               </div>
@@ -551,17 +570,22 @@ const CreditDatabase = () => {
                           <h2 className="text-sm font-semibold">Featured Work</h2>
                           <span className="text-[11px] text-muted-foreground">Visual credits</span>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                          {withArt.slice(0, 20).map(credit => (
-                            <CreditPosterCard
-                              key={credit.id}
-                              credit={credit}
-                              onClick={() => navigate(`/profile/${credit.user_id}`)}
-                              formatType={formatType}
-                              getCategoryForType={getCategoryForType}
-                            />
-                          ))}
-                        </div>
+                        <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Featured work">
+                          <CarouselContent className="-ml-3">
+                            {withArt.slice(0, 20).map(credit => (
+                              <CarouselItem key={credit.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
+                                <CreditPosterCard
+                                  credit={credit}
+                                  onClick={() => navigate(`/profile/${credit.user_id}`)}
+                                  formatType={formatType}
+                                  getCategoryForType={getCategoryForType}
+                                />
+                              </CarouselItem>
+                            ))}
+                          </CarouselContent>
+                          <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous featured work" />
+                          <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next featured work" />
+                        </Carousel>
                       </section>
                     )}
 
@@ -599,24 +623,29 @@ const CreditDatabase = () => {
                     <Loader2 className="h-6 w-6 animate-spin text-primary" />
                   </div>
                 ) : trendingProjects.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {trendingProjects.map(project => (
-                      <PosterCard
-                        key={project.id}
-                        title={project.title}
-                        type={project.type}
-                        year={project.year}
-                        imageUrl={project.cover_image_url}
-                        isVerified={project.is_verified}
-                        roleCount={project.icdb_project_roles?.length || 0}
-                        claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
-                        clientBrand={project.client_brand}
-                        onClick={() => navigate(`/credits/project/${project.id}`)}
-                        formatType={formatType}
-                        getCategoryForType={getCategoryForType}
-                      />
-                    ))}
-                  </div>
+                  <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Recently added projects">
+                    <CarouselContent className="-ml-3">
+                      {trendingProjects.map(project => (
+                        <CarouselItem key={project.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
+                          <PosterCard
+                            title={project.title}
+                            type={project.type}
+                            year={project.year}
+                            imageUrl={project.cover_image_url}
+                            isVerified={project.is_verified}
+                            roleCount={project.icdb_project_roles?.length || 0}
+                            claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
+                            clientBrand={project.client_brand}
+                            onClick={() => navigate(`/credits/project/${project.id}`)}
+                            formatType={formatType}
+                            getCategoryForType={getCategoryForType}
+                          />
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous recently added projects" />
+                    <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next recently added projects" />
+                  </Carousel>
                 ) : (
                   <div className="text-center py-12">
                     <Database className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />

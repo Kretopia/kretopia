@@ -9,7 +9,7 @@
  * Nothing here auto-opens Kreto, requests permissions, or fakes a response.
  */
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { FeatureTutorial } from "./FeatureTutorial";
+import { TutorialStepper } from "./TutorialStepper";
 import { KRETO_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
 
@@ -54,13 +54,10 @@ const PROMPTS = [
 
 export const MeetKretoSection = () => {
   const reducedMotion = useReducedMotion();
-  const [i, setI] = useState(0);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    const id = setInterval(() => setI((n) => (n + 1) % LINES.length), 4200);
-    return () => clearInterval(id);
-  }, [reducedMotion]);
+  const [activeStep, setActiveStep] = useState(0);
+  // The rotating message reflects whichever tutorial step is active, rather
+  // than cycling on its own independent timer.
+  const i = activeStep % LINES.length;
 
   return (
     <section
@@ -239,15 +236,20 @@ export const MeetKretoSection = () => {
           </motion.div>
         </div>
 
-        {/* Interactive tutorial */}
+        {/* Interactive tutorial — full width, drives the command surface above */}
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-12 lg:mt-16 max-w-xl"
+          className="mt-16 lg:mt-20 max-w-2xl"
         >
-          <FeatureTutorial steps={KRETO_TUTORIAL} label="Kreto tutorial" />
+          <TutorialStepper
+            steps={KRETO_TUTORIAL}
+            label="Kreto tutorial"
+            activeStep={activeStep}
+            onStepChange={setActiveStep}
+          />
         </motion.div>
       </div>
     </section>

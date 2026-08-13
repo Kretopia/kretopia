@@ -7,7 +7,8 @@
  */
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { FeatureTutorial } from "./FeatureTutorial";
+import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
+import { SearchVisual } from "./featureVisuals";
 import { SEARCH_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
 
@@ -20,7 +21,7 @@ export const SearchTutorialSection = () => {
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="search-tutorial-title"
     >
-      <div className="relative mx-auto max-w-[1100px]">
+      <div className="relative mx-auto max-w-[1320px]">
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -32,11 +33,12 @@ export const SearchTutorialSection = () => {
           <h2 id="search-tutorial-title" className="landing-h2 landing-glow">
             How search works.
           </h2>
-          <p className="landing-sub mt-5 mb-9">
+          <p className="landing-sub mt-5">
             The search bar above is real — try it. Here's what happens once you do.
           </p>
-          <FeatureTutorial steps={SEARCH_TUTORIAL} label="Search tutorial" />
         </motion.div>
+
+        <FeatureTutorialPanel steps={SEARCH_TUTORIAL} label="Search tutorial" visual={SearchVisual} />
       </div>
     </section>
   );

@@ -23,6 +23,10 @@ import {
   PASSPORT_TUTORIAL, SCOUT_TUTORIAL, MATCH_TUTORIAL,
   STUDIO_TUTORIAL, SOUNDSTAGES_TUTORIAL,
 } from "@/components/landing/kretopia/tutorialContent";
+import {
+  PassportVisual, ScoutVisual, MatchVisual,
+  StudioVisual, SoundStagesVisual,
+} from "@/components/landing/kretopia/featureVisuals";
 
 import passportImg    from "@/assets/kretopia/chapter-passport.jpg";
 import scoutImg       from "@/assets/kretopia/chapter-scout.jpg";
@@ -57,6 +61,7 @@ export const LandingBelowFold = () => {
         accent="#FF2DA1"
         href="/auth?next=/profile"
         tutorialSteps={PASSPORT_TUTORIAL}
+        tutorialVisual={PassportVisual}
       />
 
       {/* Verified Credits — the canonical tutorial reference */}
@@ -82,6 +87,7 @@ export const LandingBelowFold = () => {
         href="/auth?next=/scout"
         reverse
         tutorialSteps={SCOUT_TUTORIAL}
+        tutorialVisual={ScoutVisual}
       />
 
       {/* Match */}
@@ -103,6 +109,7 @@ export const LandingBelowFold = () => {
         accent="#FF2DA1"
         href="/auth?next=/match"
         tutorialSteps={MATCH_TUTORIAL}
+        tutorialVisual={MatchVisual}
       />
 
       {/* Studio */}
@@ -125,6 +132,7 @@ export const LandingBelowFold = () => {
         href="/auth?next=/desk"
         reverse
         tutorialSteps={STUDIO_TUTORIAL}
+        tutorialVisual={StudioVisual}
       />
 
       {/* SoundStages */}
@@ -146,6 +154,7 @@ export const LandingBelowFold = () => {
         accent="#FF2DA1"
         href="/auth?next=/circle?tab=live"
         tutorialSteps={SOUNDSTAGES_TUTORIAL}
+        tutorialVisual={SoundStagesVisual}
       />
 
       {/* Kreto — the sunset moment */}

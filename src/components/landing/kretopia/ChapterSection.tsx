@@ -5,7 +5,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { FeatureTutorial, type TutorialStep } from "./FeatureTutorial";
+import type { ComponentType } from "react";
+import type { TutorialStep } from "./FeatureTutorial";
+import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export interface ChapterProps {
@@ -19,12 +21,14 @@ export interface ChapterProps {
   href: string;
   reverse?: boolean;    // flip layout
   id?: string;          // scroll-to anchor for chapter nav
-  /** Interactive tutorial steps, rendered directly below the image/text grid. */
+  /** Interactive tutorial steps, rendered as a full-width panel below the image/text grid. */
   tutorialSteps?: TutorialStep[];
+  /** Step-reactive visual preview paired with tutorialSteps in the panel. */
+  tutorialVisual?: ComponentType<{ activeStep: number }>;
 }
 
 export const ChapterSection = ({
-  index, kicker, title, body, caption, image, accent, href, reverse, id, tutorialSteps,
+  index, kicker, title, body, caption, image, accent, href, reverse, id, tutorialSteps, tutorialVisual,
 }: ChapterProps) => {
   const reducedMotion = useReducedMotion();
   return (
@@ -135,17 +139,14 @@ export const ChapterSection = ({
           </motion.div>
         </div>
 
-        {/* Interactive tutorial — immediately follows its feature, never detached */}
-        {tutorialSteps && tutorialSteps.length > 0 && (
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="mt-12 lg:mt-16 max-w-xl lg:ml-auto lg:mr-0"
-          >
-            <FeatureTutorial steps={tutorialSteps} label={`${kicker} tutorial`} />
-          </motion.div>
+        {/* Interactive tutorial — full-width panel, immediately follows its feature */}
+        {tutorialSteps && tutorialSteps.length > 0 && tutorialVisual && (
+          <FeatureTutorialPanel
+            steps={tutorialSteps}
+            label={`${kicker} tutorial`}
+            visual={tutorialVisual}
+            reverse={reverse}
+          />
         )}
       </div>
     </section>

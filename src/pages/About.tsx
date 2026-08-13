@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { SmartWidget } from "@/components/ui/smart-widget";
 
 const PILLARS = [
   {
@@ -214,10 +215,11 @@ const About = () => {
 
       {/* Story */}
       <section className="container mx-auto max-w-4xl px-4 pb-16">
-        <Card className="border-primary/15 overflow-hidden">
+        <SmartWidget interactive={false}>
+        <Card className="border-0 overflow-hidden">
           <CardContent className="p-6 sm:p-10">
             <div className="flex items-start gap-4 mb-6">
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ai-ambient-breathe">
                 <Heart className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -251,6 +253,7 @@ const About = () => {
             </div>
           </CardContent>
         </Card>
+        </SmartWidget>
       </section>
 
       {/* Community Section */}
@@ -284,7 +287,8 @@ const About = () => {
       {/* Mission & Vision */}
       <section className="container mx-auto max-w-4xl px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border-primary/15">
+          <SmartWidget interactive={false} scanLine={false}>
+          <Card className="border-0">
             <CardContent className="p-6 sm:p-8">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                 <Rocket className="h-5 w-5 text-primary" />
@@ -296,7 +300,9 @@ const About = () => {
               </p>
             </CardContent>
           </Card>
-          <Card className="border-primary/15">
+          </SmartWidget>
+          <SmartWidget interactive={false} scanLine={false}>
+          <Card className="border-0">
             <CardContent className="p-6 sm:p-8">
               <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
                 <Sparkles className="h-5 w-5 text-accent" />
@@ -308,15 +314,17 @@ const About = () => {
               </p>
             </CardContent>
           </Card>
+          </SmartWidget>
         </div>
       </section>
 
       {/* Founder's Note */}
       <section className="container mx-auto max-w-4xl px-4 pb-16">
-        <Card className="border-primary/10 bg-gradient-to-br from-primary/[0.03] via-background to-accent/[0.03]">
+        <SmartWidget interactive={false}>
+        <Card className="border-0 bg-gradient-to-br from-primary/[0.03] via-background to-accent/[0.03]">
           <CardContent className="p-6 sm:p-10">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center ai-ambient-breathe">
                 <Quote className="h-5 w-5 text-primary" />
               </div>
               <div>
@@ -336,6 +344,7 @@ const About = () => {
             </div>
           </CardContent>
         </Card>
+        </SmartWidget>
       </section>
 
       {/* Timeline */}

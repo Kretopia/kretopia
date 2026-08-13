@@ -7,6 +7,7 @@ import { Headphones, ExternalLink, Play, ChevronDown, ChevronUp, AlertCircle, Re
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
+import { SmartWidget } from "@/components/ui/smart-widget";
 
 const PLAYLIST_ID = "PL3IHAVyb_6H2OpHnvwDa7EubXaanmXfOY";
 
@@ -73,7 +74,8 @@ export const PodcastPlayer = () => {
 
       {/* Active Player */}
       {activeEpisode && (
-        <Card className="overflow-hidden border-border/50 rounded-xl">
+        <SmartWidget className="rounded-xl" scanLine interactive={false}>
+        <Card className="overflow-hidden border-border/50 rounded-xl border-0">
           <div className="aspect-video">
             <iframe
               src={`https://www.youtube.com/embed/${activeEpisode}?rel=0`}
@@ -100,6 +102,7 @@ export const PodcastPlayer = () => {
             </div>
           )}
         </Card>
+        </SmartWidget>
       )}
 
       {/* Episode List */}
@@ -127,14 +130,12 @@ export const PodcastPlayer = () => {
             All Episodes
           </p>
           {visibleEpisodes.map((ep) => (
+            <SmartWidget key={ep.videoId} className="rounded-xl" scanLine={false}>
             <Card
-              key={ep.videoId}
               onClick={() => setActiveEpisode(ep.videoId)}
               className={cn(
-                "flex gap-3 p-2.5 cursor-pointer transition-all rounded-xl border",
-                activeEpisode === ep.videoId
-                  ? "border-primary/40 bg-primary/5"
-                  : "border-border/50 hover:border-primary/20"
+                "flex gap-3 p-2.5 cursor-pointer transition-all rounded-xl border-0",
+                activeEpisode === ep.videoId && "bg-primary/5"
               )}
             >
               <div className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0">
@@ -159,6 +160,7 @@ export const PodcastPlayer = () => {
                 )}
               </div>
             </Card>
+            </SmartWidget>
           ))}
 
           {episodes.length > 4 && (

@@ -21,6 +21,7 @@ import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
 import { deriveEvidenceState, EVIDENCE_STATE_ORDER } from "@/lib/creditEvidence";
+import { SmartWidget } from "@/components/ui/smart-widget";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -694,9 +695,10 @@ function PosterCard({
   const CatIcon = CATEGORY_ICONS[cat] || Globe;
 
   return (
+    <SmartWidget className="rounded-xl" scanLine={false}>
     <button
       onClick={onClick}
-      className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/40"
+      className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/40 w-full"
     >
       {/* Poster artwork */}
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl">
@@ -767,6 +769,7 @@ function PosterCard({
         </div>
       </div>
     </button>
+    </SmartWidget>
   );
 }
 
@@ -787,9 +790,10 @@ function CreditPosterCard({
   const resolvedThumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
 
   return (
+    <SmartWidget className="rounded-xl" scanLine={false}>
     <button
       onClick={onClick}
-      className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 hover:scale-[1.02] focus:outline-none"
+      className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 focus:outline-none w-full"
     >
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl">
         {resolvedThumb ? (
@@ -847,6 +851,7 @@ function CreditPosterCard({
         </div>
       </div>
     </button>
+    </SmartWidget>
   );
 }
 

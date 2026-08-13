@@ -7,10 +7,10 @@
  * in the single brand accent, and lets the visitor jump directly to any
  * chapter.
  *
- * Desktop (lg+): a slim vertical dot rail, label revealed on hover/focus.
- * Mobile/tablet: a segmented horizontal progress bar. Both are real
- * <button> elements — keyboard-operable with no extra wiring, and each
- * carries aria-current for the active chapter.
+ * Desktop (lg+) only: a slim vertical dot rail, label revealed on
+ * hover/focus. Real <button> elements — keyboard-operable with no extra
+ * wiring, each carries aria-current for the active chapter. No mobile
+ * variant — the segmented top progress bar was removed by request.
  */
 import { useEffect, useState } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -145,24 +145,6 @@ export const ChapterProgressNav = ({ ready }: ChapterProgressNavProps) => {
             </button>
           );
         })}
-      </nav>
-
-      {/* Mobile/tablet: segmented progress bar */}
-      <nav
-        aria-label="Landing tutorial progress"
-        className="lg:hidden fixed top-[calc(env(safe-area-inset-top)+52px)] inset-x-0 z-40 flex gap-1 px-4"
-      >
-        {CHAPTERS.map((c, i) => (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => jumpTo(c.id)}
-            aria-current={i === activeIndex ? "true" : undefined}
-            aria-label={`Jump to ${c.label} chapter`}
-            className="flex-1 h-[3px] rounded-full transition-colors duration-200"
-            style={{ backgroundColor: i <= activeIndex ? ACCENT : "rgba(255,255,255,0.15)" }}
-          />
-        ))}
       </nav>
     </>
   );

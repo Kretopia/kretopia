@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense, lazy } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Search, Verified, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,9 +30,15 @@ import { ThriveFundTeaserCard } from "@/components/landing/ThriveFundTeaserCard"
 import { CoreValueBlocks } from "@/components/landing/CoreValueBlocks";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { BottomCTASection } from "@/components/landing/BottomCTASection";
-import { OneWedgeLanding } from "@/components/landing/OneWedgeLanding";
-import { KretopiaLanding } from "@/components/landing/KretopiaLanding";
 import { useLandingVariant } from "@/hooks/useLandingVariant";
+
+// KretopiaLanding is the entire guest landing page (hero + all chapters) —
+// route-split so logged-in users, who never render it, don't pay for it in
+// the shared UnifiedHome chunk. OneWedgeLanding (the retired A/B variant)
+// was imported here too but never rendered — removed, it was dead weight.
+const KretopiaLanding = lazy(
+  () => import("@/components/landing/KretopiaLanding").then((m) => ({ default: m.KretopiaLanding })),
+);
 // StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
@@ -452,7 +458,9 @@ export const UnifiedHome = () => {
       {/* Never show the public hero while the session is still resolving —
           otherwise signed-in users bounce back to the landing page on refresh. */}
       {!user && !authLoading && (
-        <KretopiaLanding onSearchSubmit={handleHeroClaimSearch} />
+        <Suspense fallback={<div className="min-h-screen" style={{ backgroundColor: "#05070D" }} aria-busy="true" />}>
+          <KretopiaLanding onSearchSubmit={handleHeroClaimSearch} />
+        </Suspense>
       )}
       {!user && authLoading && <div className="min-h-[60vh]" aria-busy="true" />}
 

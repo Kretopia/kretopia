@@ -61,9 +61,21 @@ const TYPE_META = {
   web: { label: "Discovered", icon: Sparkles, color: "text-amber-500" },
 };
 
+// Group headers for the mixed results list — "Users", "Creative Work" and
+// "Opportunities" are the three canonical groups; "web" results are
+// literally raw web discoveries, not formal project records, so they keep
+// their own honest "Discovered" heading rather than being folded into
+// "Creative Work" (which would overclaim their provenance).
+const RESULT_GROUP_LABEL: Record<SearchResult["type"], string> = {
+  creator: "Users",
+  credit: "Creative Work",
+  gig: "Opportunities",
+  web: "Discovered",
+};
+
 export function UnifiedSearchDropdown({
   variant = "navbar",
-  placeholder = "Search creators, gigs, credits...",
+  placeholder = "Search users, work and opportunities",
   value,
   onValueChange,
   autoFocus = false,
@@ -842,70 +854,88 @@ export function UnifiedSearchDropdown({
               );
             })()}
 
-            {/* Rest of results (credits, gigs, web discoveries) */}
-            {results
-              .filter((r) => !highlightedCreator || (r.id !== highlightedCreator.id && r.type !== "creator"))
-              .map((r, i) => {
-                const meta = TYPE_META[r.type];
-                return (
-                  <button
-                    key={`${r.type}-${r.id}-${i}`}
-                    data-search-result
-                    onKeyDown={handleResultKeyDown}
-                    onClick={() => handleSelect(r)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none transition-colors text-left"
-                  >
-                    {r.avatar ? (
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage src={r.avatar} />
-                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                          {(r.title || "?")[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                        <meta.icon className={cn("h-3.5 w-3.5", meta.color)} />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
-                      {r.subtitle && (
-                        <p className="text-[11px] text-muted-foreground truncate">{r.subtitle}</p>
-                      )}
-                    </div>
-                    {r.type === "web" && r.url ? (
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
-                    ) : r.type === "creator" && r.is_claimed === false ? (
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <Badge variant="outline" className="text-[9px] text-amber-500 border-amber-500/30 bg-amber-500/10">
-                          Unclaimed
-                        </Badge>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpen(false);
-                            setQuery("");
-                            onOpenChange?.(false);
-                            navigate(`/profile/${r.id}?showClaim=true`);
-                          }}
-                          className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-[hsl(var(--color-accent))] text-white"
-                        >
-                          <UserCheck className="h-2.5 w-2.5" />
-                          Claim
-                        </button>
-                      </div>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className={cn("text-[9px] shrink-0", meta.color)}
+            {/* Rest of results — grouped under labeled headers (Creative
+                Records / Opportunities / Discovered) rather than one mixed
+                list, so it reads as an AI-organized answer, not a grep dump. */}
+            {(["creator", "credit", "gig", "web"] as const).map((groupType) => {
+              const items = results.filter((r) => {
+                if (r.type !== groupType) return false;
+                if (!highlightedCreator) return true;
+                // Creator-type results are already covered by the
+                // highlighted-creator card and "Other potential matches"
+                // above once a highlightedCreator exists — avoid duplicates.
+                return r.id !== highlightedCreator.id && r.type !== "creator";
+              });
+              if (items.length === 0) return null;
+              return (
+                <div key={groupType} className="border-b border-border last:border-b-0">
+                  <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    {RESULT_GROUP_LABEL[groupType]}
+                  </p>
+                  {items.map((r, i) => {
+                    const meta = TYPE_META[r.type];
+                    return (
+                      <button
+                        key={`${r.type}-${r.id}-${i}`}
+                        data-search-result
+                        onKeyDown={handleResultKeyDown}
+                        onClick={() => handleSelect(r)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none transition-colors text-left"
                       >
-                        {meta.label}
-                      </Badge>
-                    )}
-                  </button>
-                );
-              })}
+                        {r.avatar ? (
+                          <Avatar className="h-8 w-8 shrink-0">
+                            <AvatarImage src={r.avatar} />
+                            <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                              {(r.title || "?")[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                            <meta.icon className={cn("h-3.5 w-3.5", meta.color)} />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
+                          {r.subtitle && (
+                            <p className="text-[11px] text-muted-foreground truncate">{r.subtitle}</p>
+                          )}
+                        </div>
+                        {r.type === "web" && r.url ? (
+                          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+                        ) : r.type === "creator" && r.is_claimed === false ? (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <Badge variant="outline" className="text-[9px] text-amber-500 border-amber-500/30 bg-amber-500/10">
+                              Unclaimed
+                            </Badge>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpen(false);
+                                setQuery("");
+                                onOpenChange?.(false);
+                                navigate(`/profile/${r.id}?showClaim=true`);
+                              }}
+                              className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-[hsl(var(--color-accent))] text-white"
+                            >
+                              <UserCheck className="h-2.5 w-2.5" />
+                              Claim
+                            </button>
+                          </div>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className={cn("text-[9px] shrink-0", meta.color)}
+                          >
+                            {meta.label}
+                          </Badge>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
 
             {/* Background web search indicator */}
             {webLoading && results.length > 0 && (

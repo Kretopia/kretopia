@@ -5,6 +5,8 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import { FeatureTutorial, type TutorialStep } from "./FeatureTutorial";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export interface ChapterProps {
   index: string;        // "I", "II", "III"…
@@ -16,13 +18,18 @@ export interface ChapterProps {
   accent: string;       // hex
   href: string;
   reverse?: boolean;    // flip layout
+  id?: string;          // scroll-to anchor for chapter nav
+  /** Interactive tutorial steps, rendered directly below the image/text grid. */
+  tutorialSteps?: TutorialStep[];
 }
 
 export const ChapterSection = ({
-  index, kicker, title, body, caption, image, accent, href, reverse,
+  index, kicker, title, body, caption, image, accent, href, reverse, id, tutorialSteps,
 }: ChapterProps) => {
+  const reducedMotion = useReducedMotion();
   return (
     <section
+      id={id}
       className="relative overflow-hidden border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
     >
@@ -31,7 +38,7 @@ export const ChapterSection = ({
 
           {/* IMAGE */}
           <motion.div
-            initial={{ opacity: 0, scale: 1.03 }}
+            initial={reducedMotion ? false : { opacity: 0, scale: 1.03 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1.1, ease: [0.2, 0.65, 0.3, 0.95] }}
@@ -76,7 +83,7 @@ export const ChapterSection = ({
 
           {/* TEXT */}
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.9, delay: 0.15 }}
@@ -84,7 +91,7 @@ export const ChapterSection = ({
           >
             <div className="flex items-center gap-3 mb-6">
               <span
-                className="font-serif italic text-2xl"
+                className="font-serif italic text-2xl pink-glow-breathe"
                 style={{ color: accent }}
               >
                 {index}.
@@ -102,7 +109,7 @@ export const ChapterSection = ({
               style={{ fontSize: "clamp(2rem, 4.6vw, 4rem)" }}
             >
               {title}
-              <span style={{ color: accent }}>.</span>
+              <span className="pink-glow-breathe" style={{ color: accent }}>.</span>
             </h2>
 
             <p
@@ -127,6 +134,19 @@ export const ChapterSection = ({
             </Link>
           </motion.div>
         </div>
+
+        {/* Interactive tutorial — immediately follows its feature, never detached */}
+        {tutorialSteps && tutorialSteps.length > 0 && (
+          <motion.div
+            initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="mt-12 lg:mt-16 max-w-xl lg:ml-auto lg:mr-0"
+          >
+            <FeatureTutorial steps={tutorialSteps} label={`${kicker} tutorial`} />
+          </motion.div>
+        )}
       </div>
     </section>
   );

@@ -238,7 +238,7 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       : await supabase.from("magazine_articles").insert({
           ...payload,
           author_user_id: user.id,
-          author_name: "Kretopia Magazine",
+          author_name: "ThriveIN Magazine",
         });
 
     if (error) {

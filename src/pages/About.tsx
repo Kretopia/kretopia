@@ -1,21 +1,62 @@
 import { SEO } from "@/components/SEO";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  MapPin, Calendar, Users, Globe, ArrowRight, Quote, 
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  MapPin, Calendar, Users, Globe, ArrowRight, Quote,
   Rocket, Music, Film, Palette, Camera, Mic, Sparkles,
-  Building2, Plane, Heart, Wifi, RefreshCw, Zap
+  Building2, Plane, Heart, Wifi, RefreshCw, Zap,
+  Fingerprint, ShieldCheck, Compass, LayoutGrid, Theater, Search,
+  ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
+
+const PILLARS = [
+  {
+    icon: Fingerprint,
+    title: "Creative Passport",
+    body: "Every project, every credit, every co-sign — collected into one link that is your whole career, verified by the people who lived it with you.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Verified Credits",
+    body: "A credit isn't called verified without evidence behind it. Claimed, evidence-backed, co-signed, or organization-confirmed — always honestly labeled.",
+  },
+  {
+    icon: Compass,
+    title: "Scout",
+    body: "Scout reads the web for gigs, briefs and casting calls, and surfaces the ones that actually fit your Passport.",
+  },
+  {
+    icon: LayoutGrid,
+    title: "Studio",
+    body: "Every shoot, drop or campaign gets its own Studio — brief, files, chat, deliverables and payment in one room.",
+  },
+  {
+    icon: Theater,
+    title: "SoundStages",
+    body: "Live rooms, speed sessions and auditions — a way to be seen by an audience that came for exactly what you do.",
+  },
+  {
+    icon: Sparkles,
+    title: "Kreto",
+    body: "The Executive Producer for your creative career — reads your Passport, explains opportunities, and turns conversations into action. Everything it produces stays editable and only becomes official once you confirm it.",
+  },
+];
+
+const LOOP_STEPS = ["Search", "Passport", "Trust", "Opportunity", "Studio", "Payment", "Stronger Passport"];
 
 const timeline = [
-  { year: "2013", location: "Dubai", icon: Building2, title: "The Beginning", desc: "Kretopia begins as Industry Night, a weekly after-work gathering for creatives at Holiday Inn Internet City. A space designed for connection, collaboration, and community." },
+  { year: "2013", location: "Dubai", icon: Building2, title: "The Beginning", desc: "ThriveIN begins as Industry Night, a weekly after-work gathering for creatives at Holiday Inn Internet City. A space designed for connection, collaboration, and community." },
   { year: "2014", location: "Los Angeles", icon: Plane, title: "International Expansion", desc: "The community expands into Los Angeles, connecting creatives internationally and building bridges between industries and markets." },
-  { year: "2015", location: "Trinidad & Tobago", icon: Music, title: "Caribbean Launch", desc: "Kretopia launches in Trinidad, creating a platform for Caribbean creatives to connect, showcase their work, and access new opportunities." },
+  { year: "2015", location: "Trinidad & Tobago", icon: Music, title: "Caribbean Launch", desc: "ThriveIN launches in Trinidad, creating a platform for Caribbean creatives to connect, showcase their work, and access new opportunities." },
   { year: "2016", location: "Global", icon: Globe, title: "Global Impact", desc: "Real opportunities begin to emerge — including facilitating a global distribution pathway for Caribbean artist Kalpee with Sony Music." },
-  { year: "2017", location: "Geneva", icon: MapPin, title: "European Expansion", desc: "Kretopia expands into Europe, continuing its mission of connecting creatives across borders and cultures." },
+  { year: "2017", location: "Geneva", icon: MapPin, title: "European Expansion", desc: "ThriveIN expands into Europe, continuing its mission of connecting creatives across borders and cultures." },
   { year: "2018", location: "Worldwide", icon: Users, title: "Community Growth", desc: "The network grows across regions, hosting showcases, fashion shows, live art, music performances, and creative networking experiences." },
-  { year: "2019", location: "Bali", icon: Sparkles, title: "ThriveXchange", desc: "Kretopia launches in Bali and introduces ThriveXchange, a 12-day creative experience bringing together global creatives for collaboration and cultural exchange." },
-  { year: "2020", location: "Digital", icon: Wifi, title: "First Digital Step", desc: "Kretopia begins its transition into the digital space with the first version of the platform, extending the community beyond physical events." },
+  { year: "2019", location: "Bali", icon: Sparkles, title: "ThriveXchange", desc: "ThriveIN launches in Bali and introduces ThriveXchange, a 12-day creative experience bringing together global creatives for collaboration and cultural exchange." },
+  { year: "2020", location: "Digital", icon: Wifi, title: "First Digital Step", desc: "ThriveIN begins its transition into the digital space with the first version of the platform, extending the community beyond physical events." },
   { year: "2022", location: "Platform", icon: RefreshCw, title: "Rebuild & Evolution", desc: "The platform is reimagined and rebuilt, supported by early-stage funding and experimentation, setting the foundation for a more powerful ecosystem." },
   { year: "2026", location: "Kretopia.io", icon: Zap, title: "The Platform Era", desc: "Kretopia evolves into a global creative platform — bringing together community, collaboration, verified credits, and real opportunities in one place." },
 ];
@@ -35,6 +76,98 @@ const cities = [
   { name: "Bali", flag: "🇮🇩" },
 ];
 
+/**
+ * ProductLoopSection — "The problem / The system / The loop / The
+ * invitation" narrative the charter asks for, kept separate from the
+ * ThriveIN origin story below it. Product-first, then "why us" history.
+ * Reuses useScrollReveal (same primitive as the landing chapters) rather
+ * than a fifth hand-rolled reveal implementation.
+ */
+const ProductLoopSection = () => {
+  const [loopRef, loopVisible] = useScrollReveal<HTMLDivElement>();
+
+  return (
+    <section className="border-y border-border bg-card/30">
+      <div className="container mx-auto max-w-4xl px-4 py-16 sm:py-20">
+        {/* The problem */}
+        <div className="text-center mb-12">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">The Problem</p>
+          <h2 className="text-2xl sm:text-4xl font-bold text-foreground leading-tight">
+            Talent is everywhere.<br />
+            <span className="text-muted-foreground">Opportunity is </span>
+            <span className="italic text-[hsl(var(--signal-teal))]">not</span>.
+          </h2>
+        </div>
+
+        {/* The system */}
+        <div className="max-w-2xl mx-auto text-center mb-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">The System</p>
+          <h2 className="text-lg sm:text-xl font-medium text-foreground leading-relaxed">
+            Kretopia turns creative history into trusted opportunity.
+          </h2>
+        </div>
+
+        {/* Expandable pillars */}
+        <div className="max-w-2xl mx-auto mb-16">
+          <Accordion type="single" collapsible className="w-full">
+            {PILLARS.map((p) => (
+              <AccordionItem key={p.title} value={p.title} className="border-border/60">
+                <AccordionTrigger className="hover:no-underline">
+                  <span className="flex items-center gap-3 text-left">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <p.icon className="h-4 w-4 text-primary" />
+                    </span>
+                    <span className="font-semibold text-sm sm:text-base">{p.title}</span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="pl-11 text-sm text-muted-foreground leading-relaxed">
+                  {p.body}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+
+        {/* The loop */}
+        <div ref={loopRef} className="text-center mb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-6">The Loop</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-3 max-w-2xl mx-auto">
+            {LOOP_STEPS.map((step, i) => (
+              <span key={step} className="flex items-center">
+                <span
+                  className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-background border border-border whitespace-nowrap transition-all duration-500"
+                  style={{
+                    opacity: loopVisible ? 1 : 0,
+                    transform: loopVisible ? "none" : "translateY(6px)",
+                    transitionDelay: `${i * 80}ms`,
+                  }}
+                >
+                  {step}
+                </span>
+                {i < LOOP_STEPS.length - 1 && (
+                  <ChevronRight className="h-3.5 w-3.5 text-primary/50 mx-0.5" aria-hidden />
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* The invitation */}
+        <div className="text-center mt-14">
+          <p className="text-xl sm:text-2xl font-bold text-foreground mb-6">Search your name.</p>
+          <Link
+            to="/credits"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all"
+          >
+            <Search className="h-4 w-4" aria-hidden />
+            Search the Creative Record
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const About = () => {
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +183,7 @@ const About = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,hsl(var(--accent)/0.06),transparent_50%)]" />
         <div className="container relative mx-auto max-w-4xl px-4 py-14 sm:py-20">
           <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-4">
-            Since 2013
+            Powered by ThriveIN
           </p>
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.035em] text-foreground mb-5 leading-[0.95]">
             A global community<br />
@@ -62,6 +195,10 @@ const About = () => {
           </p>
         </div>
       </section>
+
+      {/* The Problem / The System / The Loop / The Invitation — product
+          narrative, ahead of the ThriveIN origin story below. */}
+      <ProductLoopSection />
 
       {/* Global Footprint */}
       <section className="container mx-auto max-w-4xl px-4 pb-12">
@@ -90,12 +227,12 @@ const About = () => {
             </div>
             <div className="space-y-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
               <p>
-                From intimate meetups to large-scale showcases, Kretopia has brought together thousands of creatives
+                From intimate meetups to large-scale showcases, ThriveIN has brought together thousands of creatives
                 across <strong className="text-foreground">Los Angeles, Geneva, Trinidad, and Bali</strong> — creating
                 spaces where real relationships, collaborations, and opportunities are formed.
               </p>
               <p className="text-foreground font-medium border-l-2 border-primary pl-4 my-6">
-                At its core, Kretopia has always been about one thing: bringing the right people into the same room
+                At its core, ThriveIN has always been about one thing: bringing the right people into the same room
                 and creating the environment for them to connect, create, and grow.
               </p>
               <p>
@@ -104,7 +241,7 @@ const About = () => {
                 launched projects, secured opportunities, and built lasting careers.
               </p>
               <p>
-                Today, Kretopia continues to evolve — bringing the same community-driven energy into a new era where
+                Today, ThriveIN continues to evolve with Kretopia — bringing the same community-driven energy into a new era where
                 creatives can not only connect, but also <strong className="text-foreground">build, showcase, and grow</strong> their
                 work in a more structured and visible way.
               </p>
@@ -187,9 +324,9 @@ const About = () => {
               </div>
             </div>
             <blockquote className="text-base sm:text-lg text-foreground leading-relaxed italic mb-6">
-              "Kretopia started as a simple idea — bringing creatives into the same space and seeing what could happen.
+              "ThriveIN started as a simple idea — bringing creatives into the same space and seeing what could happen.
               Over time, it became clear that the real value wasn't just the events, it was the relationships, the collaborations,
-              and the opportunities that came from them. Everything we're building today is about scaling that experience
+              and the opportunities that came from them. Everything we're building with Kretopia is about scaling that experience
               and making it accessible to creatives everywhere."
             </blockquote>
             <div className="flex items-center gap-3">

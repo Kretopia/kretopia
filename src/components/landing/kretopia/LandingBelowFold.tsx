@@ -4,13 +4,25 @@
  * Split into its own chunk and mounted only once the visitor approaches it
  * (or the browser goes idle), so the hero + search bar stay on the critical
  * path and become interactive as early as possible.
+ *
+ * Every chapter follows one structural pattern: image (or illustrative
+ * visual) → numbered title → explanation → an interactive tutorial
+ * immediately below it. Numbers come from chapterRegistry.ts — the single
+ * source of truth also used by ChapterProgressNav — so removing, adding,
+ * or reordering a chapter here never requires hand-patching a number
+ * anywhere else.
  */
-import { ManifestoSection } from "@/components/landing/kretopia/ManifestoSection";
+import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutorialSection";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
-import { AuditionRoadmapSection } from "@/components/landing/kretopia/AuditionRoadmapSection";
+import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
 import { ClosingSection } from "@/components/landing/kretopia/ClosingSection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
+import { chapterRoman } from "@/components/landing/kretopia/chapterRegistry";
+import {
+  PASSPORT_TUTORIAL, SCOUT_TUTORIAL, MATCH_TUTORIAL,
+  STUDIO_TUTORIAL, SOUNDSTAGES_TUTORIAL,
+} from "@/components/landing/kretopia/tutorialContent";
 
 import passportImg    from "@/assets/kretopia/chapter-passport.jpg";
 import scoutImg       from "@/assets/kretopia/chapter-scout.jpg";
@@ -21,12 +33,13 @@ import soundstagesImg from "@/assets/kretopia/chapter-soundstages.jpg";
 export const LandingBelowFold = () => {
   return (
     <>
-      {/* II. Manifesto */}
-      <ManifestoSection />
+      {/* Search — the Hero above already IS the live feature; this is just its tutorial */}
+      <SearchTutorialSection />
 
-      {/* III. Passport */}
+      {/* Passport */}
       <ChapterSection
-        index="III"
+        id="chapter-passport"
+        index={chapterRoman("chapter-passport")}
         kicker="Passport"
         title={
           <>
@@ -39,15 +52,20 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Your Creative Passport collects every project, every credit, every co-sign — verified by the collaborators who lived it with you. One link. Your whole career."
-        caption="Passport · Chapter Three"
+        caption="Passport"
         image={passportImg}
         accent="#FF2DA1"
         href="/auth?next=/profile"
+        tutorialSteps={PASSPORT_TUTORIAL}
       />
 
-      {/* IV. Scout */}
+      {/* Verified Credits — the canonical tutorial reference */}
+      <VerifiedCreditsChapterSection />
+
+      {/* Scout */}
       <ChapterSection
-        index="IV"
+        id="chapter-scout"
+        index={chapterRoman("chapter-scout")}
         kicker="Scout"
         title={
           <>
@@ -58,16 +76,18 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Scout reads the web — gigs, briefs, calls, casting notices — and surfaces the ones that fit you. Kreto drafts the pitch. You decide if it goes."
-        caption="Scout · Chapter Four"
+        caption="Scout"
         image={scoutImg}
         accent="#FF2DA1"
         href="/auth?next=/scout"
         reverse
+        tutorialSteps={SCOUT_TUTORIAL}
       />
 
-      {/* V. Match */}
+      {/* Match */}
       <ChapterSection
-        index="V"
+        id="chapter-match"
+        index={chapterRoman("chapter-match")}
         kicker="Match"
         title={
           <>
@@ -78,15 +98,17 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Match connects creators by skill, city, vibe, and the people you've already made things with. No cold DMs. Just collaborators who get it."
-        caption="Match · Chapter Five"
+        caption="Match"
         image={matchImg}
         accent="#FF2DA1"
         href="/auth?next=/match"
+        tutorialSteps={MATCH_TUTORIAL}
       />
 
-      {/* VI. Studio */}
+      {/* Studio */}
       <ChapterSection
-        index="VI"
+        id="chapter-studio"
+        index={chapterRoman("chapter-studio")}
         kicker="Studio"
         title={
           <>
@@ -97,16 +119,18 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Every shoot, drop, release, or campaign in its own Studio. Brief, files, chat, video, deliverables, payments — held together by Kreto's quiet hand."
-        caption="Studio · Chapter Six"
+        caption="Studio"
         image={studioImg}
         accent="#FF2DA1"
         href="/auth?next=/desk"
         reverse
+        tutorialSteps={STUDIO_TUTORIAL}
       />
 
-      {/* VII. SoundStages */}
+      {/* SoundStages */}
       <ChapterSection
-        index="VII"
+        id="chapter-soundstages"
+        index={chapterRoman("chapter-soundstages")}
         kicker="SoundStages"
         title={
           <>
@@ -117,22 +141,21 @@ export const LandingBelowFold = () => {
           </>
         }
         body="Open mics, speed sessions, listening parties. Drop into a SoundStage to be seen — by an audience that came for exactly what you do."
-        caption="SoundStages · Chapter Seven"
+        caption="SoundStages"
         image={soundstagesImg}
         accent="#FF2DA1"
         href="/auth?next=/circle?tab=live"
+        tutorialSteps={SOUNDSTAGES_TUTORIAL}
       />
 
-      {/* Auditions — how an open call actually runs */}
-      <AuditionRoadmapSection />
-
-      {/* VIII. Kreto — the sunset moment */}
+      {/* Kreto — the sunset moment */}
       <MeetKretoSection />
 
-      {/* IX. Closing */}
+      {/* Closing */}
       <ClosingSection />
 
       {/* Footer */}
+      <EditorialFooter />
     </>
   );
 };

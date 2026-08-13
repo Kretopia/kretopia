@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { FeatureTutorial } from "./FeatureTutorial";
+import { KRETO_TUTORIAL } from "./tutorialContent";
+import { chapterRoman } from "./chapterRegistry";
 
 const ACCENT = "#FF2DA1";
 
@@ -61,6 +64,7 @@ export const MeetKretoSection = () => {
 
   return (
     <section
+      id="chapter-kreto"
       className="landing-section relative overflow-hidden border-t border-white/[0.06]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="kreto-title"
@@ -84,11 +88,11 @@ export const MeetKretoSection = () => {
             transition={{ duration: 0.7 }}
             className="lg:col-span-7"
           >
-            <p className="landing-eyebrow mb-4">VII · Kreto</p>
+            <p className="landing-eyebrow mb-4">{chapterRoman("chapter-kreto")} · Kreto</p>
 
             <h2 id="kreto-title" className="landing-h2 landing-glow">
               The Executive Producer for your{" "}
-              <span className="italic" style={{ color: ACCENT }}>creative career</span>.
+              <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>creative career</span>.
             </h2>
 
             <p className="landing-sub mt-6 max-w-xl">
@@ -234,6 +238,17 @@ export const MeetKretoSection = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Interactive tutorial */}
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="mt-12 lg:mt-16 max-w-xl"
+        >
+          <FeatureTutorial steps={KRETO_TUTORIAL} label="Kreto tutorial" />
+        </motion.div>
       </div>
     </section>
   );

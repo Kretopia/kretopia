@@ -10,7 +10,7 @@ import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, Play, Star, List, Fingerprint,
+  TrendingUp, Play, Star, List, Fingerprint, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,6 +19,8 @@ import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
+import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
+import { deriveEvidenceState, EVIDENCE_STATE_ORDER } from "@/lib/creditEvidence";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -110,6 +112,9 @@ interface UserCredit {
   primary_media_url: string | null;
   credit_category: string | null;
   url?: string | null;
+  verification_url?: string | null;
+  verified_by_name?: string | null;
+  verified_by_user_id?: string | null;
 }
 
 interface ProfileInfo {
@@ -138,6 +143,7 @@ const CreditDatabase = () => {
   const [webResults, setWebResults] = useState<WebResult[]>([]);
   const [profiles, setProfiles] = useState<Map<string, ProfileInfo>>(new Map());
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [projectCount, setProjectCount] = useState(0);
   const [claimDialog, setClaimDialog] = useState<{ project: ICDBProject; role: ICDBProject['icdb_project_roles'] extends (infer T)[] | undefined ? T : never } | null>(null);
   const [claiming, setClaiming] = useState(false);
@@ -182,7 +188,7 @@ const CreditDatabase = () => {
             .limit(12),
           supabase
             .from('credits')
-            .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category, url')
+            .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category, url, verification_url, verified_by_name, verified_by_user_id')
             .order('created_at', { ascending: false })
             .limit(40),
         ]);
@@ -207,6 +213,7 @@ const CreditDatabase = () => {
       return;
     }
     setLoading(true);
+    setSearchError(null);
     try {
       // Run edge function search and direct DB credit search in parallel
       const edgeFnPromise = supabase.functions.invoke('search-icdb', {
@@ -224,7 +231,7 @@ const CreditDatabase = () => {
 
       let creditQuery = supabase
         .from('credits')
-        .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category')
+        .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category, verification_url, verified_by_name, verified_by_user_id')
         .or(`project_name.ilike.%${debouncedSearch}%,role.ilike.%${debouncedSearch}%,client_brand.ilike.%${debouncedSearch}%`)
         .order('year', { ascending: false, nullsFirst: false })
         .limit(20);
@@ -237,6 +244,8 @@ const CreditDatabase = () => {
       }
 
       const [edgeData, creditResult] = await Promise.all([edgeFnPromise, creditQuery]);
+
+      if (creditResult.error) throw creditResult.error;
 
       // Set edge function results (projects, AI suggestions, web results)
       setIcdbProjects(edgeData?.projects || []);
@@ -259,6 +268,7 @@ const CreditDatabase = () => {
       setUserCredits(creditData as UserCredit[]);
     } catch (err) {
       console.error('Error searching:', err);
+      setSearchError('Something went wrong searching the creative record.');
     } finally {
       setLoading(false);
     }
@@ -353,6 +363,21 @@ const CreditDatabase = () => {
                 <p className="text-sm text-muted-foreground">
                   Search any project, person, or production across the global creative industry.
                 </p>
+
+                {/* Verified Credit / Passport Stamp explainer — official terms,
+                    honest evidence tiers. "Verified" is never shown without
+                    the evidence backing it up. */}
+                <div className="mt-4 rounded-xl border border-border/60 bg-card/50 p-3.5">
+                  <p className="text-xs text-foreground leading-relaxed">
+                    <strong>A Verified Credit</strong> is a project backed by real evidence — not just a claim.
+                    Once it's fully confirmed, it becomes a <strong>Passport Stamp</strong>: the visible proof on a Creative Passport.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {EVIDENCE_STATE_ORDER.map((s) => (
+                      <EvidenceStateBadge key={s} state={s} />
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -394,6 +419,18 @@ const CreditDatabase = () => {
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Loader2 className="h-7 w-7 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">Searching the creative record...</p>
+            </div>
+          ) : searchError ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+              <AlertCircle className="h-10 w-10 text-destructive/60" />
+              <p className="text-sm font-medium">{searchError}</p>
+              <button
+                onClick={() => fetchResults()}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+              >
+                <RefreshCw className="h-3 w-3" />
+                Try again
+              </button>
             </div>
           ) : isResultsSearching ? (
             hasResults ? (
@@ -686,7 +723,7 @@ function PosterCard({
         {/* Badges */}
         <div className="absolute top-2 left-2 flex gap-1">
           {isVerified && (
-            <span className="bg-primary/90 text-white rounded-full p-0.5">
+            <span className="bg-green-500/90 text-white rounded-full p-0.5">
               <ShieldCheck className="h-2.5 w-2.5" />
             </span>
           )}
@@ -780,13 +817,9 @@ function CreditPosterCard({
         )}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-        {credit.verification_status === 'verified' && (
-          <div className="absolute top-2 left-2">
-            <span className="bg-green-500/90 text-white rounded-full p-0.5">
-              <ShieldCheck className="h-2.5 w-2.5" />
-            </span>
-          </div>
-        )}
+        <div className="absolute top-2 left-2">
+          <EvidenceStateBadge state={deriveEvidenceState(credit)} iconOnly className="!bg-black/50 backdrop-blur-sm !border-white/20" />
+        </div>
 
         {credit.primary_media_url && (
           <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white rounded-full p-1">
@@ -851,9 +884,7 @@ function CompactCreditRow({
           {credit.platform ? ` · ${credit.platform}` : ''}
         </p>
       </div>
-      {credit.verification_status === 'verified' && (
-        <ShieldCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />
-      )}
+      <EvidenceStateBadge state={deriveEvidenceState(credit)} className="shrink-0" />
     </button>
   );
 }

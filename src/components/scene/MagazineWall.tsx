@@ -68,6 +68,7 @@ export const MagazineWall = () => {
   const { isEditorOrAdmin } = useUserRole();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [sort, setSort] = useState<SortKey>("latest");
   const [search, setSearch] = useState("");
@@ -77,6 +78,7 @@ export const MagazineWall = () => {
 
   const fetchArticles = async () => {
     setLoading(true);
+    setFetchError(false);
     let query = supabase
       .from("magazine_articles")
       .select("*")
@@ -97,8 +99,14 @@ export const MagazineWall = () => {
       query = query.order("is_featured", { ascending: false }).order("created_at", { ascending: false });
     }
 
-    const { data } = await query;
-    setArticles((data as Article[]) || []);
+    const { data, error } = await query;
+    if (error) {
+      console.error("Failed to fetch magazine articles:", error);
+      setFetchError(true);
+      setArticles([]);
+    } else {
+      setArticles((data as Article[]) || []);
+    }
     setLoading(false);
   };
 
@@ -147,7 +155,7 @@ export const MagazineWall = () => {
         <div>
           <h2 className="text-lg font-bold flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-primary" />
-            Kretopia Magazine
+            ThriveIN Magazine
           </h2>
           <p className="text-xs text-muted-foreground">Stories, insights & creative culture</p>
         </div>
@@ -216,6 +224,17 @@ export const MagazineWall = () => {
             <Skeleton className="h-40 rounded-xl" />
             <Skeleton className="h-40 rounded-xl" />
           </div>
+        </div>
+      ) : fetchError ? (
+        <div className="text-center py-12">
+          <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Couldn't load articles</p>
+          <button
+            onClick={fetchArticles}
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            Try again
+          </button>
         </div>
       ) : filteredArticles.length === 0 ? (
         <div className="text-center py-12">

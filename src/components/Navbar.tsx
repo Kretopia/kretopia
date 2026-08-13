@@ -186,15 +186,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
         </div>
 
         {/* Global search — reachable from every route, not just Today.
-            Compact width by default, expands smoothly on focus
-            (focus-within) without shifting neighboring nav items — the
-            results dropdown itself is absolutely positioned so it never
-            pushes layout regardless of the input's width. */}
+            Genuinely readable at rest (not an icon-only trigger), still
+            expands a bit further on focus (focus-within) without shifting
+            neighboring nav items — the results dropdown itself is
+            absolutely positioned so it never pushes layout regardless of
+            the input's width. */}
         {!isLandingPage && (
-          <div className="hidden lg:block w-40 focus-within:w-64 xl:w-64 xl:focus-within:w-80 mx-3 shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none">
+          <div className="hidden lg:block w-72 focus-within:w-80 xl:w-80 xl:focus-within:w-96 mx-3 shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none">
             <UnifiedSearchDropdown
               variant="navbar"
-              placeholder="Search a name, project or opportunity..."
+              placeholder="Search users, work and opportunities"
             />
           </div>
         )}
@@ -289,7 +290,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <div className="mt-4">
                   <UnifiedSearchDropdown
                     variant="hero"
-                    placeholder="Search a name, project or opportunity..."
+                    placeholder="Search Kretopia"
                     autoFocus
                   />
                 </div>
@@ -397,8 +398,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <Separator className="my-3" />
 
-                      {/* MORE — keep lean. Spotlight/Brand Vault/Referrals reachable by direct URL. */}
+                      {/* MORE — keep lean. Brand Vault/Referrals reachable by direct URL.
+                          Spotlight restored here — it's the only path to the Magazine
+                          "Write" (edit/upload article) button for editors/admins, and
+                          direct-URL-only made that undiscoverable. */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">More</p>
+                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
                       <MenuButton icon={Database} label="Verified Credits" onClick={() => handleNavigation("/credits")} path="/credits" />
                       <MenuButton icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
                       <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />

@@ -33,7 +33,7 @@ export const AuthBrandingPanel = () => (
       <h2 className="font-serif text-4xl xl:text-[3.5rem] font-normal tracking-[-0.03em] leading-[1.02] mb-5 text-white">
         Where{" "}
         <span
-          className="italic bg-clip-text text-transparent"
+          className="italic bg-clip-text text-transparent pink-glow-breathe"
           style={{ backgroundImage: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
         >
           Creativity
@@ -46,7 +46,7 @@ export const AuthBrandingPanel = () => (
       </p>
 
       {/* Kreto whisper card */}
-      <div className="mb-8 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-3.5 max-w-md">
+      <div className="mb-8 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-3.5 max-w-md ai-ambient-breathe">
         <KretoAvatar size="sm" />
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF2DA1] mb-0.5">Kreto</p>

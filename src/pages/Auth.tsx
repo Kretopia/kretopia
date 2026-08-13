@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -24,6 +26,7 @@ import { FunnelStepper } from "@/components/onboarding/FunnelStepper";
 import { computePostAuthRedirect } from "@/lib/eventAuthRedirect";
 
 const Auth = () => {
+  const reducedMotion = useReducedMotion();
   const [activeTab, setActiveTab] = useState<string>("signin");
   const [signupMode, setSignupMode] = useState<"claim" | "classic">("claim");
   const [email, setEmail] = useState("");
@@ -417,19 +420,32 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="dark flex min-h-screen" style={{ backgroundColor: "#05070D" }}>
       <AuthBrandingPanel />
 
-      <div className="flex w-full lg:w-1/2 items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
-        <div className="w-full max-w-md">
+      <div className="relative flex w-full lg:w-1/2 items-center justify-center px-4 sm:px-6 py-8 sm:py-12 overflow-hidden">
+        {/* Ambient AI-glow behind the form — same language as the landing hero */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 ai-ambient-breathe"
+          style={{ background: "radial-gradient(55% 45% at 50% 20%, rgba(255,45,161,0.08), transparent 65%)" }}
+        />
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] }}
+          className="relative w-full max-w-md"
+        >
           <div className="mb-6 sm:mb-8 text-center">
             <div className="lg:hidden mb-4">
               <BrandLogo size="lg" showBeta />
             </div>
-            <h1 className="mb-2 text-2xl sm:text-3xl font-bold">
-              {isPasswordReset ? "Reset Your Password" : "Welcome to Kretopia"}
+            <h1 className="landing-h2 landing-glow">
+              {isPasswordReset ? "Reset Your Password" : (
+                <>Welcome to <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>Kretopia</span></>
+              )}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="landing-sub mt-3">
               {isPasswordReset ? "Enter your new password below" : "Where creators find work — and get paid"}
             </p>
           </div>
@@ -603,7 +619,7 @@ const Auth = () => {
               <WaitlistForm />
             </DialogContent>
           </Dialog>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

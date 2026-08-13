@@ -15,6 +15,7 @@ import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescrip
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { CastingFieldsForm, type CastingFields } from "@/components/opportunity/CastingFieldsForm";
+import { SmartWidget } from "@/components/ui/smart-widget";
 
 const STORAGE_KEY = "thrivein_draft_opportunity";
 
@@ -176,7 +177,7 @@ const PostOpportunity = () => {
 
   if (step === "sent") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="dark min-h-screen flex items-center justify-center p-4 bg-background" style={{ backgroundColor: "#05070D" }}>
         <Helmet>
           <title>Check Your Email | Kretopia</title>
         </Helmet>
@@ -205,7 +206,7 @@ const PostOpportunity = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dark min-h-screen bg-background" style={{ backgroundColor: "#05070D" }}>
       <Helmet>
         <title>Post an Opportunity | Kretopia</title>
         <meta name="description" content="Post a job, collaboration, or gig opportunity on Kretopia and connect with thousands of creative professionals. No account needed." />
@@ -214,18 +215,21 @@ const PostOpportunity = () => {
       <div className="max-w-2xl mx-auto p-4 py-8 space-y-6">
         {/* Hero */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
-            <Building2 className="h-4 w-4" />
+          <p className="landing-eyebrow flex items-center justify-center gap-2">
+            <Building2 className="h-3.5 w-3.5" style={{ color: "#FF2DA1" }} />
             For Companies & Brands
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">Find the perfect creative talent</h1>
-          <p className="text-muted-foreground text-lg max-w-lg mx-auto">
+          </p>
+          <h1 className="landing-h2 landing-glow">
+            Find the <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>perfect</span> creative talent
+          </h1>
+          <p className="landing-sub max-w-lg mx-auto">
             Post your opportunity and connect with vetted creators. No account needed — just verify your email.
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <Card>
+          <SmartWidget interactive={false}>
+          <Card className="border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -270,8 +274,11 @@ const PostOpportunity = () => {
               </div>
             </CardContent>
           </Card>
+          </SmartWidget>
 
-          <Card className="mt-4">
+          <div className="mt-4">
+          <SmartWidget interactive={false}>
+          <Card className="border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Briefcase className="h-5 w-5" />
@@ -512,6 +519,8 @@ const PostOpportunity = () => {
               </div>
             </CardContent>
           </Card>
+          </SmartWidget>
+          </div>
 
           <div className="mt-6 space-y-3">
             <Button type="submit" size="lg" className="w-full gap-2" disabled={posting}>

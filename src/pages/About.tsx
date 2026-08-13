@@ -171,7 +171,7 @@ const ProductLoopSection = () => {
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dark min-h-screen bg-background" style={{ backgroundColor: "#05070D" }}>
       <SEO
         title="About Kretopia — A Global Creative Community Since 2013"
         description="From a weekly gathering in Dubai to a global creative platform — Kretopia connects creatives across music, film, fashion, art, content, and culture worldwide."

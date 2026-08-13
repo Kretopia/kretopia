@@ -1,25 +1,32 @@
 /**
  * FeatureTutorial — the one shared, interactive tutorial surface used by
- * every landing-page feature chapter. Static content (steps are authored,
- * not fetched), so there's no loading/error state to model — but every
- * interaction contract the charter asks for is real: clickable step pills,
- * keyboard (ArrowLeft/ArrowRight/Home/End), touch swipe, a visible progress
- * indicator, and full behavior under prefers-reduced-motion (no slide
- * animation, instant step swap).
+ * every landing-page feature chapter. Styled as an "AI presenter" command
+ * surface — same visual language as MeetKretoSection (glowing icon ring,
+ * AI-guided badge, a brief typing-indicator flourish before each step's
+ * text reveals) — rather than a plain step counter.
+ *
+ * Static content (steps are authored, not fetched), so there's no
+ * loading/error state to model. Every interaction contract still holds:
+ * clickable step pills, keyboard (ArrowLeft/ArrowRight/Home/End), touch
+ * swipe, a visible progress indicator, and full behavior under
+ * prefers-reduced-motion — the typing flourish is skipped entirely and
+ * step transitions cut instantly instead of animating.
  *
  * Deliberately framework-agnostic about *what* a step shows — the caller
  * passes a title/body per step and an optional small icon, so this same
  * component works for Search, Passport, Scout, Match, Studio, SoundStages,
- * Kreto and Verified Credits without a bespoke implementation per feature.
+ * Kreto, Verified Credits and the Messages empty state without a bespoke
+ * implementation per feature.
  */
-import { useRef, useState, type KeyboardEvent, type TouchEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type TouchEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const ACCENT = "#FF2DA1";
 const SWIPE_THRESHOLD_PX = 40;
+const THINKING_MS = 360;
 
 export interface TutorialStep {
   title: string;
@@ -36,7 +43,23 @@ interface FeatureTutorialProps {
 export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
   const reducedMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
+  const [thinking, setThinking] = useState(false);
   const touchStartX = useRef<number | null>(null);
+  const firstRender = useRef(true);
+
+  // Brief "composing" flourish before each new step's text reveals — skipped
+  // entirely under reduced motion and on first mount (nothing to transition
+  // from yet).
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    if (reducedMotion) return;
+    setThinking(true);
+    const t = window.setTimeout(() => setThinking(false), THINKING_MS);
+    return () => window.clearTimeout(t);
+  }, [index, reducedMotion]);
 
   const goTo = (i: number) => setIndex(Math.max(0, Math.min(steps.length - 1, i)));
   const next = () => goTo(index + 1);
@@ -64,6 +87,7 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
   const Icon = step.icon;
   const isFirst = index === 0;
   const isLast = index === steps.length - 1;
+  const showThinking = thinking && !reducedMotion;
 
   return (
     <div
@@ -74,52 +98,108 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
       onKeyDown={onKeyDown}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
-      className="rounded-2xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+      className="relative rounded-2xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015))",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015))",
         border: "1px solid rgba(255,255,255,0.10)",
+        boxShadow: "0 30px 80px -40px rgba(255,45,161,0.35)",
         outlineColor: ACCENT,
       }}
     >
-      <div className="px-5 py-5 sm:px-6 sm:py-6 min-h-[132px] flex flex-col justify-center">
-        <p
-          className="text-[10px] font-semibold uppercase tracking-[0.24em] mb-3"
-          style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Work Sans', sans-serif" }}
-        >
-          Step {index + 1} of {steps.length}
-        </p>
+      {/* ambient glow — static, not a looping animation */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{ background: "radial-gradient(60% 80% at 15% 0%, rgba(255,45,161,0.10), transparent 65%)" }}
+      />
 
+      {/* Header — AI-guided badge, matches MeetKretoSection's command-surface header */}
+      <div
+        className="relative flex items-center gap-2 px-4 py-2.5 sm:px-5"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+      >
+        <span
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+          style={{ backgroundColor: "rgba(255,45,161,0.16)" }}
+        >
+          <Sparkles className="h-2.5 w-2.5" style={{ color: ACCENT }} aria-hidden />
+        </span>
+        <span
+          className="text-[9px] font-semibold uppercase tracking-[0.22em]"
+          style={{ color: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
+        >
+          AI-guided
+        </span>
+        <span
+          className="ml-auto text-[10px] font-medium tabular-nums"
+          style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Work Sans', sans-serif" }}
+        >
+          {String(index + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}
+        </span>
+      </div>
+
+      <div className="relative px-5 py-6 sm:px-6 min-h-[168px] flex flex-col justify-center">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={index}
-            initial={reducedMotion ? false : { opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={reducedMotion ? undefined : { opacity: 0, x: -10 }}
-            transition={{ duration: 0.3 }}
-            className="flex items-start gap-3"
-          >
-            {Icon && (
-              <span
-                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                style={{ backgroundColor: "rgba(255,45,161,0.12)", border: "1px solid rgba(255,45,161,0.25)" }}
-              >
-                <Icon className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
-              </span>
-            )}
-            <div className="min-w-0">
-              <h3 className="text-base font-semibold text-white" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
-                {step.title}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-white/60" style={{ fontFamily: "'Work Sans', sans-serif" }}>
-                {step.body}
-              </p>
-            </div>
-          </motion.div>
+          {showThinking ? (
+            <motion.div
+              key="thinking"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex items-center gap-1.5 h-[92px]"
+              aria-hidden
+            >
+              {[0, 1, 2].map((i) => (
+                <motion.span
+                  key={i}
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: ACCENT }}
+                  animate={{ opacity: [0.25, 1, 0.25], y: [0, -3, 0] }}
+                  transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
+                />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key={index}
+              initial={reducedMotion ? false : { opacity: 0, y: 8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={reducedMotion ? undefined : { opacity: 0, y: -6 }}
+              transition={{ duration: 0.35, ease: [0.2, 0.65, 0.3, 0.95] }}
+              className="flex items-start gap-3.5"
+            >
+              {Icon && (
+                <motion.span
+                  className="relative mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: "rgba(255,45,161,0.12)", border: "1px solid rgba(255,45,161,0.28)" }}
+                  initial={reducedMotion ? false : { scale: 0.7, rotate: -8 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ duration: 0.4, ease: [0.2, 0.65, 0.3, 0.95] }}
+                >
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 rounded-xl"
+                    style={{ boxShadow: "0 0 0 5px rgba(255,45,161,0.08)" }}
+                  />
+                  <Icon className="h-[18px] w-[18px]" style={{ color: ACCENT }} aria-hidden />
+                </motion.span>
+              )}
+              <div className="min-w-0 pt-0.5">
+                <h3 className="text-base sm:text-lg font-semibold text-white" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
+                  {step.title}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-white/60" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                  {step.body}
+                </p>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 
       <div
-        className="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6"
+        className="relative flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6"
         style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
       >
         <button
@@ -143,10 +223,11 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
               aria-selected={i === index}
               aria-label={`Go to step ${i + 1}: ${s.title}`}
               onClick={() => goTo(i)}
-              className="h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2"
+              className="relative h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2"
               style={{
-                width: i === index ? "20px" : "6px",
+                width: i === index ? "22px" : "6px",
                 backgroundColor: i <= index ? ACCENT : "rgba(255,255,255,0.18)",
+                boxShadow: i === index ? "0 0 8px rgba(255,45,161,0.65)" : "none",
                 outlineColor: ACCENT,
               }}
             />

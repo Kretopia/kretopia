@@ -17,6 +17,8 @@ import { MagazineEditor } from "./MagazineEditor";
 import { coverImageStyle } from "./CoverImageEditor";
 import { SmartCover } from "@/components/ui/smart-cover";
 import { SmartWidget } from "@/components/ui/smart-widget";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface Article {
   id: string;
@@ -65,6 +67,7 @@ const formatCategoryLabel = (cat: string) => CATEGORY_LABELS[cat] || cat.charAt(
 type SortKey = "latest" | "most-read" | "trending";
 
 export const MagazineWall = () => {
+  const reducedMotion = useReducedMotion();
   const { user } = useAuth();
   const { isEditorOrAdmin } = useUserRole();
   const [articles, setArticles] = useState<Article[]>([]);
@@ -305,51 +308,59 @@ export const MagazineWall = () => {
             </SmartWidget>
           )}
 
-          {/* Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {rest.map(article => (
-              <SmartWidget key={article.id} className="rounded-xl" scanLine={false}>
-              <Card
-                className="overflow-hidden rounded-xl cursor-pointer group border-border/50 hover:border-primary/30 transition-colors border-0"
-                onClick={() => setSelectedArticle(article)}
-              >
-                <div className="aspect-[4/3] relative">
-                  <SmartCover
-                    src={article.cover_image_url}
-                    alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    style={coverImageStyle(article.cover_position_x, article.cover_position_y, article.cover_zoom)}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  {isEditorOrAdmin && (
-                    <button
-                      onClick={(e) => openEdit(e, article.id)}
-                      className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                      aria-label="Edit article"
-                      title="Edit article"
+          {/* Carousel — compact, swipeable rail instead of a long grid */}
+          <div className="relative">
+            <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full" aria-label="More articles">
+              <CarouselContent className="-ml-3">
+                {rest.map(article => (
+                  <CarouselItem key={article.id} className="pl-3 basis-[46%] sm:basis-[32%]">
+                    <SmartWidget className="rounded-xl h-full" scanLine={false}>
+                    <Card
+                      className="overflow-hidden rounded-xl cursor-pointer group border-border/50 hover:border-primary/30 transition-colors border-0 h-full"
+                      onClick={() => setSelectedArticle(article)}
                     >
-                      <Pencil className="h-3 w-3 text-foreground" />
-                    </button>
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                    <Badge variant="secondary" className="mb-1 text-[9px] capitalize px-1.5 py-0">
-                      {formatCategoryLabel(article.category)}
-                    </Badge>
-                    <h4 className="text-white text-xs font-semibold line-clamp-2 leading-tight">
-                      {article.title}
-                    </h4>
-                  </div>
-                </div>
-                <div className="p-2.5 flex items-center justify-between text-[10px] text-muted-foreground">
-                  <span className="truncate">{article.author_name}</span>
-                  <span className="flex items-center gap-1 shrink-0 ml-2">
-                    <Clock className="h-3 w-3" />
-                    {article.read_time_minutes}m
-                  </span>
-                </div>
-              </Card>
-              </SmartWidget>
-            ))}
+                      <div className="aspect-[4/3] relative">
+                        <SmartCover
+                          src={article.cover_image_url}
+                          alt={article.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          style={coverImageStyle(article.cover_position_x, article.cover_position_y, article.cover_zoom)}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        {isEditorOrAdmin && (
+                          <button
+                            onClick={(e) => openEdit(e, article.id)}
+                            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                            aria-label="Edit article"
+                            title="Edit article"
+                          >
+                            <Pencil className="h-3 w-3 text-foreground" />
+                          </button>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                          <Badge variant="secondary" className="mb-1 text-[9px] capitalize px-1.5 py-0">
+                            {formatCategoryLabel(article.category)}
+                          </Badge>
+                          <h4 className="text-white text-xs font-semibold line-clamp-2 leading-tight">
+                            {article.title}
+                          </h4>
+                        </div>
+                      </div>
+                      <div className="p-2.5 flex items-center justify-between text-[10px] text-muted-foreground">
+                        <span className="truncate">{article.author_name}</span>
+                        <span className="flex items-center gap-1 shrink-0 ml-2">
+                          <Clock className="h-3 w-3" />
+                          {article.read_time_minutes}m
+                        </span>
+                      </div>
+                    </Card>
+                    </SmartWidget>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous articles" />
+              <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next articles" />
+            </Carousel>
           </div>
         </div>
       )}

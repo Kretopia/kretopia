@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Headphones, ExternalLink, Play, ChevronDown, ChevronUp, AlertCircle, RefreshCw } from "lucide-react";
+import { Headphones, ExternalLink, Play, AlertCircle, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { SmartWidget } from "@/components/ui/smart-widget";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const PLAYLIST_ID = "PL3IHAVyb_6H2OpHnvwDa7EubXaanmXfOY";
 
@@ -20,11 +22,11 @@ interface Episode {
 }
 
 export const PodcastPlayer = () => {
+  const reducedMotion = useReducedMotion();
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
   const [activeEpisode, setActiveEpisode] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(false);
 
   const fetchEpisodes = async () => {
     setLoading(true);
@@ -48,7 +50,6 @@ export const PodcastPlayer = () => {
 
   useEffect(() => { fetchEpisodes(); }, []);
 
-  const visibleEpisodes = showAll ? episodes : episodes.slice(0, 4);
   const activeEp = episodes.find(e => e.videoId === activeEpisode);
 
   return (
@@ -125,55 +126,51 @@ export const PodcastPlayer = () => {
           </button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             All Episodes
           </p>
-          {visibleEpisodes.map((ep) => (
-            <SmartWidget key={ep.videoId} className="rounded-xl" scanLine={false}>
-            <Card
-              onClick={() => setActiveEpisode(ep.videoId)}
-              className={cn(
-                "flex gap-3 p-2.5 cursor-pointer transition-all rounded-xl border-0",
-                activeEpisode === ep.videoId && "bg-primary/5"
-              )}
-            >
-              <div className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0">
-                <img
-                  src={ep.thumbnail}
-                  alt={ep.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                {activeEpisode !== ep.videoId && (
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <Play className="h-5 w-5 text-white fill-white" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0 py-0.5">
-                <h4 className="text-xs font-semibold line-clamp-2 leading-tight">{ep.title}</h4>
-                {ep.publishedAt && (
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {formatDistanceToNow(new Date(ep.publishedAt), { addSuffix: true })}
-                  </p>
-                )}
-              </div>
-            </Card>
-            </SmartWidget>
-          ))}
-
-          {episodes.length > 4 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-xs gap-1"
-              onClick={() => setShowAll(!showAll)}
-            >
-              {showAll ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              {showAll ? "Show less" : `Show all ${episodes.length} episodes`}
-            </Button>
-          )}
+          <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full" aria-label="Podcast episodes">
+            <CarouselContent className="-ml-3">
+              {episodes.map((ep) => (
+                <CarouselItem key={ep.videoId} className="pl-3 basis-[70%] sm:basis-[45%]">
+                  <SmartWidget className="rounded-xl h-full" scanLine={false}>
+                  <Card
+                    onClick={() => setActiveEpisode(ep.videoId)}
+                    className={cn(
+                      "cursor-pointer transition-all rounded-xl border-0 h-full overflow-hidden",
+                      activeEpisode === ep.videoId && "bg-primary/5"
+                    )}
+                  >
+                    <div className="relative aspect-video w-full">
+                      <img
+                        src={ep.thumbnail}
+                        alt={ep.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      {activeEpisode !== ep.videoId && (
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                          <Play className="h-6 w-6 text-white fill-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-2.5">
+                      <h4 className="text-xs font-semibold line-clamp-2 leading-tight">{ep.title}</h4>
+                      {ep.publishedAt && (
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {formatDistanceToNow(new Date(ep.publishedAt), { addSuffix: true })}
+                        </p>
+                      )}
+                    </div>
+                  </Card>
+                  </SmartWidget>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous episodes" />
+            <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next episodes" />
+          </Carousel>
         </div>
       )}
 

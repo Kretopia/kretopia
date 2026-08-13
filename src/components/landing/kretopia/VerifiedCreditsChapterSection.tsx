@@ -1,31 +1,30 @@
 /**
- * VerifiedCreditsChapterSection — Chapter IV. Bridges the landing tutorial
+ * VerifiedCreditsChapterSection — Chapter III. Bridges the landing tutorial
  * to the real /credits page. Follows MeetKretoSection's precedent: a
  * stylized command-surface mockup rather than a stock photo (there's no
  * logged-in user's real data to show pre-login), with clearly illustrative
- * example content — the same pattern MeetKretoSection uses for its
- * rotating "Try asking" prompts.
+ * example content.
  *
- * Terminology matches the product exactly: "Verified Credit" is the
- * official term, "Passport Stamp" is the visual metaphor for the same
- * thing once fully confirmed. The tier progression shown here is real
+ * The evidence-progression mockup is driven by the tutorial's own active
+ * step (lifted here, passed to FeatureTutorial in controlled mode) rather
+ * than its own independent timer — clicking through the steps visibly
+ * moves the example credit through the same real evidence tiers
  * (EVIDENCE_STATE_ORDER, backed by actual credits.verification_status /
- * verification_url / endorsement_count fields) — only the example credit
+ * verification_url / endorsement_count fields). Only the example credit
  * itself ("Documentary · Sound Design") is illustrative.
  */
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Fingerprint, Link2, ShieldCheck, UserCheck } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
-import { EVIDENCE_STATE_ORDER, type EvidenceState } from "@/lib/creditEvidence";
+import type { EvidenceState } from "@/lib/creditEvidence";
 import { FeatureTutorial } from "./FeatureTutorial";
 import { VERIFIED_CREDITS_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
 
 const ACCENT = "#FF2DA1";
-const DEMO_SEQUENCE: EvidenceState[] = [...EVIDENCE_STATE_ORDER];
 
 const WHY_IT_MATTERS = [
   { icon: UserCheck, label: "Anyone can claim", body: "Claiming a credit is the start, not the proof." },
@@ -33,20 +32,15 @@ const WHY_IT_MATTERS = [
   { icon: ShieldCheck, label: "Confirmation makes it trusted", body: "A co-sign or organization confirms it — that's what becomes a Passport Stamp." },
 ];
 
+/** Maps each tutorial step directly to the real evidence tier it teaches —
+ * step 3 ("Earn a Passport Stamp") shows the stamp itself, not a badge. */
+const STEP_EVIDENCE_STATE: EvidenceState[] = ["claimed", "evidence_backed", "co_signed"];
+
 export const VerifiedCreditsChapterSection = () => {
   const reducedMotion = useReducedMotion();
-  const [step, setStep] = useState(0);
-  const isStamped = step === DEMO_SEQUENCE.length - 1;
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    const id = setInterval(() => {
-      setStep((n) => (n + 1) % (DEMO_SEQUENCE.length + 1));
-    }, 2000);
-    return () => clearInterval(id);
-  }, [reducedMotion]);
-
-  const currentState = DEMO_SEQUENCE[Math.min(step, DEMO_SEQUENCE.length - 1)];
+  const [activeStep, setActiveStep] = useState(0);
+  const isStamped = activeStep === VERIFIED_CREDITS_TUTORIAL.length - 1;
+  const currentState = STEP_EVIDENCE_STATE[Math.min(activeStep, STEP_EVIDENCE_STATE.length - 1)];
 
   return (
     <section
@@ -107,23 +101,36 @@ export const VerifiedCreditsChapterSection = () => {
               ))}
             </ul>
 
+            {/* Interactive tutorial — controlled, drives the visual preview alongside it */}
+            <div className="mt-9 max-w-xl">
+              <FeatureTutorial
+                steps={VERIFIED_CREDITS_TUTORIAL}
+                label="Verified Credits tutorial"
+                activeStep={activeStep}
+                onStepChange={setActiveStep}
+              />
+            </div>
+
             <Link
               to="/credits"
-              className="group inline-flex items-center gap-2 mt-9 rounded-full px-6 py-3 text-sm font-semibold text-white"
+              className="group inline-flex items-center gap-2 mt-8 rounded-full px-6 py-3 text-sm font-semibold text-white"
               style={{ backgroundColor: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
             >
               Explore Verified Credits
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
             </Link>
+            <p className="mt-3 text-xs text-white/40" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+              Opens the real Verified Credits page — search, claim, and request co-signs on your own record.
+            </p>
           </motion.div>
 
-          {/* Illustrative evidence-progression mockup */}
+          {/* Evidence-progression mockup — reacts to the active tutorial step */}
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, scale: 0.97 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.8 }}
-            className="lg:col-span-5 lg:order-1 w-full"
+            className="lg:col-span-5 lg:order-1 w-full lg:sticky lg:top-24"
           >
             <div
               className="rounded-2xl overflow-hidden"
@@ -184,15 +191,15 @@ export const VerifiedCreditsChapterSection = () => {
                   )}
                 </AnimatePresence>
 
-                {/* Progress dots */}
+                {/* Progress dots — mirror the tutorial's own step, not a separate cycle */}
                 <div className="flex items-center gap-1.5 mt-1" aria-hidden>
-                  {DEMO_SEQUENCE.map((s, i) => (
+                  {VERIFIED_CREDITS_TUTORIAL.map((s, i) => (
                     <span
-                      key={s}
+                      key={s.title}
                       className="h-1 rounded-full transition-all duration-300"
                       style={{
-                        width: i <= step && !isStamped ? "18px" : i < step || isStamped ? "18px" : "6px",
-                        backgroundColor: i <= step || isStamped ? ACCENT : "rgba(255,255,255,0.15)",
+                        width: i <= activeStep ? "18px" : "6px",
+                        backgroundColor: i <= activeStep ? ACCENT : "rgba(255,255,255,0.15)",
                       }}
                     />
                   ))}
@@ -208,17 +215,6 @@ export const VerifiedCreditsChapterSection = () => {
             </div>
           </motion.div>
         </div>
-
-        {/* Interactive tutorial — the canonical pattern every other chapter follows */}
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-12 lg:mt-16 max-w-xl"
-        >
-          <FeatureTutorial steps={VERIFIED_CREDITS_TUTORIAL} label="Verified Credits tutorial" />
-        </motion.div>
       </div>
     </section>
   );

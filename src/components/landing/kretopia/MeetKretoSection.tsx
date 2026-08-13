@@ -9,7 +9,7 @@
  * Nothing here auto-opens Kreto, requests permissions, or fakes a response.
  */
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -54,13 +54,10 @@ const PROMPTS = [
 
 export const MeetKretoSection = () => {
   const reducedMotion = useReducedMotion();
-  const [i, setI] = useState(0);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    const id = setInterval(() => setI((n) => (n + 1) % LINES.length), 4200);
-    return () => clearInterval(id);
-  }, [reducedMotion]);
+  const [activeStep, setActiveStep] = useState(0);
+  // The rotating message reflects whichever tutorial step is active, rather
+  // than cycling on its own independent timer.
+  const i = activeStep % LINES.length;
 
   return (
     <section
@@ -143,14 +140,27 @@ export const MeetKretoSection = () => {
               removed, and only becomes part of your official record once you confirm it.
             </p>
 
+            {/* Interactive tutorial — controlled, drives the command surface's rotating line */}
+            <div className="mt-8 max-w-xl">
+              <FeatureTutorial
+                steps={KRETO_TUTORIAL}
+                label="Kreto tutorial"
+                activeStep={activeStep}
+                onStepChange={setActiveStep}
+              />
+            </div>
+
             <Link
               to="/auth?next=/circle"
-              className="group inline-flex items-center gap-2 mt-9 rounded-full px-6 py-3 text-sm font-semibold text-white"
+              className="group inline-flex items-center gap-2 mt-8 rounded-full px-6 py-3 text-sm font-semibold text-white"
               style={{ backgroundColor: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
             >
               Meet Kreto
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
             </Link>
+            <p className="mt-3 text-xs text-white/40" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+              Opens Kreto inside Circle — closed by default, nothing runs until you ask it something.
+            </p>
           </motion.div>
 
           {/* Command surface */}
@@ -238,17 +248,6 @@ export const MeetKretoSection = () => {
             </div>
           </motion.div>
         </div>
-
-        {/* Interactive tutorial */}
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-12 lg:mt-16 max-w-xl"
-        >
-          <FeatureTutorial steps={KRETO_TUTORIAL} label="Kreto tutorial" />
-        </motion.div>
       </div>
     </section>
   );

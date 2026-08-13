@@ -39,11 +39,18 @@ interface FeatureTutorialProps {
   steps: TutorialStep[];
   /** Announced to screen readers as the tutorial's subject, e.g. "Scout tutorial". */
   label: string;
+  /** Controlled mode: parent owns the active step (e.g. to drive a visual
+   * preview alongside it). Omit both for the previous self-contained
+   * behavior — used as-is by Messages.tsx today. */
+  activeStep?: number;
+  onStepChange?: (index: number) => void;
 }
 
-export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
+export const FeatureTutorial = ({ steps, label, activeStep, onStepChange }: FeatureTutorialProps) => {
   const reducedMotion = useReducedMotion();
-  const [index, setIndex] = useState(0);
+  const isControlled = activeStep !== undefined;
+  const [internalIndex, setInternalIndex] = useState(0);
+  const index = isControlled ? activeStep : internalIndex;
   const [thinking, setThinking] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const firstRender = useRef(true);
@@ -62,7 +69,11 @@ export const FeatureTutorial = ({ steps, label }: FeatureTutorialProps) => {
     return () => window.clearTimeout(t);
   }, [index, reducedMotion]);
 
-  const goTo = (i: number) => setIndex(Math.max(0, Math.min(steps.length - 1, i)));
+  const goTo = (i: number) => {
+    const clamped = Math.max(0, Math.min(steps.length - 1, i));
+    if (isControlled) onStepChange?.(clamped);
+    else setInternalIndex(clamped);
+  };
   const next = () => goTo(index + 1);
   const prev = () => goTo(index - 1);
 

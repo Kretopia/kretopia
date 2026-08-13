@@ -11,7 +11,7 @@ import {
   Radar, Target, Bookmark, FolderKanban,
   Users, MessageCircle, HeartHandshake, Handshake,
   ClipboardList, Users2, Milestone, Banknote,
-  DoorOpen, Video, UserPlus2, Share2,
+  DoorOpen, Video, UploadCloud, Share2,
   MessageSquareText, Lightbulb, ThumbsUp, CheckCircle2,
 } from "lucide-react";
 import type { TutorialStep } from "./FeatureTutorial";
@@ -58,11 +58,13 @@ export const STUDIO_TUTORIAL: TutorialStep[] = [
   { icon: Banknote, title: "Deliver and get paid", body: "Mark milestones complete, send invoices, and get paid — all inside the same room." },
 ];
 
+/** SoundStages hosts two distinct formats — kept clearly separate here,
+ * never blended into one generic "audition or speed-network" step. */
 export const SOUNDSTAGES_TUTORIAL: TutorialStep[] = [
-  { icon: DoorOpen, title: "Join a room", body: "Drop into a live SoundStage — an open mic, speed session, or listening party." },
-  { icon: Video, title: "Audition or speed-network", body: "Perform, pitch, or meet a fresh face every few minutes depending on the room format." },
-  { icon: UserPlus2, title: "Meet participants", body: "See who else is in the room — their Passport is one tap away." },
-  { icon: Share2, title: "Connect afterwards", body: "Follow up with the people you clicked with — the connection doesn't end when the room closes." },
+  { icon: DoorOpen, title: "Choose your room type", body: "Speed Sessions are live, rotating conversations. Auditions are submission-first — you send work, the host reviews it." },
+  { icon: Video, title: "Speed Session: rotate live", body: "Drop into a live room and meet a new person every few minutes. No submission needed — just show up." },
+  { icon: UploadCloud, title: "Audition: submit, then get reviewed", body: "Submit a video, song, or portfolio first. The host reviews submissions and invites shortlisted candidates to a live round." },
+  { icon: Share2, title: "Connect afterwards", body: "Whichever format you joined, the people you met stay reachable — follow up through their Passport." },
 ];
 
 export const KRETO_TUTORIAL: TutorialStep[] = [

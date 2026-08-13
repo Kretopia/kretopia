@@ -24,6 +24,7 @@ import { MessageComposer } from "./messages/MessageComposer";
 import { EmptyChatState } from "./messages/EmptyChatState";
 import { VibeCheckPrompt } from "@/components/calls/VibeCheckPrompt";
 import { FeatureTutorial } from "@/components/landing/kretopia/FeatureTutorial";
+import { MessagesVisual } from "@/components/landing/kretopia/featureVisuals";
 import { MESSAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import type { Attachment, ReplyTo, Message } from "./messages/types";
 
@@ -54,6 +55,7 @@ const Messages = () => {
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [replyTo, setReplyTo] = useState<ReplyTo | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [tutorialStep, setTutorialStep] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -301,14 +303,38 @@ const Messages = () => {
             />
           </div>
         ) : (
-          <div className="hidden md:flex flex-1 items-center justify-center p-8 bg-background">
-            <div className="w-full max-w-md">
-              <div className="text-center mb-8">
+          <div className="hidden md:flex flex-1 items-center justify-center p-8 bg-background overflow-y-auto">
+            <div className="w-full max-w-md space-y-5">
+              <div className="text-center">
                 <p className="text-xl font-semibold">Your Messages</p>
-                <p className="text-sm text-muted-foreground mt-1">Send messages to creators you've connected with</p>
+                <p className="text-sm text-muted-foreground mt-1">Every conversation lives in one inbox — unread messages are clearly marked, and each person's Passport context sits right beside the thread.</p>
               </div>
+
+              <div className="dark-surface rounded-2xl overflow-hidden" style={{ backgroundColor: "#05070D" }}>
+                <MessagesVisual activeStep={tutorialStep} />
+              </div>
+
               <div className="dark-surface rounded-2xl p-1" style={{ backgroundColor: "#05070D" }}>
-                <FeatureTutorial steps={MESSAGES_TUTORIAL} label="Messages tutorial" />
+                <FeatureTutorial
+                  steps={MESSAGES_TUTORIAL}
+                  label="Messages tutorial"
+                  activeStep={tutorialStep}
+                  onStepChange={setTutorialStep}
+                />
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => navigate("/match")}
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
+                  style={{ backgroundColor: "#FF2DA1" }}
+                >
+                  Find someone to message
+                </button>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Opens Match — connect with a creator, then pick up the conversation here.
+                </p>
               </div>
             </div>
           </div>

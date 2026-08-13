@@ -191,7 +191,7 @@ const Messages = () => {
 
   return (
     <PageTransition>
-      <div className="accent-match flex h-[calc(100dvh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 lg:pb-0">
+      <div className="accent-match flex h-[calc(100dvh-4rem)] overflow-hidden pb-20 lg:pb-0">
         <ConversationListPanel
           hidden={!!(selectedConversation || selectedGroup)}
           activeTab={activeTab}

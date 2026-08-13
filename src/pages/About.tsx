@@ -102,9 +102,9 @@ const ProductLoopSection = () => {
         {/* The system */}
         <div className="max-w-2xl mx-auto text-center mb-14">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">The System</p>
-          <p className="text-lg sm:text-xl font-medium text-foreground leading-relaxed">
+          <h2 className="text-lg sm:text-xl font-medium text-foreground leading-relaxed">
             Kretopia turns creative history into trusted opportunity.
-          </p>
+          </h2>
         </div>
 
         {/* Expandable pillars */}

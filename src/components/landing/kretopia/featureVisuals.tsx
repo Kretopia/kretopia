@@ -4,15 +4,17 @@
  * evidence mockups instead — these six cover the ChapterSection-driven
  * features plus Search). Each one is an honest, illustrative mockup,
  * clearly labeled where the content is an example, never presented as
- * live data pulled from a real account.
+ * live data pulled from a real account. Each step shows a complete,
+ * information-dense snapshot of that moment in the flow — not a single
+ * sparse line — so the preview reads as a real product screen.
  */
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Search, UserCheck, Rocket,
+  Search, UserCheck, Rocket, Clock, HandHeart,
   ListChecks, FileEdit, Sparkles, Radar, Target, Bookmark,
   FolderKanban, Users, MessageCircle, Handshake,
   ClipboardList, Milestone, Banknote, DoorOpen, Video,
-  UploadCloud, Share2, MapPin,
+  UploadCloud, Share2, MapPin, CheckCircle2, Mic, FileVideo,
 } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { VisualCardShell } from "./visualShell";
@@ -40,32 +42,51 @@ export const SearchVisual = ({ activeStep }: { activeStep: number }) => {
       </div>
       <AnimatePresence mode="wait">
         {activeStep === 0 && (
-          <motion.p key="s0" {...fade(reducedMotion)} className="text-sm text-white/45">
-            Type a name, stage name, or project.
-          </motion.p>
+          <motion.div key="s0" {...fade(reducedMotion)} className="space-y-2">
+            <p className="text-sm text-white/45">Type a name, stage name, or project.</p>
+            <div className="flex flex-wrap gap-1.5">
+              {["Event Producer", "Bali", "Beach Festival"].map((t) => (
+                <span key={t} className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-white/40">{t}</span>
+              ))}
+            </div>
+          </motion.div>
         )}
         {activeStep === 1 && (
-          <motion.div key="s1" {...fade(reducedMotion)} className="flex items-center gap-3 rounded-xl bg-white/[0.04] p-3.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white">MS</span>
-            <div className="min-w-0">
-              <p className="text-[15px] font-medium text-white truncate">Maya Solano</p>
-              <p className="text-xs text-white/45 truncate">Event Producer · Bali</p>
+          <motion.div key="s1" {...fade(reducedMotion)} className="space-y-2.5">
+            <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] p-3.5">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white shrink-0">MS</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-medium text-white truncate">Maya Solano</p>
+                <p className="text-xs text-white/45 truncate">Event Producer · Bali</p>
+              </div>
+              <span className="text-[10px] text-white/35 shrink-0">3 credits</span>
             </div>
+            <p className="text-xs text-white/35">Matched on name + role — public record, no login needed to view.</p>
           </motion.div>
         )}
         {activeStep === 2 && (
-          <motion.div key="s2" {...fade(reducedMotion)} className="flex items-center justify-between rounded-xl bg-white/[0.04] p-3.5">
-            <div>
-              <p className="text-[15px] font-medium text-white">Unclaimed record found</p>
-              <p className="text-xs text-white/45">3 credits, 0 confirmed</p>
+          <motion.div key="s2" {...fade(reducedMotion)} className="space-y-2.5">
+            <div className="flex items-center justify-between rounded-xl bg-white/[0.04] p-3.5">
+              <div>
+                <p className="text-[15px] font-medium text-white">Unclaimed record found</p>
+                <p className="text-xs text-white/45">3 credits, 0 confirmed</p>
+              </div>
+              <span className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-white shrink-0" style={{ backgroundColor: ACCENT }}>Claim</span>
             </div>
-            <span className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-white" style={{ backgroundColor: ACCENT }}>Claim</span>
+            <div className="space-y-1">
+              {["Beach Festival — Production", "Sunset Sessions EP", "Coastal Runway Show"].map((c) => (
+                <p key={c} className="text-xs text-white/40 truncate">· {c}</p>
+              ))}
+            </div>
           </motion.div>
         )}
         {activeStep === 3 && (
-          <motion.div key="s3" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm text-white/60">
-            <Rocket className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
-            Continue to your Passport →
+          <motion.div key="s3" {...fade(reducedMotion)} className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-white/70">
+              <Rocket className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
+              Continue to your Passport →
+            </div>
+            <p className="text-xs text-white/35">One link now holds every credit, co-sign, and opportunity.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -81,16 +102,23 @@ export const PassportVisual = ({ activeStep }: { activeStep: number }) => {
     <VisualCardShell icon={UserCheck} label="Passport preview" tag="Illustrative — not live data">
       <div className="rounded-xl p-4 flex items-center gap-3.5" style={ring(0)}>
         <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white shrink-0">MS</span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-[15px] font-semibold text-white">Maya Solano</p>
           <p className="text-xs text-white/45">Event Producer · Bali</p>
         </div>
+        {activeStep === 0 && <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: ACCENT }} aria-hidden />}
       </div>
       <div className="rounded-xl p-4" style={ring(1)}>
         <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Credits</p>
-        <div className="flex items-center gap-2">
-          <ListChecks className="h-3.5 w-3.5" style={{ color: ACCENT }} aria-hidden />
-          <span className="text-sm text-white/70">3 of 5 confirmed</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ListChecks className="h-3.5 w-3.5" style={{ color: ACCENT }} aria-hidden />
+            <span className="text-sm text-white/70">3 of 5 confirmed</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <HandHeart className="h-3 w-3 text-white/35" aria-hidden />
+            <span className="text-[10px] text-white/35">2 co-signed</span>
+          </div>
         </div>
       </div>
       <div className="rounded-xl p-4" style={ring(2)}>
@@ -99,12 +127,18 @@ export const PassportVisual = ({ activeStep }: { activeStep: number }) => {
           "Producer focused on large-scale beach festivals across Southeast Asia..."
           <FileEdit className="h-3.5 w-3.5 inline ml-2" style={{ color: ACCENT }} aria-hidden />
         </p>
+        {activeStep === 2 && (
+          <p className="text-[10px] text-white/35 mt-2">AI-drafted from your credits — fully editable before publish.</p>
+        )}
       </div>
       <AnimatePresence mode="wait">
         {activeStep === 3 && (
-          <motion.div key="publish" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm font-semibold" style={{ color: ACCENT }}>
-            <Sparkles className="h-4 w-4" aria-hidden />
-            Ready to publish
+          <motion.div key="publish" {...fade(reducedMotion)} className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: ACCENT }}>
+              <Sparkles className="h-4 w-4" aria-hidden />
+              Ready to publish
+            </div>
+            <p className="text-xs text-white/35">kretopia.com/maya-solano — your one shareable link.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -118,29 +152,44 @@ export const ScoutVisual = ({ activeStep }: { activeStep: number }) => {
   return (
     <VisualCardShell icon={Radar} label="Opportunity preview" tag="Illustrative — not live data">
       <div className="rounded-xl bg-white/[0.04] p-4">
-        <p className="text-[15px] font-semibold text-white">Stage Manager — Beach Festival</p>
-        <p className="text-xs text-white/45 mt-1 flex items-center gap-1"><MapPin className="h-3.5 w-3.5" aria-hidden />Bali · 3-day contract</p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-[15px] font-semibold text-white">Stage Manager — Beach Festival</p>
+          <span className="flex items-center gap-1 text-[10px] text-white/35 shrink-0"><Clock className="h-3 w-3" aria-hidden />2h ago</span>
+        </div>
+        <p className="text-xs text-white/45 mt-1 flex items-center gap-1"><MapPin className="h-3.5 w-3.5" aria-hidden />Bali · 3-day contract · $800–1,200</p>
       </div>
       <AnimatePresence mode="wait">
         {activeStep === 1 && (
-          <motion.div key="s1" {...fade(reducedMotion)} className="flex flex-wrap gap-2">
-            {["Event Production", "Bali-based", "Team lead"].map((t) => (
-              <span key={t} className="rounded-full px-3 py-1.5 text-[11px] font-medium" style={{ backgroundColor: "rgba(255,45,161,0.12)", color: ACCENT, border: "1px solid rgba(255,45,161,0.25)" }}>
-                <Target className="h-3 w-3 inline mr-1" aria-hidden />{t}
-              </span>
-            ))}
+          <motion.div key="s1" {...fade(reducedMotion)} className="space-y-2">
+            <p className="text-xs text-white/45">Matches because:</p>
+            <div className="flex flex-wrap gap-2">
+              {["Event Production", "Bali-based", "Team lead"].map((t) => (
+                <span key={t} className="rounded-full px-3 py-1.5 text-[11px] font-medium" style={{ backgroundColor: "rgba(255,45,161,0.12)", color: ACCENT, border: "1px solid rgba(255,45,161,0.25)" }}>
+                  <Target className="h-3 w-3 inline mr-1" aria-hidden />{t}
+                </span>
+              ))}
+            </div>
           </motion.div>
         )}
         {activeStep === 2 && (
-          <motion.div key="s2" {...fade(reducedMotion)} className="flex gap-2.5">
-            <span className="flex-1 rounded-xl px-4 py-2.5 text-center text-sm font-semibold text-white" style={{ backgroundColor: ACCENT }}>Apply</span>
-            <span className="flex items-center gap-1.5 rounded-xl border border-white/15 px-4 py-2.5 text-sm text-white/70"><Bookmark className="h-3.5 w-3.5" aria-hidden />Save</span>
+          <motion.div key="s2" {...fade(reducedMotion)} className="space-y-2.5">
+            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+              <p className="text-[10px] uppercase tracking-wider text-white/35 mb-1">Kreto's draft pitch</p>
+              <p className="text-xs text-white/55 leading-snug line-clamp-2">"Hi — I produced three beach festivals in Bali last year, most recently..."</p>
+            </div>
+            <div className="flex gap-2.5">
+              <span className="flex-1 rounded-xl px-4 py-2.5 text-center text-sm font-semibold text-white" style={{ backgroundColor: ACCENT }}>Apply</span>
+              <span className="flex items-center gap-1.5 rounded-xl border border-white/15 px-4 py-2.5 text-sm text-white/70"><Bookmark className="h-3.5 w-3.5" aria-hidden />Save</span>
+            </div>
           </motion.div>
         )}
         {activeStep === 3 && (
-          <motion.div key="s3" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm text-white/60">
-            <FolderKanban className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
-            Becomes a Studio project once confirmed
+          <motion.div key="s3" {...fade(reducedMotion)} className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm text-white/70">
+              <FolderKanban className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
+              Becomes a Studio project once confirmed
+            </div>
+            <p className="text-xs text-white/35">Brief, files, and payment stay in the same room from here.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -155,33 +204,43 @@ export const MatchVisual = ({ activeStep }: { activeStep: number }) => {
     <VisualCardShell icon={Users} label="Collaborator preview" tag="Illustrative — not live data">
       <AnimatePresence mode="wait">
         {activeStep === 0 && (
-          <motion.div key="s0" {...fade(reducedMotion)} className="flex flex-wrap gap-2">
-            {["Music Video", "Bali", "Editing"].map((t) => (
-              <span key={t} className="rounded-full border border-white/15 px-3 py-1.5 text-[11px] text-white/60">{t}</span>
-            ))}
+          <motion.div key="s0" {...fade(reducedMotion)} className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {["Music Video", "Bali", "Editing"].map((t) => (
+                <span key={t} className="rounded-full border border-white/15 px-3 py-1.5 text-[11px] text-white/60">{t}</span>
+              ))}
+            </div>
+            <p className="text-xs text-white/35">Narrowing to 6 real fits — not a cold list.</p>
           </motion.div>
         )}
         {activeStep >= 1 && (
           <motion.div key="s1" {...fade(reducedMotion)} className="flex items-center gap-3 rounded-xl bg-white/[0.04] p-3.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white">RK</span>
-            <div className="min-w-0">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white shrink-0">RK</span>
+            <div className="min-w-0 flex-1">
               <p className="text-[15px] font-medium text-white truncate">Riri Kusuma</p>
               <p className="text-xs text-white/45 truncate">Shared: 2 credits, same city</p>
             </div>
+            <span className="text-[10px] text-white/35 shrink-0">Editor</span>
           </motion.div>
         )}
       </AnimatePresence>
       <AnimatePresence mode="wait">
         {activeStep === 2 && (
-          <motion.div key="s2" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm text-white/60">
-            <MessageCircle className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
-            "Loved your edit on..." — reference the shared project
+          <motion.div key="s2" {...fade(reducedMotion)} className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm text-white/70">
+              <MessageCircle className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
+              Reach out
+            </div>
+            <p className="text-xs text-white/45 italic">"Loved your edit on Sunset Sessions — reaching out about a music video shoot..."</p>
           </motion.div>
         )}
         {activeStep === 3 && (
-          <motion.div key="s3" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm font-semibold" style={{ color: ACCENT }}>
-            <Handshake className="h-4 w-4" aria-hidden />
-            Bring them into a Studio project
+          <motion.div key="s3" {...fade(reducedMotion)} className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: ACCENT }}>
+              <Handshake className="h-4 w-4" aria-hidden />
+              Bring them into a Studio project
+            </div>
+            <p className="text-xs text-white/35">Brief, files, and payment — no separate thread to manage.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -196,8 +255,13 @@ export const StudioVisual = ({ activeStep }: { activeStep: number }) => {
   return (
     <VisualCardShell icon={ClipboardList} label="Studio preview" tag="Illustrative — not live data">
       <div className="rounded-xl bg-white/[0.04] p-4">
-        <p className="text-[15px] font-semibold text-white">Beach Festival — Production</p>
-        <p className="text-xs text-white/45 mt-1">Event Production room</p>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-[15px] font-semibold text-white">Beach Festival — Production</p>
+            <p className="text-xs text-white/45 mt-1">Event Production room</p>
+          </div>
+          <span className="text-[10px] text-white/35 shrink-0">3 collaborators</span>
+        </div>
       </div>
       <div className="flex items-center gap-2">
         {steps.map((s, i) => (
@@ -212,22 +276,38 @@ export const StudioVisual = ({ activeStep }: { activeStep: number }) => {
       </div>
       <AnimatePresence mode="wait">
         {activeStep === 1 && (
-          <motion.div key="s1" {...fade(reducedMotion)} className="flex -space-x-2.5">
-            {["MS", "RK", "MP"].map((i) => (
-              <span key={i} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-white border-2" style={{ borderColor: "#0b0e16" }}>{i}</span>
-            ))}
+          <motion.div key="s1" {...fade(reducedMotion)} className="space-y-2">
+            <div className="flex -space-x-2.5">
+              {["MS", "RK", "MP"].map((i) => (
+                <span key={i} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-white border-2" style={{ borderColor: "#0b0e16" }}>{i}</span>
+              ))}
+            </div>
+            <p className="text-xs text-white/35">Producer, Editor, Stage Manager — each with role-scoped access.</p>
           </motion.div>
         )}
         {activeStep === 2 && (
-          <motion.div key="s2" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm text-white/60">
-            <Milestone className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
-            2 of 4 milestones complete
+          <motion.div key="s2" {...fade(reducedMotion)} className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm text-white/70">
+              <Milestone className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
+              2 of 4 milestones complete
+            </div>
+            <div className="space-y-1">
+              {[{ n: "Pre-production", done: true }, { n: "On-site setup", done: true }, { n: "Live show day", done: false }].map((m) => (
+                <p key={m.n} className="text-xs text-white/40 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3 w-3" style={{ color: m.done ? ACCENT : "rgba(255,255,255,0.2)" }} aria-hidden />
+                  {m.n}
+                </p>
+              ))}
+            </div>
           </motion.div>
         )}
         {activeStep === 3 && (
-          <motion.div key="s3" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm font-semibold" style={{ color: ACCENT }}>
-            <Banknote className="h-4 w-4" aria-hidden />
-            Invoice sent — awaiting payment
+          <motion.div key="s3" {...fade(reducedMotion)} className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: ACCENT }}>
+              <Banknote className="h-4 w-4" aria-hidden />
+              Invoice sent — awaiting payment
+            </div>
+            <p className="text-xs text-white/35">$1,100 · Invoice #0042 · Due in 5 days</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -242,27 +322,53 @@ export const SoundStagesVisual = ({ activeStep }: { activeStep: number }) => {
     <VisualCardShell icon={DoorOpen} label="SoundStages preview" tag="Illustrative — not live data">
       <AnimatePresence mode="wait">
         {activeStep === 0 && (
-          <motion.div key="s0" {...fade(reducedMotion)} className="flex gap-2.5">
-            <span className="flex-1 rounded-xl px-4 py-2.5 text-center text-sm font-semibold text-white" style={{ backgroundColor: ACCENT }}>Speed Session</span>
-            <span className="flex-1 rounded-xl border border-white/15 px-4 py-2.5 text-center text-sm text-white/70">Audition</span>
+          <motion.div key="s0" {...fade(reducedMotion)} className="space-y-2.5">
+            <div className="flex gap-2.5">
+              <span className="flex-1 rounded-xl px-4 py-2.5 text-center text-sm font-semibold text-white" style={{ backgroundColor: ACCENT }}>Speed Session</span>
+              <span className="flex-1 rounded-xl border border-white/15 px-4 py-2.5 text-center text-sm text-white/70">Audition</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5 text-[10px] text-white/40">
+              <p className="text-center">Live, rotating — show up</p>
+              <p className="text-center">Submit, host reviews</p>
+            </div>
           </motion.div>
         )}
         {activeStep === 1 && (
-          <motion.div key="s1" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm text-white/60">
-            <Video className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
-            Speed Session — live now, new face every 4 minutes
+          <motion.div key="s1" {...fade(reducedMotion)} className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-white/70">
+              <Video className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
+              Speed Session — live now
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {["MS", "RK", "MP", "JL"].map((i) => (
+                  <span key={i} className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[9px] font-bold text-white border-2" style={{ borderColor: "#0b0e16" }}>{i}</span>
+                ))}
+              </div>
+              <span className="text-[10px] text-white/35">new face every 4 minutes</span>
+            </div>
           </motion.div>
         )}
         {activeStep === 2 && (
-          <motion.div key="s2" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm text-white/60">
-            <UploadCloud className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
-            Audition — submission received, host reviewing
+          <motion.div key="s2" {...fade(reducedMotion)} className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-white/70">
+              <UploadCloud className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
+              Audition — submission received
+            </div>
+            <div className="flex items-center gap-3 text-[10px] text-white/35">
+              <span className="flex items-center gap-1"><FileVideo className="h-3 w-3" aria-hidden />Video reel</span>
+              <span className="flex items-center gap-1"><Mic className="h-3 w-3" aria-hidden />Voice sample</span>
+            </div>
+            <p className="text-xs text-white/35">Host reviewing — shortlist invites go out within 48h.</p>
           </motion.div>
         )}
         {activeStep === 3 && (
-          <motion.div key="s3" {...fade(reducedMotion)} className="flex items-center gap-2 text-sm font-semibold" style={{ color: ACCENT }}>
-            <Share2 className="h-4 w-4" aria-hidden />
-            Follow up via their Passport
+          <motion.div key="s3" {...fade(reducedMotion)} className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: ACCENT }}>
+              <Share2 className="h-4 w-4" aria-hidden />
+              Follow up via their Passport
+            </div>
+            <p className="text-xs text-white/35">Whoever you met stays reachable — no lost contact after the room closes.</p>
           </motion.div>
         )}
       </AnimatePresence>

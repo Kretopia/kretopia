@@ -651,6 +651,23 @@ All colors MUST be HSL.
   }
 }
 
+/* Static fallbacks for the transform-based entrance/exit utilities above --
+   land straight on each animation's end state instead of tweening through
+   translate/scale/rotate, which prefers-reduced-motion users have opted
+   out of. animate-fade-in is opacity-only (no transform) so it's left as
+   is -- that category isn't considered motion under the same guidance. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .animate-confetti {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* Scrollbar hide utility */
 .scrollbar-hide {
   -ms-overflow-style: none;

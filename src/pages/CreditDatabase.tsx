@@ -10,7 +10,7 @@ import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, Play, Star, List, Fingerprint, AlertCircle, RefreshCw,
+  TrendingUp, Play, Star, List, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -24,6 +24,8 @@ import { deriveEvidenceState, EVIDENCE_STATE_ORDER } from "@/lib/creditEvidence"
 import { SmartWidget } from "@/components/ui/smart-widget";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import { VERIFIED_CREDITS_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -356,17 +358,24 @@ const CreditDatabase = () => {
         )}>
           <div className="container mx-auto px-4">
             {!isSearchActive && (
-              <div className="mb-5 max-w-xl mx-auto">
-                <p className="landing-eyebrow mb-3 flex items-center justify-center gap-2">
-                  <Fingerprint className="h-3 w-3" style={{ color: "#FF2DA1" }} />
+              <div className="mb-5 max-w-xl mx-auto text-center">
+                <p
+                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-3 px-2.5 py-1 rounded-full border"
+                  style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: "#FF2DA1" }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#FF2DA1" }} />
                   Creative Passport
                 </p>
-                <h1 className="landing-h2 landing-glow text-center">
-                  Kretopia <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>Credits</span>
+                <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-white leading-[0.95]">
+                  Verified Credits.<br />
+                  <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>The record no one can fake.</span>
                 </h1>
-                <p className="landing-sub mt-3 text-center">
+                <p className="mt-3 text-sm sm:text-base text-white/60">
                   Search any project, person, or production across the global creative industry.
                 </p>
+                <div className="mt-2 flex justify-center">
+                  <FeatureAITutorial featureKey="verified-credits" label="How Verified Credits works" steps={VERIFIED_CREDITS_TUTORIAL} />
+                </div>
 
                 {/* Verified Credit / Passport Stamp explainer — official terms,
                     honest evidence tiers. "Verified" is never shown without

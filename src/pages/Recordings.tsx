@@ -11,6 +11,14 @@ import { CallRecapSheet } from "@/components/calls/CallRecapSheet";
 import { formatDistanceToNow } from "date-fns";
 import { Video, Sparkles, Clock, ArrowLeft, FileVideo, RefreshCw } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+
+const RECORDINGS_TUTORIAL: TutorialStep[] = [
+  { icon: Video, title: "Every call gets recorded", body: "Tap Record during any Kretopia call. The replay lands here about a minute after it ends." },
+  { icon: Sparkles, title: "Kreto transcribes it for you", body: "Each recording is transcribed and summarized automatically — no manual note-taking." },
+  { icon: FileVideo, title: "Pull the recap", body: "Open Recap on any call to get Kreto's extracted action items, not just a wall of transcript." },
+];
 
 type Row = {
   id: string;
@@ -99,27 +107,32 @@ export default function Recordings() {
         <meta name="description" content="Watch replays, read transcripts and pull action items from your Kretopia video calls." />
       </Helmet>
 
-      <header className="px-4 pt-6 pb-4 border-b border-border">
-        <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-2">
-          <ArrowLeft className="h-3 w-3" /> Back
-        </Link>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="font-serif text-2xl md:text-3xl">Recordings</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Replays, transcripts and Kreto-extracted actions from every recorded call.
-            </p>
+      <FeaturePageHeader
+        eyebrow="Call recordings"
+        title={
+          <>
+            Recordings.<br />
+            <span className="text-energy-glow">Every call, ready to revisit.</span>
+          </>
+        }
+        subtitle="Replays, transcripts, and Kreto-extracted action items from every recorded call."
+        tutorial={{ featureKey: "recordings", label: "How Recordings works", steps: RECORDINGS_TUTORIAL }}
+        meta={
+          <div className="flex flex-col items-end gap-2">
+            <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-3 w-3" /> Back
+            </Link>
+            <Button type="button" size="sm" variant="outline" onClick={handleSync} disabled={syncing} className="gap-1.5 shrink-0">
+              <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
+              {syncing ? "Syncing…" : "Sync now"}
+            </Button>
           </div>
-          <Button type="button" size="sm" variant="outline" onClick={handleSync} disabled={syncing} className="gap-1.5 shrink-0">
-            <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
-            {syncing ? "Syncing…" : "Sync now"}
-          </Button>
-        </div>
-        <p className="text-[11px] text-muted-foreground mt-2">
-          Recordings finalize ~1 min after a call ends. Tap Sync now to pull the latest.
-        </p>
-      </header>
+        }
+      />
 
+      <p className="text-[11px] text-muted-foreground px-4 pt-3">
+        Recordings finalize ~1 min after a call ends. Tap Sync now to pull the latest.
+      </p>
 
       <div className="px-4 py-4 space-y-3">
         {loading ? (

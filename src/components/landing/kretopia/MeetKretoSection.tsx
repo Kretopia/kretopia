@@ -28,6 +28,12 @@ import { KRETO_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
 
 const ACCENT = "#FF2DA1";
+// Landing-only trim: the in-app /kreto tutorial (FeatureAITutorial) keeps
+// all 3 KRETO_TUTORIAL steps — this section drops the opening "Get
+// context-aware guidance" step, which read as a flat capability restate
+// rather than an action, leaving the two steps that actually walk through
+// the review → confirm loop.
+const CHAPTER_TUTORIAL = KRETO_TUTORIAL.slice(1);
 
 const LINES = [
   "I found three opportunities that match your Passport.",
@@ -247,7 +253,7 @@ export const MeetKretoSection = () => {
           className="mt-16 lg:mt-20 max-w-2xl"
         >
           <TutorialStepper
-            steps={KRETO_TUTORIAL}
+            steps={CHAPTER_TUTORIAL}
             label="Kreto tutorial"
             activeStep={activeStep}
             onStepChange={setActiveStep}

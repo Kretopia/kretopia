@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import {
-  Camera, MapPin, ShieldCheck, Share2, QrCode, FileDown, ArrowRight, Star, Gauge,
+  Camera, MapPin, ShieldCheck, Share2, QrCode, FileDown, ArrowRight, Star, Gauge, Fingerprint,
 } from "lucide-react";
 import { HoloCard } from "./HoloCard";
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
@@ -140,6 +140,13 @@ export function PassportHero({
           {/* Identity row */}
           <div className="flex items-end justify-between gap-3">
             <div className="relative shrink-0">
+              {isVerifiedPro && (
+                <div
+                  aria-hidden
+                  className="ai-orbit-ring pointer-events-none absolute -inset-1.5 rounded-full"
+                  style={{ background: "conic-gradient(from 0deg, transparent, hsl(var(--signal-teal)/0.85), transparent 30%)" }}
+                />
+              )}
               <FramedAvatar
                 src={profile.avatar_url || "/avatar-silhouette.svg"}
                 fallback={displayName?.split(" ").map((n: string) => n[0]).join("") || "?"}
@@ -182,6 +189,10 @@ export function PassportHero({
                   <ShieldCheck className="h-2.5 w-2.5 text-primary-foreground" />
                 </div>
               )}
+            </div>
+            <div className="mt-1 flex items-center gap-1 text-[10px] font-mono text-muted-foreground/70">
+              <Fingerprint className="h-3 w-3 shrink-0 text-[hsl(var(--signal-teal))]" />
+              <span title="Your unique Passport ID">{passportId}</span>
             </div>
             <div className="mt-1 flex items-center gap-x-2 gap-y-1 text-xs text-muted-foreground flex-wrap">
               {(profile.username || profile.role) && (

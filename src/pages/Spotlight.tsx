@@ -3,14 +3,22 @@ import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Headphones } from "lucide-react";
+import { BookOpen, Headphones, TrendingUp } from "lucide-react";
 import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { useLocation } from "react-router-dom";
 import { APP_URL } from "@/lib/constants";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const ACCENT = "#FF2DA1";
+
+const SPOTLIGHT_TUTORIAL: TutorialStep[] = [
+  { icon: BookOpen, title: "Read the Magazine", body: "Interviews, features, and creative stories from across the community." },
+  { icon: Headphones, title: "Press play on the Podcast", body: "Episodes with working creatives, ready whenever you want to listen." },
+  { icon: TrendingUp, title: "Sort by what matters", body: "Switch between Latest, Most Read, and Trending to find what's worth your time." },
+];
 
 const Spotlight = () => {
   const location = useLocation();
@@ -69,13 +77,21 @@ const Spotlight = () => {
             transition={{ duration: 0.7 }}
             className="mb-8"
           >
-            <p className="landing-eyebrow mb-4">The Spotlight</p>
-            <h1 className="landing-h2 landing-glow">
-              Stories worth <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>pressing play</span> on.
+            <p
+              className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-4 px-2.5 py-1 rounded-full border"
+              style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: ACCENT }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: ACCENT }} />
+              The Spotlight
+            </p>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-white leading-[0.95]">
+              Spotlight.<br />
+              <span className="pink-glow-breathe" style={{ color: ACCENT }}>Stories worth pressing play on.</span>
             </h1>
-            <p className="landing-sub mt-4">
+            <p className="mt-3 text-sm sm:text-base text-white/60 max-w-md">
               Articles and podcast episodes from the creative universe.
             </p>
+            <FeatureAITutorial featureKey="spotlight" label="How Spotlight works" steps={SPOTLIGHT_TUTORIAL} />
           </motion.div>
 
           {/* Tabs */}

@@ -25,7 +25,11 @@ import { VERIFIED_CREDITS_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
 
 const ACCENT = "#FF2DA1";
-const DEMO_SEQUENCE: EvidenceState[] = [...EVIDENCE_STATE_ORDER];
+// The final tutorial step ("Earn a Passport Stamp") always shows the Stamp
+// reveal, not an evidence badge — so the demo only needs states for the
+// steps before it, derived from the tutorial's own length rather than a
+// hardcoded count that can drift out of sync when steps are added/removed.
+const DEMO_SEQUENCE: EvidenceState[] = EVIDENCE_STATE_ORDER.slice(0, VERIFIED_CREDITS_TUTORIAL.length - 1);
 
 const WHY_IT_MATTERS = [
   { icon: UserCheck, label: "Anyone can claim", body: "Claiming a credit is the start, not the proof." },
@@ -36,7 +40,7 @@ const WHY_IT_MATTERS = [
 export const VerifiedCreditsChapterSection = () => {
   const reducedMotion = useReducedMotion();
   const [activeStep, setActiveStep] = useState(0);
-  const isStamped = activeStep === DEMO_SEQUENCE.length - 1;
+  const isStamped = activeStep === VERIFIED_CREDITS_TUTORIAL.length - 1;
   const currentState = DEMO_SEQUENCE[Math.min(activeStep, DEMO_SEQUENCE.length - 1)];
 
   return (

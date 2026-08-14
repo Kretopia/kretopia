@@ -5,7 +5,7 @@ import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, LayoutDashboard, Radar, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
   MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox,
-  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database, Heart, Video, Info, LogIn
+  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database, Heart, Video, Info
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAutoHideNavbar } from "@/hooks/useAutoHideNavbar";
@@ -200,9 +200,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
           </div>
         )}
 
-        {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
+        {/* ═══ GUEST INLINE NAV (desktop) ═══
+            lg:, matching the authenticated desktop nav's own breakpoint below —
+            at md: (768px) this plus the search icon, Hire Talent and Get
+            Started together overflow the viewport and clip the CTA button
+            off-screen. Tablets get the hamburger menu instead, same as the
+            authenticated experience already does. */}
         {!user && (
-          <div className="hidden md:flex items-center gap-1 mx-4">
+          <div className="hidden lg:flex items-center gap-1 mx-4">
             {guestNavItems.map(({ path, label, icon: Icon }) => {
               const active = location.pathname === path;
               return (
@@ -460,10 +465,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
             </Sheet>
           ) : !user ? (
             <>
-              {/* Mobile hamburger for guests — all pages */}
+              {/* Hamburger for guests below lg: — matches the inline nav's
+                  own breakpoint above so tablets always have one working
+                  way to reach these links, never neither. */}
               <Sheet open={guestMenuOpen} onOpenChange={setGuestMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Open menu" className="h-9 w-9 md:hidden">
+                  <Button variant="ghost" size="icon" aria-label="Open menu" className="h-9 w-9 lg:hidden">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -501,12 +508,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       Hire Talent
                     </Button>
                     <Button
-                      variant="ghost"
-                      className="justify-start h-12 gap-2 text-sm font-medium"
-                      onClick={() => { setGuestMenuOpen(false); navigate("/auth"); }}
+                      variant="link"
+                      className="cta-primary justify-start h-12 gap-2 text-sm font-semibold no-underline hover:no-underline"
+                      onClick={() => { setGuestMenuOpen(false); navigate("/auth?tab=signup"); }}
                     >
-                      <LogIn className="h-4 w-4" aria-hidden />
-                      Sign In
+                      <Sparkles className="h-4 w-4" aria-hidden />
+                      Get Started
                     </Button>
                   </div>
                 </SheetContent>
@@ -525,21 +532,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   Hire Talent
                 </Button>
               </Link>
-              <Link to="/auth">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "gap-1.5 text-xs sm:text-sm px-2 sm:px-4",
-                    isLandingPage && "text-white hover:bg-white/10 hover:text-white",
-                  )}
-                >
-                  <LogIn className="h-4 w-4" aria-hidden />
-                  Sign In
-                </Button>
-              </Link>
               <Link to="/auth?tab=signup">
-                <Button variant="gradient" size="sm" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-4">
+                <Button variant="link" size="sm" className="cta-primary gap-1.5 text-xs sm:text-sm px-2.5 sm:px-4 font-semibold no-underline hover:no-underline">
                   <Sparkles className="h-4 w-4" aria-hidden />
                   Get Started
                 </Button>

@@ -7,12 +7,12 @@
 import {
   Search, UserCheck, FileEdit, Rocket,
   Fingerprint, ListChecks, Sparkles as SparklesIcon, Send,
-  Link2, ShieldCheck, HandHeart, Stamp,
+  ShieldCheck, HandHeart, Stamp,
   Radar, Target, Bookmark, FolderKanban,
   Users, MessageCircle, HeartHandshake, Handshake,
   ClipboardList, Users2, Milestone, Banknote,
   DoorOpen, Video, UploadCloud, Share2,
-  MessageSquareText, Lightbulb, ThumbsUp, CheckCircle2,
+  Lightbulb, ThumbsUp, CheckCircle2,
 } from "lucide-react";
 import type { TutorialStep } from "./FeatureTutorial";
 
@@ -31,7 +31,6 @@ export const PASSPORT_TUTORIAL: TutorialStep[] = [
 ];
 
 export const VERIFIED_CREDITS_TUTORIAL: TutorialStep[] = [
-  { icon: Link2, title: "Understand the evidence", body: "Every credit shows its real evidence tier — Claimed, Publicly Sourced, Evidence-backed, Co-Signed, or Organization Confirmed." },
   { icon: ListChecks, title: "Add or confirm a credit", body: "Add a project you worked on, or confirm one Kretopia found — with a link or detail backing it up." },
   { icon: HandHeart, title: "Request a Co-Sign", body: "Ask a collaborator who was there to confirm it. Their co-sign moves the credit forward honestly." },
   { icon: Stamp, title: "Earn a Passport Stamp", body: "Once fully confirmed, the credit becomes a Passport Stamp — visible proof on your public record." },
@@ -68,7 +67,6 @@ export const SOUNDSTAGES_TUTORIAL: TutorialStep[] = [
 ];
 
 export const KRETO_TUTORIAL: TutorialStep[] = [
-  { icon: MessageSquareText, title: "Ask Kreto", body: "Ask about your Passport, an opportunity, or what to do next — in plain language." },
   { icon: Lightbulb, title: "Get context-aware guidance", body: "Kreto answers using your real Passport and history — not a generic script." },
   { icon: ThumbsUp, title: "Review the suggestion", body: "Drafts, plans, or shortlists Kreto proposes are always shown to you first, clearly labeled AI-assisted." },
   { icon: CheckCircle2, title: "Confirm the action", body: "Nothing becomes part of your record or gets sent until you confirm it." },

@@ -651,6 +651,23 @@ All colors MUST be HSL.
   }
 }
 
+/* Static fallbacks for the transform-based entrance/exit utilities above --
+   land straight on each animation's end state instead of tweening through
+   translate/scale/rotate, which prefers-reduced-motion users have opted
+   out of. animate-fade-in is opacity-only (no transform) so it's left as
+   is -- that category isn't considered motion under the same guidance. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .animate-confetti {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* Scrollbar hide utility */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -968,6 +985,53 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 @media (prefers-reduced-motion: reduce) {
   .ai-scan-line { display: none; }
+}
+
+/* Primary guest CTA ("Get Started") — flat #FF2DA1 regardless of light/
+   dark theme (the brand accent is a hard requirement here, not a themed
+   token), a restrained hover/focus glow, and one slow light-sweep per
+   cycle rather than a continuous shimmer. Transform/opacity only so it
+   costs nothing to composite and never shifts layout. */
+.cta-primary {
+  position: relative;
+  overflow: hidden;
+  background-color: #FF2DA1;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 0 0 0 rgba(255, 45, 161, 0);
+  transition: box-shadow 0.25s ease, transform 0.15s ease;
+}
+.cta-primary:hover,
+.cta-primary:focus,
+.cta-primary:active {
+  text-decoration: none;
+}
+.cta-primary:hover {
+  background-color: #FF2DA1;
+  box-shadow: 0 0 22px rgba(255, 45, 161, 0.45);
+}
+.cta-primary:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 45, 161, 0.4), 0 0 22px rgba(255, 45, 161, 0.45);
+}
+.cta-primary:active {
+  transform: scale(0.97);
+}
+.cta-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.4) 50%, transparent 58%);
+  transform: translateX(-130%);
+  animation: cta-primary-sweep 6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cta-primary-sweep {
+  0% { transform: translateX(-130%); }
+  18% { transform: translateX(130%); }
+  100% { transform: translateX(130%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-primary::after { animation: none; display: none; }
 }
 
 /* Shared vertical rhythm + horizontal padding for landing sections. */

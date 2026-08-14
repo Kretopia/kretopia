@@ -582,26 +582,16 @@ export const UnifiedHome = () => {
         </div>
       )}
 
-      {/* ═══════════ CONTENT SECTIONS ═══════════ */}
-      <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
-
-          {/* Streak chips and Opportunity Intel moved into "More for you" — keep Home calm */}
-
-
-
-        {/* ═══════════ GUEST LANDING — 8-section narrative ═══════════
-            1. Hero (above)  2. Claim Your Credits  3. Product Reel (real screenshots)
-            4. Comparison    5. Social Proof        6. Pricing
-            7. ThriveFund teaser   8. Bottom CTA */}
-        {/* OneWedge legacy landing retired — Kretopia v1 above is canonical. */}
-        {/* Kretopia v1 landing owns the full guest narrative + footer above.
-            Legacy guest-only sections (ClaimYourCredits, CoreValueBlocks,
-            ProductReel, ComparisonTable, SocialProof, PricingPreview,
-            ThriveFundTeaser, FAQ, BottomCTA, trust badges, founding-member
-            CTA, footer links) intentionally removed. */}
-
-        {/* Footer for authed users only — guests get the Kretopia footer above. */}
-        {user && (
+      {/* ═══════════ CONTENT SECTIONS ═══════════
+          Authed-only: the guest narrative (8-section legacy landing) was
+          retired -- Kretopia v1's KretopiaLanding + EditorialFooter above
+          now own the entire guest experience, including the footer. This
+          wrapper's only remaining content (footer links, QuickPostModal)
+          is authed-only, so the wrapper itself must be too -- otherwise
+          guests get a bare `pb-28` (112px) empty block below the real
+          footer with nothing in it. */}
+      {user && (
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
           <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
             <Link to="/about" className="hover:text-foreground transition-colors">{t("common.about")}</Link>
             <span className="text-border">·</span>
@@ -611,10 +601,10 @@ export const UnifiedHome = () => {
             <span className="text-border">·</span>
             <Link to="/community-guidelines" className="hover:text-foreground transition-colors">{t("footer.guidelines")}</Link>
           </div>
-        )}
 
-        <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
-      </div>
+          <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
+        </div>
+      )}
       {user && <FirstWinSheet open={showFirstWin} onOpenChange={setShowFirstWin} />}
       {/* Sticky mobile CTA removed — dismissible popup banner handles guest CTA */}
     </div>

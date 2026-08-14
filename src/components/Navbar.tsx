@@ -395,8 +395,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <MenuButton icon={Theater} label="Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
                       <MenuButton icon={Sparkles} label="Kreto" onClick={() => handleNavigation("/kreto")} path="/kreto" />
                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
-                      <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} path="/search" />
-                      <MenuButton icon={Users} label="Kretopia" onClick={() => handleNavigation("/thrivein")} path="/thrivein" />
                       <MenuButton icon={Gift} label="Perks" onClick={() => handleNavigation("/perks")} path="/perks" />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
                       <MenuButton icon={Video} label="Recordings" onClick={() => handleNavigation("/recordings")} path="/recordings" />

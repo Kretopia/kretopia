@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { History, Phone } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface CallRow {
   id: string;
@@ -25,7 +27,7 @@ const formatDuration = (sec: number | null) => {
 export const CallHistorySection = ({ projectId }: Props) => {
   const [rows, setRows] = useState<CallRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAll, setShowAll] = useState(false);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     let cancelled = false;
@@ -52,8 +54,6 @@ export const CallHistorySection = ({ projectId }: Props) => {
 
   if (loading || rows.length === 0) return null;
 
-  const visible = showAll ? rows : rows.slice(0, 3);
-
   return (
     <section className="px-4 py-5 space-y-3">
       <header className="flex items-end justify-between gap-3">
@@ -70,38 +70,30 @@ export const CallHistorySection = ({ projectId }: Props) => {
           {rows.length} total
         </span>
       </header>
-      <ul className="space-y-2">
-        {visible.map((r) => {
-          const dur = formatDuration(r.duration_seconds);
-          return (
-            <li
-              key={r.id}
-              className="flex items-center gap-3 rounded-lg border border-border/60 px-3 py-2"
-            >
-              <span className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Phone className="h-3.5 w-3.5 text-primary" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {formatDistanceToNow(new Date(r.started_at), { addSuffix: true })}
-                </p>
-                {dur && (
-                  <p className="text-xs text-muted-foreground">{dur}</p>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-      {rows.length > 3 && (
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="text-xs text-primary hover:underline"
-        >
-          {showAll ? "Show less" : `Show all ${rows.length}`}
-        </button>
-      )}
+      <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full" aria-label="Call history">
+        <CarouselContent className="-ml-2">
+          {rows.map((r) => {
+            const dur = formatDuration(r.duration_seconds);
+            return (
+              <CarouselItem key={r.id} className="pl-2 basis-auto">
+                <div className="flex items-center gap-2.5 rounded-lg border border-border/60 px-3 py-2 w-48">
+                  <span className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Phone className="h-3.5 w-3.5 text-primary" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {formatDistanceToNow(new Date(r.started_at), { addSuffix: true })}
+                    </p>
+                    {dur && (
+                      <p className="text-xs text-muted-foreground">{dur}</p>
+                    )}
+                  </div>
+                </div>
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+      </Carousel>
     </section>
   );
 };

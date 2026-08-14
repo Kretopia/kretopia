@@ -14,6 +14,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { SEO } from "@/components/SEO";
 import { useNavigate } from "react-router-dom";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+
+const CREATIVE_CIRCLE_TUTORIAL: TutorialStep[] = [
+  { icon: Users, title: "Invite creatives", body: "Using your personal link, QR code, or direct share." },
+  { icon: TrendingUp, title: "Level up your tier", body: "As more people join through you — unlock free Pro, reduced fees, and status points." },
+  { icon: Gift, title: "Earn passive commission", body: "From Kretopia's service fee when your referrals complete paid gigs — they keep 100% of their earnings." },
+];
 
 const CreativeCircle = () => {
   const { user } = useAuth();
@@ -75,15 +83,33 @@ const CreativeCircle = () => {
     : 100;
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-2xl space-y-6 pb-24">
+    <div className="pb-24">
       <SEO title="Creative Circle | Kretopia" description="Grow your creative network, unlock rewards, and earn passive income by inviting creatives to Kretopia." />
+
+      <FeaturePageHeader
+        eyebrow="Creative Circle"
+        title={
+          <>
+            Creative Circle.<br />
+            <span className="text-energy-glow">Grow your network, earn as it grows.</span>
+          </>
+        }
+        subtitle="Invite creatives, climb tiers, and earn passive commission — all from one link."
+        tutorial={{ featureKey: "creative-circle", label: "How Creative Circle works", steps: CREATIVE_CIRCLE_TUTORIAL }}
+        meta={
+          <Badge variant="secondary" className="text-sm font-bold">
+            {network.referralCount} invited
+          </Badge>
+        }
+      />
+
+      <div className="container mx-auto px-4 pt-4 max-w-2xl space-y-6">
 
       {/* Hero — Current Tier */}
       <div className={cn("rounded-2xl p-6 bg-gradient-to-br border", network.tier.gradient, "border-border/50")}>
         <div className="flex items-center gap-4 mb-4">
           <div className="text-4xl">{network.tier.icon}</div>
           <div className="flex-1">
-            <h1 className="text-xl font-bold">Creative Circle</h1>
             <p className={cn("text-sm font-semibold", network.tier.color)}>
               {network.tier.label} — {network.tier.tagline}
             </p>
@@ -261,6 +287,7 @@ const CreativeCircle = () => {
         <p className="text-[11px] text-muted-foreground text-center pt-2">
           Commission is earned from Kretopia's platform fee — your referrals keep 100% of their earnings. This isn't MLM — it's supporting each other to grow.
         </p>
+      </div>
       </div>
     </div>
   );

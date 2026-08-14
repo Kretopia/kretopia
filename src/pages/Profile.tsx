@@ -16,7 +16,8 @@ import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 
 // Components
 import { PassportHero } from "@/components/passport/PassportHero";
-import { FeatureHeader } from "@/components/ui/feature-header";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { PASSPORT_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
@@ -405,15 +406,19 @@ const ProfileContent = () => {
         className="hidden"
       />
 
+      <FeaturePageHeader
+        eyebrow="Passport"
+        title={
+          <>
+            Passport.<br />
+            <span className="text-energy-glow">Your work, verified.</span>
+          </>
+        }
+        subtitle="Your identity, your strongest credits, and every co-sign — one card you actually control."
+        tutorial={{ featureKey: "passport", label: "How Passport works", steps: PASSPORT_TUTORIAL }}
+      />
+
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
-        {/* Calm Passport header — shared FeatureHeader, matches Scout/Studio */}
-        <header className="pt-[env(safe-area-inset-top)]">
-          <FeatureHeader eyebrow="Passport">
-            Your work,{" "}
-            <span className="italic text-[hsl(var(--signal-teal))]">verified</span>
-            <span className="text-foreground/60">.</span>
-          </FeatureHeader>
-        </header>
 
         {/* Passport reveal — the reward moment right after Kreto builds the
             Passport. Uses the real Passport UI below it, doesn't replace it. */}

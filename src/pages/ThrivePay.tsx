@@ -36,6 +36,8 @@ import { MoneyStreakChip } from "@/components/thrivepay/MoneyStreakChip";
 import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
 import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
 import { PaymentLinksSection } from "@/components/thrivepay/PaymentLinksSection";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import {
   DollarSign,
   TrendingUp,
@@ -60,6 +62,12 @@ import {
   FilePlus,
   MoreHorizontal,
 } from "lucide-react";
+
+const KREPAY_TUTORIAL: TutorialStep[] = [
+  { icon: Wallet, title: "See what's coming in", body: "Your wallet balance, available funds, and pending payouts — all in one glance." },
+  { icon: Send, title: "Get paid in seconds", body: "Share a payment link or send an invoice — no waiting on a bank transfer to clear." },
+  { icon: FileText, title: "Track invoices & expenses", body: "Every invoice, quote, and expense lives here, so nothing falls through at tax time." },
+];
 
 interface ConnectRequirements {
   status: string;
@@ -281,29 +289,24 @@ export default function ThrivePay() {
         description="Manage your wallet, earnings, status, and payment account"
       />
 
-      <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
-        <PassportAnchorStrip className="mb-3" />
-
-        {/* Kretopia Wallet — frictionless payouts (Path 2) */}
-        <div className="mb-6">
-          <ThriveWalletCard />
-        </div>
-
-        {/* Header */}
-        <div className="mb-4 sm:mb-6 flex flex-wrap items-start justify-between gap-3 border-b-2 border-primary/20 pb-4">
-          <div className="space-y-1.5 min-w-0">
-            <p className="brand-eyebrow">Your money, daily</p>
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <h1 className="text-3xl md:text-4xl font-black tracking-[-0.03em] flex items-center gap-3 leading-[1.05]">
-                <Wallet className="h-7 w-7 md:h-8 md:w-8 text-pay" />
-                KrePay
-              </h1>
-              {getStatusBadge()}
-              <MoneyStreakChip />
-            </div>
-            <p className="text-sm text-muted-foreground">Invoices, expenses, earnings & payouts — one place.</p>
+      <FeaturePageHeader
+        eyebrow="Your money, daily"
+        title={
+          <>
+            KrePay.<br />
+            <span className="text-energy-glow">Invoices, expenses, payouts — one place.</span>
+          </>
+        }
+        subtitle="Everything about getting paid for your creative work, without the spreadsheet."
+        tutorial={{ featureKey: "krepay", label: "How KrePay works", steps: KREPAY_TUTORIAL }}
+        meta={
+          <div className="flex items-center gap-2 flex-wrap">
+            {getStatusBadge()}
+            <MoneyStreakChip />
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+        }
+        tabs={
+          <div className="flex items-center gap-2">
             {/* Top Up — primary lime CTA */}
             <Button size="sm" variant="lime" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
               <Plus className="h-4 w-4" />
@@ -367,6 +370,15 @@ export default function ThrivePay() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        }
+      />
+
+      <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
+        <PassportAnchorStrip className="mb-3" />
+
+        {/* Kretopia Wallet — frictionless payouts (Path 2) */}
+        <div className="mb-6">
+          <ThriveWalletCard />
         </div>
 
         {/* Thrive proactive nudges (Pay surface) */}

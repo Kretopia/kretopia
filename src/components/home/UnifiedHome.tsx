@@ -73,6 +73,15 @@ import { intentBoostForCreator, intentBoostForGig, intentBoostForEvent } from "@
 import { normalizeIntents } from "@/lib/intents";
 import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+import { ListChecks as ListChecksIcon } from "lucide-react";
+
+const TODAY_TUTORIAL: TutorialStep[] = [
+  { icon: Sparkles, title: "Tell Kreto what's next", body: "Type or speak what you're working on — Kreto routes it to a new workspace, a people search, a gig search, or a straight answer." },
+  { icon: ListChecksIcon, title: "Three things that matter now", body: "Your next move, your top opportunity, and your money signal — no digging through separate pages to find them." },
+  { icon: ChevronDown, title: "Everything else, one tap away", body: "Pulse, approvals, scouted gigs and trending — tucked under \"More from today\" so the main view stays focused." },
+];
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -473,7 +482,19 @@ export const UnifiedHome = () => {
           ThrivePromptHero + TodayThreeCards load their own data and skeletons, so
           gating the whole hub on `profile` left mobile blank for ~500ms+ on slow nets. */}
       {user && (
-        <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
+        <>
+          <FeaturePageHeader
+            eyebrow="Today"
+            title={
+              <>
+                Today.<br />
+                <span className="text-energy-glow">Your command center for right now.</span>
+              </>
+            }
+            subtitle="One place for your next move, your top opportunity, and your money signal."
+            tutorial={{ featureKey: "today", label: "How Today works", steps: TODAY_TUTORIAL }}
+          />
+          <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
           {/* Conversational entry — Tell Thrive what you want to create. */}
           <div className="mb-4">
             <ThrivePromptHero />
@@ -579,7 +600,8 @@ export const UnifiedHome = () => {
 
           {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
           <PushNotificationPrompt trigger="default" />
-        </div>
+          </div>
+        </>
       )}
 
       {/* ═══════════ CONTENT SECTIONS ═══════════

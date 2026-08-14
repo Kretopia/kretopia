@@ -3,10 +3,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { SEO } from "@/components/SEO";
-import { Star, CheckCircle2, ArrowLeft, Trophy, Calendar } from "lucide-react";
+import { Star, CheckCircle2, ArrowLeft, Trophy, Calendar, ListChecks } from "lucide-react";
 import { useFoundingMemberProgress } from "@/hooks/useFoundingMemberProgress";
 import { FOUNDING_QUESTS, foundingDeadlineLabel, foundingDaysLeft } from "@/lib/foundingMember";
 import { useAuth } from "@/hooks/useAuth";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+
+const FOUNDING_TUTORIAL: TutorialStep[] = [
+  { icon: ListChecks, title: "Complete 3 milestones", body: "Verify your profile, log a credit, and invite a friend — each one moves your progress bar." },
+  { icon: Star, title: "Race for one of 100 spots", body: "Only 100 Founding Member badges exist. First 100 to finish all 3 milestones get one." },
+  { icon: Trophy, title: "Wear it on your Passport", body: "Once earned, the badge is permanent and shows on your public Passport as an early member." },
+];
 
 const QUEST_CTA: Record<string, { label: string; to: string }> = {
   claim_profile: { label: "Verify profile", to: "/profile" },
@@ -31,49 +39,44 @@ export default function FoundingMember() {
         description="Earn one of 100 Founding Member badges by completing 3 short milestones."
       />
 
-      <div className="max-w-2xl mx-auto px-4 pt-6 pb-24">
+      <div className="max-w-2xl mx-auto px-4 pt-4">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-2"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
+      </div>
 
-        {/* Header */}
-        <Card className="p-6 mb-4 bg-gradient-to-br from-primary/10 via-card to-accent/10 border-primary/20">
-          <div className="flex items-start gap-4">
-            <div className="h-12 w-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-              <Star className="h-6 w-6 text-primary" fill="currentColor" />
-            </div>
-            <div className="flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
-                Limited · 100 spots
-              </p>
-              <h1 className="text-2xl font-bold leading-tight">Founding Member</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Earn a permanent badge for shaping Kretopia early. Active members only.
-              </p>
-              <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-background/60 border border-border rounded-full px-2.5 py-1">
-                <Calendar className="h-3 w-3" />
-                Closes {deadline} · {daysLeft} day{daysLeft === 1 ? "" : "s"} left
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Or sooner — only 100 active spots, first come, first earned.
-              </p>
-            </div>
+      <FeaturePageHeader
+        eyebrow="Founding Circle"
+        title={
+          <>
+            Founding Circle.<br />
+            <span className="text-energy-glow">100 spots. Three moves. One badge.</span>
+          </>
+        }
+        subtitle="Complete 3 milestones before the deadline and earn a permanent Founding Member badge."
+        tutorial={{ featureKey: "founding-circle", label: "How the Founding Circle works", steps: FOUNDING_TUTORIAL }}
+        meta={
+          <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-card border border-border rounded-full px-2.5 py-1 shrink-0">
+            <Calendar className="h-3 w-3" />
+            Closes {deadline} · {daysLeft} day{daysLeft === 1 ? "" : "s"} left
           </div>
+        }
+      />
 
-          {/* Overall progress */}
-          <div className="mt-5">
-            <div className="flex items-center justify-between text-xs font-medium mb-1.5">
-              <span className="text-muted-foreground">
-                {completedCount} of {total} completed
-              </span>
-              <span className="text-foreground">{pct}%</span>
-            </div>
-            <Progress value={pct} className="h-2" />
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+        {/* Overall progress */}
+        <Card className="p-4 mb-4">
+          <div className="flex items-center justify-between text-xs font-medium mb-1.5">
+            <span className="text-muted-foreground">
+              {completedCount} of {total} completed
+            </span>
+            <span className="text-foreground">{pct}%</span>
           </div>
+          <Progress value={pct} className="h-2" />
         </Card>
 
         {/* Celebration / call to action */}

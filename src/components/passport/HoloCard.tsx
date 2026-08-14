@@ -53,10 +53,10 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
           transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(0)`,
         }}
       >
-        {/* Depth glow behind the card */}
+        {/* Depth glow behind the card — slow ambient breathe reads as "AI-aware" presence */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -inset-2 rounded-[26px] opacity-60 blur-2xl"
+          className="ai-ambient-breathe pointer-events-none absolute -inset-2 rounded-[26px] blur-2xl"
           style={{
             background:
               "linear-gradient(135deg, hsl(var(--signal-teal)/0.35), transparent 45%, hsl(var(--signal-pink,320 100% 60%)/0.28))",
@@ -66,6 +66,13 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
 
         {/* Card body */}
         <div className="relative overflow-hidden rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.75),0_2px_0_0_rgba(255,255,255,0.06)_inset]">
+          {/* Scan-line sweep along the top edge — same "actively scanning" motion as the AI tutorial surfaces */}
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px overflow-hidden z-10">
+            <div
+              className="ai-scan-line h-full w-1/3"
+              style={{ background: "linear-gradient(90deg, transparent, hsl(var(--signal-teal)/0.9), transparent)" }}
+            />
+          </div>
           {children}
 
           {/* Foil sheen */}

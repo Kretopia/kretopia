@@ -30,6 +30,10 @@ console errors        → none, checked in fresh tabs (no stale-HMR
 | `f8e24490` | 9 | Real logo asset in footer + eliminate 112px dead space |
 | `4fe820a3` | 10 | Reduced-motion fallbacks for slide-up/confetti utilities |
 | `3cd17126` | 11 | Fix guest nav overflow clipping the CTA at 768px |
+| `36a741a7` | 6 | Remove 4 confirmed-dead Passport hero components |
+| `e3e7ccc5` | 5 | Scout: hero slot for the top match + carousel instead of a grid |
+| `cb463601` | 4 | Studio: milestone strip + call history as a carousel |
+| `2f69ca5b` | 3 | Today: trim MorningPulse's duplicate overdue/money signal |
 
 ## Phase-by-phase
 
@@ -57,30 +61,63 @@ Verified Credits evidence-demo's Stamp reveal was tied to a hardcoded step count
 tutorial's real length, so it never fired — now derives from the array's own length and **verified
 live** that clicking the final step now correctly reveals the "Passport Stamp" badge.
 
-### Phases 3–6 — Today / Studio / Scout / Passport — **deferred**
-Audited in depth (see `FEATURE_SURFACE_AUDIT.md`), with concrete keep/merge/convert/remove decisions
-per surface, but **not yet implemented**:
-- **Today** (`UnifiedHome.tsx`): merge `MorningPulse`/`ApprovalsHub`/`ScoutedGigsSection`/`MoneyBrief`'s
-  duplicate signal into `TodayThreeCards`, condense the "More from today" cluster into one carousel.
-- **Studio** (`StudioRoom.tsx`): convert `CallHistorySection` and file/deliverable lists to the
-  established carousel pattern, add a milestone strip from the existing `milestones` table. Approvals
-  has no dedicated data model yet — flagged to defer rather than fabricate a surface.
-- **Scout** (`ScoutedGigsSection.tsx`): convert the grid to the `CastingCallsRail` carousel pattern,
-  add a hero slot for the top `fit_score` opportunity. Studio hand-off and "Apply with Passport" need a
-  new data model — flagged to defer rather than fake a transition that doesn't carry state.
-- **Passport** (`Profile.tsx` + `PassportHero.tsx`): the "one dominant surface + max 2 supporting
-  blocks" structure **already exists** from a prior pass (`PassportHero` is self-documented as the
-  merge target; `KretoActionCenter`/`TrustOpportunityCenter` are already "Block 1 of 2"/"Block 2 of 2").
-  Remaining: fold the static "strongest credits" grid into the existing `CreditsSection` carousel, and
-  remove 4 confirmed-dead files (`PassportClaimHero.tsx`, `PassportHeroRibbon.tsx`,
-  `PassportOverview.tsx`, `src/components/profile/ProfileHero.tsx` — zero live imports, verified by
-  grep).
+### Phase 6 — Passport
+The "one dominant surface + max 2 supporting blocks" structure **already existed** from a prior pass
+(`PassportHero` is self-documented as the merge target; `KretoActionCenter`/`TrustOpportunityCenter` are
+already "Block 1 of 2"/"Block 2 of 2" in `Profile.tsx`). This phase's actual work: removed 4
+confirmed-dead files (`PassportClaimHero.tsx`, `PassportHeroRibbon.tsx`, `PassportOverview.tsx`,
+`src/components/profile/ProfileHero.tsx`) — re-verified zero live imports via grep immediately before
+deletion (only stale doc-comments referenced them), confirmed via clean typecheck/build after removal.
+**Not done**: folding `PassportHero`'s static 2-item "strongest credits" grid into the `CreditsSection`
+carousel — judgment call to skip, since a 2-item carousel has nothing to scroll and doesn't serve the
+"reduce card count" goal in any real way; the grid stays as a compact in-hero teaser, `CreditsSection`
+below remains the full browsing surface.
 
-**Why deferred**: these are the highest-risk, highest-scope items in the charter — real rewrites of
-complex, data-heavy authenticated surfaces. Shipping them without adequate individual verification
-would violate the charter's own "do not claim complete unless browser-tested" rule and "do not regress
-existing work" constraint. The audit gives a concrete, ready-to-execute plan for a focused follow-up
-pass on each.
+### Phase 5 — Scout
+Re-read `ScoutedGigsSection.tsx` in full and confirmed the audit's honesty finding still holds:
+`fit_score`/`fit_reason` come from a real LLM call grounded in the user's actual profile/preferences,
+never fabricated. Since gigs are already ordered by `fit_score` desc, promoted `gigs[0]` to a dedicated
+hero card above the fold — full (non-truncated) `fit_reason` text, Save/Dismiss inline, one primary
+"View full brief" CTA — no new scoring logic, purely a hierarchy change over existing honest data. The
+rest of the list converts from a 2-col grid to the exact embla carousel pattern already proven in
+`CastingCallsRail` (`align:start`, `dragFree`, `duration:0` under reduced motion,
+`CarouselPositionDots`). The compact "More from today" embed (`limit` prop) gets a carousel too, no
+hero — that context already has its own framing. Extracted the card markup into a `renderGigCard()`
+closure so hero/carousel share identical cards. Every existing action (save/dismiss/open/draft/apply/
+outcome) is unchanged. **Not done**: Studio hand-off and "Apply with Passport" — both need an
+application-to-project data model that doesn't exist yet; faking either with a state-less redirect
+would violate "don't claim functionality the app doesn't have."
+
+### Phase 4 — Studio
+`CallHistorySection.tsx` was a vertical list with a manual "show all N" toggle — converted to the same
+carousel pattern, removing the toggle state entirely (the carousel handles overflow naturally). Built
+`MilestoneStrip.tsx`: milestones turned out to already be a fully-built concept (`MilestoneBoard.tsx`,
+with escrow/status/role-aware views, reachable via the Studio tool switcher's existing "Finance" tab) —
+just invisible from the default "Today" tab. The new strip is read-only (title/amount/status chips,
+paid-count summary), doesn't duplicate `MilestoneBoard`'s management logic, and every chip links
+straight to the real Finance tab. Wired into both the desktop widget board (new `"milestones"`
+`WidgetId`) and the mobile side column, gated on the same `showMoney` permission `MoneySection` already
+uses. **Not done**: file/deliverable-list carousel conversion, and a dedicated Approvals surface — the
+latter still has no dedicated data model, confirmed during this pass, deferred rather than fabricated.
+
+### Phase 3 — Today
+Re-reading `TodayThreeCards.tsx`, `MorningPulse.tsx`, `ApprovalsHub.tsx`, and `MoneyBrief.tsx` in full
+(rather than trusting the Phase 0 audit's summary) found the redundancy was narrower than first
+assumed: `ApprovalsHub` is a real actionable surface (approve/send/dismiss AI-drafted outreach, not
+shown compactly anywhere else), `MoneyBrief` shows "in this month" received-payment data `TodayThreeCards`
+doesn't have at all, and `ScoutedGigsSection` is already the richer, carousel-converted opportunity
+view (Phase 5). Deleting any of these outright would have been a real capability loss, not a
+duplicate-card removal — so they were left in place. `MorningPulse` was the one confirmed case of true
+duplication: its "Morning Brief" line and chip row repeated overdue-task count, due-today count, and
+pending-invoice amount, all already shown by `TodayThreeCards`' Next Move and Money Signal cards higher
+on the same page. Trimmed to the one signal that appears nowhere else on Today (unread-message count)
+plus its Active Studios rail (also unique — no other Today section lists recent projects). Every
+dropped chip's destination stays reachable via `TodayThreeCards` and the Navbar.
+
+**This is a narrower, more conservative outcome than the original audit's "merge into TodayThreeCards"
+framing** — implementing it required reading each component's actual data-fetching logic, and that
+reading found less pure duplication than the summary suggested. Preserving real, working functionality
+took priority over hitting a card-count target for its own sake.
 
 ### Phase 7 — Navbar
 Removed the standalone "Sign In" entry from desktop inline nav and the mobile guest sheet (which

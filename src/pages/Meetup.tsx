@@ -12,6 +12,14 @@ import { Calendar, MapPin, Search, Plus, Sparkles, Ticket, Users, TrendingUp, Gl
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+
+const EVENTS_TUTORIAL: TutorialStep[] = [
+  { icon: Search, title: "Find what's happening", body: "Browse This Week, Free, Paid, or Trending — or search by title, venue, or topic." },
+  { icon: Globe, title: "See what's near you", body: "Events in your own country surface first, so you're not scrolling past things you can't actually attend." },
+  { icon: Plus, title: "Host your own", body: "Publish a workshop, meetup, jam, or screening in a couple of minutes — free or ticketed." },
+];
 
 interface EventRow {
   id: string;
@@ -139,36 +147,29 @@ const Meetup = () => {
         <link rel="canonical" href="https://kretopia.com/meetup" />
       </Helmet>
 
-      {/* Cinematic header — matches Gigs brand system */}
-      <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
-        <div className="relative container mx-auto max-w-5xl px-4 pt-6 pb-7 sm:pt-8 sm:pb-10">
-          <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-3">
-                Live events
-              </p>
-              <h1 className="text-3xl sm:text-5xl font-semibold tracking-[-0.035em] text-foreground leading-[0.95]">
-                Events,<br />
-                where creators <span className="italic text-[hsl(var(--signal-teal))]">meet</span>.
-              </h1>
-              <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md">
-                Workshops, meetups, jams, screenings, premieres. Real-world moments built for the creative industry.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={() => setShowCreate(true)} size="sm" variant="gradient" className="gap-1.5 rounded-full">
-                <Plus className="h-4 w-4" /> Host Event
+      <FeaturePageHeader
+        eyebrow="Live events"
+        title={
+          <>
+            Events.<br />
+            <span className="text-energy-glow">Where creators meet in person.</span>
+          </>
+        }
+        subtitle="Workshops, meetups, jams, screenings, premieres — real-world moments built for the creative industry."
+        tutorial={{ featureKey: "events", label: "How Events works", steps: EVENTS_TUTORIAL }}
+        meta={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setShowCreate(true)} size="sm" variant="gradient" className="gap-1.5 rounded-full">
+              <Plus className="h-4 w-4" /> Host Event
+            </Button>
+            {hostingCount > 0 && (
+              <Button onClick={() => navigate("/meetup/manage")} size="sm" variant="outline">
+                <SettingsIcon className="h-4 w-4 mr-1.5" /> Manage ({hostingCount})
               </Button>
-              {hostingCount > 0 && (
-                <Button onClick={() => navigate("/meetup/manage")} size="sm" variant="outline">
-                  <SettingsIcon className="h-4 w-4 mr-1.5" /> Manage ({hostingCount})
-                </Button>
-              )}
-            </div>
+            )}
           </div>
-
-          {/* Search + categories */}
+        }
+        tabs={
           <div className="flex flex-col gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -196,8 +197,8 @@ const Meetup = () => {
               ))}
             </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="container mx-auto max-w-5xl px-4 py-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">

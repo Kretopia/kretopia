@@ -37,7 +37,7 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  FolderKanban, Briefcase, DollarSign, ArrowRight, Plus, Mic,
+  Briefcase, DollarSign, ArrowRight, Plus, Mic,
   Clock, Loader2, ChevronLeft, Folder, Inbox,
   Building2, Users, UserSearch, Star,
 } from "lucide-react";
@@ -58,7 +58,6 @@ import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
-import { FeatureHeader } from "@/components/ui/feature-header";
 import { SectionCard } from "@/components/ui/section-card";
 import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
@@ -66,6 +65,8 @@ import { CastingCallsRail } from "@/components/opportunity/CastingCallsRail";
 import { RecentRecordingsRail } from "@/components/calls/RecentRecordingsRail";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
 import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { STUDIO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 interface ProjectPersonRow {
   user_id: string;
@@ -487,47 +488,52 @@ const CreatorWorkHome = () => {
         <meta name="description" content="Studios — your project rooms. Voice-first project management for creatives." />
       </Helmet>
 
+      <FeaturePageHeader
+        eyebrow="Projects & Workspaces"
+        title={
+          <>
+            Studios.<br />
+            <span className="text-energy-glow">Your project rooms, run end to end.</span>
+          </>
+        }
+        subtitle="Brief, collaborators, milestones, and payment — all inside the same room, from kickoff to delivery."
+        tutorial={{ featureKey: "studio", label: "How Studios works", steps: STUDIO_TUTORIAL }}
+        meta={
+          activeProjects.length > 0 ? (
+            <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0">
+              {activeProjects.length} Active
+            </Badge>
+          ) : undefined
+        }
+      />
+
       {/* Wider on desktop, capped for readability */}
       <div className="max-w-6xl mx-auto px-4 pt-4 pb-36 md:pb-12 space-y-5">
-        {/* Hero header — shared FeatureHeader, matches Scout/Passport */}
-        <div className="border-b border-border/60 pb-4">
-          <FeatureHeader eyebrow="Projects & Workspaces" className="pt-0">
-            <span className="inline-flex items-center gap-2.5 flex-wrap">
-              <FolderKanban className="h-7 w-7 text-[hsl(var(--signal-teal))] shrink-0" strokeWidth={2.5} />
-              Studios
-              {activeProjects.length > 0 && (
-                <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0 align-middle">
-                  {activeProjects.length} Active
-                </Badge>
-              )}
-            </span>
-          </FeatureHeader>
-          {/* Voice as a primary interaction, not a passive tip — real mic
-              button wired to the existing VoiceCommandSheet, styled with
-              Kreto's solid accent treatment (formerly a sunset gradient,
-              flattened in the design system reset). */}
-          <button
-            type="button"
-            onClick={() => setVoiceCmdOpen(true)}
-            className="group mt-3 inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-card/60 pl-1.5 pr-4 py-1.5 transition-all hover:border-primary/40 hover:bg-card"
+        {/* Voice as a primary interaction, not a passive tip — real mic
+            button wired to the existing VoiceCommandSheet, styled with
+            Kreto's solid accent treatment (formerly a sunset gradient,
+            flattened in the design system reset). */}
+        <button
+          type="button"
+          onClick={() => setVoiceCmdOpen(true)}
+          className="group inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-card/60 pl-1.5 pr-4 py-1.5 transition-all hover:border-primary/40 hover:bg-card"
+        >
+          <span
+            className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white"
+            style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
           >
             <span
-              className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white"
+              className="absolute inset-0 rounded-full animate-ping opacity-40 motion-reduce:animate-none"
               style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
-            >
-              <span
-                className="absolute inset-0 rounded-full animate-ping opacity-40 motion-reduce:animate-none"
-                style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
-                aria-hidden
-              />
-              <Mic className="relative h-3.5 w-3.5" />
-            </span>
-            <span className="text-sm font-semibold text-foreground">Just talk — Kreto's listening</span>
-            <span className="hidden md:inline text-xs text-muted-foreground">
-              · <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd> anywhere
-            </span>
-          </button>
-        </div>
+              aria-hidden
+            />
+            <Mic className="relative h-3.5 w-3.5" />
+          </span>
+          <span className="text-sm font-semibold text-foreground">Just talk — Kreto's listening</span>
+          <span className="hidden md:inline text-xs text-muted-foreground">
+            · <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd> anywhere
+          </span>
+        </button>
 
         {/* Dominant creation CTA — Studio creation is the primary action on
             this page, so it's the first thing after the title, not a small

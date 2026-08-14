@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, FolderKanban, CheckCircle2, MessageSquare, DollarSign } from "lucide-react";
+import { ArrowRight, FolderKanban, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { moodGradient } from "@/components/project/studio/moodGradient";
 
 interface Stats {
-  dueToday: number;
-  overdue: number;
   unreadMessages: number;
-  pendingInvoiceAmount: number;
 }
 
 interface ProjectRow {
@@ -25,20 +22,18 @@ interface ProjectRow {
 }
 
 /**
- * MorningPulse — the calm, operational hero of /
+ * MorningPulse — Active Studios rail for /.
  *
- * Stack: one-line Morning Brief → Today chips (next-step glance) → Active Studios (top 3).
- * Pulls real data; degrades gracefully when empty (returns null so Home stays clean).
+ * Used to also show a "Morning Brief" line duplicating overdue/due-today/
+ * pending-invoice signal that TodayThreeCards' Next Move and Money Signal
+ * cards already surface higher up the page -- trimmed to just the one
+ * thing here that's genuinely unique: unread-message count (not shown
+ * anywhere else on Today) and the Active Studios quick-jump rail.
  */
 export const MorningPulse = ({ firstName, greeting }: { firstName: string; greeting: string }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState<Stats>({
-    dueToday: 0,
-    overdue: 0,
-    unreadMessages: 0,
-    pendingInvoiceAmount: 0,
-  });
+  const [stats, setStats] = useState<Stats>({ unreadMessages: 0 });
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -47,10 +42,6 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
     let cancelled = false;
 
     const load = async () => {
-      const today = new Date();
-      const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
-      const dayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
-
       const safe = async <T,>(p: any, fallback: T): Promise<T> => {
         try {
           const r = await p;
@@ -60,23 +51,8 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
         }
       };
 
-      const [tasks, unreadCount, invoices, projectsData] = await Promise.all([
-        safe<any[]>(
-          (supabase.from("project_tasks") as any)
-            .select("id, due_date, status")
-            .eq("assigned_to", user.id)
-            .neq("status", "done")
-            .lte("due_date", dayEnd),
-          [],
-        ),
+      const [unreadCount, projectsData] = await Promise.all([
         safe<number>(supabase.rpc("get_unread_message_count" as any), 0),
-        safe<any[]>(
-          (supabase.from("invoices") as any)
-            .select("total_amount, status")
-            .eq("issued_by", user.id)
-            .in("status", ["sent", "overdue"]),
-          [],
-        ),
         safe<any[]>(
           (supabase.from("projects") as any)
             .select("id, title, status, updated_at, mood, cover_url, workspace_type")
@@ -91,17 +67,7 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
 
       if (cancelled) return;
 
-      const dueToday = tasks.filter(
-        (t: any) => t.due_date && t.due_date.slice(0, 10) === dayStart.slice(0, 10),
-      ).length;
-      const overdue = tasks.filter((t: any) => t.due_date && t.due_date < dayStart).length;
-      const unreadMessages = Number(unreadCount) || 0;
-      const pendingInvoiceAmount = invoices.reduce(
-        (sum: number, inv: any) => sum + (Number(inv.total_amount) || 0),
-        0,
-      );
-
-      setStats({ dueToday, overdue, unreadMessages, pendingInvoiceAmount });
+      setStats({ unreadMessages: Number(unreadCount) || 0 });
       setProjects(projectsData as ProjectRow[]);
       setLoaded(true);
     };
@@ -114,23 +80,15 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
 
   if (!loaded) return null;
 
-  const briefLines: string[] = [];
-  if (stats.overdue > 0) briefLines.push(`${stats.overdue} overdue`);
-  if (stats.dueToday > 0) briefLines.push(`${stats.dueToday} due today`);
-  if (stats.unreadMessages > 0)
-    briefLines.push(`${stats.unreadMessages} unread message${stats.unreadMessages === 1 ? "" : "s"}`);
-  if (stats.pendingInvoiceAmount > 0)
-    briefLines.push(`$${Math.round(stats.pendingInvoiceAmount).toLocaleString()} pending`);
-
   const brief =
-    briefLines.length === 0
-      ? projects.length > 0
+    stats.unreadMessages > 0
+      ? `${stats.unreadMessages} unread message${stats.unreadMessages === 1 ? "" : "s"}.`
+      : projects.length > 0
         ? `Calm morning. ${projects.length} active studio${projects.length === 1 ? "" : "s"} waiting when you are.`
-        : "All quiet. A good moment to start something."
-      : `Heads up — ${briefLines.join(" · ")}.`;
+        : "All quiet. A good moment to start something.";
 
   // If nothing meaningful, render nothing (keeps Home calm for true new users)
-  if (briefLines.length === 0 && projects.length === 0) return null;
+  if (stats.unreadMessages === 0 && projects.length === 0) return null;
 
   return (
     <motion.section
@@ -138,48 +96,21 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
       animate={{ opacity: 1, y: 0 }}
       className="mb-5"
     >
-      {/* Morning Brief — one calm line */}
+      {/* Morning Brief — one calm line, unread messages only (everything else lives in TodayThreeCards above) */}
       <div className="rounded-2xl border border-border/60 bg-card px-4 py-3.5">
         <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--signal-teal))] mb-1">
           {greeting}, {firstName}
         </p>
         <p className="text-sm sm:text-[15px] text-foreground leading-snug">{brief}</p>
 
-        {/* Today chips — only render the ones that matter */}
-        {(stats.overdue + stats.dueToday + stats.unreadMessages > 0 || stats.pendingInvoiceAmount > 0) && (
+        {stats.unreadMessages > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
-            {stats.overdue > 0 && (
-              <button
-                onClick={() => navigate("/desk")}
-                className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 text-destructive px-2.5 py-1 text-[11px] font-semibold hover:bg-destructive/15 transition-colors"
-              >
-                <CheckCircle2 className="h-3 w-3" /> {stats.overdue} overdue
-              </button>
-            )}
-            {stats.dueToday > 0 && (
-              <button
-                onClick={() => navigate("/desk")}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-semibold hover:bg-primary/15 transition-colors"
-              >
-                <CheckCircle2 className="h-3 w-3" /> {stats.dueToday} today
-              </button>
-            )}
-            {stats.unreadMessages > 0 && (
-              <button
-                onClick={() => navigate("/messages")}
-                className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 text-accent-foreground px-2.5 py-1 text-[11px] font-semibold hover:bg-accent/20 transition-colors"
-              >
-                <MessageSquare className="h-3 w-3" /> {stats.unreadMessages}
-              </button>
-            )}
-            {stats.pendingInvoiceAmount > 0 && (
-              <button
-                onClick={() => navigate("/pay")}
-                className="inline-flex items-center gap-1.5 rounded-full bg-success/10 text-success px-2.5 py-1 text-[11px] font-semibold hover:bg-success/15 transition-colors"
-              >
-                <DollarSign className="h-3 w-3" /> ${Math.round(stats.pendingInvoiceAmount).toLocaleString()}
-              </button>
-            )}
+            <button
+              onClick={() => navigate("/messages")}
+              className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 text-accent-foreground px-2.5 py-1 text-[11px] font-semibold hover:bg-accent/20 transition-colors"
+            >
+              <MessageSquare className="h-3 w-3" /> {stats.unreadMessages} unread
+            </button>
           </div>
         )}
       </div>

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Sparkles, PenLine, IdCard, Compass, Send, ArrowRight, ArrowUpRight,
+  PenLine, IdCard, Compass, Send, ArrowRight, ArrowUpRight,
   CheckCircle2, Clock, ShieldQuestion, Loader2,
 } from "lucide-react";
 import { BRAND } from "@/lib/brandLexicon";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import { KRETO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 const QUICK_ACTIONS = [
   {
@@ -108,16 +110,23 @@ export default function KretoTab() {
   return (
     <div className="min-h-[calc(100vh-56px)] bg-[#05070D] text-white">
       <div className="mx-auto max-w-3xl px-4 py-10 space-y-6">
-        {/* Identity + purpose */}
+        {/* Identity + purpose — same eyebrow/title/subtitle/tutorial pattern as every
+            other overhauled feature, kept in this page's own dark palette since it
+            (like Auth/EditorialFooter) is deliberately dark regardless of theme. */}
         <div>
-          <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.06] border border-white/10">
-            <Sparkles className="h-5 w-5 text-[#FF2DA1]" />
-          </div>
-          <h1 className="mb-1.5 font-serif text-3xl">{BRAND.agentName} workspace</h1>
-          <p className="text-white/60 max-w-xl">
+          <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FF2DA1] mb-3 px-2.5 py-1 rounded-full border border-[#FF2DA1]/30 bg-[#FF2DA1]/[0.06]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#FF2DA1] animate-pulse" />
+            AI Executive Producer
+          </p>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-white leading-[0.95]">
+            {BRAND.agentName}.<br />
+            <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>Your creative career, run point.</span>
+          </h1>
+          <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl">
             {BRAND.agentRole}. Finds opportunities, drafts pitches, keeps your Passport sharp,
             and closes the loop from search to paid credit — with your approval at every step.
           </p>
+          <FeatureAITutorial featureKey="kreto" label="How Kreto works" steps={KRETO_TUTORIAL} />
         </div>
 
         {/* Primary CTA — the one dominant action on this page */}

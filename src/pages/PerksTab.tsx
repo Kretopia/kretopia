@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
-import { Check, Lock, Shield, Zap, Award, Star, Crown, Sparkles, Loader2, Gift } from "lucide-react";
+import { Check, Lock, Shield, Zap, Award, Star, Crown, Sparkles, Loader2, TrendingUp, KeyRound } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateStatusFromCredits, getAllTiers } from "@/lib/statusEngine";
+import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const TIER_ICONS = [Shield, Zap, Award, Star, Crown, Sparkles];
+
+const PERKS_TUTORIAL: TutorialStep[] = [
+  { icon: Shield, title: "See your real status", body: "Your tier is computed from your actual verified credits — not a number anyone can buy or fake." },
+  { icon: TrendingUp, title: "Perks stack as you grow", body: "Confirm more credits, earn more co-signs, and the next tier's perks unlock automatically." },
+  { icon: KeyRound, title: "Know exactly what's next", body: "Locked tiers stay visible so you always know what building your reputation actually gets you." },
+];
 
 /**
  * /perks — real ThriveStatus tier ladder and the perks each tier actually
@@ -40,14 +48,19 @@ export default function PerksTab() {
     <div className="min-h-[calc(100vh-56px)] bg-[#05070D] text-white">
       <div className="mx-auto max-w-4xl px-4 py-10 space-y-8">
         <div>
-          <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.06] border border-white/10">
-            <Gift className="h-5 w-5 text-[#FF2DA1]" />
-          </div>
-          <h1 className="mb-1.5 text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">Perks</h1>
-          <p className="text-white/60 max-w-xl">
+          <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FF2DA1] mb-3 px-2.5 py-1 rounded-full border border-[#FF2DA1]/30 bg-[#FF2DA1]/[0.06]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#FF2DA1] animate-pulse" />
+            ThriveStatus
+          </p>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-white leading-[0.95]">
+            Perks.<br />
+            <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>Earned, not bought.</span>
+          </h1>
+          <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl">
             What each ThriveStatus tier unlocks. Perks stack as your verified credits and
             reputation grow.
           </p>
+          <FeatureAITutorial featureKey="perks" label="How Perks works" steps={PERKS_TUTORIAL} />
         </div>
 
         {loading ? (

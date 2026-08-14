@@ -15,6 +15,14 @@ import {
 // Tabs import removed — Creator/Brand toggle deprecated; view derives from account_type
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+
+const SUBSCRIPTION_TUTORIAL: TutorialStep[] = [
+  { icon: Zap, title: "Start free", body: "Spark is free forever — no credit card, no time limit. Upgrade only when you're ready for more." },
+  { icon: Sparkles, title: "Try Pro risk-free", body: "Monthly plans start with a 7-day free trial, and every plan cancels anytime." },
+  { icon: Crown, title: "Manage it anytime", body: "Once you're subscribed, open Manage Subscription here to update your card, change plans, or cancel." },
+];
 
 const FOUNDER_FEATURES = [
   "Exclusive Founder Circle badge",
@@ -250,70 +258,71 @@ export default function Subscription() {
   const hasPaidSub = currentTier !== "free" && (subscriptionStatus === "active" || subscriptionStatus === "trialing") && currentTier !== "founder";
 
   return (
-    <div className="container mx-auto px-4 py-12 sm:py-16">
-      <div className="text-center mb-8 max-w-2xl mx-auto">
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-3">
-          Pricing
-        </p>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.035em] leading-[0.95] mb-4 text-foreground">
-          Choose your <span className="italic text-[hsl(var(--signal-teal))]">plan</span>
-        </h1>
-        <p className="text-base sm:text-lg text-muted-foreground mb-6">
-          {viewMode === "brand"
-            ? "Find, hire & manage top creative talent"
-            : "Unlock the full potential of Kretopia"}
-        </p>
+    <div className="pb-16">
+      <FeaturePageHeader
+        eyebrow="Pricing"
+        title={
+          <>
+            Choose your plan.<br />
+            <span className="text-energy-glow">Start free, upgrade when ready.</span>
+          </>
+        }
+        subtitle={
+          viewMode === "brand"
+            ? "Find, hire & manage top creative talent."
+            : "Unlock the full potential of Kretopia."
+        }
+        tutorial={{ featureKey: "subscription", label: "How Pricing works", steps: SUBSCRIPTION_TUTORIAL }}
+        meta={
+          hasPaidSub ? (
+            <Button
+              onClick={handleManageSubscription}
+              variant="outline"
+              disabled={loading === "portal"}
+            >
+              {loading === "portal" ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
+              ) : (
+                "Manage Subscription"
+              )}
+            </Button>
+          ) : undefined
+        }
+        tabs={
+          <div className="flex flex-col items-center gap-3 text-center">
+            {/* View mode is derived from account_type — companies see Brand tiers, creators see Creator tiers.
+                Manual toggle removed: account type is set during onboarding and edited from profile settings. */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-card/40 text-xs font-semibold text-muted-foreground">
+              {viewMode === "brand" ? (
+                <><Briefcase className="h-3.5 w-3.5" /> Brand plans</>
+              ) : (
+                <><User className="h-3.5 w-3.5" /> Creator plans</>
+              )}
+            </div>
 
-        {/* View mode is derived from account_type — companies see Brand tiers, creators see Creator tiers.
-            Manual toggle removed: account type is set during onboarding and edited from profile settings. */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-card/40 text-xs font-semibold text-muted-foreground">
-          {viewMode === "brand" ? (
-            <><Briefcase className="h-3.5 w-3.5" /> Brand plans</>
-          ) : (
-            <><User className="h-3.5 w-3.5" /> Creator plans</>
-          )}
-        </div>
+            <div className="flex items-center justify-center gap-3">
+              <Label htmlFor="billing-toggle" className={`text-sm ${billingInterval === 'monthly' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                Monthly
+              </Label>
+              <Switch
+                id="billing-toggle"
+                checked={billingInterval === 'yearly'}
+                onCheckedChange={(checked) => setBillingInterval(checked ? 'yearly' : 'monthly')}
+              />
+              <Label htmlFor="billing-toggle" className={`text-sm ${billingInterval === 'yearly' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                Yearly
+              </Label>
+              {billingInterval === 'yearly' && (
+                <Badge variant="secondary" className="bg-success/10 text-success border-success/20 text-xs">
+                  Save up to 17%
+                </Badge>
+              )}
+            </div>
+          </div>
+        }
+      />
 
-        {/* Billing interval toggle */}
-        <div className="flex items-center justify-center gap-3 mt-4">
-          <Label htmlFor="billing-toggle" className={`text-sm ${billingInterval === 'monthly' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
-            Monthly
-          </Label>
-          <Switch 
-            id="billing-toggle"
-            checked={billingInterval === 'yearly'}
-            onCheckedChange={(checked) => setBillingInterval(checked ? 'yearly' : 'monthly')}
-          />
-          <Label htmlFor="billing-toggle" className={`text-sm ${billingInterval === 'yearly' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
-            Yearly
-          </Label>
-          {billingInterval === 'yearly' && (
-            <Badge variant="secondary" className="bg-success/10 text-success border-success/20 text-xs">
-              Save up to 17%
-            </Badge>
-          )}
-        </div>
-
-        <p className="text-sm text-primary font-medium mt-3">
-          Start free — upgrade when you're ready
-        </p>
-        
-        {hasPaidSub && (
-          <Button
-            onClick={handleManageSubscription}
-            variant="outline"
-            className="mt-4"
-            disabled={loading === "portal"}
-          >
-            {loading === "portal" ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
-            ) : (
-              "Manage Subscription"
-            )}
-          </Button>
-        )}
-      </div>
-
+      <div className="container mx-auto px-4 pt-8">
       {/* Founder Circle Card — only show on Creator view */}
       {viewMode === "creator" && (
         <div className="max-w-2xl mx-auto mb-12">
@@ -528,6 +537,7 @@ export default function Subscription() {
       <div className="mt-12 text-center text-sm text-muted-foreground">
         <p>Free forever to start · Cancel anytime · Secure payments · 24/7 support</p>
         <p className="mt-2">Save 17% with annual billing · No hidden fees</p>
+      </div>
       </div>
     </div>
   );

@@ -12,7 +12,6 @@ import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, S
 import { Textarea } from "@/components/ui/textarea";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
-import { OnboardingCelebration } from "@/components/onboarding/OnboardingCelebration";
 import { ProfileLaunchScreen } from "@/components/onboarding/ProfileLaunchScreen";
 import { FirstStampReveal } from "@/components/onboarding/FirstStampReveal";
 import { useAuth } from "@/hooks/useAuth";
@@ -646,7 +645,7 @@ export default function Onboarding() {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser?.email_confirmed_at || currentUser?.confirmed_at) {
           toast({ title: "Email verified!", description: "Welcome to Kretopia!" });
-          navigate("/circle");
+          navigate("/");
         }
       };
       checkVerification();

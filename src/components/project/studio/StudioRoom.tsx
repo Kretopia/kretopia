@@ -29,6 +29,7 @@ import { PeopleSection } from "./PeopleSection";
 import { AddCreditSection } from "./AddCreditSection";
 import { WrapProjectCard } from "./WrapProjectCard";
 import { CallHistorySection } from "./CallHistorySection";
+import { MilestoneStrip } from "./MilestoneStrip";
 import { PadPreviewSection } from "./PadPreviewSection";
 // ThriveGenerateCard retired — folded into StudioOutcomeComposer.
 import { StudioOutcomeComposer } from "./StudioOutcomeComposer";
@@ -268,6 +269,9 @@ export const StudioRoom = ({
       {showMoney && (
         <MoneySection project={project} isOwner={isOwner} clientView={isClient} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />
       )}
+      {showMoney && (
+        <MilestoneStrip projectId={project.id} currency={project.currency} onOpenFinance={() => onNavigateToTab("finance")} />
+      )}
       {isCollaborator && (
         <RequestPaymentCard project={project} currentUserId={currentUserId} />
       )}
@@ -281,7 +285,7 @@ export const StudioRoom = ({
   // ===== Desktop draggable widgets =====
   type WidgetId =
     | "brief" | "pulse" | "deliverables" | "pad" | "prep" | "work"
-    | "money" | "request_pay" | "people" | "wrap" | "credit" | "calls";
+    | "money" | "milestones" | "request_pay" | "people" | "wrap" | "credit" | "calls";
 
   const renderWidget = (id: WidgetId): React.ReactNode => {
     const wrap = (node: React.ReactNode) => (
@@ -295,6 +299,7 @@ export const StudioRoom = ({
       case "prep": return showPrep ? wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />) : null;
       case "work": return wrap(<WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />);
       case "money": return showMoney ? wrap(<MoneySection project={project} isOwner={isOwner} clientView={isClient} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
+      case "milestones": return showMoney ? wrap(<MilestoneStrip projectId={project.id} currency={project.currency} onOpenFinance={() => onNavigateToTab("finance")} />) : null;
       case "request_pay": return isCollaborator ? wrap(<RequestPaymentCard project={project} currentUserId={currentUserId} />) : null;
       case "people": return wrap(<PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />);
       case "wrap": return wrap(<WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
@@ -304,7 +309,7 @@ export const StudioRoom = ({
   };
 
   const DEFAULT_LEFT: WidgetId[] = ["brief", "deliverables", "pad", "prep", "work"];
-  const DEFAULT_RIGHT: WidgetId[] = ["money", "request_pay", "people", "wrap", "credit", "calls"];
+  const DEFAULT_RIGHT: WidgetId[] = ["money", "milestones", "request_pay", "people", "wrap", "credit", "calls"];
   const STORAGE_KEY = `thrivedesk:widgets:${project.id}`;
 
   const [leftOrder, setLeftOrder] = useState<WidgetId[]>(DEFAULT_LEFT);

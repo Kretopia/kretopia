@@ -45,7 +45,7 @@ describe("event RSVP auth round-trip", () => {
   it("falls back to ?redirect=, then stash, then default", () => {
     expect(computePostAuthRedirect({ redirectParam: "/foo" })).toBe("/foo");
     expect(computePostAuthRedirect({ stashedRedirect: "/bar" })).toBe("/bar");
-    expect(computePostAuthRedirect({})).toBe("/circle");
+    expect(computePostAuthRedirect({})).toBe("/");
     expect(computePostAuthRedirect({ fallback: "/home" })).toBe("/home");
   });
 

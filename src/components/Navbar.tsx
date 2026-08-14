@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, LayoutDashboard, Radar, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
-  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox,
-  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater, Database, Heart, Video, Info
+  MapPin, Trophy, CheckCircle, Target, Zap, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox,
+  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Gift, Star, RefreshCw, Theater, Database, Heart, Video, Info
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAutoHideNavbar } from "@/hooks/useAutoHideNavbar";
@@ -317,8 +317,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-[hsl(var(--k-midnight))] text-white border-l border-white/10">
                 <SheetHeader className="pr-8 text-left">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FF2DA1]">Kretopia</p>
-                  <SheetTitle className="font-serif text-2xl font-normal text-white">Menu</SheetTitle>
+                  <BrandLogo size="sm" showBeta />
+                  <SheetTitle className="font-serif text-2xl font-normal text-white mt-1">Menu</SheetTitle>
                 </SheetHeader>
 
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
@@ -395,8 +395,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <MenuButton icon={Theater} label="Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
                       <MenuButton icon={Sparkles} label="Kreto" onClick={() => handleNavigation("/kreto")} path="/kreto" />
                      <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
-                      <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} path="/search" />
-                      <MenuButton icon={Users} label="Kretopia" onClick={() => handleNavigation("/thrivein")} path="/thrivein" />
                       <MenuButton icon={Gift} label="Perks" onClick={() => handleNavigation("/perks")} path="/perks" />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
                       <MenuButton icon={Video} label="Recordings" onClick={() => handleNavigation("/recordings")} path="/recordings" />
@@ -414,31 +412,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />
 
 
-                      <Separator className="my-3" />
-
-                      {/* SETTINGS */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Settings</p>
-                      <MenuButton icon={Settings} label="Settings" onClick={() => handleNavigation("/settings")} />
-                      <MenuButton icon={Bell} label="Notifications" onClick={() => handleNavigation("/settings?tab=notifications")} />
-                      <MenuButton icon={Brain} label="Memory & Agent" onClick={() => handleNavigation("/settings?tab=agent")} />
-                      <MenuButton icon={Languages} label="Language" onClick={() => handleNavigation("/settings?tab=language")} />
-                      <MenuButton icon={Lock} label="Privacy" onClick={() => handleNavigation("/settings?tab=privacy")} />
-                      <div className="flex items-center justify-between px-3 py-2">
-                        <span className="text-sm flex items-center gap-3"><Palette className="h-5 w-5" /> Appearance</span>
-                        <ThemeToggle />
-                      </div>
-
-                      <Separator className="my-3" />
-
-                      {/* SUPPORT */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Support</p>
-                      <MenuButton icon={MessageSquarePlus} label="Feedback" onClick={() => {
-                        setIsOpen(false);
-                        sessionStorage.removeItem("feedback-dismissed");
-                        window.dispatchEvent(new CustomEvent("open-feedback"));
-                      }} />
-                      <MenuButton icon={LifeBuoy} label="Help Centre" onClick={() => handleNavigation("/help")} />
-                      <MenuButton icon={Globe} label="About" onClick={() => handleNavigation("/about")} />
+                      {/* Settings and Support sections removed from this menu by request --
+                          Settings (incl. Notifications/Memory & Agent/Language/Privacy/Appearance)
+                          is unchanged and still one tap away via the gear icon in the top nav
+                          (SettingsDrawer renders the exact same Settings page, embedded). Feedback
+                          still fires via the "open-feedback" event from wherever else it's wired;
+                          Help Centre (/help) and About (/about) remain live routes, just not
+                          listed here. */}
 
                       {/* ADMIN */}
                       {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (

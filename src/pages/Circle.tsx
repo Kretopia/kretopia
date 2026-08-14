@@ -23,6 +23,8 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { SOUNDSTAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 type BrowseProfile = {
   user_id: string;
@@ -173,37 +175,29 @@ export default function Circle() {
           description="Find collaborators, jump into live sessions, and grow your creative circle."
         />
 
-        {/* Calm header — matches Scout/About/Subscription pattern */}
-        <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">
-          <div className="container mx-auto max-w-5xl px-4 pt-8 pb-6 sm:pt-12 sm:pb-8">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))]">
-                  Stages
-                </p>
-                <h1 className="text-3xl sm:text-[2.75rem] font-semibold tracking-tight text-foreground leading-[1.1]">
-                  Where creators{" "}
-                  <span className="italic text-[hsl(var(--signal-teal))]">meet</span>
-                  <span className="text-foreground/60">, live.</span>
-                </h1>
-                <p className="text-sm text-muted-foreground max-w-md">
-                  Drop into a live session, match with collaborators, or browse the network.
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 shrink-0"
-                onClick={() => setShowInvite(true)}
-                aria-label="Invite creators"
-              >
-                <UserPlus className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Action row: Match · Browse · Network (Filters live inside each sheet) */}
-            <div className="mt-6 flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-none">
-
+        <FeaturePageHeader
+          eyebrow="Stages"
+          title={
+            <>
+              Stages.<br />
+              <span className="text-energy-glow">Where creators meet, live.</span>
+            </>
+          }
+          subtitle="Drop into a live session, match with collaborators, or browse the network."
+          tutorial={{ featureKey: "stages", label: "How Stages works", steps: SOUNDSTAGES_TUTORIAL }}
+          meta={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              onClick={() => setShowInvite(true)}
+              aria-label="Invite creators"
+            >
+              <UserPlus className="h-4 w-4" />
+            </Button>
+          }
+          tabs={
+            <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-none">
               <Button
                 variant="outline"
                 size="sm"
@@ -235,8 +229,8 @@ export default function Circle() {
                 )}
               </Button>
             </div>
-          </div>
-        </header>
+          }
+        />
 
         {/* Content — Sound Stages is the main page */}
         <div className="container mx-auto px-3 sm:px-4 py-3">

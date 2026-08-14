@@ -1,9 +1,11 @@
 import { lazy, Suspense, useState } from "react";
 import { SEO } from "@/components/SEO";
-import { PageHeader } from "@/components/ui/page-header";
-import { Heart, Sparkles, LayoutGrid, Loader2 } from "lucide-react";
+import { Sparkles, LayoutGrid, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { SwipeFeature } from "@/components/swipe";
 import { KretoTip } from "@/components/agent/KretoTip";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { MATCH_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 const BrowseCreators = lazy(() =>
   import("@/components/discover/BrowseCreators").then((m) => ({ default: m.BrowseCreators }))
@@ -24,38 +26,43 @@ export default function Match() {
         title="Match — Find your collaborators | Kretopia"
         description="Swipe or browse creators whose work proves they can do the brief."
       />
-      <div className="max-w-2xl mx-auto px-4 pt-4">
-        <PageHeader
-          eyebrow="Collaborators"
-          title="Match"
-          subtitle="Swipe the deck or browse the grid."
-          icon={Heart}
-          size="sm"
-        />
-        <div className="mt-3">
-          <KretoTip surface="match" compact />
-        </div>
+      <FeaturePageHeader
+        eyebrow="Collaborators"
+        title={
+          <>
+            Match.<br />
+            <span className="text-energy-glow">The right person for the work.</span>
+          </>
+        }
+        subtitle="Swipe the deck or browse the grid — connect by skill, city, and the people you've already made things with."
+        tutorial={{ featureKey: "match", label: "How Match works", steps: MATCH_TUTORIAL }}
+        tabs={
+          <div className="inline-flex rounded-full border border-border bg-card p-0.5 w-full max-w-2xl">
+            {([
+              { id: "swipe", label: "Swipe", icon: Sparkles },
+              { id: "browse", label: "Browse", icon: LayoutGrid },
+            ] as const).map((m) => {
+              const Icon = m.icon;
+              const active = mode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setMode(m.id)}
+                  className={cn(
+                    "flex-1 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors inline-flex items-center justify-center gap-1",
+                    active ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground",
+                  )}
+                >
+                  <Icon className="h-3 w-3" /> {m.label}
+                </button>
+              );
+            })}
+          </div>
+        }
+      />
 
-        <div className="mt-4 inline-flex rounded-full border border-border bg-card p-0.5 w-full">
-          {([
-            { id: "swipe", label: "Swipe", icon: Sparkles },
-            { id: "browse", label: "Browse", icon: LayoutGrid },
-          ] as const).map((m) => {
-            const Icon = m.icon;
-            const active = mode === m.id;
-            return (
-              <button
-                key={m.id}
-                onClick={() => setMode(m.id)}
-                className={`flex-1 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors inline-flex items-center justify-center gap-1 ${
-                  active ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground"
-                }`}
-              >
-                <Icon className="h-3 w-3" /> {m.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="max-w-2xl mx-auto px-4 pt-3">
+        <KretoTip surface="match" compact />
       </div>
 
       <div className="px-3 py-3">

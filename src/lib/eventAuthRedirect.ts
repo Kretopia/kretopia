@@ -27,5 +27,5 @@ export function computePostAuthRedirect(opts: {
 }): string {
   if (opts.claimProfileId) return `/profile/${opts.claimProfileId}?showClaim=true`;
   if (opts.eventId) return `/event/${opts.eventId}`;
-  return opts.redirectParam || opts.stashedRedirect || opts.fallback || "/circle";
+  return opts.redirectParam || opts.stashedRedirect || opts.fallback || "/";
 }

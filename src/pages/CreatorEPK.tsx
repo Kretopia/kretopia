@@ -13,6 +13,7 @@ import { ModelStrip } from "@/components/passport/model/ModelStrip";
 import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
 import { getMediaThumbnail } from "@/lib/mediaUtils";
+import { HoloCard } from "@/components/passport/HoloCard";
 import {
   MapPin, 
   Globe, 
@@ -382,101 +383,112 @@ const CreatorEPK = () => {
         }}
       />
 
-      {/* Cover Image Hero */}
-      {profile.cover_image_url && (
-        <div className="relative h-40 sm:h-52 overflow-hidden">
-          <img 
-            src={profile.cover_image_url} 
-            alt="" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-        </div>
-      )}
-
       {/* Main Content - Mobile-first vertical layout */}
-      <div className="max-w-lg mx-auto px-4 pb-32" style={{ marginTop: profile.cover_image_url ? '-3rem' : '2rem' }}>
-        
-        {/* Profile Header */}
-        <div className="text-center space-y-4 mb-8">
-          {/* Avatar */}
-          <div className="relative inline-block">
-            <Avatar className={cn(
-              "h-28 w-28 border-4 shadow-xl",
-              profile.cover_image_url ? "border-background" : "border-primary/20"
-            )}>
-              <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
-              <AvatarFallback className="text-3xl font-bold bg-primary/10">
-                {profile.full_name?.charAt(0) || '?'}
-              </AvatarFallback>
-            </Avatar>
-            {verificationBadge && (
-              <div className={cn(
-                "absolute -bottom-1 -right-1 p-1.5 rounded-full",
-                verificationBadge.color
-              )}>
-                <CheckCircle2 className="h-4 w-4 text-white" />
+      <div className="max-w-lg mx-auto px-4 pt-6 pb-32">
+
+        {/* Dominant identity surface — same 3D HoloCard treatment as the owner Passport */}
+        <div className="mb-8">
+          <HoloCard>
+            <div className="relative overflow-hidden rounded-2xl border border-border bg-card">
+              {/* Cover */}
+              <div
+                className={cn(
+                  "relative aspect-[3/1] sm:aspect-[4/1] overflow-hidden",
+                  !profile.cover_image_url && "bg-muted/60",
+                )}
+              >
+                {profile.cover_image_url && (
+                  <img
+                    src={profile.cover_image_url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
+                <div className="absolute top-2 left-2 px-2.5 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-full">
+                  Verified Creative Passport
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Name & Role */}
-          <div className="space-y-1">
-            <p className="brand-eyebrow">Verified Creative Passport</p>
-            <h1 className="text-3xl font-black tracking-[-0.03em]">{profile.full_name}</h1>
-            <p className="text-primary font-bold uppercase tracking-wider text-xs">{profile.job_title || profile.role || 'Creator'}</p>
-            {profile.location && (
-              <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                <MapPin className="h-3 w-3" />
-                {profile.location}
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground/90 max-w-xs mx-auto pt-1">
-              One link. Replaces résumé, IMDb, EPK, and business card — credits verified by collaborators on Kretopia.
-            </p>
-          </div>
+              <div className="relative px-5 pb-5 -mt-10 space-y-4 text-center">
+                {/* Avatar */}
+                <div className="relative inline-block">
+                  <Avatar className="h-24 w-24 border-4 border-card shadow-xl mx-auto">
+                    <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
+                    <AvatarFallback className="text-2xl font-bold bg-primary/10">
+                      {profile.full_name?.charAt(0) || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {verificationBadge && (
+                    <div className={cn(
+                      "absolute -bottom-1 -right-1 p-1.5 rounded-full",
+                      verificationBadge.color
+                    )}>
+                      <CheckCircle2 className="h-4 w-4 text-white" />
+                    </div>
+                  )}
+                </div>
 
-          {/* Verification Badge */}
-          {verificationBadge && (
-            <Badge className={cn("text-white border-0", verificationBadge.color)}>
-              <Sparkles className="h-3 w-3 mr-1" />
-              {verificationBadge.label}
-            </Badge>
-          )}
+                {/* Name & Role */}
+                <div>
+                  <h1 className="text-2xl font-black tracking-[-0.03em]">{profile.full_name}</h1>
+                  <p className="text-primary font-bold uppercase tracking-wider text-xs mt-0.5">{profile.job_title || profile.role || 'Creator'}</p>
+                  {profile.location && (
+                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 mt-1">
+                      <MapPin className="h-3 w-3" />
+                      {profile.location}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground/90 max-w-xs mx-auto pt-1">
+                    One link. Replaces résumé, IMDb, EPK, and business card — credits verified by collaborators on Kretopia.
+                  </p>
+                </div>
 
-          {/* ICDB Creator ID */}
-          {(profile as any).icdb_creator_id && (
-            <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted/50 border">
-              <Fingerprint className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[11px] font-mono font-semibold text-primary">{(profile as any).icdb_creator_id}</span>
-              <Badge variant="outline" className="text-[9px] h-4 border-primary/20">Kretopia Credits</Badge>
+                {/* Verification Badge */}
+                {verificationBadge && (
+                  <Badge className={cn("text-white border-0", verificationBadge.color)}>
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    {verificationBadge.label}
+                  </Badge>
+                )}
+
+                {/* ICDB Creator ID */}
+                {(profile as any).icdb_creator_id && (
+                  <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted/50 border">
+                    <Fingerprint className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-[11px] font-mono font-semibold text-primary">{(profile as any).icdb_creator_id}</span>
+                    <Badge variant="outline" className="text-[9px] h-4 border-primary/20">Kretopia Credits</Badge>
+                  </div>
+                )}
+
+                {/* Bio */}
+                {profile.bio && (
+                  <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
+                    {profile.bio}
+                  </p>
+                )}
+
+                {/* Social Links — visible to all visitors */}
+                {socialLinks.length > 0 && (
+                  <div className="flex items-center justify-center gap-3 pt-2">
+                    {socialLinks.map((link, index) => (
+                      <a
+                        key={index}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 rounded-full bg-muted/50 hover:bg-primary/10 hover:text-primary transition-colors"
+                        aria-label={link.label}
+                      >
+                        <link.icon className="h-5 w-5" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-
-          {/* Bio */}
-          {profile.bio && (
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
-              {profile.bio}
-            </p>
-          )}
-
-          {/* Social Links — visible to all visitors */}
-          {socialLinks.length > 0 && (
-            <div className="flex items-center justify-center gap-3 pt-2">
-              {socialLinks.map((link, index) => (
-                <a
-                  key={index}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2.5 rounded-full bg-muted/50 hover:bg-primary/10 hover:text-primary transition-colors"
-                  aria-label={link.label}
-                >
-                  <link.icon className="h-5 w-5" />
-                </a>
-              ))}
-            </div>
-          )}
+          </HoloCard>
         </div>
 
         {/* Owner Share Toolbar */}

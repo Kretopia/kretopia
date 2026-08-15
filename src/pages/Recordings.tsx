@@ -12,6 +12,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Video, Sparkles, Clock, ArrowLeft, FileVideo, RefreshCw } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const RECORDINGS_TUTORIAL: TutorialStep[] = [
@@ -117,6 +118,10 @@ export default function Recordings() {
         subtitle="Replays, transcripts, and Kreto-extracted action items from every recorded call."
         tutorial={{ featureKey: "recordings", label: "How Recordings works", steps: RECORDINGS_TUTORIAL }}
       />
+
+      <div className="max-w-3xl mx-auto px-4 pt-4">
+        <KretoTip compact />
+      </div>
 
       <div className="flex items-center justify-between px-4 pt-4">
         <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">

@@ -7,6 +7,7 @@ import { Plus, Building2, Mail, Phone, ChevronRight, UserPlus, FolderKanban, Cli
 import { ClientFormDialog } from "@/components/clients/ClientFormDialog";
 import { SEO } from "@/components/SEO";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const CLIENTS_TUTORIAL: TutorialStep[] = [
@@ -38,6 +39,7 @@ const Clients = () => {
       />
 
       <div className="max-w-3xl mx-auto p-4">
+        <KretoTip compact className="mb-4" />
         <AIAddClientCard
           onDraft={(d) => {
             setDraft(d);

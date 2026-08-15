@@ -24,6 +24,7 @@ import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import { SOUNDSTAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 type BrowseProfile = {
@@ -188,6 +189,7 @@ export default function Circle() {
 
         {/* Content — Sound Stages is the main page */}
         <div className="container mx-auto px-3 sm:px-4 py-3">
+          <KretoTip compact className="mb-4" />
           {/* Centered nav: Match · Browse · Network */}
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1">

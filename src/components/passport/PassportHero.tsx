@@ -305,9 +305,14 @@ export function PassportHero({
             </div>
           </div>
 
-          {/* One primary action + secondary icon row */}
+          {/* One primary action + secondary icon row — neutral Liquid Glass,
+              not a loud pink fill. #FF2DA1 shows only on hover/focus/active. */}
           <div className="flex items-center gap-2">
-            <Button onClick={onShare} className="flex-1 h-10 gap-1.5 bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))]/90">
+            <Button
+              onClick={onShare}
+              variant="outline"
+              className="glass-surface flex-1 h-10 gap-1.5 border-white/10 text-foreground transition-colors hover:border-[#FF2DA1]/50 hover:text-[#FF2DA1] focus-visible:ring-[#FF2DA1] active:text-[#FF2DA1]"
+            >
               <Share2 className="h-4 w-4" />
               Share Passport
             </Button>

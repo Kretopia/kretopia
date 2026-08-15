@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  PenLine, IdCard, Compass, Send, ArrowRight, ArrowUpRight,
+  PenLine, IdCard, Compass, Send, ArrowUpRight,
   CheckCircle2, Clock, ShieldQuestion, Loader2,
 } from "lucide-react";
 import { BRAND } from "@/lib/brandLexicon";
@@ -34,12 +34,6 @@ const QUICK_ACTIONS = [
     prompt: "Help me prepare a follow-up message for a conversation that's gone quiet.",
   },
 ] as const;
-
-function openKreto(prompt?: string, context?: Record<string, unknown>) {
-  window.dispatchEvent(
-    new CustomEvent("thrive-copilot:open", { detail: { ...(prompt ? { prompt } : {}), ...(context ? { context } : {}) } })
-  );
-}
 
 interface RecentGig {
   id: string;
@@ -148,7 +142,7 @@ export default function KretoTab() {
               <button
                 key={label}
                 type="button"
-                onClick={() => setSeedPrompt(`${prompt}\u200b${Date.now()}`.split("\u200b")[0])}
+                onClick={() => ask(prompt)}
                 className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-sm font-medium text-white/80 hover:border-white/25 hover:bg-white/[0.06] transition-colors"
               >
                 <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />

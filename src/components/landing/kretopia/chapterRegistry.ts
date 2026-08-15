@@ -21,8 +21,8 @@ export const CHAPTER_REGISTRY: ChapterMeta[] = [
   { id: "chapter-scout", label: "Scout" },
   { id: "chapter-match", label: "Match" },
   { id: "chapter-studio", label: "Studio" },
-  { id: "chapter-soundstages", label: "SoundStages" },
   { id: "chapter-kreto", label: "Kreto" },
+  { id: "chapter-community", label: "Community" },
 ];
 
 export function chapterNumber(id: string): number {

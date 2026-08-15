@@ -16,7 +16,11 @@ import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutor
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
 import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
 import { TrustSection } from "@/components/landing/kretopia/TrustSection";
+import { ProductLoopSection } from "@/components/landing/kretopia/ProductLoopSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
+import { CreativeUniverseSection } from "@/components/landing/kretopia/CreativeUniverseSection";
+import { ForOrganisationsSection } from "@/components/landing/kretopia/ForOrganisationsSection";
+import { ClosingCTASection } from "@/components/landing/kretopia/ClosingCTASection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
 import { chapterRoman } from "@/components/landing/kretopia/chapterRegistry";
 import {
@@ -78,6 +82,9 @@ export const LandingBelowFold = () => {
       {/* Trust — the general Co-Sign principle, real evidence states */}
       <TrustSection />
 
+      {/* Product Loop — Passport -> Scout -> Match -> Studio -> stronger Passport */}
+      <ProductLoopSection />
+
       {/* Scout */}
       <ChapterSection
         id="chapter-scout"
@@ -91,11 +98,12 @@ export const LandingBelowFold = () => {
             </span>
           </>
         }
-        body="Scout reads the web — gigs, briefs, calls, casting notices — and surfaces the ones that fit you. Kreto drafts the pitch. You decide if it goes."
+        body="Scout searches gigs, briefs, castings, commissions and opportunities across the web, then surfaces the ones that fit your Passport. Kreto can help you prepare the next move. You stay in control."
         caption="Scout"
         image={scoutImg}
         accent="#FF2DA1"
         href="/auth?next=/scout"
+        ctaLabel="Explore Opportunities"
         reverse
         tutorialSteps={SCOUT_TUTORIAL}
         tutorialVisual={ScoutVisual}
@@ -114,11 +122,12 @@ export const LandingBelowFold = () => {
             </span>
           </>
         }
-        body="Match connects creators by skill, city, vibe, and the people you've already made things with. No cold DMs. Just collaborators who get it."
+        body="Discover creatives through what they actually do, where they are, the projects they've worked on and the people who can confirm it. Less cold searching. More creative context."
         caption="Match"
         image={matchImg}
         accent="#FF2DA1"
         href="/auth?next=/match"
+        ctaLabel="Find Collaborators"
         tutorialSteps={MATCH_TUTORIAL}
         tutorialVisual={MatchVisual}
       />
@@ -136,40 +145,53 @@ export const LandingBelowFold = () => {
             </span>
           </>
         }
-        body="Every shoot, drop, release, or campaign in its own Studio. Brief, files, chat, video, deliverables, payments — held together by Kreto's quiet hand."
+        body="Bring the brief, collaborators, tasks, files, milestones, communication and payments together around the work."
         caption="Studio"
         image={studioImg}
         accent="#FF2DA1"
         href="/auth?next=/desk"
+        ctaLabel="Create a Project"
+        closingLine="When the project is finished, the outcome strengthens the Creative Passports of the people who made it happen."
         reverse
         tutorialSteps={STUDIO_TUTORIAL}
         tutorialVisual={StudioVisual}
       />
 
-      {/* SoundStages */}
+      {/* Kreto — the sunset moment of the core creative journey */}
+      <MeetKretoSection />
+
+      {/* Creative Universe — visual category grid, no explanatory bloat */}
+      <CreativeUniverseSection />
+
+      {/* Community — SoundStages, Circle and events combined into one
+          section rather than three separate large homepage modules. */}
       <ChapterSection
-        id="chapter-soundstages"
-        index={chapterRoman("chapter-soundstages")}
-        kicker="SoundStages"
+        id="chapter-community"
+        index={chapterRoman("chapter-community")}
+        kicker="Community"
         title={
           <>
-            Live rooms.<br />
+            Creative careers<br />
             <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Real conversations
+              grow through people
             </span>
           </>
         }
-        body="Open mics, speed sessions, listening parties. Drop into a SoundStage to be seen — by an audience that came for exactly what you do."
-        caption="SoundStages"
+        body="Meet collaborators, join live conversations, take part in SoundStages, industry sessions, auditions and creative events built around real connection and opportunity. Online when it works. In real life when it matters."
+        caption="Community"
         image={soundstagesImg}
         accent="#FF2DA1"
         href="/auth?next=/circle?tab=live"
+        ctaLabel="Join a SoundStage"
         tutorialSteps={SOUNDSTAGES_TUTORIAL}
         tutorialVisual={SoundStagesVisual}
       />
 
-      {/* Kreto — the sunset moment */}
-      <MeetKretoSection />
+      {/* For Organisations — shorter than the creator journey, never competes with the hero */}
+      <ForOrganisationsSection />
+
+      {/* Closing CTA — back to the hero's core wedge */}
+      <ClosingCTASection />
 
       {/* Footer */}
       <EditorialFooter />

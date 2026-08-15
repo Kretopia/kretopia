@@ -88,7 +88,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           initial={reducedMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.2, 0.65, 0.3, 0.95] }}
-          className="landing-h1 landing-glow text-center max-w-3xl mx-auto"
+          className="landing-h1 landing-glow text-center max-w-full mx-auto"
         >
           Prove what you've done.
           <br />

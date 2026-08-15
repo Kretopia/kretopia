@@ -47,6 +47,9 @@ export const VerifiedCreditsChapterSection = () => {
   const [activeStep, setActiveStep] = useState(0);
   const isStamped = activeStep === CHAPTER_TUTORIAL.length - 1;
   const currentState = DEMO_SEQUENCE[Math.min(activeStep, DEMO_SEQUENCE.length - 1)];
+  // Once the example-credit card scrolls into view, its embedded tutorial
+  // starts auto-advancing on its own.
+  const [inView, setInView] = useState(false);
 
   return (
     <section
@@ -121,6 +124,7 @@ export const VerifiedCreditsChapterSection = () => {
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, scale: 0.97 }}
             whileInView={{ opacity: 1, scale: 1 }}
+            onViewportEnter={() => setInView(true)}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.8 }}
             className="lg:col-span-5 lg:order-1 w-full"
@@ -199,6 +203,24 @@ export const VerifiedCreditsChapterSection = () => {
                 </div>
               </div>
 
+              {/* Tutorial, folded straight into the card — the same demo
+                  driving the evidence badge above also drives this. */}
+              <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                <p
+                  className="text-[10px] uppercase tracking-[0.24em] text-white/30 mb-1"
+                  style={{ fontFamily: "'Work Sans', sans-serif" }}
+                >
+                  How it works
+                </p>
+                <TutorialStepper
+                  steps={CHAPTER_TUTORIAL}
+                  label="Verified Credits tutorial"
+                  activeStep={activeStep}
+                  onStepChange={setActiveStep}
+                  autoPlay={inView}
+                />
+              </div>
+
               <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
                 <p className="text-[12px] leading-relaxed text-white/45" style={{ fontFamily: "'Work Sans', sans-serif" }}>
                   Every real credit on Kretopia moves through these same, honestly-labeled stages —
@@ -208,22 +230,6 @@ export const VerifiedCreditsChapterSection = () => {
             </div>
           </motion.div>
         </div>
-
-        {/* Interactive tutorial — full width, drives the evidence mockup above */}
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-16 lg:mt-20 max-w-2xl"
-        >
-          <TutorialStepper
-            steps={CHAPTER_TUTORIAL}
-            label="Verified Credits tutorial"
-            activeStep={activeStep}
-            onStepChange={setActiveStep}
-          />
-        </motion.div>
       </div>
     </section>
   );

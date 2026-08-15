@@ -2,21 +2,23 @@
  * KretopiaHero — Section 1 of the Kretopia landing page.
  *
  * Search-first. The hierarchy is deliberate and fixed:
- *   eyebrow → headline → one supporting sentence → dominant search, whose
- *   own submit button IS the primary action — no competing CTA row sits
- *   underneath it.
+ *   eyebrow → headline → supporting sentence (a second, longer sentence is
+ *   hidden below `sm:` so mobile's first viewport stays uncluttered) →
+ *   dominant search, whose own submit button IS the primary action — no
+ *   competing CTA row sits underneath it.
  *
  * Search itself is the app's real global search (UnifiedSearchDropdown,
  * variant="hero") — same debounced/cancelled queries, same voice input,
  * same keyboard nav and result states used everywhere else in the app.
  * Nothing here reimplements search, and nothing fakes a result.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/lib/analytics";
 
 const ACCENT = "#FF2DA1";
 const EXAMPLE_SEARCHES = ["Maya Solano", "Event Producer in Bali", "Creative Director", "Sound Designer"];
@@ -30,11 +32,26 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
 
+  useEffect(() => {
+    analytics.featureUsed("landing_hero_viewed", { location: "hero" });
+  }, []);
+
+  const handleFocusChange = (open: boolean) => {
+    if (open && !focused) analytics.featureUsed("landing_search_focused", { location: "hero" });
+    setFocused(open);
+  };
+
+  const submitSearch = (value: string) => {
+    analytics.searchStarted(value);
+    onSearchSubmit(value);
+  };
+
   const runExample = (example: string) => {
     // Visually fill the search bar first so the click reads as "this typed
     // in", not a silent jump straight to results.
+    analytics.ctaClick("try_example_search", "hero");
     setQuery(example);
-    onSearchSubmit(example);
+    submitSearch(example);
   };
 
   return (
@@ -62,7 +79,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           className="flex items-center justify-center gap-3 mb-6 sm:mb-8"
         >
           <span className="h-px w-8 bg-white/25" />
-          <span className="landing-eyebrow">Kretopia — The Creative Economy OS</span>
+          <span className="landing-eyebrow">The Creative Passport</span>
           <span className="h-px w-8 bg-white/25" />
         </motion.div>
 
@@ -73,9 +90,9 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           transition={{ duration: 0.8, ease: [0.2, 0.65, 0.3, 0.95] }}
           className="landing-h1 landing-glow text-center max-w-3xl mx-auto"
         >
-          Welcome to Kretopia.
+          Prove what you've done.
           <br />
-          Where <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>creativity lives</span>.
+          Get found for <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>what's next</span>.
         </motion.h1>
 
         <motion.p
@@ -84,7 +101,16 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           transition={{ duration: 0.6, delay: 0.12 }}
           className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center"
         >
-          Search the Creative Global Record
+          Search your name to find or create your Creative Passport.
+        </motion.p>
+        <motion.p
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.16 }}
+          className="hidden sm:block mt-2 max-w-lg mx-auto text-center text-sm text-white/50"
+          style={{ fontFamily: "'Work Sans', sans-serif" }}
+        >
+          Bring your credits, collaborators and creative history together, build trust around the work you've done, and unlock opportunities matched to what you do.
         </motion.p>
 
         {/* ─────────────────────────────────────────────────────────────
@@ -124,14 +150,14 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
                 --foreground/--card CSS variables that flip with the .dark
                 class. Scoping just this wrapper to .dark keeps the input
                 legible without fighting the component's own classes. */}
-            <div className="dark relative" onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
+            <div className="dark relative" onFocus={() => handleFocusChange(true)} onBlur={() => handleFocusChange(false)}>
               <UnifiedSearchDropdown
                 variant="hero"
-                placeholder="Search your name, stage name or creative work..."
+                placeholder="Search your name or stage name"
                 value={query}
                 onValueChange={setQuery}
-                onQuerySubmit={onSearchSubmit}
-                onOpenChange={setFocused}
+                onQuerySubmit={submitSearch}
+                onOpenChange={handleFocusChange}
               />
             </div>
           </div>
@@ -175,7 +201,14 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
             className="mt-5 text-center text-xs text-white/45"
             style={{ fontFamily: "'Work Sans', sans-serif" }}
           >
-            Free. No card. Built for creators.
+            Free to claim. No card required.
+          </p>
+
+          <p
+            className="mt-6 text-center text-[10px] font-semibold uppercase tracking-[0.28em] text-white/30"
+            style={{ fontFamily: "'Work Sans', sans-serif" }}
+          >
+            Kretopia. Where Creativity Lives.
           </p>
         </motion.div>
       </div>

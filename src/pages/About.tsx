@@ -13,6 +13,17 @@ import {
 import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { SmartWidget } from "@/components/ui/smart-widget";
+import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+
+const ACCENT = "#FF2DA1";
+
+const ABOUT_TUTORIAL: TutorialStep[] = [
+  { icon: Fingerprint, title: "Build your Passport", body: "Every project, every credit, collected into one link — your whole career, in one place." },
+  { icon: ShieldCheck, title: "Get verified, get trusted", body: "Credits become Verified when the people who were there co-sign them — not just claimed, proven." },
+  { icon: Compass, title: "Scout finds the opportunity", body: "Kreto reads the web for gigs and briefs, and surfaces the ones that actually fit your Passport." },
+  { icon: LayoutGrid, title: "Studio closes the loop", body: "Deliver the work, get paid, and the credit becomes part of a Passport that's stronger than before." },
+];
 
 const PILLARS = [
   {
@@ -92,17 +103,17 @@ const ProductLoopSection = () => {
       <div className="container mx-auto max-w-4xl px-4 py-16 sm:py-20">
         {/* The problem */}
         <div className="text-center mb-12">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">The Problem</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-4" style={{ color: ACCENT }}>The Problem</p>
           <h2 className="text-2xl sm:text-4xl font-bold text-foreground leading-tight">
             Talent is everywhere.<br />
             <span className="text-muted-foreground">Opportunity is </span>
-            <span className="italic text-[hsl(var(--signal-teal))]">not</span>.
+            <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>not</span>.
           </h2>
         </div>
 
         {/* The system */}
         <div className="max-w-2xl mx-auto text-center mb-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">The System</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-3" style={{ color: ACCENT }}>The System</p>
           <h2 className="text-lg sm:text-xl font-medium text-foreground leading-relaxed">
             Kretopia turns creative history into trusted opportunity.
           </h2>
@@ -115,8 +126,11 @@ const ProductLoopSection = () => {
               <AccordionItem key={p.title} value={p.title} className="border-border/60">
                 <AccordionTrigger className="hover:no-underline">
                   <span className="flex items-center gap-3 text-left">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <p.icon className="h-4 w-4 text-primary" />
+                    <span
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                      style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                    >
+                      <p.icon className="h-4 w-4" style={{ color: ACCENT }} />
                     </span>
                     <span className="font-semibold text-sm sm:text-base">{p.title}</span>
                   </span>
@@ -131,22 +145,23 @@ const ProductLoopSection = () => {
 
         {/* The loop */}
         <div ref={loopRef} className="text-center mb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-6">The Loop</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-6" style={{ color: ACCENT }}>The Loop</p>
           <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-3 max-w-2xl mx-auto">
             {LOOP_STEPS.map((step, i) => (
               <span key={step} className="flex items-center">
                 <span
-                  className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-background border border-border whitespace-nowrap transition-all duration-500"
+                  className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-background border whitespace-nowrap transition-all duration-500"
                   style={{
                     opacity: loopVisible ? 1 : 0,
                     transform: loopVisible ? "none" : "translateY(6px)",
                     transitionDelay: `${i * 80}ms`,
+                    borderColor: "rgba(255,45,161,0.25)",
                   }}
                 >
                   {step}
                 </span>
                 {i < LOOP_STEPS.length - 1 && (
-                  <ChevronRight className="h-3.5 w-3.5 text-primary/50 mx-0.5" aria-hidden />
+                  <ChevronRight className="h-3.5 w-3.5 mx-0.5" style={{ color: "rgba(255,45,161,0.5)" }} aria-hidden />
                 )}
               </span>
             ))}
@@ -158,7 +173,7 @@ const ProductLoopSection = () => {
           <p className="text-xl sm:text-2xl font-bold text-foreground mb-6">Search your name.</p>
           <Link
             to="/credits"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all"
+            className="cta-primary inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"
           >
             <Search className="h-4 w-4" aria-hidden />
             Search the Creative Record
@@ -183,17 +198,22 @@ const About = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(var(--primary)/0.08),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,hsl(var(--accent)/0.06),transparent_50%)]" />
         <div className="container relative mx-auto max-w-4xl px-4 py-14 sm:py-20">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-4">
+          <p
+            className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-4 px-2.5 py-1 rounded-full border"
+            style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: ACCENT }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: ACCENT }} />
             Powered by ThriveIN
           </p>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.035em] text-foreground mb-5 leading-[0.95]">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] text-foreground mb-5 leading-[0.95]">
             A global community<br />
-            built for <span className="italic text-[hsl(var(--signal-teal))]">creatives</span>
+            built for <span className="pink-glow-breathe" style={{ color: ACCENT }}>creatives</span>
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-5">
             What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network
             connecting creatives across music, film, fashion, art, content, and culture.
           </p>
+          <FeatureAITutorial featureKey="about" label="How Kretopia works" steps={ABOUT_TUTORIAL} />
         </div>
       </section>
 
@@ -205,7 +225,7 @@ const About = () => {
       <section className="container mx-auto max-w-4xl px-4 pb-12">
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           {cities.map((city) => (
-            <div key={city.name} className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 transition-colors hover:border-primary/30">
+            <div key={city.name} className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 transition-colors hover:border-[#FF2DA1]/30">
               <span className="text-lg">{city.flag}</span>
               <span className="text-sm font-medium text-foreground">{city.name}</span>
             </div>
@@ -304,8 +324,8 @@ const About = () => {
           <SmartWidget interactive={false} scanLine={false}>
           <Card className="border-0">
             <CardContent className="p-6 sm:p-8">
-              <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
-                <Sparkles className="h-5 w-5 text-accent" />
+              <div className="h-10 w-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: "rgba(255,45,161,0.1)" }}>
+                <Sparkles className="h-5 w-5" style={{ color: ACCENT }} />
               </div>
               <h3 className="text-lg font-bold text-foreground mb-3">Vision</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -324,11 +344,11 @@ const About = () => {
         <Card className="border-0 bg-gradient-to-br from-primary/[0.03] via-background to-accent/[0.03]">
           <CardContent className="p-6 sm:p-10">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center ai-ambient-breathe">
-                <Quote className="h-5 w-5 text-primary" />
+              <div className="h-10 w-10 rounded-full flex items-center justify-center ai-ambient-breathe" style={{ backgroundColor: "rgba(255,45,161,0.1)" }}>
+                <Quote className="h-5 w-5" style={{ color: ACCENT }} />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">Founder's Note</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: ACCENT }}>Founder's Note</p>
               </div>
             </div>
             <blockquote className="text-base sm:text-lg text-foreground leading-relaxed italic mb-6">
@@ -351,7 +371,7 @@ const About = () => {
       <section className="border-t border-border bg-card/30">
         <div className="container mx-auto max-w-3xl px-4 py-16">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">Our Journey</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-3" style={{ color: ACCENT }}>Our Journey</p>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
               From a Room in Dubai to a Global Creative Community
             </h2>
@@ -368,11 +388,14 @@ const About = () => {
                 return (
                   <div key={item.year} className="relative flex items-start gap-4 sm:gap-6">
                     {/* Dot / Icon */}
-                    <div className={`relative z-10 shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center border-2 ${
-                      isLast 
-                        ? 'bg-primary border-primary text-primary-foreground' 
-                        : 'bg-card border-primary/30 text-primary'
-                    }`}>
+                    <div
+                      className="relative z-10 shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center border-2"
+                      style={
+                        isLast
+                          ? { backgroundColor: ACCENT, borderColor: ACCENT, color: "#fff" }
+                          : { backgroundColor: "hsl(var(--card))", borderColor: "rgba(255,45,161,0.3)", color: ACCENT }
+                      }
+                    >
                       <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
 
@@ -416,7 +439,7 @@ const About = () => {
       {/* CTA */}
       <section className="container mx-auto max-w-4xl px-4 py-16 text-center">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-4">
-          Ready to Join the <span className="text-primary">Community</span>?
+          Ready to Join the <span style={{ color: ACCENT }}>Community</span>?
         </h2>
         <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
           Whether you're an emerging creative or an industry veteran — there's a place for you here.
@@ -424,7 +447,7 @@ const About = () => {
         </p>
         <Link
           to="/auth"
-          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-lg"
+          className="cta-primary inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-sm font-bold shadow-lg"
         >
           Join Kretopia <ArrowRight className="h-4 w-4" />
         </Link>

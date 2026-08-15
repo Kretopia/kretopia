@@ -15,6 +15,7 @@
 import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutorialSection";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
 import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
+import { TrustSection } from "@/components/landing/kretopia/TrustSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
 import { chapterRoman } from "@/components/landing/kretopia/chapterRegistry";
@@ -46,25 +47,36 @@ export const LandingBelowFold = () => {
         kicker="Passport"
         title={
           <>
-            Every credit. <br />
+            One place for <br />
             <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Co-signed by the
+              the work
             </span>{" "}
             <br className="hidden sm:block" />
-            people who were there
+            that made you
           </>
         }
-        body="Your Creative Passport collects every project, every credit, every co-sign — verified by the collaborators who lived it with you. One link. Your whole career."
+        body="Your Creative Passport brings your projects, credits, skills, collaborators and professional history together in one living record. Not just what you say you can do — what you've actually done."
         caption="Passport"
         image={passportImg}
         accent="#FF2DA1"
         href="/auth?next=/profile"
+        ctaLabel="Build Your Passport"
+        closingLine="One link. Your creative career."
+        concepts={[
+          { label: "Credits", body: "The role you played." },
+          { label: "Projects", body: "The work you contributed to." },
+          { label: "Co-Signs", body: "People who can confirm your contribution." },
+          { label: "Evidence", body: "Proof that strengthens the record." },
+        ]}
         tutorialSteps={PASSPORT_TUTORIAL}
         tutorialVisual={PassportVisual}
       />
 
       {/* Verified Credits — the canonical tutorial reference */}
       <VerifiedCreditsChapterSection />
+
+      {/* Trust — the general Co-Sign principle, real evidence states */}
+      <TrustSection />
 
       {/* Scout */}
       <ChapterSection

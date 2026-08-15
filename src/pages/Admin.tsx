@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare, Mail, Crown, Banknote, Activity, TrendingUp } from "lucide-react";
+import { Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare, Mail, Crown, Banknote, Activity, TrendingUp, type LucideIcon } from "lucide-react";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { ScoutFunnelTab } from "@/components/admin/ScoutFunnelTab";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,12 +60,73 @@ interface AIDiscoverySummary {
   errors: number;
 }
 
+interface AdminTabDef {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+interface AdminTabGroup {
+  label: string;
+  tabs: AdminTabDef[];
+}
+
+const TAB_GROUPS: AdminTabGroup[] = [
+  {
+    label: "Users & Trust",
+    tabs: [
+      { value: "users", label: "Users", icon: Users },
+      { value: "unclaimed", label: "Unclaimed", icon: UserPlus },
+      { value: "verifications", label: "Verify", icon: ShieldCheck },
+    ],
+  },
+  {
+    label: "Growth",
+    tabs: [
+      { value: "feedback", label: "Feedback", icon: MessageSquare },
+      { value: "outreach", label: "Outreach", icon: Megaphone },
+      { value: "drip", label: "Drip", icon: Mail },
+      { value: "ambassadors", label: "Ambassadors", icon: Megaphone },
+      { value: "scout-funnel", label: "Scout Funnel", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "Finance",
+    tabs: [
+      { value: "founder", label: "Founder", icon: Crown },
+      { value: "bank-transfers", label: "Transfers", icon: Banknote },
+    ],
+  },
+  {
+    label: "Product & Analytics",
+    tabs: [
+      { value: "product", label: "Product", icon: Sparkles },
+      { value: "analytics", label: "Hosting", icon: Activity },
+    ],
+  },
+  {
+    label: "System",
+    tabs: [{ value: "system", label: "System", icon: Settings }],
+  },
+];
+
+interface AdminOverview {
+  totalUsers: number;
+  pendingVerifications: number;
+  unclaimedProfiles: number;
+  pendingTransfers: number;
+}
+
 export default function Admin() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("users");
+  const [overview, setOverview] = useState<AdminOverview | null>(null);
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [overviewError, setOverviewError] = useState(false);
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [broadcastSubject, setBroadcastSubject] = useState('');
   const [broadcastBody, setBroadcastBody] = useState('');
@@ -86,6 +148,45 @@ export default function Admin() {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+
+    (async () => {
+      setOverviewLoading(true);
+      setOverviewError(false);
+      try {
+        const [usersRes, verifRes, unclaimedRes, transfersRes] = await Promise.all([
+          supabase.from("profiles").select("*", { count: "exact", head: true }),
+          supabase.from("verification_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+          supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_claimed", false),
+          supabase.from("manual_bank_transfers").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        ]);
+        if (cancelled) return;
+
+        if (usersRes.error || verifRes.error || unclaimedRes.error || transfersRes.error) {
+          setOverviewError(true);
+          return;
+        }
+
+        setOverview({
+          totalUsers: usersRes.count ?? 0,
+          pendingVerifications: verifRes.count ?? 0,
+          unclaimedProfiles: unclaimedRes.count ?? 0,
+          pendingTransfers: transfersRes.count ?? 0,
+        });
+      } catch {
+        if (!cancelled) setOverviewError(true);
+      } finally {
+        if (!cancelled) setOverviewLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
 
   const checkAdminAccess = async () => {
     if (!user) {
@@ -256,68 +357,73 @@ export default function Admin() {
     return null;
   }
 
-  return (
-    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-24">
-      <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-        <h1 className="text-2xl sm:text-3xl font-bold">Admin Panel</h1>
-      </div>
+  const overviewCards: { key: keyof AdminOverview; label: string; icon: LucideIcon; jumpTo: string }[] = [
+    { key: "totalUsers", label: "Total users", icon: Users, jumpTo: "users" },
+    { key: "pendingVerifications", label: "Pending verifications", icon: ShieldCheck, jumpTo: "verifications" },
+    { key: "unclaimedProfiles", label: "Unclaimed profiles", icon: UserPlus, jumpTo: "unclaimed" },
+    { key: "pendingTransfers", label: "Pending transfers", icon: Banknote, jumpTo: "bank-transfers" },
+  ];
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList className="flex w-full overflow-x-auto h-auto p-1 gap-1">
-          <TabsTrigger value="users" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Users className="h-4 w-4" />
-            <span>Users</span>
-          </TabsTrigger>
-          <TabsTrigger value="feedback" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <MessageSquare className="h-4 w-4" />
-            <span>Feedback</span>
-          </TabsTrigger>
-          <TabsTrigger value="unclaimed" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <UserPlus className="h-4 w-4" />
-            <span>Unclaimed</span>
-          </TabsTrigger>
-          <TabsTrigger value="outreach" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Megaphone className="h-4 w-4" />
-            <span>Outreach</span>
-          </TabsTrigger>
-          <TabsTrigger value="verifications" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <ShieldCheck className="h-4 w-4" />
-            <span>Verify</span>
-          </TabsTrigger>
-          <TabsTrigger value="drip" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Mail className="h-4 w-4" />
-            <span>Drip</span>
-          </TabsTrigger>
-          <TabsTrigger value="founder" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Crown className="h-4 w-4" />
-            <span>Founder</span>
-          </TabsTrigger>
-          <TabsTrigger value="bank-transfers" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Banknote className="h-4 w-4" />
-            <span>Transfers</span>
-          </TabsTrigger>
-          <TabsTrigger value="ambassadors" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Megaphone className="h-4 w-4" />
-            <span>Ambassadors</span>
-          </TabsTrigger>
-          <TabsTrigger value="product" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Sparkles className="h-4 w-4" />
-            <span>Product</span>
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Activity className="h-4 w-4" />
-            <span>Hosting</span>
-          </TabsTrigger>
-          <TabsTrigger value="scout-funnel" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <TrendingUp className="h-4 w-4" />
-            <span>Scout Funnel</span>
-          </TabsTrigger>
-          <TabsTrigger value="system" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
-            <Settings className="h-4 w-4" />
-            <span>System</span>
-          </TabsTrigger>
-        </TabsList>
+  return (
+    <div className="pb-24">
+      <FeaturePageHeader
+        eyebrow="Admin"
+        title={<>Operations.<br /><span className="text-energy-glow">Everything running Kretopia.</span></>}
+        subtitle="System health, moderation, and growth — one control surface for the team."
+      />
+
+      <div className="container mx-auto max-w-5xl px-3 sm:px-4 pt-4 sm:pt-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-5 sm:mb-6">
+          {overviewCards.map(({ key, label, icon: Icon, jumpTo }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveTab(jumpTo)}
+              disabled={overviewError}
+              className="text-left rounded-2xl border border-border/60 bg-card px-3.5 py-3 transition-colors hover:border-energy/40 hover:bg-energy/[0.03] disabled:cursor-default disabled:hover:border-border/60 disabled:hover:bg-card"
+            >
+              <Icon className="h-4 w-4 text-energy mb-2" />
+              {overviewLoading ? (
+                <div className="h-6 w-10 rounded bg-muted animate-pulse" aria-hidden />
+              ) : overviewError ? (
+                <p className="text-sm text-muted-foreground">—</p>
+              ) : (
+                <p className="text-xl font-black tracking-tight">{overview?.[key] ?? 0}</p>
+              )}
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground mt-0.5">
+                {label}
+              </p>
+            </button>
+          ))}
+        </div>
+        {overviewError && (
+          <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5" /> Couldn't load the overview counts — the tabs below still work.
+          </p>
+        )}
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="h-auto w-full flex-col items-stretch gap-3 bg-transparent p-0">
+            {TAB_GROUPS.map((group) => (
+              <div key={group.label} className="space-y-1.5">
+                <p className="px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/60">
+                  {group.label}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.tabs.map(({ value, label, icon: Icon }) => (
+                    <TabsTrigger
+                      key={value}
+                      value={value}
+                      className="flex-shrink-0 gap-1.5 rounded-full border border-border/60 px-3 sm:px-4 py-2 text-xs sm:text-sm data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{label}</span>
+                    </TabsTrigger>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </TabsList>
 
         <TabsContent value="users" className="mt-4 sm:mt-6">
           <UsersTab />
@@ -730,6 +836,7 @@ export default function Admin() {
           </div>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

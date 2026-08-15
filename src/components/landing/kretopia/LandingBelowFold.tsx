@@ -18,6 +18,9 @@ import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/Ver
 import { TrustSection } from "@/components/landing/kretopia/TrustSection";
 import { ProductLoopSection } from "@/components/landing/kretopia/ProductLoopSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
+import { CreativeUniverseSection } from "@/components/landing/kretopia/CreativeUniverseSection";
+import { ForOrganisationsSection } from "@/components/landing/kretopia/ForOrganisationsSection";
+import { ClosingCTASection } from "@/components/landing/kretopia/ClosingCTASection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
 import { chapterRoman } from "@/components/landing/kretopia/chapterRegistry";
 import {
@@ -154,30 +157,41 @@ export const LandingBelowFold = () => {
         tutorialVisual={StudioVisual}
       />
 
-      {/* SoundStages */}
+      {/* Kreto — the sunset moment of the core creative journey */}
+      <MeetKretoSection />
+
+      {/* Creative Universe — visual category grid, no explanatory bloat */}
+      <CreativeUniverseSection />
+
+      {/* Community — SoundStages, Circle and events combined into one
+          section rather than three separate large homepage modules. */}
       <ChapterSection
-        id="chapter-soundstages"
-        index={chapterRoman("chapter-soundstages")}
-        kicker="SoundStages"
+        id="chapter-community"
+        index={chapterRoman("chapter-community")}
+        kicker="Community"
         title={
           <>
-            Live rooms.<br />
+            Creative careers<br />
             <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Real conversations
+              grow through people
             </span>
           </>
         }
-        body="Open mics, speed sessions, listening parties. Drop into a SoundStage to be seen — by an audience that came for exactly what you do."
-        caption="SoundStages"
+        body="Meet collaborators, join live conversations, take part in SoundStages, industry sessions, auditions and creative events built around real connection and opportunity. Online when it works. In real life when it matters."
+        caption="Community"
         image={soundstagesImg}
         accent="#FF2DA1"
         href="/auth?next=/circle?tab=live"
+        ctaLabel="Join a SoundStage"
         tutorialSteps={SOUNDSTAGES_TUTORIAL}
         tutorialVisual={SoundStagesVisual}
       />
 
-      {/* Kreto — the sunset moment */}
-      <MeetKretoSection />
+      {/* For Organisations — shorter than the creator journey, never competes with the hero */}
+      <ForOrganisationsSection />
+
+      {/* Closing CTA — back to the hero's core wedge */}
+      <ClosingCTASection />
 
       {/* Footer */}
       <EditorialFooter />

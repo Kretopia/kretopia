@@ -49,6 +49,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
+import { LooseProjectsCarousel } from "@/components/project/studio/LooseProjectsCarousel";
 import { StudioFoldersBar, type StudioFolder } from "@/components/project/studio/StudioFoldersBar";
 import { toast } from "sonner";
 import { TodayStrip } from "@/components/desk/TodayStrip";
@@ -649,13 +650,11 @@ const CreatorWorkHome = () => {
                         {unfiledProjects.length} unfiled · drag onto a folder to file
                       </span>
                     </div>
-                    <StudioCardsGrid
+                    <LooseProjectsCarousel
                       projects={unfiledProjects as any}
                       invoicesByProject={invoicesByProject}
-                      onNewProject={() => setShowCreateProject(true)}
                       folders={folders}
                       onMoveToFolder={moveProject}
-                      hideHero
                     />
                   </div>
                 )

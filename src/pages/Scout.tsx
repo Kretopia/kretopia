@@ -7,7 +7,8 @@ import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection"
 import { ShortlistedGigs } from "@/components/opportunity/ShortlistedGigs";
 import { Radar, Store, UserSearch, ArrowRight, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FeatureHeader } from "@/components/ui/feature-header";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { SCOUT_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 type Tab = "scouted" | "shortlist" | "marketplace";
 
@@ -43,67 +44,70 @@ const Scout = () => {
         description="One feed for the gigs and people that fit your work — scouted from across the web and curated by Kreto."
       />
 
-      {/* Calm header */}
-      <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">
-        <div className="container mx-auto max-w-5xl px-4">
-          <FeatureHeader eyebrow="Scout">
-            Gigs &amp; talent,{" "}
-            <span className="italic text-[hsl(var(--signal-teal))]">scouted</span>
-            <span className="text-foreground/60"> for you.</span>
-          </FeatureHeader>
-
-          {/* Segmented tabs — teal outline on active */}
-          <div
-            role="tablist"
-            aria-label="Scout sections"
-            className="mt-6 inline-flex items-center gap-1 p-1 rounded-full border border-border bg-card"
-          >
-            {TABS.map((t) => {
-              const Icon = t.icon;
-              const active = tab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  role="tab"
-                  aria-selected={active}
-                  aria-label={t.hint}
-                  onClick={() => switchTab(t.id)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
-                    active
-                      ? "bg-background text-[hsl(var(--signal-teal))] shadow-sm ring-1 ring-[hsl(var(--signal-teal))]"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Icon className={cn("h-3.5 w-3.5", active && "text-[hsl(var(--signal-teal))]")} />
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Secondary navigation — deliberately not styled as tabs: these leave the page */}
-          <div className="mt-3 flex items-center gap-4 flex-wrap">
-            <Link
-              to="/circle"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Find collaborators in Circle"
+      <FeaturePageHeader
+        eyebrow="Scout"
+        title={
+          <>
+            Scout.<br />
+            <span className="text-energy-glow">Gigs &amp; talent, scouted for you.</span>
+          </>
+        }
+        subtitle="One feed for the gigs and people that fit your work — scouted from across the web and curated by Kreto."
+        tutorial={{ featureKey: "scout", label: "How Scout works", steps: SCOUT_TUTORIAL }}
+        tabs={
+          <div className="flex flex-col gap-3">
+            <div
+              role="tablist"
+              aria-label="Scout sections"
+              className="inline-flex items-center gap-1 p-1 rounded-full border border-border bg-card w-fit"
             >
-              Looking for collaborators? Open Circle
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-            <Link
-              to={contextQuery ? `/talent-finder?q=${encodeURIComponent(contextQuery)}` : "/talent-finder"}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Open Talent Scout to hire talent"
-            >
-              <UserSearch className="h-3 w-3" />
-              Hiring? Open Talent Scout
-              <ArrowRight className="h-3 w-3" />
-            </Link>
+              {TABS.map((t) => {
+                const Icon = t.icon;
+                const active = tab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    role="tab"
+                    aria-selected={active}
+                    aria-label={t.hint}
+                    onClick={() => switchTab(t.id)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
+                      active
+                        ? "bg-background text-energy shadow-sm ring-1 ring-energy"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className={cn("h-3.5 w-3.5", active && "text-energy")} />
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Secondary navigation — deliberately not styled as tabs: these leave the page */}
+            <div className="flex items-center gap-4 flex-wrap">
+              <Link
+                to="/circle"
+                className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Find collaborators in Circle"
+              >
+                Looking for collaborators? Open Circle
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+              <Link
+                to={contextQuery ? `/talent-finder?q=${encodeURIComponent(contextQuery)}` : "/talent-finder"}
+                className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Open Talent Scout to hire talent"
+              >
+                <UserSearch className="h-3 w-3" />
+                Hiring? Open Talent Scout
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       {/* Body */}
       <div className="container mx-auto max-w-5xl px-4 py-6">

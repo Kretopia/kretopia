@@ -272,21 +272,6 @@ export default function Subscription() {
             : "Unlock the full potential of Kretopia."
         }
         tutorial={{ featureKey: "subscription", label: "How Pricing works", steps: SUBSCRIPTION_TUTORIAL }}
-        meta={
-          hasPaidSub ? (
-            <Button
-              onClick={handleManageSubscription}
-              variant="outline"
-              disabled={loading === "portal"}
-            >
-              {loading === "portal" ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
-              ) : (
-                "Manage Subscription"
-              )}
-            </Button>
-          ) : undefined
-        }
         tabs={
           <div className="flex flex-col items-center gap-3 text-center">
             {/* View mode is derived from account_type — companies see Brand tiers, creators see Creator tiers.
@@ -322,6 +307,18 @@ export default function Subscription() {
       />
 
       <div className="container mx-auto px-4 pt-8">
+      {hasPaidSub && (
+        <div className="flex justify-end mb-6">
+          <Button onClick={handleManageSubscription} variant="outline" disabled={loading === "portal"}>
+            {loading === "portal" ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
+            ) : (
+              "Manage Subscription"
+            )}
+          </Button>
+        </div>
+      )}
+
       {/* Founder Circle Card — only show on Creator view */}
       {viewMode === "creator" && (
         <div className="max-w-2xl mx-auto mb-12">

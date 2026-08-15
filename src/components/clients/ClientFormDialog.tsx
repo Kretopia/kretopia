@@ -17,6 +17,7 @@ interface Props {
 export const ClientFormDialog = ({ open, onOpenChange, client, onSaved }: Props) => {
   const upsert = useUpsertClient();
   const { toast } = useToast();
+  const isEdit = !!client?.id;
   const [form, setForm] = useState(() => ({
     name: client?.name ?? "",
     company_name: client?.company_name ?? "",
@@ -37,7 +38,7 @@ export const ClientFormDialog = ({ open, onOpenChange, client, onSaved }: Props)
     }
     try {
       const saved = await upsert.mutateAsync({ id: client?.id, ...form });
-      toast({ title: client ? "Client updated" : "Client added" });
+      toast({ title: isEdit ? "Client updated" : "Client added" });
       onSaved?.(saved);
       onOpenChange(false);
     } catch (e: any) {
@@ -49,7 +50,7 @@ export const ClientFormDialog = ({ open, onOpenChange, client, onSaved }: Props)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{client ? "Edit client" : "New client"}</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit client" : "New client"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div>

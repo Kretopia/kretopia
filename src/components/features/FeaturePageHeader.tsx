@@ -9,8 +9,6 @@ interface FeaturePageHeaderProps {
   /** e.g. <>Gigs. <span className="text-energy-glow">Find your next one.</span></> — no <br/>, the title auto-shrinks to stay on one line. */
   title: ReactNode;
   subtitle: string;
-  /** Optional chip/actions, rendered centered below the tutorial trigger. */
-  meta?: ReactNode;
   /** Optional segmented tab toggle, rendered below the title block. */
   tabs?: ReactNode;
   /** Feature key + tutorial steps -- omit to render the header with no tutorial trigger. */
@@ -23,7 +21,7 @@ interface FeaturePageHeaderProps {
  * font-size is computed per-title via useFitTitleOneLine rather than a fixed
  * breakpoint jump, since title length varies a lot page to page.
  */
-export function FeaturePageHeader({ eyebrow, title, subtitle, meta, tabs, tutorial }: FeaturePageHeaderProps) {
+export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: FeaturePageHeaderProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   useFitTitleOneLine(wrapperRef, titleRef, [title]);
@@ -52,7 +50,6 @@ export function FeaturePageHeader({ eyebrow, title, subtitle, meta, tabs, tutori
               <FeatureAITutorial featureKey={tutorial.featureKey} label={tutorial.label} steps={tutorial.steps} />
             )}
           </div>
-          {meta}
         </div>
         {tabs && <div className="mt-5">{tabs}</div>}
       </div>

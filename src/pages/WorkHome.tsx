@@ -498,17 +498,17 @@ const CreatorWorkHome = () => {
         }
         subtitle="Brief, collaborators, milestones, and payment — all inside the same room, from kickoff to delivery."
         tutorial={{ featureKey: "studio", label: "How Studios works", steps: STUDIO_TUTORIAL }}
-        meta={
-          activeProjects.length > 0 ? (
-            <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0">
-              {activeProjects.length} Active
-            </Badge>
-          ) : undefined
-        }
       />
 
       {/* Wider on desktop, capped for readability */}
       <div className="max-w-6xl mx-auto px-4 pt-4 pb-36 md:pb-12 space-y-5">
+        {activeProjects.length > 0 && (
+          <div className="flex justify-end">
+            <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0">
+              {activeProjects.length} Active
+            </Badge>
+          </div>
+        )}
         {/* Voice as a primary interaction, not a passive tip — real mic
             button wired to the existing VoiceCommandSheet, styled with
             Kreto's solid accent treatment (formerly a sunset gradient,

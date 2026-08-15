@@ -58,15 +58,15 @@ export default function FoundingMember() {
         }
         subtitle="Complete 3 milestones before the deadline and earn a permanent Founding Member badge."
         tutorial={{ featureKey: "founding-circle", label: "How the Founding Circle works", steps: FOUNDING_TUTORIAL }}
-        meta={
+      />
+
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+        <div className="flex justify-end mb-3">
           <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-card border border-border rounded-full px-2.5 py-1 shrink-0">
             <Calendar className="h-3 w-3" />
             Closes {deadline} · {daysLeft} day{daysLeft === 1 ? "" : "s"} left
           </div>
-        }
-      />
-
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+        </div>
         {/* Overall progress */}
         <Card className="p-4 mb-4">
           <div className="flex items-center justify-between text-xs font-medium mb-1.5">

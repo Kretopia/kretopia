@@ -95,11 +95,12 @@ export const LandingBelowFold = () => {
             </span>
           </>
         }
-        body="Scout reads the web — gigs, briefs, calls, casting notices — and surfaces the ones that fit you. Kreto drafts the pitch. You decide if it goes."
+        body="Scout searches gigs, briefs, castings, commissions and opportunities across the web, then surfaces the ones that fit your Passport. Kreto can help you prepare the next move. You stay in control."
         caption="Scout"
         image={scoutImg}
         accent="#FF2DA1"
         href="/auth?next=/scout"
+        ctaLabel="Explore Opportunities"
         reverse
         tutorialSteps={SCOUT_TUTORIAL}
         tutorialVisual={ScoutVisual}
@@ -118,11 +119,12 @@ export const LandingBelowFold = () => {
             </span>
           </>
         }
-        body="Match connects creators by skill, city, vibe, and the people you've already made things with. No cold DMs. Just collaborators who get it."
+        body="Discover creatives through what they actually do, where they are, the projects they've worked on and the people who can confirm it. Less cold searching. More creative context."
         caption="Match"
         image={matchImg}
         accent="#FF2DA1"
         href="/auth?next=/match"
+        ctaLabel="Find Collaborators"
         tutorialSteps={MATCH_TUTORIAL}
         tutorialVisual={MatchVisual}
       />
@@ -140,11 +142,13 @@ export const LandingBelowFold = () => {
             </span>
           </>
         }
-        body="Every shoot, drop, release, or campaign in its own Studio. Brief, files, chat, video, deliverables, payments — held together by Kreto's quiet hand."
+        body="Bring the brief, collaborators, tasks, files, milestones, communication and payments together around the work."
         caption="Studio"
         image={studioImg}
         accent="#FF2DA1"
         href="/auth?next=/desk"
+        ctaLabel="Create a Project"
+        closingLine="When the project is finished, the outcome strengthens the Creative Passports of the people who made it happen."
         reverse
         tutorialSteps={STUDIO_TUTORIAL}
         tutorialVisual={StudioVisual}

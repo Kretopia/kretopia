@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useClients } from "@/hooks/useClients";
+import { useClients, type Client } from "@/hooks/useClients";
+import { AIAddClientCard } from "@/components/clients/AIAddClientCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Building2, Mail, Phone, ChevronRight, UserPlus, FolderKanban, ClipboardList } from "lucide-react";
 import { ClientFormDialog } from "@/components/clients/ClientFormDialog";
@@ -17,6 +18,8 @@ const CLIENTS_TUTORIAL: TutorialStep[] = [
 const Clients = () => {
   const { data: clients = [], isLoading } = useClients();
   const [showForm, setShowForm] = useState(false);
+  const [draft, setDraft] = useState<Partial<Client> | null>(null);
+  const [draftKey, setDraftKey] = useState(0);
   const navigate = useNavigate();
 
   return (
@@ -32,14 +35,16 @@ const Clients = () => {
         }
         subtitle="Group projects, contacts and threads under one client — no more digging for who's who."
         tutorial={{ featureKey: "clients", label: "How Clients works", steps: CLIENTS_TUTORIAL }}
-        meta={
-          <Button size="sm" onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-1" /> New client
-          </Button>
-        }
       />
 
       <div className="max-w-3xl mx-auto p-4">
+        <AIAddClientCard
+          onDraft={(d) => {
+            setDraft(d);
+            setDraftKey((k) => k + 1);
+            setShowForm(true);
+          }}
+        />
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
@@ -50,7 +55,7 @@ const Clients = () => {
           <p className="text-sm text-muted-foreground mb-4">
             Add a client to group all their projects, briefs and invoices in one place.
           </p>
-          <Button onClick={() => setShowForm(true)}>
+          <Button onClick={() => { setDraft(null); setDraftKey((k) => k + 1); setShowForm(true); }}>
             <Plus className="h-4 w-4 mr-1" /> Add your first client
           </Button>
         </div>
@@ -79,7 +84,7 @@ const Clients = () => {
       )}
       </div>
 
-      <ClientFormDialog open={showForm} onOpenChange={setShowForm} />
+      <ClientFormDialog key={draftKey} open={showForm} onOpenChange={setShowForm} client={draft as Client | null} />
     </div>
   );
 };

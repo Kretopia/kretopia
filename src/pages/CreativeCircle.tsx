@@ -95,11 +95,6 @@ const CreativeCircle = () => {
         }
         subtitle="Invite creatives, climb tiers, and earn passive commission — all from one link."
         tutorial={{ featureKey: "creative-circle", label: "How Creative Circle works", steps: CREATIVE_CIRCLE_TUTORIAL }}
-        meta={
-          <Badge variant="secondary" className="text-sm font-bold">
-            {network.referralCount} invited
-          </Badge>
-        }
       />
 
       <div className="container mx-auto px-4 pt-4 max-w-2xl space-y-6">

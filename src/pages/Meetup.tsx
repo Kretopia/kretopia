@@ -12,6 +12,8 @@ import { Calendar, MapPin, Search, Plus, Sparkles, Ticket, Users, TrendingUp, Gl
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
+import { AIHostEventCard } from "@/components/sessions/AIHostEventCard";
+import type { ScannedEventDetails } from "@/components/sessions/ScanFlyerDialog";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
@@ -54,6 +56,7 @@ const Meetup = () => {
   const [myCountry, setMyCountry] = useState<string | null>(null);
   const [hostingCount, setHostingCount] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
+  const [prefill, setPrefill] = useState<ScannedEventDetails | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -156,18 +159,7 @@ const Meetup = () => {
         }
         subtitle="Workshops, meetups, jams, screenings, premieres — real-world moments built for the creative industry."
         tutorial={{ featureKey: "events", label: "How Events works", steps: EVENTS_TUTORIAL }}
-        meta={
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setShowCreate(true)} size="sm" variant="gradient" className="gap-1.5 rounded-full">
-              <Plus className="h-4 w-4" /> Host Event
-            </Button>
-            {hostingCount > 0 && (
-              <Button onClick={() => navigate("/meetup/manage")} size="sm" variant="outline">
-                <SettingsIcon className="h-4 w-4 mr-1.5" /> Manage ({hostingCount})
-              </Button>
-            )}
-          </div>
-        }
+
         tabs={
           <div className="flex flex-col gap-3">
             <div className="relative">
@@ -200,6 +192,17 @@ const Meetup = () => {
       />
 
       <div className="container mx-auto max-w-5xl px-4 py-6">
+        <div className="mb-6">
+          <AIHostEventCard
+            hostingCount={hostingCount}
+            onManage={() => navigate("/meetup/manage")}
+            onPrefilled={(details) => {
+              setPrefill(details);
+              setShowCreate(true);
+            }}
+          />
+        </div>
+
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
           <TabsList className="w-full justify-start overflow-x-auto bg-transparent p-0 h-auto gap-2 mb-6">
             {[
@@ -253,7 +256,7 @@ const Meetup = () => {
         </Tabs>
       </div>
 
-      <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={load} />
+      <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={load} initialDetails={prefill} />
     </div>
   );
 };

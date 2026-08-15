@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import { KRETO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
+import { InlineKretoChat } from "@/components/kreto/InlineKretoChat";
 
 const QUICK_ACTIONS = [
   {
@@ -74,13 +75,10 @@ export default function KretoTab() {
   const [gig, setGig] = useState<RecentGig | null>(null);
   const [actions, setActions] = useState<RecentAction[]>([]);
   const [loadingContext, setLoadingContext] = useState(true);
+  const [seedPrompt, setSeedPrompt] = useState<string | null>(null);
   const titleWrapperRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   useFitTitleOneLine(titleWrapperRef, titleRef, []);
-
-  useEffect(() => {
-    openKreto();
-  }, []);
 
   useEffect(() => {
     if (!user) { setLoadingContext(false); return; }
@@ -138,15 +136,8 @@ export default function KretoTab() {
           <FeatureAITutorial featureKey="kreto" label="How Kreto works" steps={KRETO_TUTORIAL} />
         </div>
 
-        {/* Primary CTA — the one dominant action on this page */}
-        <button
-          type="button"
-          onClick={() => openKreto()}
-          className="w-full flex items-center justify-between gap-3 rounded-2xl border border-[#FF2DA1]/40 bg-[#FF2DA1]/10 px-5 py-4 text-left hover:bg-[#FF2DA1]/15 transition-colors"
-        >
-          <span className="text-base font-medium text-white">Ask {BRAND.agentName} anything…</span>
-          <ArrowRight className="h-5 w-5 text-[#FF2DA1] shrink-0" />
-        </button>
+        {/* Primary surface — the live thread, answered right here on the page */}
+        <InlineKretoChat seedPrompt={seedPrompt} />
 
         {/* Quick actions — secondary shortcuts, visually quieter than the primary CTA above */}
         <div>
@@ -156,7 +147,7 @@ export default function KretoTab() {
               <button
                 key={label}
                 type="button"
-                onClick={() => openKreto(prompt)}
+                onClick={() => setSeedPrompt(`${prompt}\u200b${Date.now()}`.split("\u200b")[0])}
                 className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-sm font-medium text-white/80 hover:border-white/25 hover:bg-white/[0.06] transition-colors"
               >
                 <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />

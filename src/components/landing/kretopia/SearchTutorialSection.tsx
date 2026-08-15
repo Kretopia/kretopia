@@ -1,16 +1,36 @@
 /**
- * SearchTutorialSection — Chapter I. Search already has its live, functional
- * surface in the Hero (the real search bar, not a mockup) — this section is
- * just the interactive tutorial that follows it, matching every other
- * chapter's "feature → tutorial" pattern without duplicating the Hero's
- * own image/headline.
+ * SearchTutorialSection — Chapter I, "Discovery." Search already has its
+ * live, functional surface in the Hero (the real search bar, not a mockup)
+ * — this section makes the case for using it: a visitor's creative history
+ * may already be on Kretopia, waiting to be found and claimed.
+ *
+ * The compact SEARCH / REVIEW / CLAIM row is a glanceable summary; the
+ * FeatureTutorialPanel below it is the same detailed, step-reactive
+ * tutorial as every other chapter — not a duplicate, a deeper layer.
  */
+import { Search, FileSearch, Fingerprint } from "lucide-react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { analytics } from "@/lib/analytics";
 import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
 import { SearchVisual } from "./featureVisuals";
 import { SEARCH_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
+
+const STEPS = [
+  { icon: Search, label: "Search", body: "Find your name." },
+  { icon: FileSearch, label: "Review", body: "See potential credits and projects." },
+  { icon: Fingerprint, label: "Claim", body: "Turn them into your Creative Passport." },
+];
+
+const scrollToHeroSearch = () => {
+  analytics.ctaClick("search_your_name", "discovery_section");
+  const hero = document.getElementById("kretopia-hero");
+  hero?.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.setTimeout(() => {
+    hero?.querySelector<HTMLInputElement>("input")?.focus();
+  }, 450);
+};
 
 export const SearchTutorialSection = () => {
   const reducedMotion = useReducedMotion();
@@ -29,13 +49,57 @@ export const SearchTutorialSection = () => {
           transition={{ duration: 0.7 }}
           className="max-w-xl"
         >
-          <p className="landing-eyebrow mb-4">{chapterRoman("kretopia-hero")} · Search</p>
+          <p className="landing-eyebrow mb-4">{chapterRoman("kretopia-hero")} · Discover your record</p>
           <h2 id="search-tutorial-title" className="landing-h2 landing-glow">
-            How search works.
+            Your creative history may already be here.
           </h2>
           <p className="landing-sub mt-5">
-            The search bar above is real — try it. Here's what happens once you do.
+            Search your name, stage name or project. Find your record, review the work connected to you, and claim what is yours.
           </p>
+        </motion.div>
+
+        {/* Compact three-step summary */}
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3"
+        >
+          {STEPS.map(({ icon: Icon, label, body }, i) => (
+            <div key={label} className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <span
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+                  style={{ backgroundColor: "rgba(255,45,161,0.14)", color: "#FF2DA1" }}
+                >
+                  {i + 1}
+                </span>
+                <Icon className="h-4 w-4" style={{ color: "#FF2DA1" }} aria-hidden />
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">{label}</span>
+              </div>
+              <p className="text-sm text-white/55" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                {body}
+              </p>
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-6"
+        >
+          <button
+            type="button"
+            onClick={scrollToHeroSearch}
+            className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
+            style={{ backgroundColor: "#FF2DA1" }}
+          >
+            Search Your Name
+          </button>
         </motion.div>
 
         <FeatureTutorialPanel steps={SEARCH_TUTORIAL} label="Search tutorial" visual={SearchVisual} />

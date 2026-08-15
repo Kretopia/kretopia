@@ -261,7 +261,11 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
     return (
       <div
         onClick={() => openDetail(g)}
-        className="group relative h-full flex flex-col rounded-2xl overflow-hidden border border-border bg-card cursor-pointer transition-all hover:border-energy/40 hover:shadow-2xl hover:shadow-energy/10"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(g); } }}
+        aria-label={`View brief for ${g.title}`}
+        className="group relative h-full flex flex-col rounded-2xl overflow-hidden border border-border bg-card cursor-pointer transition-all hover:border-energy/40 hover:shadow-2xl hover:shadow-energy/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-energy"
       >
         <div className="relative aspect-[16/9] overflow-hidden shrink-0">
           {g.image_url ? (
@@ -423,7 +427,11 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
         {gigs[0] && (
           <div
             onClick={() => openDetail(gigs[0])}
-            className="group relative rounded-2xl overflow-hidden border border-energy/30 bg-card cursor-pointer transition-all hover:border-energy/50 hover:shadow-2xl hover:shadow-energy/10 sm:flex"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(gigs[0]); } }}
+            aria-label={`View brief for ${gigs[0].title}, your strongest match`}
+            className="group relative rounded-2xl overflow-hidden border border-energy/30 bg-card cursor-pointer transition-all hover:border-energy/50 hover:shadow-2xl hover:shadow-energy/10 sm:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-energy"
           >
             <div className="relative aspect-[16/9] sm:aspect-auto sm:w-64 shrink-0 overflow-hidden">
               {gigs[0].image_url ? (

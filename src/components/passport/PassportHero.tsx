@@ -183,7 +183,7 @@ export function PassportHero({
           {/* Name + roles + location */}
           <div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-xl font-black tracking-tight leading-tight break-words">{displayName}</h1>
+              <h2 className="text-xl font-black tracking-tight leading-tight break-words">{displayName}</h2>
               {profile.verification_status === "verified" && (
                 <div className="flex items-center justify-center h-4 w-4 rounded-full bg-primary shrink-0" title="Verified">
                   <ShieldCheck className="h-2.5 w-2.5 text-primary-foreground" />

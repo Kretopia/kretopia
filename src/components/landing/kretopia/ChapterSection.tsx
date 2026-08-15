@@ -9,6 +9,7 @@ import type { ComponentType } from "react";
 import type { TutorialStep } from "./FeatureTutorial";
 import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { analytics } from "@/lib/analytics";
 
 export interface ChapterProps {
   index: string;        // "I", "II", "III"…
@@ -25,10 +26,17 @@ export interface ChapterProps {
   tutorialSteps?: TutorialStep[];
   /** Step-reactive visual preview paired with tutorialSteps in the panel. */
   tutorialVisual?: ComponentType<{ activeStep: number }>;
+  /** Overrides the default "Enter {kicker}" link text. */
+  ctaLabel?: string;
+  /** Optional compact concept grid rendered between body copy and the CTA. */
+  concepts?: { label: string; body: string }[];
+  /** Optional single emphasized line rendered just above the CTA. */
+  closingLine?: string;
 }
 
 export const ChapterSection = ({
   index, kicker, title, body, caption, image, accent, href, reverse, id, tutorialSteps, tutorialVisual,
+  ctaLabel, concepts, closingLine,
 }: ChapterProps) => {
   const reducedMotion = useReducedMotion();
   return (
@@ -123,13 +131,41 @@ export const ChapterSection = ({
               {body}
             </p>
 
+            {concepts && concepts.length > 0 && (
+              <div className="mt-7 grid grid-cols-2 gap-3 max-w-md">
+                {concepts.map((c) => (
+                  <div key={c.label} className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
+                    <p
+                      className="text-[10px] font-bold uppercase tracking-[0.18em] mb-1"
+                      style={{ color: accent, fontFamily: "'Work Sans', sans-serif" }}
+                    >
+                      {c.label}
+                    </p>
+                    <p className="text-xs leading-snug text-white/55" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                      {c.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {closingLine && (
+              <p
+                className="mt-6 text-sm font-semibold italic"
+                style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Work Sans', sans-serif" }}
+              >
+                {closingLine}
+              </p>
+            )}
+
             <Link
               to={href}
+              onClick={() => analytics.ctaClick(`${kicker.toLowerCase()}_chapter_cta`, "landing_chapter")}
               className="group inline-flex items-center gap-2 mt-9 text-sm tracking-wide"
               style={{ fontFamily: "'Work Sans', sans-serif", color: "rgba(255,255,255,0.85)" }}
             >
               <span className="border-b border-white/30 group-hover:border-white pb-0.5 transition-colors">
-                Enter {kicker}
+                {ctaLabel ?? `Enter ${kicker}`}
               </span>
               <ArrowUpRight
                 className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"

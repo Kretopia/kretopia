@@ -15,6 +15,7 @@
 import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutorialSection";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
 import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
+import { TrustSection } from "@/components/landing/kretopia/TrustSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
 import { chapterRoman } from "@/components/landing/kretopia/chapterRegistry";
@@ -73,6 +74,9 @@ export const LandingBelowFold = () => {
 
       {/* Verified Credits — the canonical tutorial reference */}
       <VerifiedCreditsChapterSection />
+
+      {/* Trust — the general Co-Sign principle, real evidence states */}
+      <TrustSection />
 
       {/* Scout */}
       <ChapterSection

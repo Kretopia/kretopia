@@ -15,6 +15,7 @@ import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { AIHostEventCard } from "@/components/sessions/AIHostEventCard";
 import type { ScannedEventDetails } from "@/components/sessions/ScanFlyerDialog";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const EVENTS_TUTORIAL: TutorialStep[] = [
@@ -192,6 +193,7 @@ const Meetup = () => {
       />
 
       <div className="container mx-auto max-w-5xl px-4 py-6">
+        <KretoTip compact className="mb-5" />
         <div className="mb-6">
           <AIHostEventCard
             hostingCount={hostingCount}

@@ -75,7 +75,8 @@ export default function KretoTab() {
   const [gig, setGig] = useState<RecentGig | null>(null);
   const [actions, setActions] = useState<RecentAction[]>([]);
   const [loadingContext, setLoadingContext] = useState(true);
-  const [seedPrompt, setSeedPrompt] = useState<string | null>(null);
+  const [seed, setSeed] = useState<{ text: string; n: number } | null>(null);
+  const ask = (text: string) => setSeed((s) => ({ text, n: (s?.n ?? 0) + 1 }));
   const titleWrapperRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   useFitTitleOneLine(titleWrapperRef, titleRef, []);
@@ -137,7 +138,7 @@ export default function KretoTab() {
         </div>
 
         {/* Primary surface — the live thread, answered right here on the page */}
-        <InlineKretoChat seedPrompt={seedPrompt} />
+        <InlineKretoChat key={seed?.n ?? 0} seedPrompt={seed?.text ?? null} />
 
         {/* Quick actions — secondary shortcuts, visually quieter than the primary CTA above */}
         <div>
@@ -190,10 +191,7 @@ export default function KretoTab() {
             {gig && (
               <button
                 type="button"
-                onClick={() => openKreto(
-                  `Help me think through this opportunity: "${gig.title}"${gig.company ? ` at ${gig.company}` : ""}.`,
-                  { scouted_gig_id: gig.id }
-                )}
+                onClick={() => ask(`Help me think through this opportunity: "${gig.title}"${gig.company ? ` at ${gig.company}` : ""}.`)}
                 className="text-left rounded-xl border border-white/10 bg-white/[0.03] p-4 hover:border-[#FF2DA1]/40 transition-colors"
               >
                 <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2">Top Scout match</p>

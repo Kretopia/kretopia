@@ -80,6 +80,20 @@ This means Phase 1's "Share Passport CTA" work in this charter is **styling-only
 
 No RLS, authentication, payment-processing, migration, or secret-handling code exists in any file classified above. `handleShare`, `PassportShareSheet`'s Supabase-free share-link generation, and every data-fetching hook listed are *consumed*, not modified structurally — only presentation-layer wrapping (Today), a scoped rebuild (Studio New Room), new navigation chrome (Studio control rail), presentation reordering (Scout), and CSS/className changes (Passport Share button, Passport header centering) are in scope.
 
+## Phase 4 correction: the "overloaded left sidebar" is on `/desk/:projectId`, not `/desk`
+
+Phase 0's audit only covered `/desk` (`WorkHome.tsx` → `CreatorWorkHome`), which has no left sidebar at all — a single-column layout. The charter's Phase 4 description ("overloaded left sidebar," "replace with StudioControlRail") describes `ThriveDesk.tsx` (`/desk/:projectId`, the individual project workspace), a distinct route not in the charter's explicit test list but clearly the intended target based on the description matching its actual layout.
+
+Investigated `ThriveDesk.tsx` (376 lines) directly: it already has —
+- `WorkspaceSidebar` — a collapsible left project switcher (persists open/closed state in `localStorage`, mobile overlay + `-translate-x-full`/desktop `lg:w-0` collapse, real project list with status dots, active-project highlighting).
+- `StudioToolBar` — a compact breadcrumb-style tool switcher (`← Studio / {Tool} ▾`) whose own code comment says it "*Replaces the busy horizontal tab strip with a clean, focused header*" — i.e. a prior pass already did the exact consolidation this charter's Phase 4 asks for. Tool list is dynamically resolved per workspace/deal type via `resolveTabs()`, with unread-count badges on Tasks/Messages.
+- `WorkspaceQuickPanel` — a collapsible right-side quick-info rail (`w-80`, `xl:` only), independent toggle.
+- `ProjectFlowTimeline` + `NextStepBar` — a real per-project stage timeline (e.g. Discussion → Scope & Brief → Tasks → Work Upload → Review & Approval → Agreement) with one clear next-action CTA, shown in the "Studio Room" (pinned-stage) view.
+
+This is a real, working, already-consolidated navigation system — not a stray sidebar needing replacement. Building a new `StudioControlRail` component here would **duplicate** this system, directly violating the charter's own "avoid duplicated navigation" rule. Live-verified at `/desk/:projectId`: sidebar toggle works, flow timeline and next-step bar render with real project data (stages, "Kick off the conversation" next action), no console errors introduced.
+
+**Decision: Phase 4 requires no new component.** The charter's specific asks (collapse on mobile, project switcher, active-route context, unread indicators, keyboard accessible, avoid duplicated navigation, expandable panels instead of showing everything at once) are already satisfied by the existing `WorkspaceSidebar`/`StudioToolBar`/`WorkspaceQuickPanel`/`ProjectFlowTimeline` combination. No code change made for this phase — this finding itself is the deliverable, following the same evidence-first approach used for Admin and EPK in the prior charter.
+
 ## Plan for phases 1–9
 
 Proceeding phase-by-phase, committing after each, starting with Phase 1 (Passport — the lowest-risk, most explicitly-scoped work: header centering + Share CTA restyle, both pure presentation changes with an already-correct data/modal layer underneath).

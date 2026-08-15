@@ -32,14 +32,7 @@ export const AuthBrandingPanel = () => (
 
       <h2 className="font-serif text-4xl xl:text-[3.5rem] font-normal tracking-[-0.03em] leading-[1.02] mb-5 text-white">
         Where{" "}
-        <span
-          className="italic bg-clip-text text-transparent"
-          style={{
-            background: "var(--kretopia-sunset, hsl(327 100% 59%))",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
+        <span className="italic" style={{ color: "#FF2DA1" }}>
           Creativity
         </span>
         <br />Lives.

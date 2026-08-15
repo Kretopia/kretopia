@@ -20,11 +20,15 @@ interface FeatureTutorialPanelProps {
 export const FeatureTutorialPanel = ({ steps, label, visual: Visual, reverse }: FeatureTutorialPanelProps) => {
   const reducedMotion = useReducedMotion();
   const [activeStep, setActiveStep] = useState(0);
+  // Once this panel scrolls into view, the stepper starts auto-advancing on
+  // its own — visitors don't have to click anything to see the tutorial play.
+  const [inView, setInView] = useState(false);
 
   return (
     <motion.div
       initial={reducedMotion ? false : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
+      onViewportEnter={() => setInView(true)}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.7 }}
       className="mt-16 lg:mt-20"
@@ -34,7 +38,7 @@ export const FeatureTutorialPanel = ({ steps, label, visual: Visual, reverse }: 
           <Visual activeStep={activeStep} />
         </div>
         <div className="lg:col-span-7">
-          <TutorialStepper steps={steps} label={label} activeStep={activeStep} onStepChange={setActiveStep} />
+          <TutorialStepper steps={steps} label={label} activeStep={activeStep} onStepChange={setActiveStep} autoPlay={inView} />
         </div>
       </div>
     </motion.div>

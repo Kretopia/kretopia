@@ -61,6 +61,9 @@ const PROMPTS = [
 export const MeetKretoSection = () => {
   const reducedMotion = useReducedMotion();
   const [activeStep, setActiveStep] = useState(0);
+  // Once the command surface scrolls into view, its embedded tutorial
+  // starts auto-advancing on its own.
+  const [inView, setInView] = useState(false);
   // The rotating message reflects whichever tutorial step is active, rather
   // than cycling on its own independent timer.
   const i = activeStep % LINES.length;
@@ -160,6 +163,7 @@ export const MeetKretoSection = () => {
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, scale: 0.97 }}
             whileInView={{ opacity: 1, scale: 1 }}
+            onViewportEnter={() => setInView(true)}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.8 }}
             className="lg:col-span-5 w-full"
@@ -240,25 +244,27 @@ export const MeetKretoSection = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Tutorial, folded straight into the command surface — the
+                  card that talks like Kreto also teaches how Kreto works. */}
+              <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                <p
+                  className="text-[10px] uppercase tracking-[0.24em] text-white/30 mb-1"
+                  style={{ fontFamily: "'Work Sans', sans-serif" }}
+                >
+                  How it works
+                </p>
+                <TutorialStepper
+                  steps={CHAPTER_TUTORIAL}
+                  label="Kreto tutorial"
+                  activeStep={activeStep}
+                  onStepChange={setActiveStep}
+                  autoPlay={inView}
+                />
+              </div>
             </div>
           </motion.div>
         </div>
-
-        {/* Interactive tutorial — full width, drives the command surface above */}
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-16 lg:mt-20 max-w-2xl"
-        >
-          <TutorialStepper
-            steps={CHAPTER_TUTORIAL}
-            label="Kreto tutorial"
-            activeStep={activeStep}
-            onStepChange={setActiveStep}
-          />
-        </motion.div>
       </div>
     </section>
   );

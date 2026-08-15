@@ -5,7 +5,7 @@
  * (or arrow-key between them) to jump straight to it and expand its
  * detail. Built to fill real space, not sit as a small card.
  */
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -13,37 +13,56 @@ import { cn } from "@/lib/utils";
 import type { TutorialStep } from "./FeatureTutorial";
 
 const ACCENT = "#FF2DA1";
+const AUTOPLAY_INTERVAL_MS = 4500;
 
 interface TutorialStepperProps {
   steps: TutorialStep[];
   label: string;
   activeStep?: number;
   onStepChange?: (index: number) => void;
+  /** Auto-advance through steps on a timer, looping — meant for landing
+   * demos that should feel alive as soon as they scroll into view. Stops
+   * permanently the moment the visitor takes manual control (click or
+   * arrow key), and never runs under prefers-reduced-motion. */
+  autoPlay?: boolean;
 }
 
-export const TutorialStepper = ({ steps, label, activeStep, onStepChange }: TutorialStepperProps) => {
+export const TutorialStepper = ({ steps, label, activeStep, onStepChange, autoPlay = false }: TutorialStepperProps) => {
   const reducedMotion = useReducedMotion();
   const isControlled = activeStep !== undefined;
   const [internalIndex, setInternalIndex] = useState(0);
   const index = isControlled ? (activeStep as number) : internalIndex;
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [userTookControl, setUserTookControl] = useState(false);
 
-  const goTo = (i: number) => {
+  const goTo = (i: number, manual = false) => {
+    if (manual) setUserTookControl(true);
     const clamped = Math.max(0, Math.min(steps.length - 1, i));
     if (isControlled) onStepChange?.(clamped);
     else setInternalIndex(clamped);
   };
 
+  // Loop through steps automatically once in view — pauses for good the
+  // moment the visitor clicks a step or navigates with arrow keys.
+  useEffect(() => {
+    if (!autoPlay || reducedMotion || userTookControl || steps.length < 2) return;
+    const id = window.setInterval(() => {
+      goTo((index + 1) % steps.length);
+    }, AUTOPLAY_INTERVAL_MS);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, reducedMotion, userTookControl, index, steps.length]);
+
   const onRowKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
       const next = Math.min(steps.length - 1, i + 1);
-      goTo(next);
+      goTo(next, true);
       rowRefs.current[next]?.focus();
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       const prev = Math.max(0, i - 1);
-      goTo(prev);
+      goTo(prev, true);
       rowRefs.current[prev]?.focus();
     }
   };
@@ -64,7 +83,7 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange }: Tuto
               type="button"
               aria-expanded={isActive}
               aria-controls={panelId}
-              onClick={() => goTo(i)}
+              onClick={() => goTo(i, true)}
               onKeyDown={(e) => onRowKeyDown(e, i)}
               className="group relative flex w-full items-start gap-4 rounded-xl px-3 py-3.5 sm:px-4 text-left transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2"
               style={{

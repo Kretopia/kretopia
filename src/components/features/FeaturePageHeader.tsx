@@ -29,7 +29,27 @@ export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: 
   return (
     <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
+      {/* AI ambience — a slow magenta aurora behind the title, purely decorative */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(70% 60% at 50% -10%, rgba(255,45,161,0.10), transparent 70%), radial-gradient(50% 50% at 85% 0%, rgba(23,217,212,0.07), transparent 70%)",
+        }}
+      />
       <div className="relative container mx-auto max-w-5xl px-4 pt-6 pb-5 sm:pt-8 sm:pb-7">
+        {/* The tutorial trigger floats in the header's corner instead of
+            sitting between the subtitle and the first card — no sandwich. */}
+        {tutorial && (
+          <FeatureAITutorial
+            featureKey={tutorial.featureKey}
+            label={tutorial.label}
+            steps={tutorial.steps}
+            variant="floating"
+            className="absolute right-4 top-4 z-10"
+          />
+        )}
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="flex flex-col items-center w-full">
             <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
@@ -46,9 +66,6 @@ export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: 
               </h1>
             </div>
             <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md mx-auto">{subtitle}</p>
-            {tutorial && (
-              <FeatureAITutorial featureKey={tutorial.featureKey} label={tutorial.label} steps={tutorial.steps} />
-            )}
           </div>
         </div>
         {tabs && <div className="mt-5">{tabs}</div>}

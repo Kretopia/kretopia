@@ -14,11 +14,8 @@ import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
   BadgeCheck,
-  FileText,
-  ListChecks,
-  Radar,
-  ShieldQuestion,
-  Users,
+  Sparkles,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
@@ -43,12 +40,9 @@ const LINES = [
 ];
 
 const CAPABILITIES: { icon: LucideIcon; label: string; body: string }[] = [
-  { icon: BadgeCheck, label: "Reads your Passport", body: "Knows your credits, roles and co-signs as context." },
-  { icon: Radar, label: "Explains matches", body: "Says why an opportunity fits — not just that it does." },
-  { icon: ShieldQuestion, label: "Spots missing evidence", body: "Flags credits that still need a co-sign or proof." },
-  { icon: FileText, label: "Drafts editable bios", body: "Writes a first pass in your voice. You approve it." },
-  { icon: ListChecks, label: "Turns briefs into tasks", body: "Calls, docs and voice notes become a real plan." },
-  { icon: Users, label: "Suggests collaborators", body: "Surfaces people from your network for the brief." },
+  { icon: BadgeCheck, label: "Understands your work", body: "Kreto learns from your Passport, credits, collaborators, projects and goals." },
+  { icon: Sparkles, label: "Helps you act", body: "Discover opportunities, prepare briefs, organize projects and draft the next step." },
+  { icon: ShieldCheck, label: "You stay in control", body: "Kreto suggests. You decide." },
 ];
 
 const PROMPTS = [
@@ -113,8 +107,8 @@ export const MeetKretoSection = () => {
               Not a generic chatbot. A context-aware career and production agent.
             </p>
 
-            {/* Capabilities */}
-            <ul className="mt-9 grid sm:grid-cols-2 gap-x-6 gap-y-4">
+            {/* Capabilities — exactly three, per the charter's positioning */}
+            <ul className="mt-9 grid gap-4">
               {CAPABILITIES.map(({ icon: Icon, label, body }) => (
                 <li key={label} className="flex gap-3">
                   <span
@@ -141,8 +135,12 @@ export const MeetKretoSection = () => {
               ))}
             </ul>
 
+            <p className="mt-7 max-w-xl text-sm font-semibold italic text-white/80">
+              AI that works around your creative career, not instead of it.
+            </p>
+
             <p
-              className="mt-7 max-w-xl text-xs leading-relaxed text-white/40"
+              className="mt-4 max-w-xl text-xs leading-relaxed text-white/40"
               style={{ fontFamily: "'Work Sans', sans-serif" }}
             >
               Everything Kreto produces is labelled AI-assisted, stays editable, can be

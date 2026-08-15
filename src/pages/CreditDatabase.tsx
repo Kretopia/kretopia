@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import { VERIFIED_CREDITS_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
+import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -141,6 +142,9 @@ interface WebResult {
 
 const CreditDatabase = () => {
   const reducedMotion = useReducedMotion();
+  const titleWrapperRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useFitTitleOneLine(titleWrapperRef, titleRef, []);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
@@ -358,7 +362,7 @@ const CreditDatabase = () => {
         )}>
           <div className="container mx-auto px-4">
             {!isSearchActive && (
-              <div className="mb-5 max-w-xl mx-auto text-center">
+              <div className="mb-5 max-w-3xl mx-auto text-center flex flex-col items-center">
                 <p
                   className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-3 px-2.5 py-1 rounded-full border"
                   style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: "#FF2DA1" }}
@@ -366,11 +370,16 @@ const CreditDatabase = () => {
                   <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#FF2DA1" }} />
                   Creative Passport
                 </p>
-                <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-white leading-[0.95]">
-                  Verified Credits.<br />
-                  <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>The record no one can fake.</span>
-                </h1>
-                <p className="mt-3 text-sm sm:text-base text-white/60">
+                <div ref={titleWrapperRef} className="w-full">
+                  <h1
+                    ref={titleRef}
+                    className="font-black tracking-[-0.035em] text-white leading-[0.95]"
+                    style={{ fontSize: "3rem" }}
+                  >
+                    Verified Credits. <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>The record no one can fake.</span>
+                  </h1>
+                </div>
+                <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl mx-auto">
                   Search any project, person, or production across the global creative industry.
                 </p>
                 <div className="mt-2 flex justify-center">

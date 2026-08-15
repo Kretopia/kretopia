@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -11,6 +11,7 @@ import { APP_URL } from "@/lib/constants";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
 
 const ACCENT = "#FF2DA1";
 
@@ -27,6 +28,9 @@ const Spotlight = () => {
   const [activeTab, setActiveTab] = useState(tabParam || "magazine");
   const canonicalUrl = `${APP_URL}/spotlight`;
   const reducedMotion = useReducedMotion();
+  const titleWrapperRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useFitTitleOneLine(titleWrapperRef, titleRef, []);
 
   return (
     <PageTransition>
@@ -75,7 +79,7 @@ const Spotlight = () => {
             initial={reducedMotion ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="mb-8"
+            className="mb-8 flex flex-col items-center text-center"
           >
             <p
               className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-4 px-2.5 py-1 rounded-full border"
@@ -84,11 +88,16 @@ const Spotlight = () => {
               <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: ACCENT }} />
               The Spotlight
             </p>
-            <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-white leading-[0.95]">
-              Spotlight.<br />
-              <span className="pink-glow-breathe" style={{ color: ACCENT }}>Stories worth pressing play on.</span>
-            </h1>
-            <p className="mt-3 text-sm sm:text-base text-white/60 max-w-md">
+            <div ref={titleWrapperRef} className="w-full max-w-3xl">
+              <h1
+                ref={titleRef}
+                className="font-black tracking-[-0.035em] text-white leading-[0.95]"
+                style={{ fontSize: "3rem" }}
+              >
+                Spotlight. <span className="pink-glow-breathe" style={{ color: ACCENT }}>Stories worth pressing play on.</span>
+              </h1>
+            </div>
+            <p className="mt-3 text-sm sm:text-base text-white/60 max-w-md mx-auto">
               Articles and podcast episodes from the creative universe.
             </p>
             <FeatureAITutorial featureKey="spotlight" label="How Spotlight works" steps={SPOTLIGHT_TUTORIAL} />

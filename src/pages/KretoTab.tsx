@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   PenLine, IdCard, Compass, Send, ArrowRight, ArrowUpRight,
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import { KRETO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
+import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
 
 const QUICK_ACTIONS = [
   {
@@ -73,6 +74,9 @@ export default function KretoTab() {
   const [gig, setGig] = useState<RecentGig | null>(null);
   const [actions, setActions] = useState<RecentAction[]>([]);
   const [loadingContext, setLoadingContext] = useState(true);
+  const titleWrapperRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useFitTitleOneLine(titleWrapperRef, titleRef, []);
 
   useEffect(() => {
     openKreto();
@@ -113,16 +117,21 @@ export default function KretoTab() {
         {/* Identity + purpose — same eyebrow/title/subtitle/tutorial pattern as every
             other overhauled feature, kept in this page's own dark palette since it
             (like Auth/EditorialFooter) is deliberately dark regardless of theme. */}
-        <div>
+        <div className="flex flex-col items-center text-center">
           <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FF2DA1] mb-3 px-2.5 py-1 rounded-full border border-[#FF2DA1]/30 bg-[#FF2DA1]/[0.06]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#FF2DA1] animate-pulse" />
             AI Executive Producer
           </p>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-white leading-[0.95]">
-            {BRAND.agentName}.<br />
-            <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>Your creative career, run point.</span>
-          </h1>
-          <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl">
+          <div ref={titleWrapperRef} className="w-full max-w-3xl">
+            <h1
+              ref={titleRef}
+              className="font-black tracking-[-0.035em] text-white leading-[0.95]"
+              style={{ fontSize: "3rem" }}
+            >
+              {BRAND.agentName}. <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>Your creative career, run point.</span>
+            </h1>
+          </div>
+          <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl mx-auto">
             {BRAND.agentRole}. Finds opportunities, drafts pitches, keeps your Passport sharp,
             and closes the loop from search to paid credit — with your approval at every step.
           </p>

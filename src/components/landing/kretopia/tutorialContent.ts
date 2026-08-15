@@ -37,9 +37,10 @@ export const VERIFIED_CREDITS_TUTORIAL: TutorialStep[] = [
 ];
 
 export const SCOUT_TUTORIAL: TutorialStep[] = [
-  { icon: Radar, title: "Understand an opportunity", body: "Scout reads real gigs, briefs, and casting calls from across the web and surfaces the ones that fit." },
+  { icon: Radar, title: "Discover an opportunity", body: "Scout reads real gigs, briefs, and casting calls from across the web and surfaces the ones that fit." },
   { icon: Target, title: "See why it matched", body: "Each match shows the reasoning — the skills, credits, or history that made it relevant to you." },
-  { icon: Bookmark, title: "Save or apply", body: "Save it for later, or apply directly. Kreto can draft a pitch — you decide if it goes." },
+  { icon: Bookmark, title: "Save or dismiss", body: "Keep it for later, or clear it from your feed. Either way, Scout keeps refining what it shows you." },
+  { icon: Send, title: "Apply with your Passport", body: "Kreto can draft a pitch from your real Passport and history — you edit it and decide if it goes." },
   { icon: FolderKanban, title: "Move into a project", body: "Once you're in, the opportunity becomes a real Studio project you can manage end to end." },
 ];
 

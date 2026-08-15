@@ -97,3 +97,21 @@ This is a real, working, already-consolidated navigation system — not a stray 
 ## Plan for phases 1–9
 
 Proceeding phase-by-phase, committing after each, starting with Phase 1 (Passport — the lowest-risk, most explicitly-scoped work: header centering + Share CTA restyle, both pure presentation changes with an already-correct data/modal layer underneath).
+
+## Phase 5 finding: Scout's opportunity feed already implements the "one dominant match + carousel" pattern
+
+Read `ScoutedGigsSection.tsx` (652 lines) in full — the component this audit's Phase 0 pass didn't go deep enough into. Its default (no `limit` prop) render path, used by `Scout.tsx`'s "For You" tab, already implements almost exactly what the charter's Phase 5 asks for:
+
+- **One strongest opportunity first** (lines ~417-481): `gigs[0]` (list is queried `order("fit_score", { ascending: false })`, so index 0 is genuinely the best match, not an arbitrary pick) rendered as a distinct hero card — "Strongest match" badge, title, fit-score badge, company/location/remote line, a "Why this fits you" reasoning block driven by real `fit_reason` data, and three real actions (View full brief, Save, Dismiss).
+- **Secondary opportunities in a real carousel, not a grid** (lines ~484-499): `gigs.slice(1)` rendered in a `Carousel`/`CarouselContent`/`CarouselItem` with real `CarouselPrevious`/`CarouselNext` (glass variant) and `CarouselPositionDots` — the same established pattern used elsewhere (Today's "People for you", Landing's chapter carousels).
+- **Consistent shared chrome**: `Scout.tsx` already uses `FeaturePageHeader` with a real tutorial (`SCOUT_TUTORIAL`), matching Today/Studio/Passport.
+- A separate `limit`-prop render path (used for compact embeds, e.g. a "More from today" rail) intentionally skips the hero treatment — correct, since a compact embed shouldn't repeat a full hero card.
+
+**Two genuine, scoped gaps found and fixed** (not a rebuild):
+
+1. The strongest-match hero card didn't surface compensation/budget when available, despite the charter asking for "budget where available." Added a `compensation` segment to the card's company/location line — but discovered live that some rows store the literal string `"Not specified"` instead of `null`, which would have shown as noise. Added a `hasRealCompensation()` guard (regex-filters `"not specified"/"unspecified"/"n/a"/"tbd"/"none"/"unknown"/"-"`) used both on the new hero-card line and the existing detail-modal "Comp" row, so placeholder strings never render as if they were real data.
+2. `SCOUT_TUTORIAL` (`tutorialContent.ts`) had 4 steps that merged "save or dismiss" and "apply" into one step ("Save or apply") and never mentioned that applying is Passport-informed (the existing `draftLetter` flow already drafts a cover letter from the user's real Passport/history via the `draft-gig-application` edge function — this was true before this change, just not stated in the tutorial). Split into the charter's exact 5 steps: Discover an opportunity → See why it matched → Save or dismiss → Apply with your Passport → Move into a project. Live-verified via the "How Scout works" modal — all 5 steps render correctly with the updated copy.
+
+Explicitly **not** added: a "deadline" field. `expires_at` exists on `scouted_gigs` but is used purely as an internal listing-expiry TTL, not a sourced application deadline — surfacing it as "Deadline: [date]" would fabricate information the source posting never stated, which the charter explicitly prohibits ("never fabricate... deadline").
+
+**Decision: no `ScoutedGigsSection` rebuild, no new component.** Verified live at `/scout` (authenticated): hero card renders with a real gig ("Pitching Forum x MTN Presentation Open Call", 85% fit, real fit_reason, Bali/Indonesia location), secondary carousel present, tutorial shows all 5 updated steps, no console errors introduced (only the pre-existing baseline 401/404 noise from unrelated Supabase calls). `npx tsc --noEmit`, `eslint` on both changed files, `npm run build`, and `npm run test -- --run` (62/62) all pass.

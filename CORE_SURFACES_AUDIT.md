@@ -116,6 +116,17 @@ Explicitly **not** added: a "deadline" field. `expires_at` exists on `scouted_gi
 
 **Decision: no `ScoutedGigsSection` rebuild, no new component.** Verified live at `/scout` (authenticated): hero card renders with a real gig ("Pitching Forum x MTN Presentation Open Call", 85% fit, real fit_reason, Bali/Indonesia location), secondary carousel present, tutorial shows all 5 updated steps, no console errors introduced (only the pre-existing baseline 401/404 noise from unrelated Supabase calls). `npx tsc --noEmit`, `eslint` on both changed files, `npm run build`, and `npm run test -- --run` (62/62) all pass.
 
+## Phase 7 finding: responsive sweep passes at 375/768/1440px on all four surfaces — no code changes needed
+
+Live-tested Passport (`/profile`), Today (`/`), Studio (`/desk`), and Scout (`/scout`) at 375px (mobile), 768px (tablet), and 1440px (wide desktop), all authenticated. `document.documentElement.scrollWidth === clientWidth` (no horizontal overflow) confirmed at every breakpoint on every surface.
+
+- **Passport**: title ("Passport. Your work, verified.") wraps to a clean 2-line centered block at 375px and resolves to a single centered line by 768px — matches "centered, one-line-when-possible." The 3D Creative Passport card renders stably with no clipping at any width; at 1440px the layout stays centered/focused rather than stretching wide, consistent with "one dominant surface, not a sprawling grid."
+- **Today**: greeting headline, subtitle, tutorial trigger, and the Kreto prompt panel with its searchbar are all above the fold at 375px — no card overload before the first scroll. No overflow at any width.
+- **Studio**: `/desk` index (folders, "New project," studio rooms list) reflows cleanly at all three widths with no overflow. (The nested `/desk/:projectId` workspace's control-rail mobile behavior — `WorkspaceSidebar` collapsing to an overlay — was already live-verified in the Phase 4 finding above; not repeated here since that route isn't in the charter's Phase 0 test-route list.)
+- **Scout**: at 375px the strongest-match hero card stacks vertically (image above, title/reasoning/actions below) with View full brief/Save/Dismiss all reachable without horizontal scroll. At 768px+ it correctly switches to the side-by-side `sm:flex` layout. No overflow at any width.
+
+**Decision: no code changes required for Phase 7.** The responsive behavior across all four surfaces was already correct — a byproduct of the mobile-first Tailwind patterns and the earlier Phase 1 title-centering fix — so this phase closes as a verification-only pass.
+
 ## Phase 6 finding: shared tutorial/animation architecture already reused correctly; two narrow offscreen/reduced-motion gaps fixed
 
 Delegated a scoped read-only audit across the four core surfaces' full component trees (Today/`UnifiedHome.tsx`, Studio/`WorkHome.tsx`+`ThriveDesk.tsx`, Scout/`Scout.tsx`+`ScoutedGigsSection.tsx`, Passport/`Profile.tsx`+`PassportHero.tsx`+`HoloCard.tsx`) against the charter's Phase 6 rule (reuse `TutorialStepper`/`FeatureTutorialPanel` only, no separate per-route animation systems, purposeful motion only, stop offscreen, respect reduced-motion, static fallbacks).

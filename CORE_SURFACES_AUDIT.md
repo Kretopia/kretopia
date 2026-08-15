@@ -115,3 +115,19 @@ Read `ScoutedGigsSection.tsx` (652 lines) in full — the component this audit's
 Explicitly **not** added: a "deadline" field. `expires_at` exists on `scouted_gigs` but is used purely as an internal listing-expiry TTL, not a sourced application deadline — surfacing it as "Deadline: [date]" would fabricate information the source posting never stated, which the charter explicitly prohibits ("never fabricate... deadline").
 
 **Decision: no `ScoutedGigsSection` rebuild, no new component.** Verified live at `/scout` (authenticated): hero card renders with a real gig ("Pitching Forum x MTN Presentation Open Call", 85% fit, real fit_reason, Bali/Indonesia location), secondary carousel present, tutorial shows all 5 updated steps, no console errors introduced (only the pre-existing baseline 401/404 noise from unrelated Supabase calls). `npx tsc --noEmit`, `eslint` on both changed files, `npm run build`, and `npm run test -- --run` (62/62) all pass.
+
+## Phase 6 finding: shared tutorial/animation architecture already reused correctly; two narrow offscreen/reduced-motion gaps fixed
+
+Delegated a scoped read-only audit across the four core surfaces' full component trees (Today/`UnifiedHome.tsx`, Studio/`WorkHome.tsx`+`ThriveDesk.tsx`, Scout/`Scout.tsx`+`ScoutedGigsSection.tsx`, Passport/`Profile.tsx`+`PassportHero.tsx`+`HoloCard.tsx`) against the charter's Phase 6 rule (reuse `TutorialStepper`/`FeatureTutorialPanel` only, no separate per-route animation systems, purposeful motion only, stop offscreen, respect reduced-motion, static fallbacks).
+
+**Confirmed compliant, no changes needed:**
+- All four surfaces route through the same shared stack: `FeaturePageHeader` → `FeatureAITutorial` → `TutorialStepper`. No bespoke tutorial system found anywhere; a prior `OnboardingTour` was already removed in favor of this (`src/App.tsx`).
+- Nearly every `animate-*` usage found across the four trees is purposeful (loaders, skeletons, live/unread/availability status dots) rather than decorative, and a global `@media (prefers-reduced-motion: reduce)` rule in `src/index.css` already collapses native CSS animation durations app-wide as a baseline safety net.
+- No layout-shift risk found — all animations use `transform`/`opacity`/`filter`, not properties that trigger reflow.
+- `HoloCard.tsx`'s pointer-tracked 3D tilt already correctly disables itself under `prefers-reduced-motion` and on non-hover/touch devices.
+
+**Two genuine, narrow gaps found and fixed:**
+1. `HoloCard.tsx`'s two decorative infinite CSS animations (`ai-ambient-breathe` ambient glow, `ai-scan-line` scan sweep) had no offscreen-pause mechanism — they kept animating indefinitely even when the card scrolled out of view. Added an `IntersectionObserver` on the card's existing tilt-tracking ref and set `animationPlayState` to `paused`/`running` based on visibility. Live-verified at `/profile`: both elements report `animationPlayState: "running"` in view and `"paused"` after scrolling the card fully offscreen.
+2. `HeroPhoneCarousel.tsx` (the guest landing hero's rotating product-screen carousel) had a `setInterval` auto-rotate and Framer Motion screen-transition that never checked `useReducedMotion()` — a real violation of "respect reduced-motion settings," and Framer Motion's WAAPI-driven transitions aren't covered by the global CSS media-query safety net (that only catches native CSS `animation`/`transition`). Fixed by gating the interval (skips entirely when reduced motion is on, leaving the carousel on its first screen — the dot controls below still allow manual stepping) and setting the Framer Motion transition duration to 0 with no enter/exit offset when reduced motion is on, matching the pattern already used by every `Carousel` component in this codebase (`duration: reducedMotion ? 0 : 20`).
+
+`npx tsc --noEmit`, `eslint` on both changed files, `npm run build`, and `npm run test -- --run` (62/62) all pass.

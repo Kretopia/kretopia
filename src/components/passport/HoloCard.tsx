@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface HoloCardProps {
@@ -18,6 +18,20 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [glare, setGlare] = useState({ x: 50, y: 50, on: false });
+  const [inView, setInView] = useState(true);
+
+  // The ambient glow and scan-line are continuous decorative animations —
+  // stop them when the card scrolls offscreen so they don't run forever.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const interactive = useCallback(() => {
     if (typeof window === "undefined") return false;
@@ -61,6 +75,7 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
             background:
               "linear-gradient(135deg, hsl(var(--signal-teal)/0.35), transparent 45%, hsl(var(--signal-pink,320 100% 60%)/0.28))",
             transform: "translateZ(-40px)",
+            animationPlayState: inView ? "running" : "paused",
           }}
         />
 
@@ -70,7 +85,10 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px overflow-hidden z-10">
             <div
               className="ai-scan-line h-full w-1/3"
-              style={{ background: "linear-gradient(90deg, transparent, hsl(var(--signal-teal)/0.9), transparent)" }}
+              style={{
+                background: "linear-gradient(90deg, transparent, hsl(var(--signal-teal)/0.9), transparent)",
+                animationPlayState: inView ? "running" : "paused",
+              }}
             />
           </div>
           {children}

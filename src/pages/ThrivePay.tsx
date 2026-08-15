@@ -35,6 +35,7 @@ import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights"
 import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
 import { PaymentLinksSection } from "@/components/thrivepay/PaymentLinksSection";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import {
   DollarSign,
@@ -353,6 +354,8 @@ export default function ThrivePay() {
 
       <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         <PassportAnchorStrip className="mb-3" />
+
+        <KretoTip compact className="mb-5" />
 
         {/* Kretopia Wallet — frictionless payouts (Path 2) */}
         <div className="mb-6">

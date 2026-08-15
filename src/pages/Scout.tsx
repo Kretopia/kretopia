@@ -8,6 +8,7 @@ import { ShortlistedGigs } from "@/components/opportunity/ShortlistedGigs";
 import { Radar, Store, UserSearch, ArrowRight, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import { SCOUT_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 type Tab = "scouted" | "shortlist" | "marketplace";
@@ -110,6 +111,7 @@ const Scout = () => {
 
       {/* Body */}
       <div className="container mx-auto max-w-5xl px-4 py-6">
+        <KretoTip compact className="mb-5" />
         {contextQuery && (
           <div className="mb-4 rounded-xl border border-[hsl(var(--accent-scout))]/30 bg-[hsl(var(--accent-scout))]/5 p-3 text-xs flex items-start gap-2">
             <Radar className="h-3.5 w-3.5 mt-0.5 text-[hsl(var(--accent-scout))] shrink-0" />

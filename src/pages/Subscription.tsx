@@ -263,8 +263,7 @@ export default function Subscription() {
         eyebrow="Pricing"
         title={
           <>
-            Choose your plan.<br />
-            <span className="text-energy-glow">Start free, upgrade when ready.</span>
+            Choose your plan. <span className="text-energy-glow">Start free, upgrade when ready.</span>
           </>
         }
         subtitle={

@@ -293,8 +293,7 @@ export default function ThrivePay() {
         eyebrow="Your money, daily"
         title={
           <>
-            KrePay.<br />
-            <span className="text-energy-glow">Invoices, expenses, payouts — one place.</span>
+            KrePay. <span className="text-energy-glow">Invoices, expenses, payouts — one place.</span>
           </>
         }
         subtitle="Everything about getting paid for your creative work, without the spreadsheet."

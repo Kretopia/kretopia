@@ -30,8 +30,7 @@ export default function Match() {
         eyebrow="Collaborators"
         title={
           <>
-            Match.<br />
-            <span className="text-energy-glow">The right person for the work.</span>
+            Match. <span className="text-energy-glow">The right person for the work.</span>
           </>
         }
         subtitle="Swipe the deck or browse the grid — connect by skill, city, and the people you've already made things with."

@@ -493,8 +493,7 @@ const CreatorWorkHome = () => {
         eyebrow="Projects & Workspaces"
         title={
           <>
-            Studios.<br />
-            <span className="text-energy-glow">Your project rooms, run end to end.</span>
+            Studios. <span className="text-energy-glow">Your project rooms, run end to end.</span>
           </>
         }
         subtitle="Brief, collaborators, milestones, and payment — all inside the same room, from kickoff to delivery."

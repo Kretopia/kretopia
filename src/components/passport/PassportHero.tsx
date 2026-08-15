@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import {
-  Camera, MapPin, ShieldCheck, Share2, QrCode, FileDown, ArrowRight, Star, Gauge, Fingerprint,
+  Camera, PencilLine, MapPin, ShieldCheck, Share2, QrCode, FileDown, ArrowRight, Star, Gauge, Fingerprint,
 } from "lucide-react";
 import { HoloCard } from "./HoloCard";
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
@@ -126,10 +126,10 @@ export function PassportHero({
             variant="secondary"
             className="absolute top-2 right-2 h-7 text-xs gap-1 shadow-md opacity-90 hover:opacity-100"
             onClick={onEdit}
-            aria-label="Edit cover image"
+            aria-label="Edit Passport"
           >
-            <Camera className="h-3 w-3" />
-            {profile.cover_image_url ? "Change cover" : "Add cover"}
+            <PencilLine className="h-3 w-3" />
+            Edit Passport
           </Button>
           <div className="absolute top-2 left-2 px-2.5 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-full">
             Creative Passport

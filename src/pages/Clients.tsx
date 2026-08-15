@@ -27,8 +27,7 @@ const Clients = () => {
         eyebrow="Client hub"
         title={
           <>
-            Clients.<br />
-            <span className="text-energy-glow">One place for everyone you work with.</span>
+            Clients. <span className="text-energy-glow">One place for everyone you work with.</span>
           </>
         }
         subtitle="Group projects, contacts and threads under one client — no more digging for who's who."

@@ -48,8 +48,7 @@ const Scout = () => {
         eyebrow="Scout"
         title={
           <>
-            Scout.<br />
-            <span className="text-energy-glow">Gigs &amp; talent, scouted for you.</span>
+            Scout. <span className="text-energy-glow">Gigs &amp; talent, scouted for you.</span>
           </>
         }
         subtitle="One feed for the gigs and people that fit your work — scouted from across the web and curated by Kreto."

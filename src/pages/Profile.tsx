@@ -415,7 +415,6 @@ const ProfileContent = () => {
         }
         subtitle="Your identity, your strongest credits, and every co-sign — one card you actually control."
         tutorial={{ featureKey: "passport", label: "How Passport works", steps: PASSPORT_TUTORIAL }}
-        centered
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">

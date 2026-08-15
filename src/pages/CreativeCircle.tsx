@@ -90,8 +90,7 @@ const CreativeCircle = () => {
         eyebrow="Creative Circle"
         title={
           <>
-            Creative Circle.<br />
-            <span className="text-energy-glow">Grow your network, earn as it grows.</span>
+            Creative Circle. <span className="text-energy-glow">Grow your network, earn as it grows.</span>
           </>
         }
         subtitle="Invite creatives, climb tiers, and earn passive commission — all from one link."

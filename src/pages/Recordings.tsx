@@ -111,14 +111,13 @@ export default function Recordings() {
         eyebrow="Call recordings"
         title={
           <>
-            Recordings.<br />
-            <span className="text-energy-glow">Every call, ready to revisit.</span>
+            Recordings. <span className="text-energy-glow">Every call, ready to revisit.</span>
           </>
         }
         subtitle="Replays, transcripts, and Kreto-extracted action items from every recorded call."
         tutorial={{ featureKey: "recordings", label: "How Recordings works", steps: RECORDINGS_TUTORIAL }}
         meta={
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-center gap-2">
             <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-3 w-3" /> Back
             </Link>

@@ -112,7 +112,7 @@ export const UniversalClaimFlow = ({
       : "/circle?welcome=match");
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-md mx-auto px-4 py-6">
       <div className="mb-4 flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs">
         <span className="text-muted-foreground">Already have a profile?</span>
         <a

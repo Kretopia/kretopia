@@ -238,10 +238,10 @@ export const SignInForm = ({
       {/* OR divider */}
       <div className="relative py-1">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/10" />
+          <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-white/55">
+          <span className="bg-background px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             {oauthOnlyProvider ? "Continue with" : "Or continue with"}
           </span>
         </div>

@@ -24,12 +24,8 @@ import { deriveEvidenceState, EVIDENCE_STATE_ORDER } from "@/lib/creditEvidence"
 import { SmartWidget } from "@/components/ui/smart-widget";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
-import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
 import { CreditsBoard } from "@/components/kretopia/CreditsBoard";
-import { CreditsVisual } from "@/components/kretopia/pageVisuals";
-import { VERIFIED_CREDITS_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -360,9 +356,7 @@ const CreditDatabase = () => {
             title="Verified Credits."
             accentTitle="Proof you can't fake."
             subtitle="Search any project, person, or production across the global creative industry — and see exactly what backs every claim."
-          >
-            <FeatureAITutorial featureKey="verified-credits" label="How Verified Credits works" steps={VERIFIED_CREDITS_TUTORIAL} />
-          </EditorialPageHero>
+          />
         )}
 
         {/* Search Hero */}
@@ -422,17 +416,6 @@ const CreditDatabase = () => {
           </div>
         </div>
 
-        {!isSearchActive && (
-          <EditorialTutorialSection
-            eyebrow="How it works"
-            heading="A claim becomes"
-            accentWord="a stamp"
-            body="Add the work, ask the people who were there to co-sign it, and the credit turns into proof anyone can check. The walkthrough plays itself."
-            steps={VERIFIED_CREDITS_TUTORIAL}
-            label="Verified Credits"
-            visual={CreditsVisual}
-          />
-        )}
 
         <div className="container mx-auto px-4">
           {loading ? (

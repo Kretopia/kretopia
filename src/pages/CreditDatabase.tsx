@@ -309,6 +309,42 @@ const CreditDatabase = () => {
 
   const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0 || webResults.length > 0;
 
+  const searchControls = (
+    <>
+      <UnifiedSearchDropdown
+        variant={isSearchActive ? "inline" : "hero"}
+        value={search}
+        onValueChange={setSearch}
+        onQuerySubmit={handleSearchSubmit}
+        placeholder="Search projects, creators, labels, studios..."
+        className="max-w-xl mx-auto"
+      />
+
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
+        {CATEGORY_GROUPS.map(g => {
+          const Icon = g.icon;
+          const isActive = category === g.value;
+          return (
+            <button
+              key={g.value}
+              className={cn(
+                "flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shrink-0 transition-all border",
+                isActive
+                  ? "text-white border-[rgba(255,45,161,0.45)] bg-[rgba(255,45,161,0.14)]"
+                  : "text-white/60 border-white/10 bg-white/[0.02] hover:text-white/90 hover:border-white/20"
+              )}
+              onClick={() => setCategory(g.value)}
+            >
+              <Icon className="h-3 w-3" />
+              {g.label}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+
+
   return (
     <>
       <Helmet>

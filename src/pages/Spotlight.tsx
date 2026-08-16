@@ -13,8 +13,6 @@ import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
 import { SpotlightVisual } from "@/components/kretopia/pageVisuals";
 
-const ACCENT = "#FF2DA1";
-
 const SPOTLIGHT_TUTORIAL: TutorialStep[] = [
   { icon: BookOpen, title: "Read the Magazine", body: "Interviews, features, and creative stories from across the community." },
   { icon: Headphones, title: "Press play on the Podcast", body: "Episodes with working creatives, ready whenever you want to listen." },

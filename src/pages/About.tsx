@@ -13,20 +13,9 @@ import {
 import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { SmartWidget } from "@/components/ui/smart-widget";
-import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
-import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
-import { AboutVisual } from "@/components/kretopia/pageVisuals";
-import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const ACCENT = "#FF2DA1";
-
-const ABOUT_TUTORIAL: TutorialStep[] = [
-  { icon: Fingerprint, title: "Build your Passport", body: "Every project, every credit, collected into one link — your whole career, in one place." },
-  { icon: ShieldCheck, title: "Get verified, get trusted", body: "Credits become Verified when the people who were there co-sign them — not just claimed, proven." },
-  { icon: Compass, title: "Scout finds the opportunity", body: "Kreto reads the web for gigs and briefs, and surfaces the ones that actually fit your Passport." },
-  { icon: LayoutGrid, title: "Studio closes the loop", body: "Deliver the work, get paid, and the credit becomes part of a Passport that's stronger than before." },
-];
 
 const PILLARS = [
   {
@@ -201,18 +190,6 @@ const About = () => {
         title="Built for"
         accentTitle="creatives, everywhere."
         subtitle="What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network connecting creatives across music, film, fashion, art, content, and culture."
-      >
-        <FeatureAITutorial featureKey="about" label="How Kretopia works" steps={ABOUT_TUTORIAL} />
-      </EditorialPageHero>
-
-      <EditorialTutorialSection
-        eyebrow="How Kretopia works"
-        heading="One record, one"
-        accentWord="loop"
-        body="Passport, proof, opportunity, delivery — each step feeds the next. Watch the loop play out below."
-        steps={ABOUT_TUTORIAL}
-        label="Kretopia"
-        visual={AboutVisual}
       />
 
       {/* The Problem / The System / The Loop / The Invitation — product

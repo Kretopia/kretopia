@@ -74,55 +74,15 @@ const Spotlight = () => {
           title="Spotlight."
           accentTitle="Stories worth playing."
           subtitle="Interviews, features and podcast episodes from across the creative universe — the people behind the work, in their own words."
-        >
-          <FeatureAITutorial featureKey="spotlight" label="How Spotlight works" steps={SPOTLIGHT_TUTORIAL} />
-        </EditorialPageHero>
-
-        <EditorialTutorialSection
-          eyebrow="How Spotlight works"
-          heading="Read it, hear it,"
-          accentWord="follow what moves"
-          body="Every story and every episode comes from working creatives. The tutorial below plays itself — no clicks needed."
-          steps={SPOTLIGHT_TUTORIAL}
-          label="Spotlight"
-          visual={SpotlightVisual}
         />
 
         <div className="relative max-w-2xl mx-auto px-4 pt-10 sm:pt-14 pb-24">
-
-
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList
-              className="w-full mb-6 grid grid-cols-2 h-11 rounded-2xl p-1"
-              style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              <TabsTrigger
-                value="magazine"
-                className="gap-1.5 text-xs rounded-xl text-white/55 data-[state=active]:text-white data-[state=active]:shadow-none"
-                style={{ fontFamily: "'Work Sans', sans-serif" }}
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                Magazine
-              </TabsTrigger>
-              <TabsTrigger
-                value="podcast"
-                className="gap-1.5 text-xs rounded-xl text-white/55 data-[state=active]:text-white data-[state=active]:shadow-none"
-                style={{ fontFamily: "'Work Sans', sans-serif" }}
-              >
-                <Headphones className="h-3.5 w-3.5" />
-                Podcast
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="magazine" className="mt-0">
-              <MagazineWall />
-            </TabsContent>
-
-            <TabsContent value="podcast" className="mt-0">
-              <PodcastPlayer />
-            </TabsContent>
-          </Tabs>
+          <SpotlightBoard
+            value={activeTab}
+            onValueChange={setActiveTab}
+            magazine={<MagazineWall />}
+            podcast={<PodcastPlayer />}
+          />
         </div>
       </div>
     </PageTransition>

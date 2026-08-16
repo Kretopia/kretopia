@@ -1,6 +1,5 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { motion } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Headphones, TrendingUp } from "lucide-react";
@@ -8,10 +7,8 @@ import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { useLocation } from "react-router-dom";
 import { APP_URL } from "@/lib/constants";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
-import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
 import { SpotlightVisual } from "@/components/kretopia/pageVisuals";
@@ -30,10 +27,6 @@ const Spotlight = () => {
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "magazine");
   const canonicalUrl = `${APP_URL}/spotlight`;
-  const reducedMotion = useReducedMotion();
-  const titleWrapperRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  useFitTitleOneLine(titleWrapperRef, titleRef, []);
 
   return (
     <PageTransition>

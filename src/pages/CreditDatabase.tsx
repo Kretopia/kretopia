@@ -26,6 +26,20 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { CreditsBoard } from "@/components/kretopia/CreditsBoard";
+import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
+import { Reveal } from "@/components/kretopia/Reveal";
+import { Link } from "react-router-dom";
+import { ArrowUpRight, Fingerprint, Handshake, FileCheck2 } from "lucide-react";
+
+const ACCENT = "#FF2DA1";
+
+const PROOF_POINTS = [
+  { icon: FileCheck2, title: "Evidence first", body: "Links, files and receipts attached to the work — not a self-written bio." },
+  { icon: Handshake, title: "Co-signed by humans", body: "The people who were there confirm it in one tap. No paperwork." },
+  { icon: ShieldCheck, title: "Reviewed, then stamped", body: "Verified credits carry a stamp anyone can check, anywhere." },
+  { icon: Fingerprint, title: "Yours forever", body: "Your record travels with you across cities, clients and industries." },
+];
+
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -309,6 +323,42 @@ const CreditDatabase = () => {
 
   const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0 || webResults.length > 0;
 
+  const searchControls = (
+    <>
+      <UnifiedSearchDropdown
+        variant={isSearchActive ? "inline" : "hero"}
+        value={search}
+        onValueChange={setSearch}
+        onQuerySubmit={handleSearchSubmit}
+        placeholder="Search projects, creators, labels, studios..."
+        className="max-w-xl mx-auto"
+      />
+
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
+        {CATEGORY_GROUPS.map(g => {
+          const Icon = g.icon;
+          const isActive = category === g.value;
+          return (
+            <button
+              key={g.value}
+              className={cn(
+                "flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shrink-0 transition-all border",
+                isActive
+                  ? "text-white border-[rgba(255,45,161,0.45)] bg-[rgba(255,45,161,0.14)]"
+                  : "text-white/60 border-white/10 bg-white/[0.02] hover:text-white/90 hover:border-white/20"
+              )}
+              onClick={() => setCategory(g.value)}
+            >
+              <Icon className="h-3 w-3" />
+              {g.label}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+
+
   return (
     <>
       <Helmet>
@@ -359,47 +409,17 @@ const CreditDatabase = () => {
           />
         )}
 
-        {/* Search Hero */}
-        <div className={cn(
-          "transition-all duration-300",
-          isSearchActive
-            ? "border-b bg-background py-4"
-            : "bg-gradient-to-b from-primary/8 to-background py-8 md:py-12"
-        )}>
-          <div className="container mx-auto px-4">
-
-            <UnifiedSearchDropdown
-              variant={isSearchActive ? "inline" : "hero"}
-              value={search}
-              onValueChange={setSearch}
-              onQuerySubmit={handleSearchSubmit}
-              placeholder="Search projects, creators, labels, studios..."
-              className="max-w-xl mx-auto"
-            />
-
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
-              {CATEGORY_GROUPS.map(g => {
-                const Icon = g.icon;
-                const isActive = category === g.value;
-                return (
-                  <button
-                    key={g.value}
-                    className={cn(
-                      "flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shrink-0 transition-all",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted/60 text-muted-foreground hover:bg-muted"
-                    )}
-                    onClick={() => setCategory(g.value)}
-                  >
-                    <Icon className="h-3 w-3" />
-                    {g.label}
-                  </button>
-                );
-              })}
-            </div>
+        {/* I — The search */}
+        {isSearchActive ? (
+          <div className="py-4" style={{ backgroundColor: "#05070D" }}>
+            <div className="container mx-auto px-4">{searchControls}</div>
           </div>
-        </div>
+        ) : (
+          <EditorialChapter index="I" kicker="The search" title="Start with a name." accentWord="Any name.">
+            <Reveal>{searchControls}</Reveal>
+          </EditorialChapter>
+        )}
+
 
 
         <div className="container mx-auto px-4">
@@ -539,8 +559,10 @@ const CreditDatabase = () => {
               </div>
             )
           ) : (
-            /* Browse mode — one dashboard board instead of three card rails */
-            <div className="py-5">
+            /* Browse mode — one dashboard board inside an editorial chapter */
+            <EditorialChapter index="II" kicker="The record" title="Everything already" accentWord="on file.">
+              <Reveal>
+
               <CreditsBoard
                 loading={initialLoading}
                 rows={[
@@ -571,12 +593,70 @@ const CreditDatabase = () => {
                   })),
                 ]}
               />
-            </div>
+              </Reveal>
+            </EditorialChapter>
           )}
 
         </div>
+
+        {!isSearchActive && (
+          <>
+            {/* III — Why verified */}
+            <EditorialChapter index="III" kicker="Why it counts" title="Anyone can claim it." accentWord="You can prove it.">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {PROOF_POINTS.map((p, i) => (
+                  <Reveal key={p.title} delayIndex={i}>
+                    <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+                      <span
+                        className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                      >
+                        <p.icon className="h-4 w-4" style={{ color: ACCENT }} />
+                      </span>
+                      <p className="text-white font-semibold text-sm mb-1.5">{p.title}</p>
+                      <p className="text-sm leading-relaxed text-white/55">{p.body}</p>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+              <Reveal delayIndex={2}>
+                <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+                  "A credit is only worth what backs it. Here, every line has someone or something standing behind it."
+                </p>
+              </Reveal>
+            </EditorialChapter>
+
+            {/* IV — Invitation */}
+            <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 ai-ambient-breathe"
+                style={{ background: "radial-gradient(60% 60% at 50% 100%, rgba(255,45,161,0.16), transparent 65%)" }}
+              />
+              <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 py-24 text-center">
+                <Reveal>
+                  <h2 className="landing-h1 landing-glow mx-auto max-w-3xl">
+                    Search your name.<br />
+                    <span className="landing-accent">Claim what's already yours.</span>
+                  </h2>
+                  <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+                    <Link to="/credits/mine" className="cta-primary inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
+                      Add a credit
+                      <ArrowUpRight className="h-4 w-4" aria-hidden />
+                    </Link>
+                    <Link to="/auth" className="group inline-flex items-center gap-2 text-sm text-white/85">
+                      <span className="border-b border-white/30 pb-0.5 transition-colors group-hover:border-white">Join Kretopia</span>
+                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ color: ACCENT }} />
+                    </Link>
+                  </div>
+                </Reveal>
+              </div>
+            </section>
+          </>
+        )}
         </>
       </div>
+
 
       {/* Claim Dialog */}
       <Dialog open={!!claimDialog} onOpenChange={() => setClaimDialog(null)}>

@@ -59,7 +59,7 @@ export const EditorialPageHero = ({
         initial={reducedMotion ? false : { opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.85, ease: [0.2, 0.65, 0.3, 0.95] }}
-        className={`relative mx-auto max-w-[1100px] px-5 sm:px-8 py-16 sm:py-24 ${centered ? "text-center flex flex-col items-center" : ""}`}
+        className={`relative mx-auto max-w-[1100px] px-5 sm:px-8 py-10 sm:py-16 ${centered ? "text-center flex flex-col items-center" : ""}`}
       >
         <p
           className="inline-flex items-center gap-2 rounded-full border px-3 py-1 mb-6"

@@ -307,7 +307,11 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("[transcribe-call] error", e);
+    console.error(
+      "[transcribe-call] error",
+      e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e),
+    );
+
     if (transcriptId) {
       await admin
         .from("call_transcripts")

@@ -27,14 +27,14 @@ export const EditorialChapter = ({ index, kicker, title, accentWord, children }:
         className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.13]"
         style={{ backgroundImage: GRAIN }}
       />
-      <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 py-20 sm:py-28">
+      <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 py-14 sm:py-20">
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.9, ease: [0.2, 0.65, 0.3, 0.95] }}
         >
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <span className="font-serif italic text-2xl pink-glow-breathe" style={{ color: ACCENT }}>{index}.</span>
             <span className="landing-eyebrow text-white/55">{kicker}</span>
           </div>
@@ -46,7 +46,7 @@ export const EditorialChapter = ({ index, kicker, title, accentWord, children }:
             <span className="landing-accent">{accentWord}</span>
           </h2>
         </motion.div>
-        <div className="mt-10">{children}</div>
+        <div className="mt-6">{children}</div>
       </div>
     </section>
   );

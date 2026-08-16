@@ -574,32 +574,6 @@ const PostOpportunity = () => {
         </Reveal>
       </EditorialChapter>
 
-      {/* III — Invitation */}
-      <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 ai-ambient-breathe"
-          style={{ background: "radial-gradient(60% 60% at 50% 100%, rgba(255,45,161,0.16), transparent 65%)" }}
-        />
-        <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 py-24 text-center">
-          <Reveal>
-            <h2 className="landing-h1 landing-glow mx-auto max-w-3xl">
-              The right creative exists.<br />
-              <span className="landing-accent">Go and find them.</span>
-            </h2>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-              <Link to="/credits" className="cta-primary inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
-                Search the Creative Record
-                <ArrowUpRight className="h-4 w-4" aria-hidden />
-              </Link>
-              <Link to="/opportunities" className="group inline-flex items-center gap-2 text-sm text-white/85">
-                <span className="border-b border-white/30 pb-0.5 transition-colors group-hover:border-white">Browse live opportunities</span>
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ color: ACCENT }} />
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
       <ImageCropDialog
         imageUrl={rawImageUrl}

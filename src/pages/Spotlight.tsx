@@ -12,6 +12,9 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
+import { SpotlightVisual } from "@/components/kretopia/pageVisuals";
 
 const ACCENT = "#FF2DA1";
 

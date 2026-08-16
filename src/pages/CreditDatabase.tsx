@@ -569,106 +569,41 @@ const CreditDatabase = () => {
               </div>
             )
           ) : (
-            /* Browse mode */
-            <div className="py-5 space-y-8">
-              {/* Visual credits with art — hero spotlight */}
-              {recentCredits.length > 0 && (() => {
-                const withArt = recentCredits.filter(c => resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
-                const withoutArt = recentCredits.filter(c => !resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
-                return (
-                  <>
-                    {withArt.length > 0 && (
-                      <section>
-                        <div className="flex items-center gap-2 mb-3">
-                          <Star className="h-4 w-4 text-primary" />
-                          <h2 className="text-sm font-semibold">Featured Work</h2>
-                          <span className="text-[11px] text-muted-foreground">Visual credits</span>
-                        </div>
-                        <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Featured work">
-                          <CarouselContent className="-ml-3">
-                            {withArt.slice(0, 20).map(credit => (
-                              <CarouselItem key={credit.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
-                                <CreditPosterCard
-                                  credit={credit}
-                                  onClick={() => navigate(`/profile/${credit.user_id}`)}
-                                  formatType={formatType}
-                                  getCategoryForType={getCategoryForType}
-                                />
-                              </CarouselItem>
-                            ))}
-                          </CarouselContent>
-                          <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous featured work" />
-                          <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next featured work" />
-                        </Carousel>
-                      </section>
-                    )}
-
-                    {withoutArt.length > 0 && (
-                      <section>
-                        <div className="flex items-center gap-2 mb-3">
-                          <List className="h-4 w-4 text-muted-foreground" />
-                          <h2 className="text-xs font-medium text-muted-foreground">Other Credits ({withoutArt.length})</h2>
-                        </div>
-                        <div className="space-y-0.5 max-h-[200px] overflow-y-auto rounded-lg border border-border/40 bg-muted/20 p-1">
-                          {withoutArt.slice(0, 10).map(credit => (
-                            <CompactCreditRow
-                              key={credit.id}
-                              credit={credit}
-                              onClick={() => navigate(`/profile/${credit.user_id}`)}
-                              formatType={formatType}
-                              getCategoryForType={getCategoryForType}
-                            />
-                          ))}
-                        </div>
-                      </section>
-                    )}
-                  </>
-                );
-              })()}
-
-              {/* Recently added projects */}
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  <h2 className="text-sm font-semibold">Recently Added</h2>
-                </div>
-                {initialLoading ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  </div>
-                ) : trendingProjects.length > 0 ? (
-                  <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Recently added projects">
-                    <CarouselContent className="-ml-3">
-                      {trendingProjects.map(project => (
-                        <CarouselItem key={project.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
-                          <PosterCard
-                            title={project.title}
-                            type={project.type}
-                            year={project.year}
-                            imageUrl={project.cover_image_url}
-                            isVerified={project.is_verified}
-                            roleCount={project.icdb_project_roles?.length || 0}
-                            claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
-                            clientBrand={project.client_brand}
-                            onClick={() => navigate(`/credits/project/${project.id}`)}
-                            formatType={formatType}
-                            getCategoryForType={getCategoryForType}
-                          />
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous recently added projects" />
-                    <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next recently added projects" />
-                  </Carousel>
-                ) : (
-                  <div className="text-center py-12">
-                    <Database className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">Start searching to discover creative projects</p>
-                  </div>
-                )}
-              </section>
+            /* Browse mode — one dashboard board instead of three card rails */
+            <div className="py-5">
+              <CreditsBoard
+                loading={initialLoading}
+                rows={[
+                  ...recentCredits.map((credit) => {
+                    const img = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
+                    return {
+                      id: credit.id,
+                      group: (img ? "featured" : "other") as "featured" | "other",
+                      title: credit.project_name,
+                      subtitle: credit.role,
+                      typeLabel: formatType(credit.credit_category || ""),
+                      year: credit.year,
+                      imageUrl: img,
+                      verified: credit.verification_status === "verified",
+                      onClick: () => navigate(`/profile/${credit.user_id}`),
+                    };
+                  }),
+                  ...trendingProjects.map((project) => ({
+                    id: project.id,
+                    group: "recent" as const,
+                    title: project.title,
+                    subtitle: project.client_brand,
+                    typeLabel: formatType(project.type),
+                    year: project.year,
+                    imageUrl: project.cover_image_url,
+                    verified: project.is_verified,
+                    onClick: () => navigate(`/credits/project/${project.id}`),
+                  })),
+                ]}
+              />
             </div>
           )}
+
         </div>
         </>
       </div>

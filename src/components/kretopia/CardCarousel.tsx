@@ -10,6 +10,7 @@ import {
 import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
+import { Reveal } from "./Reveal";
 
 interface CardCarouselProps {
   /** Each child becomes one slide. */
@@ -56,7 +57,7 @@ export function CardCarousel({ children, label, itemClassName, className }: Card
         <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label={`Next — ${label}`} />
       </Carousel>
       <CarouselPositionDots api={api} label={label} className="mt-3" />
-    </div>
+    </Reveal>
   );
 }
 

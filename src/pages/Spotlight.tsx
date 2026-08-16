@@ -1,29 +1,19 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { PageTransition } from "@/components/PageTransition";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Headphones, TrendingUp } from "lucide-react";
 import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { useLocation } from "react-router-dom";
 import { APP_URL } from "@/lib/constants";
-import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
-import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
-import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
-import { SpotlightVisual } from "@/components/kretopia/pageVisuals";
-
-const SPOTLIGHT_TUTORIAL: TutorialStep[] = [
-  { icon: BookOpen, title: "Read the Magazine", body: "Interviews, features, and creative stories from across the community." },
-  { icon: Headphones, title: "Press play on the Podcast", body: "Episodes with working creatives, ready whenever you want to listen." },
-  { icon: TrendingUp, title: "Sort by what matters", body: "Switch between Latest, Most Read, and Trending to find what's worth your time." },
-];
+import { SpotlightBoard, type SpotlightTab } from "@/components/kretopia/SpotlightBoard";
 
 const Spotlight = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const tabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(tabParam || "magazine");
+  const [activeTab, setActiveTab] = useState<SpotlightTab>(tabParam === "podcast" ? "podcast" : "magazine");
   const canonicalUrl = `${APP_URL}/spotlight`;
 
   return (

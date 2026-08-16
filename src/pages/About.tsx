@@ -197,8 +197,9 @@ const About = () => {
 
       <EditorialPageHero
         kicker="About Kretopia"
-        title={<>A global community built for</>}
-        accentTitle="creatives"
+        oneLine
+        title="Built for"
+        accentTitle="creatives, everywhere."
         subtitle="What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network connecting creatives across music, film, fashion, art, content, and culture."
       >
         <FeatureAITutorial featureKey="about" label="How Kretopia works" steps={ABOUT_TUTORIAL} />

@@ -356,8 +356,9 @@ const CreditDatabase = () => {
         {!isSearchActive && (
           <EditorialPageHero
             kicker="Verified Credits"
+            oneLine
             title="Verified Credits."
-            accentTitle="The record no one can fake."
+            accentTitle="Proof you can't fake."
             subtitle="Search any project, person, or production across the global creative industry — and see exactly what backs every claim."
           >
             <FeatureAITutorial featureKey="verified-credits" label="How Verified Credits works" steps={VERIFIED_CREDITS_TUTORIAL} />

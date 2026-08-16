@@ -7,23 +7,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Lock } from "lucide-react";
+import { Lock, User, Briefcase } from "lucide-react";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 
 // Refactored sub-components
-import { AuthBrandingPanel } from "@/components/auth/AuthBrandingPanel";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpWizard } from "@/components/auth/SignUpWizard";
 import { UniversalClaimFlow } from "@/components/onboarding/claim-flow/UniversalClaimFlow";
 import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
-import { BrandLogo } from "@/components/BrandLogo";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
-import { FunnelStepper } from "@/components/onboarding/FunnelStepper";
 import { computePostAuthRedirect } from "@/lib/eventAuthRedirect";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { Reveal } from "@/components/kretopia/Reveal";
 
 const Auth = () => {
   const reducedMotion = useReducedMotion();
@@ -420,207 +420,211 @@ const Auth = () => {
   };
 
   return (
-    <div className="dark flex min-h-screen" style={{ backgroundColor: "#05070D" }}>
-      <AuthBrandingPanel />
+    <div className="dark flex h-screen flex-col overflow-hidden" style={{ backgroundColor: "#05070D" }}>
+      <div className="shrink-0">
+        <EditorialPageHero
+          kicker="Access"
+          title="Enter the ecosystem."
+          accentTitle="Get to work."
+          subtitle="Sign in or claim your Creative Passport in seconds."
+          align="center"
+          oneLine
+        />
+      </div>
 
-      <div className="relative flex w-full lg:w-1/2 items-center justify-center px-4 sm:px-6 py-8 sm:py-12 overflow-hidden">
-        {/* Ambient AI-glow behind the form — same language as the landing hero */}
+      <main className="relative flex flex-1 min-h-0 flex-col items-center overflow-y-auto px-4 sm:px-6 pb-8">
+        {/* Ambient AI-glow behind the form */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 ai-ambient-breathe"
-          style={{ background: "radial-gradient(55% 45% at 50% 20%, rgba(255,45,161,0.08), transparent 65%)" }}
+          className="pointer-events-none absolute left-1/2 top-2 h-64 w-[560px] -translate-x-1/2 rounded-full opacity-60 blur-[100px] ai-ambient-breathe"
+          style={{ background: "radial-gradient(circle, rgba(255,45,161,0.22), transparent 65%)" }}
         />
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] }}
-          className="relative w-full max-w-md"
-        >
-          <div className="mb-6 sm:mb-8 text-center">
-            <div className="lg:hidden mb-4">
-              <BrandLogo size="lg" showBeta />
-            </div>
-            <h1 className="landing-h2 landing-glow">
-              {isPasswordReset ? "Reset Your Password" : (
-                <>Welcome to <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>Kretopia</span></>
-              )}
-            </h1>
-            <p className="landing-sub mt-3">
-              {isPasswordReset ? "Enter your new password below" : "Where creators find work — and get paid"}
-            </p>
-          </div>
 
-          {!isPasswordReset && (
-            <div className="mb-6">
-              <FunnelStepper current="signup" />
-            </div>
-          )}
-
-          {isPasswordReset ? (
-            <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />
-          ) : pendingVerificationEmail ? (
-            <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-4">
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Lock className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="font-semibold text-lg">Confirm your email to continue</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  We sent a verification link to <span className="font-medium text-foreground">{pendingVerificationEmail}</span>.
-                  Click it to finish signing up and start onboarding.
+        <Reveal className="relative w-full max-w-xl pt-2">
+          <div className="rounded-2xl border border-white/10 bg-card p-5 sm:p-7 shadow-card">
+            {/* Kreto whisper — AI-powered entry cue */}
+            <div className="mb-6 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3.5 ai-ambient-breathe">
+              <KretoAvatar size="sm" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF2DA1] mb-0.5">Kreto</p>
+                <p className="text-sm text-white/90 leading-snug">
+                  "I'll line up your first three opportunities the moment you're in."
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await supabase.auth.resend({ type: "signup", email: pendingVerificationEmail });
-                    toast({ title: "Verification email resent" });
-                  } catch (err: any) {
-                    toast({ title: "Could not resend", description: err?.message || "Try again in a moment.", variant: "destructive" });
-                  }
-                }}
-                className="text-sm text-primary font-semibold hover:underline"
-              >
-                Resend verification email
-              </button>
-              <div>
+            </div>
+
+            {isPasswordReset ? (
+              <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />
+            ) : pendingVerificationEmail ? (
+              <div className="rounded-2xl border border-white/10 bg-secondary/40 p-6 text-center space-y-4">
+                <div className="mx-auto w-12 h-12 rounded-full bg-[#FF2DA1]/10 flex items-center justify-center">
+                  <Lock className="h-6 w-6 text-[#FF2DA1]" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-lg">Confirm your email to continue</h2>
+                  <p className="text-sm text-white/60 mt-1">
+                    We sent a verification link to <span className="font-medium text-white">{pendingVerificationEmail}</span>.
+                    Click it to finish signing up and start onboarding.
+                  </p>
+                </div>
                 <button
                   type="button"
-                  onClick={() => { setPendingVerificationEmail(null); setActiveTab("signin"); }}
-                  className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                  onClick={async () => {
+                    try {
+                      await supabase.auth.resend({ type: "signup", email: pendingVerificationEmail });
+                      toast({ title: "Verification email resent" });
+                    } catch (err: any) {
+                      toast({ title: "Could not resend", description: err?.message || "Try again in a moment.", variant: "destructive" });
+                    }
+                  }}
+                  className="text-sm text-[#FF2DA1] font-semibold hover:underline"
                 >
-                  Use a different email
+                  Resend verification email
                 </button>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => { setPendingVerificationEmail(null); setActiveTab("signin"); }}
+                    className="text-xs text-white/55 hover:text-white underline-offset-4 hover:underline"
+                  >
+                    Use a different email
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <Tabs value={activeTab} onValueChange={async (tab) => {
-              setActiveTab(tab);
-              const { trackEvent, EventCategory } = await import("@/lib/analytics");
-              trackEvent({ eventName: 'auth_tab_switch', eventCategory: EventCategory.AUTH, properties: { tab, time_on_page_ms: Date.now() - authLoadTime } });
-            }} className="w-full">
-              <TabsList className="mb-6 grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
+            ) : (
+              <Tabs value={activeTab} onValueChange={async (tab) => {
+                setActiveTab(tab);
+                const { trackEvent, EventCategory } = await import("@/lib/analytics");
+                trackEvent({ eventName: 'auth_tab_switch', eventCategory: EventCategory.AUTH, properties: { tab, time_on_page_ms: Date.now() - authLoadTime } });
+              }} className="w-full">
+                <TabsList className="mb-6 grid h-12 w-full grid-cols-2 rounded-xl border border-white/10 bg-secondary/50 p-1">
+                  <TabsTrigger value="signin" className="rounded-lg text-sm font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                    Sign In
+                  </TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-lg text-sm font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                    Sign Up
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="signin">
-                <SignInForm
-                  email={email} setEmail={setEmail}
-                  password={password} setPassword={setPassword}
-                  loading={loading} onSubmit={handleSignIn}
-                  onForgotPassword={() => setShowForgotPassword(true)}
-                  onGoogleSignIn={() => handleOAuthSignIn("google")}
-                  onAppleSignIn={() => handleOAuthSignIn("apple")}
-                  googleLoading={googleLoading} appleLoading={appleLoading}
-                />
-              </TabsContent>
+                <TabsContent value="signin">
+                  <SignInForm
+                    email={email} setEmail={setEmail}
+                    password={password} setPassword={setPassword}
+                    loading={loading} onSubmit={handleSignIn}
+                    onForgotPassword={() => setShowForgotPassword(true)}
+                    onGoogleSignIn={() => handleOAuthSignIn("google")}
+                    onAppleSignIn={() => handleOAuthSignIn("apple")}
+                    googleLoading={googleLoading} appleLoading={appleLoading}
+                  />
+                </TabsContent>
 
-              <TabsContent value="signup">
-                {signupMode === "claim" ? (
-                  <>
-                    {/* Creator vs Brand toggle */}
-                    <div className="mb-4 grid grid-cols-2 gap-2 p-1 rounded-lg bg-muted/50 border border-border/60">
-                      <button
-                        type="button"
-                        onClick={() => setAccountType("individual")}
-                        className={`h-9 rounded-md text-xs font-semibold transition-all ${
-                          accountType === "individual"
-                            ? "bg-background shadow-sm text-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        🎨 I'm a Creator
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAccountType("company");
-                          setSignupMode("classic");
-                        }}
-                        className={`h-9 rounded-md text-xs font-semibold transition-all ${
-                          accountType === "company"
-                            ? "bg-background shadow-sm text-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        🏢 I'm a Brand
-                      </button>
-                    </div>
+                <TabsContent value="signup">
+                  {signupMode === "claim" ? (
+                    <>
+                      {/* Creator vs Brand toggle */}
+                      <div className="mb-4 grid grid-cols-2 gap-2 p-1 rounded-xl border border-white/10 bg-secondary/50">
+                        <button
+                          type="button"
+                          onClick={() => setAccountType("individual")}
+                          className={`flex flex-col items-center gap-1 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+                            accountType === "individual"
+                              ? "bg-card shadow-sm text-foreground"
+                              : "text-white/55 hover:text-white"
+                          }`}
+                        >
+                          <User className="h-4 w-4" />
+                          I'm a Creator
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAccountType("company");
+                            setSignupMode("classic");
+                          }}
+                          className={`flex flex-col items-center gap-1 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+                            accountType === "company"
+                              ? "bg-card shadow-sm text-foreground"
+                              : "text-white/55 hover:text-white"
+                          }`}
+                        >
+                          <Briefcase className="h-4 w-4" />
+                          I'm a Brand
+                        </button>
+                      </div>
 
-                    <UniversalClaimFlow
-                      source={eventId ? "event" : "auth"}
-                      contextId={eventId || undefined}
-                      redirectAfter={eventId ? `/event/${eventId}` : undefined}
-                      initialQuery={searchParams.get("q") || undefined}
-                    />
-                    <div className="my-5 flex items-center gap-2">
-                      <div className="flex-1 h-px bg-border" />
-                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
-                        Or sign up in one tap
-                      </span>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
-                    <OAuthQuickButtons
-                      onGoogle={() => handleOAuthSignIn("google")}
-                      onApple={() => handleOAuthSignIn("apple")}
-                      googleLoading={googleLoading}
-                      appleLoading={appleLoading}
-                      label=""
-                    />
-                    <div className="mt-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => setSignupMode("classic")}
-                        className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-                      >
-                        Use email & password instead
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <SignUpWizard
-                      email={email} setEmail={setEmail}
-                      password={password} setPassword={setPassword}
-                      confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
-                      accountType={accountType} setAccountType={setAccountType}
-                      loading={loading} onSubmit={handleSignUp}
-                      onGoogleSignIn={() => handleOAuthSignIn("google")}
-                      onAppleSignIn={() => handleOAuthSignIn("apple")}
-                      googleLoading={googleLoading} appleLoading={appleLoading}
-                    />
-                    <div className="mt-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => setSignupMode("claim")}
-                        className="text-xs text-primary hover:underline font-semibold"
-                      >
-                        ← Back to one-tap claim
-                      </button>
-                    </div>
-                  </>
-                )}
-              </TabsContent>
-            </Tabs>
-          )}
+                      <UniversalClaimFlow
+                        source={eventId ? "event" : "auth"}
+                        contextId={eventId || undefined}
+                        redirectAfter={eventId ? `/event/${eventId}` : undefined}
+                        initialQuery={searchParams.get("q") || undefined}
+                      />
+                      <div className="my-5 flex items-center gap-2">
+                        <div className="flex-1 h-px bg-white/10" />
+                        <span className="text-[10px] uppercase tracking-widest text-white/50 font-semibold">
+                          Or sign up in one tap
+                        </span>
+                        <div className="flex-1 h-px bg-white/10" />
+                      </div>
+                      <OAuthQuickButtons
+                        onGoogle={() => handleOAuthSignIn("google")}
+                        onApple={() => handleOAuthSignIn("apple")}
+                        googleLoading={googleLoading}
+                        appleLoading={appleLoading}
+                        label=""
+                      />
+                      <div className="mt-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => setSignupMode("classic")}
+                          className="text-xs text-white/55 hover:text-white underline-offset-4 hover:underline"
+                        >
+                          Use email & password instead
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <SignUpWizard
+                        email={email} setEmail={setEmail}
+                        password={password} setPassword={setPassword}
+                        confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
+                        accountType={accountType} setAccountType={setAccountType}
+                        loading={loading} onSubmit={handleSignUp}
+                        onGoogleSignIn={() => handleOAuthSignIn("google")}
+                        onAppleSignIn={() => handleOAuthSignIn("apple")}
+                        googleLoading={googleLoading} appleLoading={appleLoading}
+                      />
+                      <div className="mt-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => setSignupMode("claim")}
+                          className="text-xs text-[#FF2DA1] hover:underline font-semibold"
+                        >
+                          ← Back to one-tap claim
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
 
-          <ForgotPasswordDialog open={showForgotPassword} onOpenChange={setShowForgotPassword} />
+            <ForgotPasswordDialog open={showForgotPassword} onOpenChange={setShowForgotPassword} />
 
-          <Dialog open={showWaitlistForm} onOpenChange={setShowWaitlistForm}>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Lock className="h-5 w-5 text-primary" /> Request Access
-                </DialogTitle>
-                <DialogDescription>No invite code? Apply to join and we'll verify your profile.</DialogDescription>
-              </DialogHeader>
-              <WaitlistForm />
-            </DialogContent>
-          </Dialog>
-        </motion.div>
-      </div>
+            <Dialog open={showWaitlistForm} onOpenChange={setShowWaitlistForm}>
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-[#FF2DA1]" /> Request Access
+                  </DialogTitle>
+                  <DialogDescription>No invite code? Apply to join and we'll verify your profile.</DialogDescription>
+                </DialogHeader>
+                <WaitlistForm />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </Reveal>
+      </main>
     </div>
   );
 };

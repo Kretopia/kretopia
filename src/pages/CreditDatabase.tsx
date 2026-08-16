@@ -29,7 +29,7 @@ import { CreditsBoard } from "@/components/kretopia/CreditsBoard";
 import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
 import { Reveal } from "@/components/kretopia/Reveal";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Fingerprint, Handshake, FileCheck2 } from "lucide-react";
+import { Fingerprint, Handshake, FileCheck2 } from "lucide-react";
 
 const ACCENT = "#FF2DA1";
 

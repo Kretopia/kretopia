@@ -6,7 +6,7 @@
  */
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ChevronRight, Fingerprint, ShieldCheck, Compass, LayoutGrid, Sparkles, Globe } from "lucide-react";
+import { ChevronRight, Fingerprint, ShieldCheck, Compass, LayoutGrid, Sparkles, Globe } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { Reveal } from "@/components/kretopia/Reveal";

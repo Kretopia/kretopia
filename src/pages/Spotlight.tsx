@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowUpRight, Mic, BookOpen, Quote, Radio } from "lucide-react";
+import { Mic, BookOpen, Quote, Radio } from "lucide-react";
 import { PageTransition } from "@/components/PageTransition";
 import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";

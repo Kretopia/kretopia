@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, Crop, ArrowUpRight, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
+import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, Crop, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { ImageCropDialog } from "@/components/ImageCropDialog";

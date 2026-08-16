@@ -1,13 +1,16 @@
-import { useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import { FeatureAITutorial } from "./FeatureAITutorial";
-import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface FeaturePageHeaderProps {
   /** e.g. "Live gigs" — short, uppercase, pill-badged */
   eyebrow: string;
-  /** e.g. <>Gigs. <span className="landing-accent">Find your next one.</span></> — no <br/>, the title auto-shrinks to stay on one line. */
+  /** White first line — keep it short (2-4 words). */
   title: ReactNode;
+  /** Magenta second line, rendered exactly like the landing hero's accent. */
+  accentTitle?: ReactNode;
   subtitle: string;
   /** Optional segmented tab toggle, rendered below the title block. */
   tabs?: ReactNode;
@@ -16,15 +19,12 @@ interface FeaturePageHeaderProps {
 }
 
 /**
- * Shared cinematic page header. Every feature page's title is centered and
- * auto-sized to stay on one line, matching Passport's treatment — the exact
- * font-size is computed per-title via useFitTitleOneLine rather than a fixed
- * breakpoint jump, since title length varies a lot page to page.
+ * Shared cinematic page header. Same plate, scale and reveal motion as the
+ * landing hero: one white line, one magenta line — never more than two.
  */
-export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: FeaturePageHeaderProps) {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  useFitTitleOneLine(wrapperRef, titleRef, [title]);
+export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs, tutorial }: FeaturePageHeaderProps) {
+  const reducedMotion = useReducedMotion();
+
 
   return (
     <div

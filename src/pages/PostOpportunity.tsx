@@ -8,14 +8,28 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, ImageIcon, Crop } from "lucide-react";
+import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, Crop, ArrowUpRight, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { CastingFieldsForm, type CastingFields } from "@/components/opportunity/CastingFieldsForm";
-import { SmartWidget } from "@/components/ui/smart-widget";
+import { PageTransition } from "@/components/PageTransition";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
+import { Reveal } from "@/components/kretopia/Reveal";
+
+const ACCENT = "#FF2DA1";
+
+const NOTES = [
+  { icon: ShieldCheck, title: "Verified credits", body: "Every creative is backed by co-signed work — you see proof, not promises." },
+  { icon: Sparkles, title: "Written for you", body: "Kreto drafts the brief from a sentence. You edit, you post." },
+  { icon: Users, title: "Matched, not shouted", body: "Your listing reaches the people whose record actually fits the job." },
+  { icon: Zap, title: "No account needed", body: "Verify your email and the listing is live in minutes." },
+];
+
 
 const STORAGE_KEY = "thrivein_draft_opportunity";
 

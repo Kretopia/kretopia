@@ -26,6 +26,20 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { CreditsBoard } from "@/components/kretopia/CreditsBoard";
+import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
+import { Reveal } from "@/components/kretopia/Reveal";
+import { Link } from "react-router-dom";
+import { ArrowUpRight, Fingerprint, Handshake, FileCheck2 } from "lucide-react";
+
+const ACCENT = "#FF2DA1";
+
+const PROOF_POINTS = [
+  { icon: FileCheck2, title: "Evidence first", body: "Links, files and receipts attached to the work — not a self-written bio." },
+  { icon: Handshake, title: "Co-signed by humans", body: "The people who were there confirm it in one tap. No paperwork." },
+  { icon: ShieldCheck, title: "Reviewed, then stamped", body: "Verified credits carry a stamp anyone can check, anywhere." },
+  { icon: Fingerprint, title: "Yours forever", body: "Your record travels with you across cities, clients and industries." },
+];
+
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },

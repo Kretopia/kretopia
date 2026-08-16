@@ -6,7 +6,7 @@ import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
 interface FeaturePageHeaderProps {
   /** e.g. "Live gigs" — short, uppercase, pill-badged */
   eyebrow: string;
-  /** e.g. <>Gigs. <span className="text-energy-glow">Find your next one.</span></> — no <br/>, the title auto-shrinks to stay on one line. */
+  /** e.g. <>Gigs. <span className="landing-accent">Find your next one.</span></> — no <br/>, the title auto-shrinks to stay on one line. */
   title: ReactNode;
   subtitle: string;
   /** Optional segmented tab toggle, rendered below the title block. */

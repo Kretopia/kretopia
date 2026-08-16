@@ -1,13 +1,16 @@
-import { useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import { FeatureAITutorial } from "./FeatureAITutorial";
-import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface FeaturePageHeaderProps {
   /** e.g. "Live gigs" — short, uppercase, pill-badged */
   eyebrow: string;
-  /** e.g. <>Gigs. <span className="landing-accent">Find your next one.</span></> — no <br/>, the title auto-shrinks to stay on one line. */
+  /** White first line — keep it short (2-4 words). */
   title: ReactNode;
+  /** Magenta second line, rendered exactly like the landing hero's accent. */
+  accentTitle?: ReactNode;
   subtitle: string;
   /** Optional segmented tab toggle, rendered below the title block. */
   tabs?: ReactNode;
@@ -16,15 +19,12 @@ interface FeaturePageHeaderProps {
 }
 
 /**
- * Shared cinematic page header. Every feature page's title is centered and
- * auto-sized to stay on one line, matching Passport's treatment — the exact
- * font-size is computed per-title via useFitTitleOneLine rather than a fixed
- * breakpoint jump, since title length varies a lot page to page.
+ * Shared cinematic page header. Same plate, scale and reveal motion as the
+ * landing hero: one white line, one magenta line — never more than two.
  */
-export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: FeaturePageHeaderProps) {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  useFitTitleOneLine(wrapperRef, titleRef, [title]);
+export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs, tutorial }: FeaturePageHeaderProps) {
+  const reducedMotion = useReducedMotion();
+
 
   return (
     <div
@@ -58,7 +58,12 @@ export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: 
             className="absolute right-4 top-4 z-10"
           />
         )}
-        <div className="flex flex-col items-center gap-4 text-center">
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, ease: [0.2, 0.65, 0.3, 0.95] }}
+          className="flex flex-col items-center gap-4 text-center"
+        >
           <div className="flex flex-col items-center w-full">
             <p
               className="inline-flex items-center gap-2 rounded-full border px-3 py-1 mb-6"
@@ -67,15 +72,20 @@ export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: 
               <span className="h-1.5 w-1.5 rounded-full ai-ambient-breathe" style={{ backgroundColor: "#FF2DA1" }} />
               <span className="landing-eyebrow" style={{ color: "#FF2DA1" }}>{eyebrow}</span>
             </p>
-            <div ref={wrapperRef} className="w-full max-w-4xl">
-              <h1 ref={titleRef} className="landing-h1 landing-glow" style={{ fontSize: "3rem" }}>
-                {title}
-              </h1>
-            </div>
+            <h1 className="landing-h1 landing-glow max-w-4xl text-balance">
+              {title}
+              {accentTitle && (
+                <>
+                  <br />
+                  <span className="landing-accent">{accentTitle}</span>
+                </>
+              )}
+            </h1>
             <p className="landing-sub mt-5 max-w-xl mx-auto">{subtitle}</p>
           </div>
-        </div>
+        </motion.div>
         {tabs && <div className="mt-6">{tabs}</div>}
+
       </div>
     </div>
   );

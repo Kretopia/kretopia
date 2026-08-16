@@ -88,11 +88,8 @@ const CreativeCircle = () => {
 
       <FeaturePageHeader
         eyebrow="Creative Circle"
-        title={
-          <>
-            Creative Circle. <span className="landing-accent">Earn as it grows.</span>
-          </>
-        }
+        title="Creative Circle."
+        accentTitle="Earn as it grows."
         subtitle="Invite creatives, climb tiers, and earn passive commission — all from one link."
         tutorial={{ featureKey: "creative-circle", label: "How Creative Circle works", steps: CREATIVE_CIRCLE_TUTORIAL }}
       />

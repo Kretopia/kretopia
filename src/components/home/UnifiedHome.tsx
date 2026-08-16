@@ -492,11 +492,8 @@ export const UnifiedHome = () => {
         <>
           <FeaturePageHeader
             eyebrow="Today"
-            title={
-              <>
-                What are we moving <span className="landing-accent">forward today?</span>
-              </>
-            }
+            title="What are we moving"
+        accentTitle="forward today?"
             subtitle="One place for your next move, your top opportunity, and your money signal."
             tutorial={{ featureKey: "today", label: "How Today works", steps: TODAY_TUTORIAL }}
           />

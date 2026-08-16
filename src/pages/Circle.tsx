@@ -178,11 +178,8 @@ export default function Circle() {
 
         <FeaturePageHeader
           eyebrow="Stages"
-          title={
-            <>
-              Stages. <span className="landing-accent">Where creators meet, live.</span>
-            </>
-          }
+          title="Stages."
+        accentTitle="Where creators meet, live."
           subtitle="Drop into a live session, match with collaborators, or browse the network."
           tutorial={{ featureKey: "stages", label: "How Stages works", steps: SOUNDSTAGES_TUTORIAL }}
         />

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { CardCarousel } from "@/components/kretopia/CardCarousel";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -51,11 +52,8 @@ export default function FoundingMember() {
 
       <FeaturePageHeader
         eyebrow="Founding Circle"
-        title={
-          <>
-            Founding Circle. <span className="landing-accent">100 spots, one badge.</span>
-          </>
-        }
+        title="Founding Circle."
+        accentTitle="100 spots, one badge."
         subtitle="Complete 3 milestones before the deadline and earn a permanent Founding Member badge."
         tutorial={{ featureKey: "founding-circle", label: "How the Founding Circle works", steps: FOUNDING_TUTORIAL }}
       />
@@ -109,7 +107,7 @@ export default function FoundingMember() {
         )}
 
         {/* Quest cards */}
-        <div className="space-y-3">
+        <CardCarousel label="Milestones" itemClassName="basis-[88%] sm:basis-1/2">
           {FOUNDING_QUESTS.map((quest, i) => {
             const p = progress[quest.key];
             const cta = QUEST_CTA[quest.key];
@@ -161,7 +159,7 @@ export default function FoundingMember() {
               </Card>
             );
           })}
-        </div>
+        </CardCarousel>
 
         {loading && (
           <p className="text-xs text-muted-foreground text-center mt-4">Checking your progress…</p>

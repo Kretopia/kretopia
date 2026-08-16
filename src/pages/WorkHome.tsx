@@ -492,11 +492,8 @@ const CreatorWorkHome = () => {
 
       <FeaturePageHeader
         eyebrow="Projects & Workspaces"
-        title={
-          <>
-            Studios. <span className="landing-accent">Your project rooms, run end to end.</span>
-          </>
-        }
+        title="Studios."
+        accentTitle="One room per project."
         subtitle="Brief, collaborators, milestones, and payment — all inside the same room, from kickoff to delivery."
         tutorial={{ featureKey: "studio", label: "How Studios works", steps: STUDIO_TUTORIAL }}
       />

@@ -70,6 +70,8 @@ const DisputeManage = lazy(() => import("./pages/DisputeManage"));
 
 const Circle = lazy(() => import("./pages/Circle"));
 const Discover = lazy(() => import("./pages/Discover"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+
 const Match = lazy(() => import("./pages/Match"));
 const SoundStages = lazy(() => import("./pages/SoundStages"));
 const SpeedSession = lazy(() => import("./pages/SpeedSession"));

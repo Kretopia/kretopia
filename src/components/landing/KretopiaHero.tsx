@@ -2,8 +2,7 @@
  * KretopiaHero — Section 1 of the Kretopia landing page.
  *
  * Search-first. The hierarchy is deliberate and fixed:
- *   eyebrow → headline → supporting sentence (a second, longer sentence is
- *   hidden below `sm:` so mobile's first viewport stays uncluttered) →
+ *   eyebrow → headline → supporting sentence →
  *   dominant search, whose own submit button IS the primary action — no
  *   competing CTA row sits underneath it.
  *
@@ -13,7 +12,7 @@
  * Nothing here reimplements search, and nothing fakes a result.
  */
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -29,14 +28,6 @@ const HEADLINE: { text: string; accent?: boolean }[][] = [
   [{ text: "Get" }, { text: "found" }, { text: "for" }, { text: "what's next", accent: true }],
 ];
 
-/** Rotating intents under the headline — the search thinking out loud. */
-const ROTATING_INTENTS = [
-  "your name.",
-  "a collaborator.",
-  "a credit you're owed.",
-  "your next opportunity.",
-];
-
 interface KretopiaHeroProps {
   onSearchSubmit: (query: string) => void;
 }
@@ -45,18 +36,10 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
-  const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
     analytics.featureUsed("landing_hero_viewed", { location: "hero" });
   }, []);
-
-  // Rotate the intent line; pauses while the user is actually searching.
-  useEffect(() => {
-    if (reducedMotion || focused) return;
-    const id = window.setInterval(() => setRotation((r) => (r + 1) % ROTATING_INTENTS.length), 2600);
-    return () => window.clearInterval(id);
-  }, [reducedMotion, focused]);
 
   const handleFocusChange = (open: boolean) => {
     if (open && !focused) analytics.featureUsed("landing_search_focused", { location: "hero" });
@@ -165,30 +148,10 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           </motion.span>
         </h1>
 
-        {/* Live intent line — the search "thinks out loud" about what it can find */}
-        <motion.p
-          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center"
-        >
-          Search{" "}
-          <span className="relative inline-flex h-[1.2em] overflow-hidden align-bottom text-left">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={rotation}
-                initial={reducedMotion ? false : { y: "100%", opacity: 0 }}
-                animate={{ y: "0%", opacity: 1 }}
-                exit={reducedMotion ? undefined : { y: "-100%", opacity: 0 }}
-                transition={{ duration: 0.45, ease: [0.2, 0.65, 0.3, 0.95] }}
-                className="whitespace-nowrap"
-                style={{ color: ACCENT }}
-              >
-                {ROTATING_INTENTS[rotation]}
-              </motion.span>
-            </AnimatePresence>
-          </span>
-        </motion.p>
+        {/* Fixed subtitle — no rotation, no animation. */}
+        <p className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center">
+          Search your name to find or create your Creative Passport.
+        </p>
 
         {/* ─────────────────────────────────────────────────────────────
             SEARCH — the dominant, centered surface. Real global search

@@ -109,6 +109,7 @@ export const SearchOrPasteStep = ({ initialQuery = "", onResults }: Props) => {
       <Button
         onClick={submit}
         disabled={loading || query.trim().length < 2}
+        variant="hero"
         className="w-full h-12 text-base"
         size="lg"
       >
@@ -118,7 +119,7 @@ export const SearchOrPasteStep = ({ initialQuery = "", onResults }: Props) => {
             Searching the Creative Universe…
           </>
         ) : (
-          <>Continue</>
+          <>Find my credits</>
         )}
       </Button>
 

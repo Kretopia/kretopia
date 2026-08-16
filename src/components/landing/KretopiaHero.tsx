@@ -103,15 +103,6 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
         >
           Search your name to find or create your Creative Passport.
         </motion.p>
-        <motion.p
-          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.16 }}
-          className="hidden sm:block mt-2 max-w-lg mx-auto text-center text-sm text-white/50"
-          style={{ fontFamily: "'Work Sans', sans-serif" }}
-        >
-          Bring your credits, collaborators and creative history together, build trust around the work you've done, and unlock opportunities matched to what you do.
-        </motion.p>
 
         {/* ─────────────────────────────────────────────────────────────
             SEARCH — the dominant, centered surface. Real global search

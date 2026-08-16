@@ -423,7 +423,9 @@ const Auth = () => {
     <div className="dark flex min-h-screen" style={{ backgroundColor: "#05070D" }}>
       <AuthBrandingPanel />
 
-      <div className="relative flex w-full lg:w-1/2 items-center justify-center px-4 sm:px-6 py-8 sm:py-12 overflow-hidden">
+      {/* Right column stays fixed in the viewport — only the form scrolls internally,
+          so loading a credit/profile from the landing search never shifts the page. */}
+      <div className="relative flex w-full lg:w-1/2 items-start justify-center px-4 sm:px-6 py-8 sm:py-12 overflow-hidden lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
         {/* Ambient AI-glow behind the form — same language as the landing hero */}
         <div
           aria-hidden
@@ -434,7 +436,7 @@ const Auth = () => {
           initial={reducedMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] }}
-          className="relative w-full max-w-md"
+          className="relative w-full max-w-md my-auto"
         >
           <div className="mb-6 sm:mb-8 text-center">
             <div className="lg:hidden mb-4">
@@ -450,11 +452,25 @@ const Auth = () => {
             </p>
           </div>
 
-          {!isPasswordReset && (
-            <div className="mb-6">
-              <FunnelStepper current="signup" />
-            </div>
-          )}
+          {/* Editorial form shell — same language as the Hire Talent brief form */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+            {!isPasswordReset && (
+              <div className="p-4 sm:p-5 border-b border-white/10 bg-gradient-to-r from-[rgba(255,45,161,0.08)] via-transparent to-transparent">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[rgba(255,45,161,0.12)]">
+                    <Sparkles className="h-4 w-4" style={{ color: "#FF2DA1" }} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-sm">Start with Kreto</p>
+                    <p className="text-white/50 text-xs">Search your name — we'll pull the credits and build your Passport.</p>
+                  </div>
+                </div>
+                <FunnelStepper current="signup" />
+              </div>
+            )}
+
+            <div className="p-4 sm:p-6 min-h-[420px]">
+
 
           {isPasswordReset ? (
             <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />

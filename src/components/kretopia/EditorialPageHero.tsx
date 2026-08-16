@@ -24,10 +24,12 @@ export interface EditorialPageHeroProps {
   children?: ReactNode;
   /** Centre the whole block (Spotlight / About) or keep it left (default). */
   align?: "left" | "center";
+  /** Keep title + accent on a single line (auto-scaled to fit). */
+  oneLine?: boolean;
 }
 
 export const EditorialPageHero = ({
-  kicker, title, accentTitle, subtitle, children, align = "center",
+  kicker, title, accentTitle, subtitle, children, align = "center", oneLine = false,
 }: EditorialPageHeroProps) => {
   const reducedMotion = useReducedMotion();
   const centered = align === "center";
@@ -70,11 +72,13 @@ export const EditorialPageHero = ({
           <span className="landing-eyebrow" style={{ color: ACCENT }}>{kicker}</span>
         </p>
 
-        <h1 className="landing-h1 landing-glow max-w-4xl">
+        <h1
+          className={`landing-h1 landing-glow ${oneLine ? "whitespace-nowrap max-w-none text-[clamp(1.05rem,4.2vw,3rem)]" : "max-w-4xl"}`}
+        >
           {title}
           {accentTitle && (
             <>
-              <br />
+              {oneLine ? " " : <br />}
               <span className="landing-accent">{accentTitle}</span>
             </>
           )}

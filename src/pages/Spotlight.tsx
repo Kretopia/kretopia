@@ -70,8 +70,9 @@ const Spotlight = () => {
 
         <EditorialPageHero
           kicker="The Spotlight"
+          oneLine
           title="Spotlight."
-          accentTitle="Stories worth pressing play on."
+          accentTitle="Stories worth playing."
           subtitle="Interviews, features and podcast episodes from across the creative universe — the people behind the work, in their own words."
         >
           <FeatureAITutorial featureKey="spotlight" label="How Spotlight works" steps={SPOTLIGHT_TUTORIAL} />

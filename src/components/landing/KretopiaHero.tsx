@@ -26,7 +26,7 @@ const EXAMPLE_SEARCHES = ["Maya Solano", "Event Producer in Bali", "Creative Dir
 /** Headline, split into words so each can resolve out of a blur on load. */
 const HEADLINE: { text: string; accent?: boolean }[][] = [
   [{ text: "Prove" }, { text: "what" }, { text: "you've" }, { text: "done." }],
-  [{ text: "Get" }, { text: "found" }, { text: "for" }, { text: "what's next", accent: true }, { text: "." }],
+  [{ text: "Get" }, { text: "found" }, { text: "for" }, { text: "what's next", accent: true }],
 ];
 
 /** Rotating intents under the headline — the search thinking out loud. */

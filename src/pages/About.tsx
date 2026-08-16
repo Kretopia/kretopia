@@ -201,18 +201,6 @@ const About = () => {
         title="Built for"
         accentTitle="creatives, everywhere."
         subtitle="What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network connecting creatives across music, film, fashion, art, content, and culture."
-      >
-        <FeatureAITutorial featureKey="about" label="How Kretopia works" steps={ABOUT_TUTORIAL} />
-      </EditorialPageHero>
-
-      <EditorialTutorialSection
-        eyebrow="How Kretopia works"
-        heading="One record, one"
-        accentWord="loop"
-        body="Passport, proof, opportunity, delivery — each step feeds the next. Watch the loop play out below."
-        steps={ABOUT_TUTORIAL}
-        label="Kretopia"
-        visual={AboutVisual}
       />
 
       {/* The Problem / The System / The Loop / The Invitation — product

@@ -25,8 +25,10 @@ import { SmartWidget } from "@/components/ui/smart-widget";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
+import { CreditsVisual } from "@/components/kretopia/pageVisuals";
 import { VERIFIED_CREDITS_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
-import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -142,9 +144,6 @@ interface WebResult {
 
 const CreditDatabase = () => {
   const reducedMotion = useReducedMotion();
-  const titleWrapperRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  useFitTitleOneLine(titleWrapperRef, titleRef, []);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
@@ -353,6 +352,17 @@ const CreditDatabase = () => {
 
         <>
 
+        {!isSearchActive && (
+          <EditorialPageHero
+            kicker="Verified Credits"
+            title="Verified Credits."
+            accentTitle="The record no one can fake."
+            subtitle="Search any project, person, or production across the global creative industry — and see exactly what backs every claim."
+          >
+            <FeatureAITutorial featureKey="verified-credits" label="How Verified Credits works" steps={VERIFIED_CREDITS_TUTORIAL} />
+          </EditorialPageHero>
+        )}
+
         {/* Search Hero */}
         <div className={cn(
           "transition-all duration-300",
@@ -363,38 +373,12 @@ const CreditDatabase = () => {
           <div className="container mx-auto px-4">
             {!isSearchActive && (
               <div className="mb-5 max-w-3xl mx-auto text-center flex flex-col items-center">
-                <p
-                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-3 px-2.5 py-1 rounded-full border"
-                  style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: "#FF2DA1" }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#FF2DA1" }} />
-                  Creative Passport
-                </p>
-                <div ref={titleWrapperRef} className="w-full">
-                  <h1
-                    ref={titleRef}
-                    className="font-black tracking-[-0.035em] text-white leading-[0.95]"
-                    style={{ fontSize: "3rem" }}
-                  >
-                    Verified Credits. <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>The record no one can fake.</span>
-                  </h1>
-                </div>
-                <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl mx-auto">
-                  Search any project, person, or production across the global creative industry.
-                </p>
-                <div className="mt-2 flex justify-center">
-                  <FeatureAITutorial featureKey="verified-credits" label="How Verified Credits works" steps={VERIFIED_CREDITS_TUTORIAL} />
-                </div>
-
-                {/* Verified Credit / Passport Stamp explainer — official terms,
-                    honest evidence tiers. "Verified" is never shown without
-                    the evidence backing it up. */}
-                <div className="mt-4 rounded-xl border border-border/60 bg-card/50 p-3.5">
-                  <p className="text-xs text-foreground leading-relaxed">
-                    <strong>A Verified Credit</strong> is a project backed by real evidence — not just a claim.
-                    Once it's fully confirmed, it becomes a <strong>Passport Stamp</strong>: the visible proof on a Creative Passport.
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3.5">
+                  <p className="text-xs text-white/70 leading-relaxed">
+                    <strong className="text-white">A Verified Credit</strong> is a project backed by real evidence — not just a claim.
+                    Once it's fully confirmed, it becomes a <strong className="text-white">Passport Stamp</strong>: the visible proof on a Creative Passport.
                   </p>
-                  <div className="flex flex-wrap gap-1.5 mt-3">
+                  <div className="flex flex-wrap gap-1.5 mt-3 justify-center">
                     {EVIDENCE_STATE_ORDER.map((s) => (
                       <EvidenceStateBadge key={s} state={s} />
                     ))}
@@ -435,6 +419,18 @@ const CreditDatabase = () => {
             </div>
           </div>
         </div>
+
+        {!isSearchActive && (
+          <EditorialTutorialSection
+            eyebrow="How it works"
+            heading="A claim becomes"
+            accentWord="a stamp"
+            body="Add the work, ask the people who were there to co-sign it, and the credit turns into proof anyone can check. The walkthrough plays itself."
+            steps={VERIFIED_CREDITS_TUTORIAL}
+            label="Verified Credits"
+            visual={CreditsVisual}
+          />
+        )}
 
         <div className="container mx-auto px-4">
           {loading ? (

@@ -111,7 +111,7 @@ export default function Recordings() {
       <FeaturePageHeader
         eyebrow="Call recordings"
         title="Recordings."
-        accentTitle="Every call, ready to revisit."
+        accentTitle="Every call, revisited."
         subtitle="Replays, transcripts, and Kreto-extracted action items from every recorded call."
         tutorial={{ featureKey: "recordings", label: "How Recordings works", steps: RECORDINGS_TUTORIAL }}
       />

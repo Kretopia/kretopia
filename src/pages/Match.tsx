@@ -33,7 +33,7 @@ export default function Match() {
       <FeaturePageHeader
         eyebrow="Collaborators"
         title="Match."
-        accentTitle="The right person for the work."
+        accentTitle="Find your people."
         subtitle="Swipe the deck or browse the grid — connect by skill, city, and the people you've already made things with."
         tutorial={{ featureKey: "match", label: "How Match works", steps: MATCH_TUTORIAL }}
         tabs={

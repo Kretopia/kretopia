@@ -74,34 +74,27 @@ const Spotlight = () => {
           }}
         />
 
+        <EditorialPageHero
+          kicker="The Spotlight"
+          title="Spotlight."
+          accentTitle="Stories worth pressing play on."
+          subtitle="Interviews, features and podcast episodes from across the creative universe — the people behind the work, in their own words."
+        >
+          <FeatureAITutorial featureKey="spotlight" label="How Spotlight works" steps={SPOTLIGHT_TUTORIAL} />
+        </EditorialPageHero>
+
+        <EditorialTutorialSection
+          eyebrow="How Spotlight works"
+          heading="Read it, hear it,"
+          accentWord="follow what moves"
+          body="Every story and every episode comes from working creatives. The tutorial below plays itself — no clicks needed."
+          steps={SPOTLIGHT_TUTORIAL}
+          label="Spotlight"
+          visual={SpotlightVisual}
+        />
+
         <div className="relative max-w-2xl mx-auto px-4 pt-10 sm:pt-14 pb-24">
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="mb-8 flex flex-col items-center text-center"
-          >
-            <p
-              className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-4 px-2.5 py-1 rounded-full border"
-              style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: ACCENT }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: ACCENT }} />
-              The Spotlight
-            </p>
-            <div ref={titleWrapperRef} className="w-full max-w-3xl">
-              <h1
-                ref={titleRef}
-                className="font-black tracking-[-0.035em] text-white leading-[0.95]"
-                style={{ fontSize: "3rem" }}
-              >
-                Spotlight. <span className="pink-glow-breathe" style={{ color: ACCENT }}>Stories worth pressing play on.</span>
-              </h1>
-            </div>
-            <p className="mt-3 text-sm sm:text-base text-white/60 max-w-md mx-auto">
-              Articles and podcast episodes from the creative universe.
-            </p>
-            <FeatureAITutorial featureKey="spotlight" label="How Spotlight works" steps={SPOTLIGHT_TUTORIAL} />
-          </motion.div>
+
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>

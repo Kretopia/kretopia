@@ -285,11 +285,12 @@ const PostOpportunity = () => {
               </div>
             </CardContent>
           </Card>
-          </SmartWidget>
+          </Reveal>
 
           <div className="mt-4">
-          <SmartWidget interactive={false}>
-          <Card className="border-0">
+          <Reveal delayIndex={1}>
+          <Card className="border border-white/10 bg-white/[0.02]">
+
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Briefcase className="h-5 w-5" />

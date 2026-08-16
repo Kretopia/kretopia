@@ -35,7 +35,7 @@ export function CardCarousel({ children, label, itemClassName, className }: Card
   if (items.length === 0) return null;
 
   return (
-    <div className={cn("relative", className)}>
+    <Reveal className={cn("relative", className)}>
       <Carousel
         setApi={setApi}
         opts={{ align: "start", dragFree: false, duration: reducedMotion ? 0 : 22 }}

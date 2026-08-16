@@ -15,8 +15,9 @@ import { analytics } from "@/lib/analytics";
  * new Supabase queries and zero duplicated search logic. This component is
  * the premium page shell + framing around it, not a second search engine.
  */
-export function SearchV2() {
-  const [query, setQuery] = useState("");
+export function SearchV2({ initialQuery = "" }: { initialQuery?: string } = {}) {
+  const [query, setQuery] = useState(initialQuery);
+
   const startedRef = useRef(false);
 
   useEffect(() => {

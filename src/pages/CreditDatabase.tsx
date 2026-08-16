@@ -20,7 +20,7 @@ import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlacehol
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
-import { deriveEvidenceState, EVIDENCE_STATE_ORDER } from "@/lib/creditEvidence";
+import { deriveEvidenceState } from "@/lib/creditEvidence";
 import { SmartWidget } from "@/components/ui/smart-widget";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";

@@ -220,34 +220,27 @@ const PostOpportunity = () => {
   }
 
   return (
-    <div className="dark min-h-screen bg-background" style={{ backgroundColor: "#05070D" }}>
+    <PageTransition>
+    <div className="dark min-h-screen" style={{ backgroundColor: "#05070D" }}>
       <Helmet>
-        <title>Post an Opportunity | Kretopia</title>
+        <title>Hire Talent — Post an Opportunity | Kretopia</title>
         <meta name="description" content="Post a job, collaboration, or gig opportunity on Kretopia and connect with thousands of creative professionals. No account needed." />
       </Helmet>
 
-      <div className="max-w-2xl mx-auto p-4 py-8 space-y-6">
-        {/* Hero */}
-        <div className="text-center space-y-3">
-          <p
-            className="inline-flex items-center gap-2 rounded-full border px-3 py-1"
-            style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)" }}
-          >
-            <Building2 className="h-3 w-3" style={{ color: "#FF2DA1" }} />
-            <span className="landing-eyebrow" style={{ color: "#FF2DA1" }}>For Companies &amp; Brands</span>
-          </p>
-          <h1 className="landing-h2 landing-glow">
-            Hire talent.<br />
-            <span className="landing-accent">Find the perfect creative.</span>
-          </h1>
-          <p className="landing-sub max-w-lg mx-auto">
-            Post your opportunity and connect with vetted creators. No account needed — just verify your email.
-          </p>
-        </div>
+      <EditorialPageHero
+        kicker="Hire Talent"
+        oneLine
+        title="Hire talent."
+        accentTitle="Backed by proof."
+        subtitle="Post your opportunity and reach creatives whose work is already on the record. No account needed — just verify your email."
+      />
 
-        <form onSubmit={handleSubmit}>
-          <SmartWidget interactive={false}>
-          <Card className="border-0">
+      {/* I — The brief */}
+      <EditorialChapter index="I" kicker="The brief" title="Tell us who you need." accentWord="Kreto writes the rest.">
+        <form onSubmit={handleSubmit} className="max-w-2xl">
+          <Reveal>
+          <Card className="border border-white/10 bg-white/[0.02]">
+
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />

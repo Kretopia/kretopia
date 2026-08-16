@@ -7,7 +7,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ListChecks, HandHeart, Stamp, ShieldCheck, Link2,
-  BookOpen, Headphones, TrendingUp, Play,
+  BookOpen, TrendingUp, Play,
   Fingerprint, Compass, LayoutGrid,
 } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -186,7 +186,6 @@ export const SpotlightVisual = ({ activeStep }: { activeStep: number }) => {
           />
         ))}
       </div>
-      <p className="sr-only">{Headphones ? "" : ""}</p>
     </VisualCardShell>
   );
 };

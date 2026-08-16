@@ -27,6 +27,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
+import { CreditsBoard } from "@/components/kretopia/CreditsBoard";
 import { CreditsVisual } from "@/components/kretopia/pageVisuals";
 import { VERIFIED_CREDITS_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 

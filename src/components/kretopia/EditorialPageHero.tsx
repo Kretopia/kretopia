@@ -36,7 +36,7 @@ export const EditorialPageHero = ({
 
   return (
     <section
-      className="relative overflow-hidden border-b border-white/[0.06]"
+      className="relative overflow-hidden"
       style={{ backgroundColor: "#05070D" }}
     >
       {/* aurora */}

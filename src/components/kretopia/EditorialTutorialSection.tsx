@@ -56,9 +56,7 @@ export const EditorialTutorialSection = ({
             {accentWord && (
               <>
                 {" "}
-                <span className="font-serif italic font-normal pink-glow-breathe" style={{ color: ACCENT }}>
-                  {accentWord}
-                </span>
+                <span className="landing-accent">{accentWord}</span>
               </>
             )}
             <span className="pink-glow-breathe" style={{ color: ACCENT }}>.</span>

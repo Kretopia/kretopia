@@ -159,7 +159,7 @@ export function HotLeadsStrip() {
     }
   };
 
-  const useDraft = async (lead: Lead, text: string) => {
+  const applyDraft = async (lead: Lead, text: string) => {
     try { await navigator.clipboard.writeText(text); } catch {/* ignore */}
     trackDeckEvent("hot_lead_draft_used", "opportunity", {
       sender_id: lead.sender_id, matched: lead.matched.toLowerCase(), length: text.length,
@@ -242,7 +242,7 @@ export function HotLeadsStrip() {
                   {ds.map((d, j) => (
                     <button
                       key={j}
-                      onClick={() => useDraft(l, d.text)}
+                      onClick={() => applyDraft(l, d.text)}
                       className="w-full text-left rounded-lg border border-border bg-card hover:bg-muted/50 transition px-3 py-2"
                     >
                       <div className="flex items-center justify-between gap-2 mb-1">

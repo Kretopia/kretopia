@@ -22,7 +22,7 @@ serve(async (req) => {
 
     const { data: invoice } = await admin
       .from("invoices")
-      .select("id, invoice_number, issued_by, recipient_name, recipient_email, total_amount, currency, status, due_date, notes, brand_name, brand_logo_url, brand_color, document_type, line_items")
+      .select("id, invoice_number, issued_by, recipient_name, total_amount, currency, status, due_date, notes, brand_name, brand_logo_url, brand_color, document_type, line_items")
       .eq("id", invoiceId)
       .maybeSingle();
     if (!invoice) {

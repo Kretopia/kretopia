@@ -1,5 +1,7 @@
 // Returns Telegram bot + webhook health for the status screen.
 // Calls getMe and getWebhookInfo through the Lovable connector gateway.
+import { requireAdminOrCron } from "../_shared/admin-guard.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -36,6 +38,9 @@ async function expectedSecret(tgKey: string): Promise<string> {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const guard = await requireAdminOrCron(req);
+  if (!guard.ok) return guard.response;
 
   const LOVABLE = Deno.env.get("LOVABLE_API_KEY");
   const TG = Deno.env.get("TELEGRAM_API_KEY");

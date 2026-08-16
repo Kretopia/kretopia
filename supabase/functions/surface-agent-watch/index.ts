@@ -185,20 +185,23 @@ Deno.serve(async (req) => {
       // Frequent collaborators (≥2 shared credits, not yet connected)
       const { data: credits } = await admin
         .from("credits")
-        .select("collaborators")
+        .select("collaborator_user_ids")
         .eq("user_id", user.id)
         .limit(50);
 
       const collabCounts = new Map<string, number>();
       for (const c of credits ?? []) {
-        const list: any[] = Array.isArray(c.collaborators) ? c.collaborators : [];
+        const list: any[] = Array.isArray(c.collaborator_user_ids)
+          ? c.collaborator_user_ids
+          : [];
         for (const x of list) {
-          const id = x?.user_id ?? x?.id;
+          const id = typeof x === "string" ? x : x?.user_id ?? x?.id;
           if (id && id !== user.id) {
             collabCounts.set(id, (collabCounts.get(id) ?? 0) + 1);
           }
         }
       }
+
       const freq = [...collabCounts.entries()]
         .filter(([, n]) => n >= 2)
         .sort((a, b) => b[1] - a[1])

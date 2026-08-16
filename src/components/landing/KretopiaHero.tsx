@@ -13,7 +13,7 @@
  * Nothing here reimplements search, and nothing fakes a result.
  */
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { useReducedMotion } from "@/hooks/useReducedMotion";

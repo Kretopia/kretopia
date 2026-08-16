@@ -25,18 +25,18 @@ export const AuthBrandingPanel = () => (
         <BrandLogo size="lg" showBeta />
       </div>
 
-      <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-white/85 mb-6 px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm w-fit">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#FF2DA1] animate-pulse" />
-        The Creative Economy OS
-      </p>
+    <p
+      className="inline-flex items-center gap-2 mb-6 px-3 py-1 rounded-full border w-fit"
+      style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)" }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full ai-ambient-breathe" style={{ backgroundColor: "#FF2DA1" }} />
+      <span className="landing-eyebrow" style={{ color: "#FF2DA1" }}>The Creative Economy OS</span>
+    </p>
 
-      <h2 className="font-serif text-4xl xl:text-[3.5rem] font-normal tracking-[-0.03em] leading-[1.02] mb-5 text-white">
-        Where{" "}
-        <span className="italic" style={{ color: "#FF2DA1" }}>
-          Creativity
-        </span>
-        <br />Lives.
-      </h2>
+    <h2 className="landing-h2 landing-glow mb-5">
+      Where creativity<br />
+      <span className="landing-accent">lives.</span>
+    </h2>
       <p className="text-white/65 mb-8 max-w-md leading-relaxed">
         One Passport. Every credit. Every opportunity. Kretopia is the professional
         home for creators — and Kreto, your AI Executive Producer, runs point.

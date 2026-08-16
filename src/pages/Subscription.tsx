@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { CardCarousel } from "@/components/kretopia/CardCarousel";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -407,7 +408,7 @@ export default function Subscription() {
         </div>
       )}
 
-      <div className={`grid gap-5 max-w-5xl mx-auto ${viewMode === 'brand' ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+      <CardCarousel label="Plans" className="max-w-5xl mx-auto">
         {tiers.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;
@@ -514,7 +515,7 @@ export default function Subscription() {
             </Card>
           );
         })}
-      </div>
+      </CardCarousel>
 
       {viewMode === "brand" && (
         <div className="mt-8 text-center">

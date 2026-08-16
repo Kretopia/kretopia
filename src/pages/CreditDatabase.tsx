@@ -559,8 +559,10 @@ const CreditDatabase = () => {
               </div>
             )
           ) : (
-            /* Browse mode — one dashboard board instead of three card rails */
-            <div className="py-5">
+            /* Browse mode — one dashboard board inside an editorial chapter */
+            <EditorialChapter index="II" kicker="The record" title="Everything already" accentWord="on file.">
+              <Reveal>
+
               <CreditsBoard
                 loading={initialLoading}
                 rows={[

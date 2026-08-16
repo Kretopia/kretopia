@@ -112,11 +112,12 @@ Deno.serve(async (req) => {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data: fresh } = await admin
         .from("scouted_gigs")
-        .select("id, title, source, created_at")
-        .eq("user_id", user.id)
-        .gte("created_at", dayAgo)
-        .order("created_at", { ascending: false })
+        .select("id, title, source, scouted_at")
+        .eq("target_user_id", user.id)
+        .gte("scouted_at", dayAgo)
+        .order("scouted_at", { ascending: false })
         .limit(5);
+
 
       if ((fresh?.length ?? 0) > 0 && !pendingKinds.has("gig_match")) {
         const top = fresh![0];

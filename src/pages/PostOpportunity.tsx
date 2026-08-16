@@ -215,12 +215,16 @@ const PostOpportunity = () => {
       <div className="max-w-2xl mx-auto p-4 py-8 space-y-6">
         {/* Hero */}
         <div className="text-center space-y-3">
-          <p className="landing-eyebrow flex items-center justify-center gap-2">
-            <Building2 className="h-3.5 w-3.5" style={{ color: "#FF2DA1" }} />
-            For Companies & Brands
+          <p
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1"
+            style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)" }}
+          >
+            <Building2 className="h-3 w-3" style={{ color: "#FF2DA1" }} />
+            <span className="landing-eyebrow" style={{ color: "#FF2DA1" }}>For Companies &amp; Brands</span>
           </p>
           <h1 className="landing-h2 landing-glow">
-            Find the <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>perfect</span> creative talent
+            Hire talent.<br />
+            <span className="landing-accent">Find the perfect creative.</span>
           </h1>
           <p className="landing-sub max-w-lg mx-auto">
             Post your opportunity and connect with vetted creators. No account needed — just verify your email.

@@ -29,7 +29,6 @@ import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
 import { CreditsVisual } from "@/components/kretopia/pageVisuals";
 import { VERIFIED_CREDITS_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
-import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -145,9 +144,6 @@ interface WebResult {
 
 const CreditDatabase = () => {
   const reducedMotion = useReducedMotion();
-  const titleWrapperRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  useFitTitleOneLine(titleWrapperRef, titleRef, []);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);

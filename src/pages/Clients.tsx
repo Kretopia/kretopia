@@ -30,7 +30,7 @@ const Clients = () => {
       <FeaturePageHeader
         eyebrow="Client hub"
         title="Clients."
-        accentTitle="One place for everyone you work with."
+        accentTitle="Everyone you work with."
         subtitle="Group projects, contacts and threads under one client — no more digging for who's who."
         tutorial={{ featureKey: "clients", label: "How Clients works", steps: CLIENTS_TUTORIAL }}
       />

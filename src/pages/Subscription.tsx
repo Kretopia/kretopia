@@ -262,7 +262,7 @@ export default function Subscription() {
       <FeaturePageHeader
         eyebrow="Pricing"
         title="Choose your plan."
-        accentTitle="Start free, upgrade when ready."
+        accentTitle="Start free, upgrade anytime."
         subtitle={
           viewMode === "brand"
             ? "Find, hire & manage top creative talent."

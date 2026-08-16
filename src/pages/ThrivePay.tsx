@@ -278,7 +278,7 @@ export default function ThrivePay() {
       <FeaturePageHeader
         eyebrow="Your money, daily"
         title="KrePay."
-        accentTitle="Invoices, expenses, payouts — one place."
+        accentTitle="Get paid, all in one place."
         subtitle="Everything about getting paid for your creative work, without the spreadsheet."
         tutorial={{ featureKey: "krepay", label: "How KrePay works", steps: KREPAY_TUTORIAL }}
         tabs={

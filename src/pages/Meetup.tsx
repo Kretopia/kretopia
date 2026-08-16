@@ -154,7 +154,7 @@ const Meetup = () => {
       <FeaturePageHeader
         eyebrow="Live events"
         title="Events."
-        accentTitle="Where creators meet in person."
+        accentTitle="Meet in real life."
         subtitle="Workshops, meetups, jams, screenings, premieres — real-world moments built for the creative industry."
         tutorial={{ featureKey: "events", label: "How Events works", steps: EVENTS_TUTORIAL }}
 

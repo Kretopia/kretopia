@@ -497,7 +497,9 @@ const AppContent = () => {
             <Route path="/credits/project/:projectId" element={<ICDBProjectPage />} />
             <Route path="/credits/discover" element={<Navigate to="/credits" replace />} />
             <Route path="/verify-credit" element={<BrandVerify />} />
-            <Route path="/directory" element={<Navigate to="/" replace />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/directory" element={<Navigate to="/search" replace />} />
+
             <Route path="/discover" element={<Discover />} />
             <Route path="/match" element={<Match />} />
             <Route path="/soundstages" element={<SoundStages />} />

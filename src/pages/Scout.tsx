@@ -48,7 +48,7 @@ const Scout = () => {
       <FeaturePageHeader
         eyebrow="Scout"
         title="Scout."
-        accentTitle={<>Gigs &amp; talent, scouted for you.</>}
+        accentTitle={<>Gigs &amp; talent, found for you.</>}
         subtitle="One feed for the gigs and people that fit your work — scouted from across the web and curated by Kreto."
         tutorial={{ featureKey: "scout", label: "How Scout works", steps: SCOUT_TUTORIAL }}
         tabs={

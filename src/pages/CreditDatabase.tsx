@@ -395,47 +395,17 @@ const CreditDatabase = () => {
           />
         )}
 
-        {/* Search Hero */}
-        <div className={cn(
-          "transition-all duration-300",
-          isSearchActive
-            ? "border-b bg-background py-4"
-            : "bg-gradient-to-b from-primary/8 to-background py-8 md:py-12"
-        )}>
-          <div className="container mx-auto px-4">
-
-            <UnifiedSearchDropdown
-              variant={isSearchActive ? "inline" : "hero"}
-              value={search}
-              onValueChange={setSearch}
-              onQuerySubmit={handleSearchSubmit}
-              placeholder="Search projects, creators, labels, studios..."
-              className="max-w-xl mx-auto"
-            />
-
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
-              {CATEGORY_GROUPS.map(g => {
-                const Icon = g.icon;
-                const isActive = category === g.value;
-                return (
-                  <button
-                    key={g.value}
-                    className={cn(
-                      "flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shrink-0 transition-all",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted/60 text-muted-foreground hover:bg-muted"
-                    )}
-                    onClick={() => setCategory(g.value)}
-                  >
-                    <Icon className="h-3 w-3" />
-                    {g.label}
-                  </button>
-                );
-              })}
-            </div>
+        {/* I — The search */}
+        {isSearchActive ? (
+          <div className="py-4" style={{ backgroundColor: "#05070D" }}>
+            <div className="container mx-auto px-4">{searchControls}</div>
           </div>
-        </div>
+        ) : (
+          <EditorialChapter index="I" kicker="The search" title="Start with a name." accentWord="Any name.">
+            <Reveal>{searchControls}</Reveal>
+          </EditorialChapter>
+        )}
+
 
 
         <div className="container mx-auto px-4">

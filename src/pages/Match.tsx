@@ -32,11 +32,8 @@ export default function Match() {
       />
       <FeaturePageHeader
         eyebrow="Collaborators"
-        title={
-          <>
-            Match. <span className="landing-accent">The right person for the work.</span>
-          </>
-        }
+        title="Match."
+        accentTitle="The right person for the work."
         subtitle="Swipe the deck or browse the grid — connect by skill, city, and the people you've already made things with."
         tutorial={{ featureKey: "match", label: "How Match works", steps: MATCH_TUTORIAL }}
         tabs={

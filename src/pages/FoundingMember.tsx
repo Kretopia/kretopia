@@ -51,11 +51,8 @@ export default function FoundingMember() {
 
       <FeaturePageHeader
         eyebrow="Founding Circle"
-        title={
-          <>
-            Founding Circle. <span className="landing-accent">100 spots, one badge.</span>
-          </>
-        }
+        title="Founding Circle."
+        accentTitle="100 spots, one badge."
         subtitle="Complete 3 milestones before the deadline and earn a permanent Founding Member badge."
         tutorial={{ featureKey: "founding-circle", label: "How the Founding Circle works", steps: FOUNDING_TUTORIAL }}
       />

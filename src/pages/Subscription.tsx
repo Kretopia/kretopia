@@ -261,11 +261,8 @@ export default function Subscription() {
     <div className="pb-16">
       <FeaturePageHeader
         eyebrow="Pricing"
-        title={
-          <>
-            Choose your plan. <span className="landing-accent">Start free, upgrade when ready.</span>
-          </>
-        }
+        title="Choose your plan."
+        accentTitle="Start free, upgrade when ready."
         subtitle={
           viewMode === "brand"
             ? "Find, hire & manage top creative talent."

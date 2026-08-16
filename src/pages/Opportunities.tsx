@@ -29,7 +29,7 @@ const Opportunities = () => {
               </p>
               <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
                 Gigs.<br />
-                <span className="text-energy-glow">Find your next one.</span>
+                <span className="landing-accent">Find your next one.</span>
               </h1>
               <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md">
                 Real gigs scouted from across the web, plus the Kretopia marketplace.

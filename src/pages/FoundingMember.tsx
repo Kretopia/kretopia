@@ -53,7 +53,7 @@ export default function FoundingMember() {
         eyebrow="Founding Circle"
         title={
           <>
-            Founding Circle. <span className="text-energy-glow">100 spots, one badge.</span>
+            Founding Circle. <span className="landing-accent">100 spots, one badge.</span>
           </>
         }
         subtitle="Complete 3 milestones before the deadline and earn a permanent Founding Member badge."

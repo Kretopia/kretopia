@@ -929,6 +929,21 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 .pink-glow-breathe {
   animation: pink-glow-breathe 4.5s ease-in-out infinite;
 }
+
+/* The one canonical pink accent word/phrase — identical to the hero's
+   "what's next" in "Prove what you've done. / Get found for what's next."
+   Use <span className="landing-accent">…</span> inside any landing-h1/h2. */
+.landing-accent {
+  color: #FF2DA1;
+  font-style: italic;
+  animation: pink-glow-breathe 4.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-accent {
+    animation: none;
+    text-shadow: 0 0 24px rgba(255, 45, 161, 0.18), 0 0 60px rgba(255, 45, 161, 0.08);
+  }
+}
 @keyframes pink-glow-breathe {
   0%, 100% {
     text-shadow: 0 0 18px rgba(255, 45, 161, 0.35), 0 0 42px rgba(255, 45, 161, 0.14);

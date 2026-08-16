@@ -180,7 +180,7 @@ export default function Circle() {
           eyebrow="Stages"
           title={
             <>
-              Stages. <span className="text-energy-glow">Where creators meet, live.</span>
+              Stages. <span className="landing-accent">Where creators meet, live.</span>
             </>
           }
           subtitle="Drop into a live session, match with collaborators, or browse the network."

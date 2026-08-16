@@ -45,10 +45,18 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
     analytics.featureUsed("landing_hero_viewed", { location: "hero" });
   }, []);
+
+  // Rotate the intent line; pauses while the user is actually searching.
+  useEffect(() => {
+    if (reducedMotion || focused) return;
+    const id = window.setInterval(() => setRotation((r) => (r + 1) % ROTATING_INTENTS.length), 2600);
+    return () => window.clearInterval(id);
+  }, [reducedMotion, focused]);
 
   const handleFocusChange = (open: boolean) => {
     if (open && !focused) analytics.featureUsed("landing_search_focused", { location: "hero" });

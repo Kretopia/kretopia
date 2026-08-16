@@ -148,30 +148,10 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           </motion.span>
         </h1>
 
-        {/* Live intent line — the search "thinks out loud" about what it can find */}
-        <motion.p
-          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center"
-        >
-          Search{" "}
-          <span className="relative inline-flex h-[1.2em] overflow-hidden align-bottom text-left">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={rotation}
-                initial={reducedMotion ? false : { y: "100%", opacity: 0 }}
-                animate={{ y: "0%", opacity: 1 }}
-                exit={reducedMotion ? undefined : { y: "-100%", opacity: 0 }}
-                transition={{ duration: 0.45, ease: [0.2, 0.65, 0.3, 0.95] }}
-                className="whitespace-nowrap"
-                style={{ color: ACCENT }}
-              >
-                {ROTATING_INTENTS[rotation]}
-              </motion.span>
-            </AnimatePresence>
-          </span>
-        </motion.p>
+        {/* Fixed subtitle — no rotation, no animation. */}
+        <p className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center">
+          Search your name to find or create your Creative Passport.
+        </p>
 
         {/* ─────────────────────────────────────────────────────────────
             SEARCH — the dominant, centered surface. Real global search

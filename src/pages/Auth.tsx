@@ -25,7 +25,6 @@ import { KretoAvatar } from "@/components/brand/KretoAvatar";
 import { Reveal } from "@/components/kretopia/Reveal";
 
 const Auth = () => {
-  const reducedMotion = useReducedMotion();
   const [activeTab, setActiveTab] = useState<string>("signin");
   const [signupMode, setSignupMode] = useState<"claim" | "classic">("claim");
   const [email, setEmail] = useState("");

@@ -593,12 +593,70 @@ const CreditDatabase = () => {
                   })),
                 ]}
               />
-            </div>
+              </Reveal>
+            </EditorialChapter>
           )}
 
         </div>
+
+        {!isSearchActive && (
+          <>
+            {/* III — Why verified */}
+            <EditorialChapter index="III" kicker="Why it counts" title="Anyone can claim it." accentWord="You can prove it.">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {PROOF_POINTS.map((p, i) => (
+                  <Reveal key={p.title} delayIndex={i}>
+                    <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+                      <span
+                        className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                      >
+                        <p.icon className="h-4 w-4" style={{ color: ACCENT }} />
+                      </span>
+                      <p className="text-white font-semibold text-sm mb-1.5">{p.title}</p>
+                      <p className="text-sm leading-relaxed text-white/55">{p.body}</p>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+              <Reveal delayIndex={2}>
+                <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+                  "A credit is only worth what backs it. Here, every line has someone or something standing behind it."
+                </p>
+              </Reveal>
+            </EditorialChapter>
+
+            {/* IV — Invitation */}
+            <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 ai-ambient-breathe"
+                style={{ background: "radial-gradient(60% 60% at 50% 100%, rgba(255,45,161,0.16), transparent 65%)" }}
+              />
+              <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 py-24 text-center">
+                <Reveal>
+                  <h2 className="landing-h1 landing-glow mx-auto max-w-3xl">
+                    Search your name.<br />
+                    <span className="landing-accent">Claim what's already yours.</span>
+                  </h2>
+                  <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+                    <Link to="/credits/mine" className="cta-primary inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
+                      Add a credit
+                      <ArrowUpRight className="h-4 w-4" aria-hidden />
+                    </Link>
+                    <Link to="/auth" className="group inline-flex items-center gap-2 text-sm text-white/85">
+                      <span className="border-b border-white/30 pb-0.5 transition-colors group-hover:border-white">Join Kretopia</span>
+                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ color: ACCENT }} />
+                    </Link>
+                  </div>
+                </Reveal>
+              </div>
+            </section>
+          </>
+        )}
         </>
       </div>
+
 
       {/* Claim Dialog */}
       <Dialog open={!!claimDialog} onOpenChange={() => setClaimDialog(null)}>

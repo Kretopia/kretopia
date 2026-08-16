@@ -112,7 +112,7 @@ export default function Recordings() {
         eyebrow="Call recordings"
         title={
           <>
-            Recordings. <span className="text-energy-glow">Every call, ready to revisit.</span>
+            Recordings. <span className="landing-accent">Every call, ready to revisit.</span>
           </>
         }
         subtitle="Replays, transcripts, and Kreto-extracted action items from every recorded call."

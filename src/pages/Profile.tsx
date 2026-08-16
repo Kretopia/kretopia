@@ -410,7 +410,7 @@ const ProfileContent = () => {
         eyebrow="Passport"
         title={
           <>
-            Passport. <span className="text-energy-glow">Your work, verified.</span>
+            Passport. <span className="landing-accent">Your work, verified.</span>
           </>
         }
         subtitle="Your identity, your strongest credits, and every co-sign — one card you actually control."

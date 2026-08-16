@@ -155,7 +155,7 @@ const Meetup = () => {
         eyebrow="Live events"
         title={
           <>
-            Events. <span className="text-energy-glow">Where creators meet in person.</span>
+            Events. <span className="landing-accent">Where creators meet in person.</span>
           </>
         }
         subtitle="Workshops, meetups, jams, screenings, premieres — real-world moments built for the creative industry."

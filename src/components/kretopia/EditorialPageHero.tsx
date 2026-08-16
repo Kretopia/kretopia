@@ -75,12 +75,7 @@ export const EditorialPageHero = ({
           {accentTitle && (
             <>
               <br />
-              <span
-                className="font-serif italic font-normal pink-glow-breathe"
-                style={{ color: ACCENT }}
-              >
-                {accentTitle}
-              </span>
+              <span className="landing-accent">{accentTitle}</span>
             </>
           )}
         </h1>

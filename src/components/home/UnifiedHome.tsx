@@ -494,7 +494,7 @@ export const UnifiedHome = () => {
             eyebrow="Today"
             title={
               <>
-                What are we moving <span className="text-energy-glow">forward today?</span>
+                What are we moving <span className="landing-accent">forward today?</span>
               </>
             }
             subtitle="One place for your next move, your top opportunity, and your money signal."

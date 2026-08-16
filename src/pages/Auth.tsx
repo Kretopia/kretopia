@@ -621,6 +621,10 @@ const Auth = () => {
               </TabsContent>
             </Tabs>
           )}
+            </div>
+          </div>
+
+
 
           <ForgotPasswordDialog open={showForgotPassword} onOpenChange={setShowForgotPassword} />
 

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { PageTransition } from "@/components/PageTransition";
-import { BookOpen, Headphones, TrendingUp } from "lucide-react";
 import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { useLocation } from "react-router-dom";

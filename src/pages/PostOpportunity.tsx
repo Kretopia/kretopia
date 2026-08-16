@@ -531,7 +531,7 @@ const PostOpportunity = () => {
               </div>
             </CardContent>
           </Card>
-          </SmartWidget>
+          </Reveal>
           </div>
 
           <div className="mt-6 space-y-3">
@@ -542,12 +542,64 @@ const PostOpportunity = () => {
                 <><CheckCircle2 className="h-5 w-5" /> Post Opportunity (Free)</>
               )}
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-center text-white/45">
               We'll send a verification email. Your listing goes live once you confirm. No account needed.
             </p>
           </div>
         </form>
-      </div>
+      </EditorialChapter>
+
+      {/* II — Why it works */}
+      <EditorialChapter index="II" kicker="Why it works" title="Anyone can post a job." accentWord="Few can prove the work.">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {NOTES.map((n, i) => (
+            <Reveal key={n.title} delayIndex={i}>
+              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+                <span
+                  className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                >
+                  <n.icon className="h-4 w-4" style={{ color: ACCENT }} />
+                </span>
+                <p className="text-white font-semibold text-sm mb-1.5">{n.title}</p>
+                <p className="text-sm leading-relaxed text-white/55">{n.body}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal delayIndex={2}>
+          <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+            "A CV tells you what someone claims. A credit tells you what they actually shipped — and who signed for it."
+          </p>
+        </Reveal>
+      </EditorialChapter>
+
+      {/* III — Invitation */}
+      <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 ai-ambient-breathe"
+          style={{ background: "radial-gradient(60% 60% at 50% 100%, rgba(255,45,161,0.16), transparent 65%)" }}
+        />
+        <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 py-24 text-center">
+          <Reveal>
+            <h2 className="landing-h1 landing-glow mx-auto max-w-3xl">
+              The right creative exists.<br />
+              <span className="landing-accent">Go and find them.</span>
+            </h2>
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+              <Link to="/credits" className="cta-primary inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
+                Search the Creative Record
+                <ArrowUpRight className="h-4 w-4" aria-hidden />
+              </Link>
+              <Link to="/opportunities" className="group inline-flex items-center gap-2 text-sm text-white/85">
+                <span className="border-b border-white/30 pb-0.5 transition-colors group-hover:border-white">Browse live opportunities</span>
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" style={{ color: ACCENT }} />
+              </Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
       <ImageCropDialog
         imageUrl={rawImageUrl}
@@ -556,6 +608,8 @@ const PostOpportunity = () => {
         onCropComplete={handleCropComplete}
       />
     </div>
+    </PageTransition>
+
   );
 };
 

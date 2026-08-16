@@ -28,8 +28,6 @@ const KretopiaBottomNav = memo(() => {
   const location = useLocation();
   const { isBusiness } = useAccountTone();
 
-  if (location.pathname === "/auth") return null;
-
   const items = isBusiness ? COMPANY_ITEMS : CREATIVE_ITEMS;
 
   // Hide when a Radix dialog/sheet/drawer is open (keeps parity with legacy BottomNav).
@@ -54,6 +52,8 @@ const KretopiaBottomNav = memo(() => {
     });
     return () => obs.disconnect();
   }, []);
+
+  if (location.pathname === "/auth") return null;
   if (overlayOpen) return null;
 
   const isActive = (path: string) => {

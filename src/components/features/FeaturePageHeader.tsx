@@ -58,7 +58,12 @@ export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs,
             className="absolute right-4 top-4 z-10"
           />
         )}
-        <div className="flex flex-col items-center gap-4 text-center">
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, ease: [0.2, 0.65, 0.3, 0.95] }}
+          className="flex flex-col items-center gap-4 text-center"
+        >
           <div className="flex flex-col items-center w-full">
             <p
               className="inline-flex items-center gap-2 rounded-full border px-3 py-1 mb-6"
@@ -67,15 +72,20 @@ export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs,
               <span className="h-1.5 w-1.5 rounded-full ai-ambient-breathe" style={{ backgroundColor: "#FF2DA1" }} />
               <span className="landing-eyebrow" style={{ color: "#FF2DA1" }}>{eyebrow}</span>
             </p>
-            <div ref={wrapperRef} className="w-full max-w-4xl">
-              <h1 ref={titleRef} className="landing-h1 landing-glow" style={{ fontSize: "3rem" }}>
-                {title}
-              </h1>
-            </div>
+            <h1 className="landing-h1 landing-glow max-w-4xl text-balance">
+              {title}
+              {accentTitle && (
+                <>
+                  <br />
+                  <span className="landing-accent">{accentTitle}</span>
+                </>
+              )}
+            </h1>
             <p className="landing-sub mt-5 max-w-xl mx-auto">{subtitle}</p>
           </div>
-        </div>
+        </motion.div>
         {tabs && <div className="mt-6">{tabs}</div>}
+
       </div>
     </div>
   );

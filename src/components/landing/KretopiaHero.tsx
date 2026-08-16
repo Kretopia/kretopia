@@ -2,8 +2,7 @@
  * KretopiaHero — Section 1 of the Kretopia landing page.
  *
  * Search-first. The hierarchy is deliberate and fixed:
- *   eyebrow → headline → supporting sentence (a second, longer sentence is
- *   hidden below `sm:` so mobile's first viewport stays uncluttered) →
+ *   eyebrow → headline → supporting sentence →
  *   dominant search, whose own submit button IS the primary action — no
  *   competing CTA row sits underneath it.
  *
@@ -13,7 +12,7 @@
  * Nothing here reimplements search, and nothing fakes a result.
  */
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -29,14 +28,6 @@ const HEADLINE: { text: string; accent?: boolean }[][] = [
   [{ text: "Get" }, { text: "found" }, { text: "for" }, { text: "what's next", accent: true }],
 ];
 
-/** Rotating intents under the headline — the search thinking out loud. */
-const ROTATING_INTENTS = [
-  "your name.",
-  "a collaborator.",
-  "a credit you're owed.",
-  "your next opportunity.",
-];
-
 interface KretopiaHeroProps {
   onSearchSubmit: (query: string) => void;
 }
@@ -45,18 +36,10 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
-  const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
     analytics.featureUsed("landing_hero_viewed", { location: "hero" });
   }, []);
-
-  // Rotate the intent line; pauses while the user is actually searching.
-  useEffect(() => {
-    if (reducedMotion || focused) return;
-    const id = window.setInterval(() => setRotation((r) => (r + 1) % ROTATING_INTENTS.length), 2600);
-    return () => window.clearInterval(id);
-  }, [reducedMotion, focused]);
 
   const handleFocusChange = (open: boolean) => {
     if (open && !focused) analytics.featureUsed("landing_search_focused", { location: "hero" });

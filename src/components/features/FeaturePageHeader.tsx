@@ -27,18 +27,26 @@ export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: 
   useFitTitleOneLine(wrapperRef, titleRef, [title]);
 
   return (
-    <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
-      {/* AI ambience — a slow magenta aurora behind the title, purely decorative */}
+    <div
+      className="dark relative border-b border-white/[0.06] overflow-hidden pt-[env(safe-area-inset-top)]"
+      style={{ backgroundColor: "#05070D" }}
+    >
+      {/* aurora — same plate as the landing chapters / EditorialPageHero */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 ai-ambient-breathe"
+        style={{ background: "radial-gradient(60% 55% at 50% 0%, rgba(255,45,161,0.14), transparent 62%)" }}
+      />
+      {/* grain */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.13]"
         style={{
-          background:
-            "radial-gradient(70% 60% at 50% -10%, rgba(255,45,161,0.10), transparent 70%), radial-gradient(50% 50% at 85% 0%, rgba(23,217,212,0.07), transparent 70%)",
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
         }}
       />
-      <div className="relative container mx-auto max-w-5xl px-4 pt-6 pb-5 sm:pt-8 sm:pb-7">
+      <div className="relative container mx-auto max-w-5xl px-4 pt-10 pb-8 sm:pt-14 sm:pb-12">
         {/* The tutorial trigger floats in the header's corner instead of
             sitting between the subtitle and the first card — no sandwich. */}
         {tutorial && (
@@ -52,23 +60,22 @@ export function FeaturePageHeader({ eyebrow, title, subtitle, tabs, tutorial }: 
         )}
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="flex flex-col items-center w-full">
-            <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
-              <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-              {eyebrow}
+            <p
+              className="inline-flex items-center gap-2 rounded-full border px-3 py-1 mb-6"
+              style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full ai-ambient-breathe" style={{ backgroundColor: "#FF2DA1" }} />
+              <span className="landing-eyebrow" style={{ color: "#FF2DA1" }}>{eyebrow}</span>
             </p>
-            <div ref={wrapperRef} className="w-full max-w-3xl">
-              <h1
-                ref={titleRef}
-                className="font-black tracking-[-0.035em] text-foreground leading-[0.95]"
-                style={{ fontSize: "3rem" }}
-              >
+            <div ref={wrapperRef} className="w-full max-w-4xl">
+              <h1 ref={titleRef} className="landing-h1 landing-glow" style={{ fontSize: "3rem" }}>
                 {title}
               </h1>
             </div>
-            <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md mx-auto">{subtitle}</p>
+            <p className="landing-sub mt-5 max-w-xl mx-auto">{subtitle}</p>
           </div>
         </div>
-        {tabs && <div className="mt-5">{tabs}</div>}
+        {tabs && <div className="mt-6">{tabs}</div>}
       </div>
     </div>
   );

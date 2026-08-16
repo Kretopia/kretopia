@@ -14,6 +14,9 @@ import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { SmartWidget } from "@/components/ui/smart-widget";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { EditorialTutorialSection } from "@/components/kretopia/EditorialTutorialSection";
+import { AboutVisual } from "@/components/kretopia/pageVisuals";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const ACCENT = "#FF2DA1";
@@ -192,30 +195,24 @@ const About = () => {
         description="From a weekly gathering in Dubai to a global creative platform — Kretopia connects creatives across music, film, fashion, art, content, and culture worldwide."
       />
 
-      {/* Hero — cinematic editorial */}
-      <section className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(var(--primary)/0.08),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,hsl(var(--accent)/0.06),transparent_50%)]" />
-        <div className="container relative mx-auto max-w-4xl px-4 py-14 sm:py-20">
-          <p
-            className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-4 px-2.5 py-1 rounded-full border"
-            style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: ACCENT }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: ACCENT }} />
-            Powered by ThriveIN
-          </p>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] text-foreground mb-5 leading-[0.95]">
-            A global community<br />
-            built for <span className="pink-glow-breathe" style={{ color: ACCENT }}>creatives</span>
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-5">
-            What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network
-            connecting creatives across music, film, fashion, art, content, and culture.
-          </p>
-          <FeatureAITutorial featureKey="about" label="How Kretopia works" steps={ABOUT_TUTORIAL} />
-        </div>
-      </section>
+      <EditorialPageHero
+        kicker="About Kretopia"
+        title={<>A global community built for</>}
+        accentTitle="creatives"
+        subtitle="What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network connecting creatives across music, film, fashion, art, content, and culture."
+      >
+        <FeatureAITutorial featureKey="about" label="How Kretopia works" steps={ABOUT_TUTORIAL} />
+      </EditorialPageHero>
+
+      <EditorialTutorialSection
+        eyebrow="How Kretopia works"
+        heading="One record, one"
+        accentWord="loop"
+        body="Passport, proof, opportunity, delivery — each step feeds the next. Watch the loop play out below."
+        steps={ABOUT_TUTORIAL}
+        label="Kretopia"
+        visual={AboutVisual}
+      />
 
       {/* The Problem / The System / The Loop / The Invitation — product
           narrative, ahead of the ThriveIN origin story below. */}

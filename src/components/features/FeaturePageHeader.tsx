@@ -28,7 +28,7 @@ export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs,
 
   return (
     <div
-      className="dark relative border-b border-white/[0.06] overflow-hidden pt-[env(safe-area-inset-top)]"
+      className="dark relative overflow-hidden pt-[env(safe-area-inset-top)]"
       style={{ backgroundColor: "#05070D" }}
     >
       {/* aurora — same plate as the landing chapters / EditorialPageHero */}

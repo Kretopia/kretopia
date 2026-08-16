@@ -367,21 +367,6 @@ const CreditDatabase = () => {
             : "bg-gradient-to-b from-primary/8 to-background py-8 md:py-12"
         )}>
           <div className="container mx-auto px-4">
-            {!isSearchActive && (
-              <div className="mb-5 max-w-3xl mx-auto text-center flex flex-col items-center">
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3.5">
-                  <p className="text-xs text-white/70 leading-relaxed">
-                    <strong className="text-white">A Verified Credit</strong> is a project backed by real evidence — not just a claim.
-                    Once it's fully confirmed, it becomes a <strong className="text-white">Passport Stamp</strong>: the visible proof on a Creative Passport.
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mt-3 justify-center">
-                    {EVIDENCE_STATE_ORDER.map((s) => (
-                      <EvidenceStateBadge key={s} state={s} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
 
             <UnifiedSearchDropdown
               variant={isSearchActive ? "inline" : "hero"}

@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Lock } from "lucide-react";
+import { Lock, Sparkles } from "lucide-react";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,

@@ -153,7 +153,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
                     }
                   >
                     {word.accent ? (
-                      <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>{word.text}</span>
+                      <><span className="italic pink-glow-breathe" style={{ color: ACCENT }}>{word.text}</span>.</>
                     ) : (
                       word.text
                     )}

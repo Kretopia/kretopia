@@ -117,11 +117,9 @@ export default function SubmitReview() {
 
       // Review recorded — status recalculated from metrics automatically
 
-      // Update request status
-      await supabase
-        .from('review_requests')
-        .update({ status: 'completed', completed_at: new Date().toISOString() })
-        .eq('id', requestData.id);
+      // Update request status (token-checked server-side; anon UPDATE is closed)
+      await (supabase as any).rpc('complete_review_request', { p_token: token });
+
 
       setSubmitted(true);
       toast({ title: "Success!", description: "Thank you for your review!" });

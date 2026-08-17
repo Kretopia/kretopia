@@ -32,7 +32,10 @@ interface CreateSessionDialogProps {
   onCreated?: () => void;
   defaultLocation?: { lat: number; lng: number };
   defaultCircleId?: string;
+  /** Prefill from an AI extraction (e.g. the "Host an event" describe-it card). */
+  initialDetails?: ScannedEventDetails | null;
 }
+
 
 const EVENT_CATEGORIES = [
   { value: 'music', label: 'Music Jam / Concert' },
@@ -54,6 +57,8 @@ export const CreateSessionDialog = ({
   onCreated,
   defaultLocation,
   defaultCircleId,
+  initialDetails,
+
 }: CreateSessionDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -163,6 +168,33 @@ export const CreateSessionDialog = ({
       event_type: 'event',
     }));
   };
+
+  // Prefill from an AI extraction handed in by the parent (no flyer image involved).
+  useEffect(() => {
+    if (!open || !initialDetails) return;
+    const d = initialDetails;
+    if (d.start_date) {
+      const parsed = new Date(`${d.start_date}T${d.start_time || "12:00"}:00`);
+      if (!isNaN(parsed.getTime())) setDate(parsed);
+    }
+    if (d.start_time && /^\d{2}:\d{2}$/.test(d.start_time)) setTime(d.start_time);
+    setFormData(prev => ({
+      ...prev,
+      title: d.title || prev.title,
+      description: d.description || prev.description,
+      category: d.category || prev.category,
+      venue_name: d.venue_name || prev.venue_name,
+      venue_address: d.venue_address || prev.venue_address,
+      max_participants: d.max_participants ?? prev.max_participants,
+      is_ticketed: d.is_ticketed ?? prev.is_ticketed,
+      ticket_price: d.ticket_price ?? prev.ticket_price,
+      ticket_currency: d.ticket_currency || prev.ticket_currency,
+      external_ticket_url: d.external_ticket_url || prev.external_ticket_url,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialDetails]);
+
+
 
   const uploadCover = async (): Promise<string | null> => {
     if (!coverFile || !user) return null;

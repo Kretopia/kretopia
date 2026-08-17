@@ -19402,6 +19402,10 @@ export type Database = {
         Args: { _event_id: string; _user_id: string }
         Returns: boolean
       }
+      can_view_curated_stage: {
+        Args: { _email?: string; _stage_id: string; _user_id: string }
+        Returns: boolean
+      }
       check_in_guest_by_token: {
         Args: { p_event_id: string; p_token: string }
         Returns: {
@@ -19435,6 +19439,7 @@ export type Database = {
         Args: { p_claim_token: string; p_user_id: string }
         Returns: boolean
       }
+      complete_review_request: { Args: { p_token: string }; Returns: boolean }
       confirm_invoice_paid_manually: {
         Args: { p_invoice_id: string; p_payment_method: string }
         Returns: Json
@@ -19638,6 +19643,34 @@ export type Database = {
           role: string
           status: string
           year: number
+        }[]
+      }
+      get_curated_stage_by_invite: {
+        Args: { p_stage_id: string; p_token: string }
+        Returns: {
+          application_prompt: string
+          application_required: boolean
+          attended_count: number
+          blurb: string
+          capacity: number
+          cover_url: string
+          currency: string
+          description: string
+          ends_at: string
+          host_user_id: string
+          id: string
+          is_paid: boolean
+          mode: string
+          price_cents: number
+          recording_enabled: boolean
+          rsvp_count: number
+          starts_at: string
+          status: Database["public"]["Enums"]["curated_stage_status"]
+          title: string
+          turn_seconds: number
+          type: Database["public"]["Enums"]["curated_stage_type"]
+          vibe_tags: string[]
+          visibility: string
         }[]
       }
       get_endorsement_request_by_token: {
@@ -20076,6 +20109,7 @@ export type Database = {
           username: string
         }[]
       }
+      get_stage_invite_token: { Args: { p_stage_id: string }; Returns: string }
       get_tier_storage_limit: { Args: { tier: string }; Returns: number }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       guest_drop_post: {

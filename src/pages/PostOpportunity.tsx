@@ -8,14 +8,28 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, ImageIcon, Crop } from "lucide-react";
+import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, Crop, ShieldCheck, Sparkles, Users, Zap } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { CastingFieldsForm, type CastingFields } from "@/components/opportunity/CastingFieldsForm";
-import { SmartWidget } from "@/components/ui/smart-widget";
+import { PageTransition } from "@/components/PageTransition";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
+import { Reveal } from "@/components/kretopia/Reveal";
+
+const ACCENT = "#FF2DA1";
+
+const NOTES = [
+  { icon: ShieldCheck, title: "Verified credits", body: "Every creative is backed by co-signed work — you see proof, not promises." },
+  { icon: Sparkles, title: "Written for you", body: "Kreto drafts the brief from a sentence. You edit, you post." },
+  { icon: Users, title: "Matched, not shouted", body: "Your listing reaches the people whose record actually fits the job." },
+  { icon: Zap, title: "No account needed", body: "Verify your email and the listing is live in minutes." },
+];
+
 
 const STORAGE_KEY = "thrivein_draft_opportunity";
 
@@ -206,336 +220,396 @@ const PostOpportunity = () => {
   }
 
   return (
-    <div className="dark min-h-screen bg-background" style={{ backgroundColor: "#05070D" }}>
+    <PageTransition>
+    <div className="dark min-h-screen" style={{ backgroundColor: "#05070D" }}>
       <Helmet>
-        <title>Post an Opportunity | Kretopia</title>
+        <title>Hire Talent — Post an Opportunity | Kretopia</title>
         <meta name="description" content="Post a job, collaboration, or gig opportunity on Kretopia and connect with thousands of creative professionals. No account needed." />
       </Helmet>
 
-      <div className="max-w-2xl mx-auto p-4 py-8 space-y-6">
-        {/* Hero */}
-        <div className="text-center space-y-3">
-          <p className="landing-eyebrow flex items-center justify-center gap-2">
-            <Building2 className="h-3.5 w-3.5" style={{ color: "#FF2DA1" }} />
-            For Companies & Brands
-          </p>
-          <h1 className="landing-h2 landing-glow">
-            Find the <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>perfect</span> creative talent
-          </h1>
-          <p className="landing-sub max-w-lg mx-auto">
-            Post your opportunity and connect with vetted creators. No account needed — just verify your email.
-          </p>
-        </div>
+      <EditorialPageHero
+        kicker="Hire Talent"
+        oneLine
+        title="Hire talent."
+        accentTitle="Backed by proof."
+        subtitle="Post your opportunity and reach creatives whose work is already on the record. No account needed — just verify your email."
+      />
 
-        <form onSubmit={handleSubmit}>
-          <SmartWidget interactive={false}>
-          <Card className="border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Your Company
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="company_name">Company Name *</Label>
-                  <Input
-                    id="company_name"
-                    value={formData.company_name}
-                    onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                    placeholder="e.g., Acme Studios"
-                    maxLength={100}
-                    required
-                  />
+      {/* I — The brief */}
+      <EditorialChapter index="I" kicker="The brief" title="Tell us who you need." accentWord="Kreto writes the rest.">
+        <form onSubmit={handleSubmit} className="w-full">
+          <Reveal>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+              {/* AI-powered brief writer — anchored at the top as the primary action */}
+              <div className="p-5 sm:p-8 border-b border-white/10 bg-gradient-to-r from-[rgba(255,45,161,0.08)] via-transparent to-transparent">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[rgba(255,45,161,0.12)]">
+                    <Sparkles className="h-4 w-4" style={{ color: ACCENT }} />
+                  </span>
+                  <div>
+                    <p className="text-white font-semibold text-sm">Start with Kreto</p>
+                    <p className="text-white/50 text-xs">Describe the gig in plain language. Kreto drafts the rest.</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Work Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="you@company.com"
-                    maxLength={255}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="logo_url">Logo URL (optional)</Label>
-                <Input
-                  id="logo_url"
-                  value={formData.logo_url}
-                  onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                  placeholder="https://your-site.com/logo.png"
-                  maxLength={500}
-                />
-              </div>
-            </CardContent>
-          </Card>
-          </SmartWidget>
-
-          <div className="mt-4">
-          <SmartWidget interactive={false}>
-          <Card className="border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                Opportunity Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <AIJobDescriptionGenerator
-                isPro={isPro}
-                onGenerated={(data) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    title: data.title || prev.title,
-                    description: data.description || prev.description,
-                    requirements: data.requirements || prev.requirements,
-                    deliverables: data.deliverables || prev.deliverables,
-                    skills: data.skills?.length ? data.skills : prev.skills,
-                    compensation: data.compensation || prev.compensation,
-                  }));
-                }}
-              />
-
-              <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g., Looking for Video Editor for Music Video"
-                  maxLength={200}
-                  required
+                <AIJobDescriptionGenerator
+                  isPro={isPro}
+                  onGenerated={(data) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      title: data.title || prev.title,
+                      description: data.description || prev.description,
+                      requirements: data.requirements || prev.requirements,
+                      deliverables: data.deliverables || prev.deliverables,
+                      skills: data.skills?.length ? data.skills : prev.skills,
+                      compensation: data.compensation || prev.compensation,
+                    }));
+                  }}
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe the role, project, and what you're looking for..."
-                  rows={5}
-                  maxLength={2000}
-                  required
-                />
-              </div>
+              <div className="p-5 sm:p-8 space-y-8">
+                {/* Section: Company */}
+                <section className="space-y-5">
+                  <div className="flex items-center gap-2 text-white/90">
+                    <Building2 className="h-4 w-4" style={{ color: ACCENT }} />
+                    <h3 className="text-sm font-semibold uppercase tracking-wider">Your Company</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2 md:col-span-1">
+                      <Label htmlFor="company_name">Company Name *</Label>
+                      <Input
+                        id="company_name"
+                        value={formData.company_name}
+                        onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                        placeholder="e.g., Acme Studios"
+                        maxLength={100}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-1">
+                      <Label htmlFor="email">Work Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="you@company.com"
+                        maxLength={255}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-1">
+                      <Label htmlFor="logo_url">Logo URL (optional)</Label>
+                      <Input
+                        id="logo_url"
+                        value={formData.logo_url}
+                        onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+                        placeholder="https://your-site.com/logo.png"
+                        maxLength={500}
+                      />
+                    </div>
+                  </div>
+                </section>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Select value={formData.type} onValueChange={(val) => setFormData({ ...formData, type: val })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="job">Paid Job</SelectItem>
-                      <SelectItem value="collab">Collaboration</SelectItem>
-                      <SelectItem value="barter">Barter/Trade</SelectItem>
-                      <SelectItem value="casting">Casting Call (Models)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Location Type</Label>
-                  <Select value={formData.location} onValueChange={(val) => setFormData({ ...formData, location: val })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="remote">Remote</SelectItem>
-                      <SelectItem value="hybrid">Hybrid</SelectItem>
-                      <SelectItem value="onsite">On-site</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                <div className="h-px bg-white/10" />
 
-              {(formData.location === "hybrid" || formData.location === "onsite") && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Section: Opportunity */}
+                <section className="space-y-5">
+                  <div className="flex items-center gap-2 text-white/90">
+                    <Briefcase className="h-4 w-4" style={{ color: ACCENT }} />
+                    <h3 className="text-sm font-semibold uppercase tracking-wider">Opportunity</h3>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="location_city">City</Label>
+                    <Label htmlFor="title">Title *</Label>
                     <Input
-                      id="location_city"
-                      value={formData.location_city}
-                      onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
-                      placeholder="e.g., Dubai, Los Angeles"
-                      maxLength={100}
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="e.g., Looking for Video Editor for Music Video"
+                      maxLength={200}
+                      required
                     />
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Type</Label>
+                      <Select value={formData.type} onValueChange={(val) => setFormData({ ...formData, type: val })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="job">Paid Job</SelectItem>
+                          <SelectItem value="collab">Collaboration</SelectItem>
+                          <SelectItem value="barter">Barter/Trade</SelectItem>
+                          <SelectItem value="casting">Casting Call (Models)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Location Type</Label>
+                      <Select value={formData.location} onValueChange={(val) => setFormData({ ...formData, location: val })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="remote">Remote</SelectItem>
+                          <SelectItem value="hybrid">Hybrid</SelectItem>
+                          <SelectItem value="onsite">On-site</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="compensation">Compensation</Label>
+                      <Input
+                        id="compensation"
+                        value={formData.compensation}
+                        onChange={(e) => setFormData({ ...formData, compensation: e.target.value })}
+                        placeholder="e.g., $500-1000"
+                        maxLength={200}
+                      />
+                    </div>
+                  </div>
+
+                  {(formData.location === "hybrid" || formData.location === "onsite") && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="location_city">City</Label>
+                        <Input
+                          id="location_city"
+                          value={formData.location_city}
+                          onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
+                          placeholder="e.g., Dubai, Los Angeles"
+                          maxLength={100}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="location_country">Country</Label>
+                        <Input
+                          id="location_country"
+                          value={formData.location_country}
+                          onChange={(e) => setFormData({ ...formData, location_country: e.target.value })}
+                          placeholder="e.g., UAE, United States"
+                          maxLength={100}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
-                    <Label htmlFor="location_country">Country</Label>
-                    <Input
-                      id="location_country"
-                      value={formData.location_country}
-                      onChange={(e) => setFormData({ ...formData, location_country: e.target.value })}
-                      placeholder="e.g., UAE, United States"
-                      maxLength={100}
+                    <Label htmlFor="description">Description *</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Describe the role, project, and what you're looking for..."
+                      rows={5}
+                      maxLength={2000}
+                      required
                     />
                   </div>
-                </div>
-              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="compensation">Compensation</Label>
-                <Input
-                  id="compensation"
-                  value={formData.compensation}
-                  onChange={(e) => setFormData({ ...formData, compensation: e.target.value })}
-                  placeholder="e.g., $500-1000, Revenue share, Credit only"
-                  maxLength={200}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Required Skills</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
-                    placeholder="Add a skill and press Enter"
-                    maxLength={50}
-                  />
-                  <Button type="button" onClick={handleAddSkill} variant="outline">Add</Button>
-                </div>
-                {formData.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.skills.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="gap-1">
-                        {skill}
-                        <X className="h-3 w-3 cursor-pointer" onClick={() => handleRemoveSkill(skill)} />
-                      </Badge>
-                    ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="requirements">Requirements</Label>
+                      <Textarea
+                        id="requirements"
+                        value={formData.requirements}
+                        onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                        placeholder="Any specific requirements or qualifications..."
+                        rows={3}
+                        maxLength={1000}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="deliverables">Deliverables</Label>
+                      <Textarea
+                        id="deliverables"
+                        value={formData.deliverables}
+                        onChange={(e) => setFormData({ ...formData, deliverables: e.target.value })}
+                        placeholder="What will the collaborator deliver..."
+                        rows={3}
+                        maxLength={1000}
+                      />
+                    </div>
                   </div>
+                </section>
+
+                <div className="h-px bg-white/10" />
+
+                {/* Section: Skills */}
+                <section className="space-y-5">
+                  <div className="flex items-center gap-2 text-white/90">
+                    <Zap className="h-4 w-4" style={{ color: ACCENT }} />
+                    <h3 className="text-sm font-semibold uppercase tracking-wider">Required Skills</h3>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="skills-input">Add skills</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="skills-input"
+                        value={skillInput}
+                        onChange={(e) => setSkillInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
+                        placeholder="e.g., Video Editing, Color Grading, After Effects"
+                        maxLength={50}
+                      />
+                      <Button type="button" onClick={handleAddSkill} variant="outline">Add</Button>
+                    </div>
+                    {formData.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {formData.skills.map((skill) => (
+                          <Badge key={skill} variant="secondary" className="gap-1 px-2.5 py-1">
+                            {skill}
+                            <X className="h-3 w-3 cursor-pointer" onClick={() => handleRemoveSkill(skill)} />
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* Casting-specific fields */}
+                {formData.type === "casting" && (
+                  <>
+                    <div className="h-px bg-white/10" />
+                    <section className="space-y-5">
+                      <div className="flex items-center gap-2 text-white/90">
+                        <Users className="h-4 w-4" style={{ color: ACCENT }} />
+                        <h3 className="text-sm font-semibold uppercase tracking-wider">Casting Details</h3>
+                      </div>
+                      <CastingFieldsForm value={casting} onChange={setCasting} />
+                    </section>
+                  </>
                 )}
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="requirements">Requirements</Label>
-                <Textarea
-                  id="requirements"
-                  value={formData.requirements}
-                  onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                  placeholder="Any specific requirements or qualifications..."
-                  rows={2}
-                  maxLength={1000}
-                />
-              </div>
+                <div className="h-px bg-white/10" />
 
-              <div className="space-y-2">
-                <Label htmlFor="deliverables">Deliverables</Label>
-                <Textarea
-                  id="deliverables"
-                  value={formData.deliverables}
-                  onChange={(e) => setFormData({ ...formData, deliverables: e.target.value })}
-                  placeholder="What will the collaborator deliver..."
-                  rows={2}
-                  maxLength={1000}
-                />
-              </div>
-
-              {formData.type === "casting" && (
-                <CastingFieldsForm value={casting} onChange={setCasting} />
-              )}
-
-              <div className="space-y-2">
-                <Label>Cover Image (optional)</Label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
-                {imagePreview || formData.image_url ? (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
-                    <img
-                      src={imagePreview || formData.image_url}
-                      alt="Cover preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 right-2 flex gap-1">
-                      {imagePreview && (
+                {/* Section: Cover Image */}
+                <section className="space-y-5">
+                  <div className="flex items-center gap-2 text-white/90">
+                    <Upload className="h-4 w-4" style={{ color: ACCENT }} />
+                    <h3 className="text-sm font-semibold uppercase tracking-wider">Cover Image (optional)</h3>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  {imagePreview || formData.image_url ? (
+                    <div className="relative w-full h-56 sm:h-72 rounded-xl overflow-hidden border border-white/10">
+                      <img
+                        src={imagePreview || formData.image_url}
+                        alt="Cover preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-3 right-3 flex gap-2">
+                        {imagePreview && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="icon"
+                            className="h-9 w-9"
+                            onClick={() => {
+                              setRawImageUrl(imagePreview);
+                              setShowCropDialog(true);
+                            }}
+                          >
+                            <Crop className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           type="button"
                           variant="secondary"
                           size="icon"
-                          className="h-7 w-7"
-                          onClick={() => {
-                            setRawImageUrl(imagePreview);
-                            setShowCropDialog(true);
-                          }}
+                          className="h-9 w-9"
+                          onClick={() => fileInputRef.current?.click()}
                         >
-                          <Crop className="h-4 w-4" />
+                          <Upload className="h-4 w-4" />
                         </Button>
-                      )}
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={clearImage}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="h-9 w-9"
+                          onClick={clearImage}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full h-40 sm:h-52 border-2 border-dashed border-white/15 rounded-xl flex flex-col items-center justify-center gap-2 text-white/50 hover:border-[rgba(255,45,161,0.5)] hover:text-white/80 transition-colors"
+                    >
+                      <Upload className="h-7 w-7" />
+                      <span className="text-sm font-medium">Click to upload an image</span>
+                      <span className="text-xs">PNG, JPG up to 5MB</span>
+                    </button>
+                  )}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-white/50">
+                    <span>Or paste a URL:</span>
+                    <Input
+                      value={formData.image_url}
+                      onChange={(e) => {
+                        setFormData({ ...formData, image_url: e.target.value });
+                        setImageFile(null);
+                        setImagePreview("");
+                      }}
+                      placeholder="https://example.com/image.jpg"
+                      className="h-8 text-sm flex-1"
+                      maxLength={500}
+                    />
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full h-32 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
-                  >
-                    <Upload className="h-6 w-6" />
-                    <span className="text-sm font-medium">Click to upload an image</span>
-                    <span className="text-xs">PNG, JPG up to 5MB</span>
-                  </button>
-                )}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Or paste a URL:</span>
-                  <Input
-                    value={formData.image_url}
-                    onChange={(e) => {
-                      setFormData({ ...formData, image_url: e.target.value });
-                      setImageFile(null);
-                      setImagePreview("");
-                    }}
-                    placeholder="https://example.com/image.jpg"
-                    className="h-7 text-xs"
-                    maxLength={500}
-                  />
+                </section>
+              </div>
+
+              {/* Sticky submit footer */}
+              <div className="sticky bottom-0 z-10 p-5 sm:p-8 border-t border-white/10 bg-[#0B0B10]/95 backdrop-blur supports-[backdrop-filter]:bg-[#0B0B10]/80">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                  <Button type="submit" size="lg" className="flex-1 gap-2 h-12 text-base" disabled={posting}>
+                    {posting ? (
+                      <><Loader2 className="h-5 w-5 animate-spin" /> Submitting...</>
+                    ) : (
+                      <><CheckCircle2 className="h-5 w-5" /> Post Opportunity (Free)</>
+                    )}
+                  </Button>
+                  <p className="text-xs text-white/45 max-w-sm text-center sm:text-left">
+                    We'll send a verification email. Your listing goes live once you confirm. No account needed.
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          </SmartWidget>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            <Button type="submit" size="lg" className="w-full gap-2" disabled={posting}>
-              {posting ? (
-                <><Loader2 className="h-5 w-5 animate-spin" /> Submitting...</>
-              ) : (
-                <><CheckCircle2 className="h-5 w-5" /> Post Opportunity (Free)</>
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              We'll send a verification email. Your listing goes live once you confirm. No account needed.
-            </p>
-          </div>
+            </div>
+          </Reveal>
         </form>
-      </div>
+      </EditorialChapter>
+
+      {/* II — Why it works */}
+      <EditorialChapter index="II" kicker="Why it works" title="Anyone can post a job." accentWord="Few can prove the work.">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {NOTES.map((n, i) => (
+            <Reveal key={n.title} delayIndex={i}>
+              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+                <span
+                  className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                >
+                  <n.icon className="h-4 w-4" style={{ color: ACCENT }} />
+                </span>
+                <p className="text-white font-semibold text-sm mb-1.5">{n.title}</p>
+                <p className="text-sm leading-relaxed text-white/55">{n.body}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal delayIndex={2}>
+          <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+            "A CV tells you what someone claims. A credit tells you what they actually shipped — and who signed for it."
+          </p>
+        </Reveal>
+      </EditorialChapter>
+
 
       <ImageCropDialog
         imageUrl={rawImageUrl}
@@ -544,6 +618,8 @@ const PostOpportunity = () => {
         onCropComplete={handleCropComplete}
       />
     </div>
+    </PageTransition>
+
   );
 };
 

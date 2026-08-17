@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  PenLine, IdCard, Compass, Send, ArrowRight, ArrowUpRight,
+  PenLine, IdCard, Compass, Send, ArrowUpRight,
   CheckCircle2, Clock, ShieldQuestion, Loader2,
 } from "lucide-react";
 import { BRAND } from "@/lib/brandLexicon";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
 import { KRETO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
+import { InlineKretoChat } from "@/components/kreto/InlineKretoChat";
 
 const QUICK_ACTIONS = [
   {
@@ -33,12 +34,6 @@ const QUICK_ACTIONS = [
     prompt: "Help me prepare a follow-up message for a conversation that's gone quiet.",
   },
 ] as const;
-
-function openKreto(prompt?: string, context?: Record<string, unknown>) {
-  window.dispatchEvent(
-    new CustomEvent("thrive-copilot:open", { detail: { ...(prompt ? { prompt } : {}), ...(context ? { context } : {}) } })
-  );
-}
 
 interface RecentGig {
   id: string;
@@ -74,13 +69,11 @@ export default function KretoTab() {
   const [gig, setGig] = useState<RecentGig | null>(null);
   const [actions, setActions] = useState<RecentAction[]>([]);
   const [loadingContext, setLoadingContext] = useState(true);
+  const [seed, setSeed] = useState<{ text: string; n: number } | null>(null);
+  const ask = (text: string) => setSeed((s) => ({ text, n: (s?.n ?? 0) + 1 }));
   const titleWrapperRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   useFitTitleOneLine(titleWrapperRef, titleRef, []);
-
-  useEffect(() => {
-    openKreto();
-  }, []);
 
   useEffect(() => {
     if (!user) { setLoadingContext(false); return; }
@@ -138,15 +131,8 @@ export default function KretoTab() {
           <FeatureAITutorial featureKey="kreto" label="How Kreto works" steps={KRETO_TUTORIAL} />
         </div>
 
-        {/* Primary CTA — the one dominant action on this page */}
-        <button
-          type="button"
-          onClick={() => openKreto()}
-          className="w-full flex items-center justify-between gap-3 rounded-2xl border border-[#FF2DA1]/40 bg-[#FF2DA1]/10 px-5 py-4 text-left hover:bg-[#FF2DA1]/15 transition-colors"
-        >
-          <span className="text-base font-medium text-white">Ask {BRAND.agentName} anything…</span>
-          <ArrowRight className="h-5 w-5 text-[#FF2DA1] shrink-0" />
-        </button>
+        {/* Primary surface — the live thread, answered right here on the page */}
+        <InlineKretoChat key={seed?.n ?? 0} seedPrompt={seed?.text ?? null} />
 
         {/* Quick actions — secondary shortcuts, visually quieter than the primary CTA above */}
         <div>
@@ -156,7 +142,7 @@ export default function KretoTab() {
               <button
                 key={label}
                 type="button"
-                onClick={() => openKreto(prompt)}
+                onClick={() => ask(prompt)}
                 className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-sm font-medium text-white/80 hover:border-white/25 hover:bg-white/[0.06] transition-colors"
               >
                 <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
@@ -199,10 +185,7 @@ export default function KretoTab() {
             {gig && (
               <button
                 type="button"
-                onClick={() => openKreto(
-                  `Help me think through this opportunity: "${gig.title}"${gig.company ? ` at ${gig.company}` : ""}.`,
-                  { scouted_gig_id: gig.id }
-                )}
+                onClick={() => ask(`Help me think through this opportunity: "${gig.title}"${gig.company ? ` at ${gig.company}` : ""}.`)}
                 className="text-left rounded-xl border border-white/10 bg-white/[0.03] p-4 hover:border-[#FF2DA1]/40 transition-colors"
               >
                 <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2">Top Scout match</p>

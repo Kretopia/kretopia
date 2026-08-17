@@ -58,6 +58,38 @@ const ROUTE_TIPS: Array<{ match: (p: string) => boolean; tips: Tip[] }> = [
       { eyebrow: "Passport",line: "Want me to audit your Passport and tell you the three highest-leverage things to fix?",   cta: "Audit my Passport",      prompt: "Audit my Creative Passport. Give me the three highest-leverage things to improve, in order." },
     ],
   },
+  {
+    match: (p) => p.startsWith("/clients"),
+    tips: [
+      { eyebrow: "Clients", line: "Paste a signature, a brief or just a name — I'll build the client record for you.",       cta: "Add a client for me",    prompt: "I'll paste some client details. Extract the name, company, email and phone and tell me what's missing." },
+      { eyebrow: "Clients", line: "Want me to draft the follow-up to the client you haven't spoken to in a while?",           cta: "Draft the follow-up",    prompt: "Draft a warm follow-up message to a client I haven't spoken to in a while, in my voice." },
+    ],
+  },
+  {
+    match: (p) => p.startsWith("/meetup") || p.startsWith("/events"),
+    tips: [
+      { eyebrow: "Events",  line: "Describe your event in one sentence — I'll build the whole listing.",                      cta: "Build my event",         prompt: "I want to host an event. Ask me one question at a time and then write the full listing: title, description, date, venue and tickets." },
+      { eyebrow: "Events",  line: "Want me to write the invite copy and pick who to send it to?",                             cta: "Write the invite",       prompt: "Write invite copy for my next event and suggest which creators in my network to send it to." },
+    ],
+  },
+  {
+    match: (p) => p.startsWith("/circle") || p.startsWith("/stages"),
+    tips: [
+      { eyebrow: "Circle",  line: "I can tell you who's worth adding to your circle based on who you've already worked with.", cta: "Suggest people",         prompt: "Based on my credits and collaborations, who should I add to my circle and why?" },
+    ],
+  },
+  {
+    match: (p) => p.startsWith("/recordings"),
+    tips: [
+      { eyebrow: "Recordings", line: "Give me a recording and I'll pull the brief, the decisions and the follow-ups out of it.", cta: "Summarise a call",    prompt: "Summarise my latest recorded call: key decisions, action items and who owns each one." },
+    ],
+  },
+  {
+    match: (p) => p.startsWith("/work") || p.startsWith("/studios"),
+    tips: [
+      { eyebrow: "Studios", line: "Drop a brief and I'll spin up the Studio — tasks, deliverables and timeline included.",     cta: "Spin up a Studio",       prompt: "I have a new brief. Turn it into a Studio with tasks, deliverables and a timeline." },
+    ],
+  },
 ];
 
 const FALLBACK: Tip = {

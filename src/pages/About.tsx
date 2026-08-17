@@ -1,457 +1,190 @@
-import { SEO } from "@/components/SEO";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  MapPin, Calendar, Users, Globe, ArrowRight, Quote,
-  Rocket, Music, Film, Palette, Camera, Mic, Sparkles,
-  Building2, Plane, Heart, Wifi, RefreshCw, Zap,
-  Fingerprint, ShieldCheck, Compass, LayoutGrid, Theater, Search,
-  ChevronRight,
-} from "lucide-react";
+/**
+ * About — same cinematic language as the landing page: #05070D plate,
+ * magenta aurora, grain, serif chapter titles, scroll reveals. Kept short:
+ * what Kretopia is, the loop it runs, the three people building it, and one
+ * invitation. No ThriveIN copy — Kretopia only.
+ */
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ChevronRight, Fingerprint, ShieldCheck, Compass, LayoutGrid, Sparkles, Globe } from "lucide-react";
+import { SEO } from "@/components/SEO";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { Reveal } from "@/components/kretopia/Reveal";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { SmartWidget } from "@/components/ui/smart-widget";
-import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
-import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const ACCENT = "#FF2DA1";
 
-const ABOUT_TUTORIAL: TutorialStep[] = [
-  { icon: Fingerprint, title: "Build your Passport", body: "Every project, every credit, collected into one link — your whole career, in one place." },
-  { icon: ShieldCheck, title: "Get verified, get trusted", body: "Credits become Verified when the people who were there co-sign them — not just claimed, proven." },
-  { icon: Compass, title: "Scout finds the opportunity", body: "Kreto reads the web for gigs and briefs, and surfaces the ones that actually fit your Passport." },
-  { icon: LayoutGrid, title: "Studio closes the loop", body: "Deliver the work, get paid, and the credit becomes part of a Passport that's stronger than before." },
-];
+const GRAIN =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")";
 
 const PILLARS = [
-  {
-    icon: Fingerprint,
-    title: "Creative Passport",
-    body: "Every project, every credit, every co-sign — collected into one link that is your whole career, verified by the people who lived it with you.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Verified Credits",
-    body: "A credit isn't called verified without evidence behind it. Claimed, evidence-backed, co-signed, or organization-confirmed — always honestly labeled.",
-  },
-  {
-    icon: Compass,
-    title: "Scout",
-    body: "Scout reads the web for gigs, briefs and casting calls, and surfaces the ones that actually fit your Passport.",
-  },
-  {
-    icon: LayoutGrid,
-    title: "Studio",
-    body: "Every shoot, drop or campaign gets its own Studio — brief, files, chat, deliverables and payment in one room.",
-  },
-  {
-    icon: Theater,
-    title: "SoundStages",
-    body: "Live rooms, speed sessions and auditions — a way to be seen by an audience that came for exactly what you do.",
-  },
-  {
-    icon: Sparkles,
-    title: "Kreto",
-    body: "The Executive Producer for your creative career — reads your Passport, explains opportunities, and turns conversations into action. Everything it produces stays editable and only becomes official once you confirm it.",
-  },
+  { icon: Fingerprint, title: "Creative Passport", body: "Your whole career on one link — credits, collaborators, co-signs." },
+  { icon: ShieldCheck, title: "Verified Credits", body: "Every claim backed by evidence or the people who were there." },
+  { icon: Compass, title: "Scout", body: "Gigs, briefs and casting calls matched to what you actually do." },
+  { icon: LayoutGrid, title: "Studio", body: "One room per project — brief, files, chat, deliverables, payment." },
+  { icon: Sparkles, title: "Kreto", body: "Your Executive Producer: reads your Passport, turns talk into action." },
+  { icon: Globe, title: "One record, worldwide", body: "A creative in Port of Spain, Lagos or Paris is one search away." },
 ];
 
 const LOOP_STEPS = ["Search", "Passport", "Trust", "Opportunity", "Studio", "Payment", "Stronger Passport"];
 
-const timeline = [
-  { year: "2013", location: "Dubai", icon: Building2, title: "The Beginning", desc: "ThriveIN begins as Industry Night, a weekly after-work gathering for creatives at Holiday Inn Internet City. A space designed for connection, collaboration, and community." },
-  { year: "2014", location: "Los Angeles", icon: Plane, title: "International Expansion", desc: "The community expands into Los Angeles, connecting creatives internationally and building bridges between industries and markets." },
-  { year: "2015", location: "Trinidad & Tobago", icon: Music, title: "Caribbean Launch", desc: "ThriveIN launches in Trinidad, creating a platform for Caribbean creatives to connect, showcase their work, and access new opportunities." },
-  { year: "2016", location: "Global", icon: Globe, title: "Global Impact", desc: "Real opportunities begin to emerge — including facilitating a global distribution pathway for Caribbean artist Kalpee with Sony Music." },
-  { year: "2017", location: "Geneva", icon: MapPin, title: "European Expansion", desc: "ThriveIN expands into Europe, continuing its mission of connecting creatives across borders and cultures." },
-  { year: "2018", location: "Worldwide", icon: Users, title: "Community Growth", desc: "The network grows across regions, hosting showcases, fashion shows, live art, music performances, and creative networking experiences." },
-  { year: "2019", location: "Bali", icon: Sparkles, title: "ThriveXchange", desc: "ThriveIN launches in Bali and introduces ThriveXchange, a 12-day creative experience bringing together global creatives for collaboration and cultural exchange." },
-  { year: "2020", location: "Digital", icon: Wifi, title: "First Digital Step", desc: "ThriveIN begins its transition into the digital space with the first version of the platform, extending the community beyond physical events." },
-  { year: "2022", location: "Platform", icon: RefreshCw, title: "Rebuild & Evolution", desc: "The platform is reimagined and rebuilt, supported by early-stage funding and experimentation, setting the foundation for a more powerful ecosystem." },
-  { year: "2026", location: "Kretopia.io", icon: Zap, title: "The Platform Era", desc: "Kretopia evolves into a global creative platform — bringing together community, collaboration, verified credits, and real opportunities in one place." },
+const FOUNDERS = [
+  {
+    name: "Ethan Auguste",
+    role: "CEO",
+    initials: "EA",
+    body: "Built the community first — a decade of rooms, showcases and introductions across Dubai, Los Angeles, Trinidad, Geneva and Bali. He knows who the creatives are because he has been in the room with them.",
+  },
+  {
+    name: "Jefferson Lenox Gordon",
+    role: "CDO",
+    initials: "JG",
+    body: "Design and creative direction. He makes the product feel like the culture it serves — sharp, editorial, and unmistakably built by creatives rather than for them.",
+  },
+  {
+    name: "Noé Plantier",
+    role: "CTO",
+    initials: "NP",
+    body: "Engineering and AI. Verification, Scout and Kreto — the machinery that turns a scattered creative history into something searchable, provable and instantly useful.",
+  },
 ];
 
-const communityMembers = [
-  { icon: Palette, label: "Artists, designers, filmmakers, and musicians" },
-  { icon: Camera, label: "Content creators and creative entrepreneurs" },
-  { icon: Film, label: "Producers, stylists, and industry professionals" },
-  { icon: Mic, label: "Cultural leaders, brands, and institutions" },
-];
-
-const cities = [
-  { name: "Dubai", flag: "🇦🇪" },
-  { name: "Los Angeles", flag: "🇺🇸" },
-  { name: "Geneva", flag: "🇨🇭" },
-  { name: "Trinidad", flag: "🇹🇹" },
-  { name: "Bali", flag: "🇮🇩" },
-];
-
-/**
- * ProductLoopSection — "The problem / The system / The loop / The
- * invitation" narrative the charter asks for, kept separate from the
- * ThriveIN origin story below it. Product-first, then "why us" history.
- * Reuses useScrollReveal (same primitive as the landing chapters) rather
- * than a fifth hand-rolled reveal implementation.
- */
-const ProductLoopSection = () => {
-  const [loopRef, loopVisible] = useScrollReveal<HTMLDivElement>();
-
+/** Full-bleed chapter plate — same surface + reveal as the landing chapters. */
+const Chapter = ({
+  index, kicker, title, accentWord, children,
+}: {
+  index: string; kicker: string; title: string; accentWord: string; children: React.ReactNode;
+}) => {
+  const reducedMotion = useReducedMotion();
   return (
-    <section className="border-y border-border bg-card/30">
-      <div className="container mx-auto max-w-4xl px-4 py-16 sm:py-20">
-        {/* The problem */}
-        <div className="text-center mb-12">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-4" style={{ color: ACCENT }}>The Problem</p>
-          <h2 className="text-2xl sm:text-4xl font-bold text-foreground leading-tight">
-            Talent is everywhere.<br />
-            <span className="text-muted-foreground">Opportunity is </span>
-            <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>not</span>.
-          </h2>
-        </div>
-
-        {/* The system */}
-        <div className="max-w-2xl mx-auto text-center mb-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-3" style={{ color: ACCENT }}>The System</p>
-          <h2 className="text-lg sm:text-xl font-medium text-foreground leading-relaxed">
-            Kretopia turns creative history into trusted opportunity.
-          </h2>
-        </div>
-
-        {/* Expandable pillars */}
-        <div className="max-w-2xl mx-auto mb-16">
-          <Accordion type="single" collapsible className="w-full">
-            {PILLARS.map((p) => (
-              <AccordionItem key={p.title} value={p.title} className="border-border/60">
-                <AccordionTrigger className="hover:no-underline">
-                  <span className="flex items-center gap-3 text-left">
-                    <span
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
-                    >
-                      <p.icon className="h-4 w-4" style={{ color: ACCENT }} />
-                    </span>
-                    <span className="font-semibold text-sm sm:text-base">{p.title}</span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="pl-11 text-sm text-muted-foreground leading-relaxed">
-                  {p.body}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-
-        {/* The loop */}
-        <div ref={loopRef} className="text-center mb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-6" style={{ color: ACCENT }}>The Loop</p>
-          <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-3 max-w-2xl mx-auto">
-            {LOOP_STEPS.map((step, i) => (
-              <span key={step} className="flex items-center">
-                <span
-                  className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-background border whitespace-nowrap transition-all duration-500"
-                  style={{
-                    opacity: loopVisible ? 1 : 0,
-                    transform: loopVisible ? "none" : "translateY(6px)",
-                    transitionDelay: `${i * 80}ms`,
-                    borderColor: "rgba(255,45,161,0.25)",
-                  }}
-                >
-                  {step}
-                </span>
-                {i < LOOP_STEPS.length - 1 && (
-                  <ChevronRight className="h-3.5 w-3.5 mx-0.5" style={{ color: "rgba(255,45,161,0.5)" }} aria-hidden />
-                )}
-              </span>
-            ))}
+    <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.13]"
+        style={{ backgroundImage: GRAIN }}
+      />
+      <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 py-20 sm:py-28">
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.9, ease: [0.2, 0.65, 0.3, 0.95] }}
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <span className="font-serif italic text-2xl pink-glow-breathe" style={{ color: ACCENT }}>{index}.</span>
+            <span className="landing-eyebrow text-white/55">{kicker}</span>
           </div>
-        </div>
-
-        {/* The invitation */}
-        <div className="text-center mt-14">
-          <p className="text-xl sm:text-2xl font-bold text-foreground mb-6">Search your name.</p>
-          <Link
-            to="/credits"
-            className="cta-primary inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"
+          <h2
+            className="font-serif font-normal text-white leading-[1.0] tracking-[-0.02em] max-w-3xl"
+            style={{ fontSize: "clamp(1.9rem, 4.4vw, 3.4rem)" }}
           >
-            <Search className="h-4 w-4" aria-hidden />
-            Search the Creative Record
-          </Link>
-        </div>
+            {title}{" "}
+            <span className="landing-accent">{accentWord}</span>
+          </h2>
+        </motion.div>
+        <div className="mt-10">{children}</div>
       </div>
     </section>
   );
 };
 
 const About = () => {
+  const [loopRef, loopVisible] = useScrollReveal<HTMLDivElement>();
+
   return (
-    <div className="dark min-h-screen bg-background" style={{ backgroundColor: "#05070D" }}>
+    <div className="dark min-h-screen" style={{ backgroundColor: "#05070D" }}>
       <SEO
-        title="About Kretopia — A Global Creative Community Since 2013"
-        description="From a weekly gathering in Dubai to a global creative platform — Kretopia connects creatives across music, film, fashion, art, content, and culture worldwide."
+        title="About Kretopia — The Creative Record, Built by Creatives"
+        description="Kretopia turns creative history into trusted opportunity — verified credits, a Creative Passport, and one room per project, connecting artists worldwide."
       />
 
-      {/* Hero — cinematic editorial */}
-      <section className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(var(--primary)/0.08),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,hsl(var(--accent)/0.06),transparent_50%)]" />
-        <div className="container relative mx-auto max-w-4xl px-4 py-14 sm:py-20">
-          <p
-            className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-4 px-2.5 py-1 rounded-full border"
-            style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: ACCENT }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: ACCENT }} />
-            Powered by ThriveIN
-          </p>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] text-foreground mb-5 leading-[0.95]">
-            A global community<br />
-            built for <span className="pink-glow-breathe" style={{ color: ACCENT }}>creatives</span>
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-5">
-            What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network
-            connecting creatives across music, film, fashion, art, content, and culture.
-          </p>
-          <FeatureAITutorial featureKey="about" label="How Kretopia works" steps={ABOUT_TUTORIAL} />
-        </div>
-      </section>
+      <EditorialPageHero
+        kicker="About Kretopia"
+        oneLine
+        title="Built for"
+        accentTitle="creatives, everywhere."
+        subtitle="Talent is everywhere. Opportunity is not. Kretopia turns creative history into trusted opportunity — and connects the people making the work, wherever they are."
+      />
 
-      {/* The Problem / The System / The Loop / The Invitation — product
-          narrative, ahead of the ThriveIN origin story below. */}
-      <ProductLoopSection />
-
-      {/* Global Footprint */}
-      <section className="container mx-auto max-w-4xl px-4 pb-12">
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-          {cities.map((city) => (
-            <div key={city.name} className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 transition-colors hover:border-[#FF2DA1]/30">
-              <span className="text-lg">{city.flag}</span>
-              <span className="text-sm font-medium text-foreground">{city.name}</span>
-            </div>
+      {/* I — What Kretopia is */}
+      <Chapter index="I" kicker="The system" title="Your work, finally" accentWord="on the record.">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {PILLARS.map((p, i) => (
+            <Reveal key={p.title} delayIndex={i}>
+              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+                <span
+                  className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                >
+                  <p.icon className="h-4 w-4" style={{ color: ACCENT }} />
+                </span>
+                <p className="text-white font-semibold text-sm mb-1.5">{p.title}</p>
+                <p className="text-sm leading-relaxed text-white/55">{p.body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
-      </section>
+      </Chapter>
 
-      {/* Story */}
-      <section className="container mx-auto max-w-4xl px-4 pb-16">
-        <SmartWidget interactive={false}>
-        <Card className="border-0 overflow-hidden">
-          <CardContent className="p-6 sm:p-10">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ai-ambient-breathe">
-                <Heart className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-foreground mb-1">Our Story</h2>
-                <p className="text-sm text-muted-foreground">From intimate meetups to a global ecosystem</p>
-              </div>
-            </div>
-            <div className="space-y-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
-              <p>
-                From intimate meetups to large-scale showcases, ThriveIN has brought together thousands of creatives
-                across <strong className="text-foreground">Los Angeles, Geneva, Trinidad, and Bali</strong> — creating
-                spaces where real relationships, collaborations, and opportunities are formed.
-              </p>
-              <p className="text-foreground font-medium border-l-2 border-primary pl-4 my-6">
-                At its core, ThriveIN has always been about one thing: bringing the right people into the same room
-                and creating the environment for them to connect, create, and grow.
-              </p>
-              <p>
-                Over the years, the community has expanded beyond events into a wider ecosystem including talks, media,
-                creative exchanges, and industry collaborations. Through this network, creatives have found collaborators,
-                launched projects, secured opportunities, and built lasting careers.
-              </p>
-              <p>
-                Today, ThriveIN continues to evolve with Kretopia — bringing the same community-driven energy into a new era where
-                creatives can not only connect, but also <strong className="text-foreground">build, showcase, and grow</strong> their
-                work in a more structured and visible way.
-              </p>
-              <p className="text-foreground font-semibold text-base sm:text-lg pt-2">
-                This is not just a platform. It's a community built on shared ambition, creativity, and collaboration.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        </SmartWidget>
-      </section>
+      {/* II — The loop */}
+      <Chapter index="II" kicker="The loop" title="One cycle that keeps" accentWord="compounding.">
+        <div ref={loopRef} className="flex flex-wrap items-center gap-x-1 gap-y-3">
+          {LOOP_STEPS.map((step, i) => (
+            <span key={step} className="flex items-center">
+              <span
+                className="whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium text-white/85 transition-all duration-500"
+                style={{
+                  opacity: loopVisible ? 1 : 0,
+                  transform: loopVisible ? "none" : "translateY(6px)",
+                  transitionDelay: `${i * 90}ms`,
+                  borderColor: "rgba(255,45,161,0.25)",
+                  backgroundColor: "rgba(255,255,255,0.02)",
+                }}
+              >
+                {step}
+              </span>
+              {i < LOOP_STEPS.length - 1 && (
+                <ChevronRight className="mx-0.5 h-3.5 w-3.5" style={{ color: "rgba(255,45,161,0.5)" }} aria-hidden />
+              )}
+            </span>
+          ))}
+        </div>
+        <Reveal delayIndex={2}>
+          <p className="mt-8 max-w-xl text-base leading-relaxed text-white/60">
+            Every finished project makes the next one easier to win. That is the whole product — proof in, opportunity out.
+          </p>
+        </Reveal>
+      </Chapter>
 
-      {/* Community Section */}
-      <section className="border-y border-border bg-card/40">
-        <div className="container mx-auto max-w-4xl px-4 py-14">
-          <div className="text-center mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">Our Community</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
-              Home to a Global Network of Creatives
-            </h2>
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              From emerging talent to established professionals — individuals actively shaping culture across industries and regions.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-            {communityMembers.map((member) => {
-              const Icon = member.icon;
-              return (
-                <div key={member.label} className="flex items-center gap-3 rounded-xl bg-background border border-border p-4 transition-all hover:border-primary/25">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{member.label}</span>
+      {/* III — The founders */}
+      <Chapter index="III" kicker="The founders" title="Three people, one" accentWord="obsession.">
+        <div className="grid gap-4 md:grid-cols-3">
+          {FOUNDERS.map((f, i) => (
+            <Reveal key={f.name} delayIndex={i}>
+              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+                <div
+                  className="mb-5 flex h-12 w-12 items-center justify-center rounded-full font-serif text-lg text-white"
+                  style={{ background: "linear-gradient(135deg, rgba(255,45,161,0.55), rgba(255,45,161,0.12))" }}
+                  aria-hidden
+                >
+                  {f.initials}
                 </div>
-              );
-            })}
-          </div>
+                <p className="text-white font-semibold">{f.name}</p>
+                <p className="landing-eyebrow mb-3" style={{ color: ACCENT }}>{f.role}</p>
+                <p className="text-sm leading-relaxed text-white/55">{f.body}</p>
+              </div>
+            </Reveal>
+          ))}
         </div>
-      </section>
+        <Reveal delayIndex={3}>
+          <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+            "A community person, a designer and an engineer building the same thing: a place where what a creative
+            has actually done travels with them — across cities, industries and borders."
+          </p>
+        </Reveal>
+      </Chapter>
 
-      {/* Mission & Vision */}
-      <section className="container mx-auto max-w-4xl px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <SmartWidget interactive={false} scanLine={false}>
-          <Card className="border-0">
-            <CardContent className="p-6 sm:p-8">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <Rocket className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-3">Mission</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                To build a global creative community where people can connect with purpose, collaborate with intention,
-                and access real opportunities to grow.
-              </p>
-            </CardContent>
-          </Card>
-          </SmartWidget>
-          <SmartWidget interactive={false} scanLine={false}>
-          <Card className="border-0">
-            <CardContent className="p-6 sm:p-8">
-              <div className="h-10 w-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: "rgba(255,45,161,0.1)" }}>
-                <Sparkles className="h-5 w-5" style={{ color: ACCENT }} />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-3">Vision</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                A world where every creative is visible, connected, and supported — where talent is not limited by
-                geography, access, or lack of opportunity, and where community becomes the foundation for sustainable creative careers.
-              </p>
-            </CardContent>
-          </Card>
-          </SmartWidget>
-        </div>
-      </section>
-
-      {/* Founder's Note */}
-      <section className="container mx-auto max-w-4xl px-4 pb-16">
-        <SmartWidget interactive={false}>
-        <Card className="border-0 bg-gradient-to-br from-primary/[0.03] via-background to-accent/[0.03]">
-          <CardContent className="p-6 sm:p-10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-full flex items-center justify-center ai-ambient-breathe" style={{ backgroundColor: "rgba(255,45,161,0.1)" }}>
-                <Quote className="h-5 w-5" style={{ color: ACCENT }} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: ACCENT }}>Founder's Note</p>
-              </div>
-            </div>
-            <blockquote className="text-base sm:text-lg text-foreground leading-relaxed italic mb-6">
-              "ThriveIN started as a simple idea — bringing creatives into the same space and seeing what could happen.
-              Over time, it became clear that the real value wasn't just the events, it was the relationships, the collaborations,
-              and the opportunities that came from them. Everything we're building with Kretopia is about scaling that experience
-              and making it accessible to creatives everywhere."
-            </blockquote>
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <p className="text-sm font-semibold text-foreground whitespace-nowrap">— Ethan Auguste</p>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-          </CardContent>
-        </Card>
-        </SmartWidget>
-      </section>
-
-      {/* Timeline */}
-      <section className="border-t border-border bg-card/30">
-        <div className="container mx-auto max-w-3xl px-4 py-16">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-3" style={{ color: ACCENT }}>Our Journey</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-              From a Room in Dubai to a Global Creative Community
-            </h2>
-          </div>
-
-          <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-[19px] sm:left-[23px] top-0 bottom-0 w-px bg-border" />
-
-            <div className="space-y-8">
-              {timeline.map((item, i) => {
-                const Icon = item.icon;
-                const isLast = i === timeline.length - 1;
-                return (
-                  <div key={item.year} className="relative flex items-start gap-4 sm:gap-6">
-                    {/* Dot / Icon */}
-                    <div
-                      className="relative z-10 shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center border-2"
-                      style={
-                        isLast
-                          ? { backgroundColor: ACCENT, borderColor: ACCENT, color: "#fff" }
-                          : { backgroundColor: "hsl(var(--card))", borderColor: "rgba(255,45,161,0.3)", color: ACCENT }
-                      }
-                    >
-                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 pb-2">
-                      <div className="flex items-baseline gap-2 flex-wrap mb-1">
-                        <span className="text-lg sm:text-xl font-extrabold text-foreground">{item.year}</span>
-                        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">{item.location}</span>
-                      </div>
-                      <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Strip */}
-      <section className="border-y border-border bg-card/50">
-        <div className="container mx-auto max-w-4xl px-4 py-10">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-            {[
-              { value: "13+", label: "Years", icon: Calendar },
-              { value: "1000+", label: "Creatives Connected", icon: Users },
-              { value: "6+", label: "Countries", icon: MapPin },
-              { value: "∞", label: "Connections Made", icon: Globe },
-            ].map((s) => (
-              <div key={s.label}>
-                <s.icon className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-2xl font-extrabold text-foreground">{s.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="container mx-auto max-w-4xl px-4 py-16 text-center">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-4">
-          Ready to Join the <span style={{ color: ACCENT }}>Community</span>?
-        </h2>
-        <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
-          Whether you're an emerging creative or an industry veteran — there's a place for you here.
-          Your credits. Your connections. Your career — all in one place.
-        </p>
-        <Link
-          to="/auth"
-          className="cta-primary inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-sm font-bold shadow-lg"
-        >
-          Join Kretopia <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
     </div>
   );
 };

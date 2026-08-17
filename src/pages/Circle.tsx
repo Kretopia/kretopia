@@ -24,6 +24,7 @@ import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import { SOUNDSTAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 type BrowseProfile = {
@@ -177,39 +178,31 @@ export default function Circle() {
 
         <FeaturePageHeader
           eyebrow="Stages"
-          title={
-            <>
-              Stages. <span className="text-energy-glow">Where creators meet, live.</span>
-            </>
-          }
+          title="Stages."
+        accentTitle="Where creators meet, live."
           subtitle="Drop into a live session, match with collaborators, or browse the network."
           tutorial={{ featureKey: "stages", label: "How Stages works", steps: SOUNDSTAGES_TUTORIAL }}
-          meta={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => setShowInvite(true)}
-              aria-label="Invite creators"
-            >
-              <UserPlus className="h-4 w-4" />
-            </Button>
-          }
-          tabs={
-            <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-none">
+        />
+
+        {/* Content — Sound Stages is the main page */}
+        <div className="container mx-auto px-3 sm:px-4 py-3">
+          <KretoTip compact className="mb-4" />
+          {/* Centered nav: Match · Browse · Network */}
+          <div className="flex justify-center mb-4">
+            <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-9 gap-1.5 rounded-full shrink-0"
+                className="h-9 gap-1.5 rounded-full"
                 onClick={() => setShowMatch(true)}
               >
                 <Sparkles className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
                 Match
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-9 gap-1.5 rounded-full shrink-0"
+                className="h-9 gap-1.5 rounded-full"
                 onClick={() => setShowBrowse(true)}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -218,21 +211,18 @@ export default function Circle() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 gap-1.5 rounded-full shrink-0 text-muted-foreground"
+                className="h-9 gap-1.5 rounded-full text-muted-foreground"
                 onClick={() => setShowNetwork(true)}
               >
                 <Users className="h-4 w-4" />
                 Network
                 {connections.length > 0 && (
-                  <span className="ml-0.5 text-[10px] text-muted-foreground">· {connections.length}</span>
+                  <span className="ml-0.5 text-[10px]">· {connections.length}</span>
                 )}
               </Button>
             </div>
-          }
-        />
+          </div>
 
-        {/* Content — Sound Stages is the main page */}
-        <div className="container mx-auto px-3 sm:px-4 py-3">
           <ProfileActivationGate
             isVisible={profileVisibility.isVisible}
             missingFields={profileVisibility.missingFields}
@@ -246,7 +236,30 @@ export default function Circle() {
               </AuthGate>
             )}
           </ProfileActivationGate>
+
+          {/* Kreto-powered invite — replaces the old header person icon */}
+          <button
+            type="button"
+            onClick={() => setShowInvite(true)}
+            className="mt-6 w-full text-left rounded-2xl border border-[hsl(var(--signal-teal))]/30 bg-gradient-to-br from-[hsl(var(--signal-teal))]/10 to-transparent p-4 transition-colors hover:border-[hsl(var(--signal-teal))]/60"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] flex items-center justify-center shrink-0">
+                <UserPlus className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[hsl(var(--signal-teal))]">
+                  Kreto-powered
+                </p>
+                <p className="font-semibold text-sm">Grow your circle</p>
+                <p className="text-xs text-muted-foreground">
+                  Kreto drafts the invite and picks who's worth reaching out to first.
+                </p>
+              </div>
+            </div>
+          </button>
         </div>
+
 
         {/* Match sheet */}
         <Sheet open={showMatch} onOpenChange={setShowMatch}>

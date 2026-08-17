@@ -12,6 +12,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Video, Sparkles, Clock, ArrowLeft, FileVideo, RefreshCw } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const RECORDINGS_TUTORIAL: TutorialStep[] = [
@@ -109,25 +110,25 @@ export default function Recordings() {
 
       <FeaturePageHeader
         eyebrow="Call recordings"
-        title={
-          <>
-            Recordings. <span className="text-energy-glow">Every call, ready to revisit.</span>
-          </>
-        }
+        title="Recordings."
+        accentTitle="Every call, revisited."
         subtitle="Replays, transcripts, and Kreto-extracted action items from every recorded call."
         tutorial={{ featureKey: "recordings", label: "How Recordings works", steps: RECORDINGS_TUTORIAL }}
-        meta={
-          <div className="flex flex-col items-center gap-2">
-            <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-3 w-3" /> Back
-            </Link>
-            <Button type="button" size="sm" variant="outline" onClick={handleSync} disabled={syncing} className="gap-1.5 shrink-0">
-              <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
-              {syncing ? "Syncing…" : "Sync now"}
-            </Button>
-          </div>
-        }
       />
+
+      <div className="max-w-3xl mx-auto px-4 pt-4">
+        <KretoTip compact />
+      </div>
+
+      <div className="flex items-center justify-between px-4 pt-4">
+        <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-3 w-3" /> Back
+        </Link>
+        <Button type="button" size="sm" variant="outline" onClick={handleSync} disabled={syncing} className="gap-1.5 shrink-0">
+          <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
+          {syncing ? "Syncing…" : "Sync now"}
+        </Button>
+      </div>
 
       <p className="text-[11px] text-muted-foreground px-4 pt-3">
         Recordings finalize ~1 min after a call ends. Tap Sync now to pull the latest.

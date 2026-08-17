@@ -136,7 +136,7 @@ const MeetupManage = () => {
               </p>
               <h1 className="text-xl sm:text-4xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
                 Command Center.<br />
-                <span className="text-energy-glow">Run your event like a pro.</span>
+                <span className="landing-accent">Run your event like a pro.</span>
               </h1>
             </div>
             <Button onClick={() => setShowCreate(true)} variant="gradient" size="sm" className="rounded-full shrink-0">

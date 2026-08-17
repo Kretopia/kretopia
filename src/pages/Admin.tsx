@@ -368,7 +368,8 @@ export default function Admin() {
     <div className="pb-24">
       <FeaturePageHeader
         eyebrow="Admin"
-        title={<>Operations. <span className="text-energy-glow">Everything running Kretopia.</span></>}
+        title="Operations."
+        accentTitle="Everything running Kretopia."
         subtitle="System health, moderation, and growth — one control surface for the team."
       />
 

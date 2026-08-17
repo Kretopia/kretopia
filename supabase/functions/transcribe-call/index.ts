@@ -56,17 +56,28 @@ serve(async (req) => {
     if (!download_link) throw new Error("No download link from Daily");
 
     // 2. Download the recording (Daily records as MP4 with audio track).
+    //    Edge workers have a hard memory ceiling and we hold the buffer +
+    //    its base64 form + the JSON body at once, so keep the cap low and
+    //    bail out on the Content-Length before buffering anything.
+    const MAX_INLINE_BYTES = 8 * 1024 * 1024;
     const audioRes = await fetch(download_link);
     if (!audioRes.ok) throw new Error(`Recording download failed: ${audioRes.status}`);
+    const declaredSize = Number(audioRes.headers.get("content-length") ?? 0);
+    if (declaredSize > MAX_INLINE_BYTES) {
+      await audioRes.body?.cancel();
+      throw new Error(
+        `Recording too large for inline transcription (${declaredSize} bytes, max ${MAX_INLINE_BYTES}). Chunking not yet implemented.`,
+      );
+    }
     const audioBuf = await audioRes.arrayBuffer();
-
-    // Gemini accepts audio inputs up to ~20MB inline. For longer calls we'd
-    // chunk, but most calls fit. Cap at 20MB to be safe.
-    if (audioBuf.byteLength > 20 * 1024 * 1024) {
-      throw new Error(`Recording too large for inline transcription (${audioBuf.byteLength} bytes). Chunking not yet implemented.`);
+    if (audioBuf.byteLength > MAX_INLINE_BYTES) {
+      throw new Error(
+        `Recording too large for inline transcription (${audioBuf.byteLength} bytes, max ${MAX_INLINE_BYTES}). Chunking not yet implemented.`,
+      );
     }
 
     const base64Audio = bufferToBase64(audioBuf);
+
 
     // 3. Transcribe + summarize + extract action items in one Gemini call
     //    using tool calling for structured output.
@@ -296,7 +307,11 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("[transcribe-call] error", e);
+    console.error(
+      "[transcribe-call] error",
+      e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e),
+    );
+
     if (transcriptId) {
       await admin
         .from("call_transcripts")

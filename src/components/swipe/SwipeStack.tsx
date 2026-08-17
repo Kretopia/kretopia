@@ -41,6 +41,7 @@ export function SwipeStack({
   // Use first profile in the array as current (array shrinks as profiles are removed)
   const currentProfile = profiles[0];
   const nextProfile = profiles[1];
+  const thirdProfile = profiles[2];
 
   
 
@@ -159,12 +160,13 @@ export function SwipeStack({
   };
 
   // Card transform styles
-  const getCardStyle = (isActive: boolean): React.CSSProperties => {
+  const getCardStyle = (isActive: boolean, depth = 1): React.CSSProperties => {
     if (!isActive) {
       return {
-        transform: 'scale(0.95) translateY(20px)',
-        opacity: 0.5,
-        zIndex: 0
+        transform: `scale(${1 - depth * 0.04}) translateY(${depth * 14}px)`,
+        opacity: depth === 1 ? 0.6 : 0.35,
+        transition: 'all 0.3s ease',
+        zIndex: 5 - depth,
       };
     }
 
@@ -208,6 +210,15 @@ export function SwipeStack({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
+        {/* Deck depth */}
+        {thirdProfile && (
+          <SwipeCard
+            profile={thirdProfile}
+            style={getCardStyle(false, 2)}
+            className="pointer-events-none"
+          />
+        )}
+
         {/* Next Card (Preview) */}
         {nextProfile && (
           <SwipeCard
@@ -226,27 +237,26 @@ export function SwipeStack({
           style={getCardStyle(true)}
         />
 
-        {/* Swipe Overlays */}
+        {/* Swipe stamps — Tinder/Bumble style, opacity follows the drag */}
         <div
-          className={cn(
-            "absolute inset-0 flex items-center justify-center rounded-xl transition-opacity duration-200 pointer-events-none z-20",
-            swipeDirection === 'left' ? 'opacity-100' : 'opacity-0'
-          )}
+          className="absolute top-6 left-5 z-20 pointer-events-none -rotate-12 rounded-lg border-4 px-3 py-1 text-2xl font-black tracking-widest"
+          style={{
+            opacity: dragOffset.x < 0 ? Math.min(1, Math.abs(dragOffset.x) / SWIPE_THRESHOLD) : 0,
+            borderColor: "hsl(var(--destructive))",
+            color: "hsl(var(--destructive))",
+          }}
         >
-          <div className="bg-red-500/90 rounded-full p-4 sm:p-6">
-            <X className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
-          </div>
+          NOPE
         </div>
-
         <div
-          className={cn(
-            "absolute inset-0 flex items-center justify-center rounded-xl transition-opacity duration-200 pointer-events-none z-20",
-            swipeDirection === 'right' ? 'opacity-100' : 'opacity-0'
-          )}
+          className="absolute top-6 right-5 z-20 pointer-events-none rotate-12 rounded-lg border-4 px-3 py-1 text-2xl font-black tracking-widest"
+          style={{
+            opacity: dragOffset.x > 0 ? Math.min(1, dragOffset.x / SWIPE_THRESHOLD) : 0,
+            borderColor: "hsl(var(--signal-teal))",
+            color: "hsl(var(--signal-teal))",
+          }}
         >
-          <div className="bg-green-500/90 rounded-full p-4 sm:p-6">
-            <Heart className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
-          </div>
+          LIKE
         </div>
       </div>
 

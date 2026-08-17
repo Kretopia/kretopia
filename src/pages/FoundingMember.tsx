@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { CardCarousel } from "@/components/kretopia/CardCarousel";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -51,22 +52,19 @@ export default function FoundingMember() {
 
       <FeaturePageHeader
         eyebrow="Founding Circle"
-        title={
-          <>
-            Founding Circle. <span className="text-energy-glow">100 spots, one badge.</span>
-          </>
-        }
+        title="Founding Circle."
+        accentTitle="100 spots, one badge."
         subtitle="Complete 3 milestones before the deadline and earn a permanent Founding Member badge."
         tutorial={{ featureKey: "founding-circle", label: "How the Founding Circle works", steps: FOUNDING_TUTORIAL }}
-        meta={
+      />
+
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+        <div className="flex justify-end mb-3">
           <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-card border border-border rounded-full px-2.5 py-1 shrink-0">
             <Calendar className="h-3 w-3" />
             Closes {deadline} · {daysLeft} day{daysLeft === 1 ? "" : "s"} left
           </div>
-        }
-      />
-
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+        </div>
         {/* Overall progress */}
         <Card className="p-4 mb-4">
           <div className="flex items-center justify-between text-xs font-medium mb-1.5">
@@ -109,7 +107,7 @@ export default function FoundingMember() {
         )}
 
         {/* Quest cards */}
-        <div className="space-y-3">
+        <CardCarousel label="Milestones" itemClassName="basis-[88%] sm:basis-1/2">
           {FOUNDING_QUESTS.map((quest, i) => {
             const p = progress[quest.key];
             const cta = QUEST_CTA[quest.key];
@@ -161,7 +159,7 @@ export default function FoundingMember() {
               </Card>
             );
           })}
-        </div>
+        </CardCarousel>
 
         {loading && (
           <p className="text-xs text-muted-foreground text-center mt-4">Checking your progress…</p>

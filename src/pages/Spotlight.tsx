@@ -1,36 +1,36 @@
-import { useRef, useState } from "react";
+/**
+ * Spotlight — same cinematic language as the landing / About pages:
+ * #05070D plate, magenta aurora, grain, serif chapter titles, scroll reveals.
+ * Chapters: the desk (magazine + podcast), why it matters, invitation.
+ */
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { motion } from "framer-motion";
+import { Link, useLocation } from "react-router-dom";
+import { Mic, BookOpen, Quote, Radio } from "lucide-react";
 import { PageTransition } from "@/components/PageTransition";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Headphones, TrendingUp } from "lucide-react";
 import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
-import { useLocation } from "react-router-dom";
 import { APP_URL } from "@/lib/constants";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
-import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
-import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
+import { Reveal } from "@/components/kretopia/Reveal";
+import { SpotlightBoard, type SpotlightTab } from "@/components/kretopia/SpotlightBoard";
 
 const ACCENT = "#FF2DA1";
 
-const SPOTLIGHT_TUTORIAL: TutorialStep[] = [
-  { icon: BookOpen, title: "Read the Magazine", body: "Interviews, features, and creative stories from across the community." },
-  { icon: Headphones, title: "Press play on the Podcast", body: "Episodes with working creatives, ready whenever you want to listen." },
-  { icon: TrendingUp, title: "Sort by what matters", body: "Switch between Latest, Most Read, and Trending to find what's worth your time." },
+const NOTES = [
+  { icon: BookOpen, title: "The Magazine", body: "Long-form features and interviews with the people behind the work." },
+  { icon: Mic, title: "The Podcast", body: "Conversations in their own words — process, setbacks, the real numbers." },
+  { icon: Quote, title: "Straight from the source", body: "No press releases. Creatives telling their own story, unfiltered." },
+  { icon: Radio, title: "Always on", body: "New stories and episodes drop as the community makes them." },
 ];
 
 const Spotlight = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const tabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(tabParam || "magazine");
+  const [activeTab, setActiveTab] = useState<SpotlightTab>(tabParam === "podcast" ? "podcast" : "magazine");
   const canonicalUrl = `${APP_URL}/spotlight`;
-  const reducedMotion = useReducedMotion();
-  const titleWrapperRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  useFitTitleOneLine(titleWrapperRef, titleRef, []);
 
   return (
     <PageTransition>
@@ -59,83 +59,58 @@ const Spotlight = () => {
             "publisher": {
               "@type": "Organization",
               "name": "Kretopia",
-                "url": APP_URL
-            }
+              "url": APP_URL,
+            },
           })}
         </script>
       </Helmet>
 
-      <div className="dark min-h-screen relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background: "radial-gradient(60% 40% at 50% 0%, rgba(255,45,161,0.10), transparent 60%)",
-          }}
+      <div className="dark min-h-screen" style={{ backgroundColor: "#05070D" }}>
+        <EditorialPageHero
+          kicker="The Spotlight"
+          oneLine
+          title="Spotlight."
+          accentTitle="Stories worth playing."
+          subtitle="Interviews, features and podcast episodes from across the creative universe — the people behind the work, in their own words."
         />
 
-        <div className="relative max-w-2xl mx-auto px-4 pt-10 sm:pt-14 pb-24">
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="mb-8 flex flex-col items-center text-center"
-          >
-            <p
-              className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-4 px-2.5 py-1 rounded-full border"
-              style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: ACCENT }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: ACCENT }} />
-              The Spotlight
+        {/* I — The desk */}
+        <EditorialChapter index="I" kicker="The desk" title="Read it, or" accentWord="hear it.">
+          <Reveal>
+            <SpotlightBoard
+              value={activeTab}
+              onValueChange={setActiveTab}
+              magazine={<MagazineWall />}
+              podcast={<PodcastPlayer />}
+            />
+          </Reveal>
+        </EditorialChapter>
+
+        {/* II — Why it matters */}
+        <EditorialChapter index="II" kicker="Why it matters" title="Proof is the record." accentWord="Story is the reason.">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {NOTES.map((n, i) => (
+              <Reveal key={n.title} delayIndex={i}>
+                <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+                  <span
+                    className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
+                    style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                  >
+                    <n.icon className="h-4 w-4" style={{ color: ACCENT }} />
+                  </span>
+                  <p className="text-white font-semibold text-sm mb-1.5">{n.title}</p>
+                  <p className="text-sm leading-relaxed text-white/55">{n.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal delayIndex={2}>
+            <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+              "Credits show what you did. Spotlight shows how you did it — and why the next person should call you."
             </p>
-            <div ref={titleWrapperRef} className="w-full max-w-3xl">
-              <h1
-                ref={titleRef}
-                className="font-black tracking-[-0.035em] text-white leading-[0.95]"
-                style={{ fontSize: "3rem" }}
-              >
-                Spotlight. <span className="pink-glow-breathe" style={{ color: ACCENT }}>Stories worth pressing play on.</span>
-              </h1>
-            </div>
-            <p className="mt-3 text-sm sm:text-base text-white/60 max-w-md mx-auto">
-              Articles and podcast episodes from the creative universe.
-            </p>
-            <FeatureAITutorial featureKey="spotlight" label="How Spotlight works" steps={SPOTLIGHT_TUTORIAL} />
-          </motion.div>
+          </Reveal>
+        </EditorialChapter>
 
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList
-              className="w-full mb-6 grid grid-cols-2 h-11 rounded-2xl p-1"
-              style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              <TabsTrigger
-                value="magazine"
-                className="gap-1.5 text-xs rounded-xl text-white/55 data-[state=active]:text-white data-[state=active]:shadow-none"
-                style={{ fontFamily: "'Work Sans', sans-serif" }}
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                Magazine
-              </TabsTrigger>
-              <TabsTrigger
-                value="podcast"
-                className="gap-1.5 text-xs rounded-xl text-white/55 data-[state=active]:text-white data-[state=active]:shadow-none"
-                style={{ fontFamily: "'Work Sans', sans-serif" }}
-              >
-                <Headphones className="h-3.5 w-3.5" />
-                Podcast
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="magazine" className="mt-0">
-              <MagazineWall />
-            </TabsContent>
-
-            <TabsContent value="podcast" className="mt-0">
-              <PodcastPlayer />
-            </TabsContent>
-          </Tabs>
-        </div>
       </div>
     </PageTransition>
   );

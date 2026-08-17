@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { CardCarousel } from "@/components/kretopia/CardCarousel";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -261,32 +262,14 @@ export default function Subscription() {
     <div className="pb-16">
       <FeaturePageHeader
         eyebrow="Pricing"
-        title={
-          <>
-            Choose your plan. <span className="text-energy-glow">Start free, upgrade when ready.</span>
-          </>
-        }
+        title="Choose your plan."
+        accentTitle="Start free, upgrade anytime."
         subtitle={
           viewMode === "brand"
             ? "Find, hire & manage top creative talent."
             : "Unlock the full potential of Kretopia."
         }
         tutorial={{ featureKey: "subscription", label: "How Pricing works", steps: SUBSCRIPTION_TUTORIAL }}
-        meta={
-          hasPaidSub ? (
-            <Button
-              onClick={handleManageSubscription}
-              variant="outline"
-              disabled={loading === "portal"}
-            >
-              {loading === "portal" ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
-              ) : (
-                "Manage Subscription"
-              )}
-            </Button>
-          ) : undefined
-        }
         tabs={
           <div className="flex flex-col items-center gap-3 text-center">
             {/* View mode is derived from account_type — companies see Brand tiers, creators see Creator tiers.
@@ -322,6 +305,18 @@ export default function Subscription() {
       />
 
       <div className="container mx-auto px-4 pt-8">
+      {hasPaidSub && (
+        <div className="flex justify-end mb-6">
+          <Button onClick={handleManageSubscription} variant="outline" disabled={loading === "portal"}>
+            {loading === "portal" ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
+            ) : (
+              "Manage Subscription"
+            )}
+          </Button>
+        </div>
+      )}
+
       {/* Founder Circle Card — only show on Creator view */}
       {viewMode === "creator" && (
         <div className="max-w-2xl mx-auto mb-12">
@@ -413,7 +408,7 @@ export default function Subscription() {
         </div>
       )}
 
-      <div className={`grid gap-5 max-w-5xl mx-auto ${viewMode === 'brand' ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+      <CardCarousel label="Plans" className="max-w-5xl mx-auto">
         {tiers.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;
@@ -520,7 +515,7 @@ export default function Subscription() {
             </Card>
           );
         })}
-      </div>
+      </CardCarousel>
 
       {viewMode === "brand" && (
         <div className="mt-8 text-center">

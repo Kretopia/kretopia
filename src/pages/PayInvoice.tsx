@@ -41,7 +41,7 @@ export default function PayInvoice() {
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-invoice-checkout", {
-        body: { invoice_id: id, payer_email: invoice?.recipient_email },
+        body: { invoice_id: id },
       });
       if (error) throw error;
       if (!data?.url) throw new Error("Checkout unavailable");

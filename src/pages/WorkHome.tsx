@@ -67,6 +67,7 @@ import { RecentRecordingsRail } from "@/components/calls/RecentRecordingsRail";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
 import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import { STUDIO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 interface ProjectPersonRow {
@@ -491,24 +492,22 @@ const CreatorWorkHome = () => {
 
       <FeaturePageHeader
         eyebrow="Projects & Workspaces"
-        title={
-          <>
-            Studios. <span className="text-energy-glow">Your project rooms, run end to end.</span>
-          </>
-        }
+        title="Studios."
+        accentTitle="One room per project."
         subtitle="Brief, collaborators, milestones, and payment — all inside the same room, from kickoff to delivery."
         tutorial={{ featureKey: "studio", label: "How Studios works", steps: STUDIO_TUTORIAL }}
-        meta={
-          activeProjects.length > 0 ? (
-            <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0">
-              {activeProjects.length} Active
-            </Badge>
-          ) : undefined
-        }
       />
 
       {/* Wider on desktop, capped for readability */}
       <div className="max-w-6xl mx-auto px-4 pt-4 pb-36 md:pb-12 space-y-5">
+        <KretoTip compact />
+        {activeProjects.length > 0 && (
+          <div className="flex justify-end">
+            <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0">
+              {activeProjects.length} Active
+            </Badge>
+          </div>
+        )}
         {/* Voice as a primary interaction, not a passive tip — real mic
             button wired to the existing VoiceCommandSheet, styled with
             Kreto's solid accent treatment (formerly a sunset gradient,

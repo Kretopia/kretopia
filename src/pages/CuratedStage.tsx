@@ -62,10 +62,20 @@ const CuratedStage = () => {
     if (!id) return;
     let mounted = true;
     const load = async () => {
-      const { data: s } = await supabase.from("curated_stages").select("*").eq("id", id).maybeSingle();
+      let { data: s } = await supabase.from("curated_stages").select("*").eq("id", id).maybeSingle();
+      if (!s && inviteToken) {
+        // Private/unlisted stage: RLS hides the row, but a valid invite link
+        // still resolves it server-side (invite_token is never returned).
+        const { data: viaInvite } = await (supabase as any).rpc("get_curated_stage_by_invite", {
+          p_stage_id: id,
+          p_token: inviteToken,
+        });
+        s = Array.isArray(viaInvite) ? viaInvite[0] : viaInvite;
+      }
       if (!mounted) return;
       if (!s) { setLoading(false); return; }
       setStage(s as any);
+
 
       const { data: h } = await supabase.from("profiles")
         .select("full_name, avatar_url, username").eq("user_id", (s as any).host_user_id).maybeSingle();

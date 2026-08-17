@@ -1,4 +1,6 @@
 // Registers our Supabase webhook URL with Telegram (one-shot admin action).
+import { requireAdminOrCron } from "../_shared/admin-guard.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -15,6 +17,9 @@ async function deriveSecret(apiKey: string): Promise<string> {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const guard = await requireAdminOrCron(req);
+  if (!guard.ok) return guard.response;
 
   const LOVABLE = Deno.env.get("LOVABLE_API_KEY");
   const TG = Deno.env.get("TELEGRAM_API_KEY");

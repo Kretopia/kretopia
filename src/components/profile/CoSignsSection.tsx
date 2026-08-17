@@ -28,7 +28,7 @@ interface CoSignsSectionProps {
 const GROUP_META: Record<CreditEvidenceStatus, { label: string; description: string; icon: typeof ShieldCheck; badgeClass: string }> = {
   verified: {
     label: "Verified",
-    description: "Sourced from an authoritative platform, or vouched by collaborators.",
+    description: "Confirmed — via a known platform, collaborator vouching, or Kretopia's review process.",
     icon: ShieldCheck,
     badgeClass: "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40",
   },

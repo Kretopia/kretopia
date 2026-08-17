@@ -30,6 +30,8 @@ interface Credit {
   thumbnail_url?: string;
   verification_status?: "unverified" | "pending" | "verified";
   endorsement_count?: number;
+  source?: string | null;
+  verified_by_name?: string | null;
   is_featured?: boolean;
   credit_category?: string;
   project_type?: string;
@@ -349,6 +351,8 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
                         imageUrl={credit.thumbnail_url}
                         verificationStatus={credit.verification_status}
                         endorsementCount={credit.endorsement_count || 0}
+                        source={credit.source}
+                        verifiedByName={credit.verified_by_name}
                         isFeatured={credit.is_featured}
                         isOwnProfile={isOwnProfile}
                         onDelete={() => handleDelete(credit.id)}

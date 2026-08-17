@@ -2,6 +2,7 @@
 
 Scan date: 2026-08-16 · Scanners: supabase linter, supabase_lov v3.2, connector scan, app MCP
 Scan re-run: 2026-08-17 · Result: **1 error · 4 warnings** · Gate status: **NOT CLEARED** (original 2 findings fixed; 1 new critical-class finding open)
+Scan re-run: 2026-08-18 · Manual edge-function auth audit (full read of all 18 email-related functions plus `send-push-notification`) · **2 critical unauthenticated-relay findings fixed** (see §E). Full detail in `EMAIL_RELEASE_AUDIT.md`.
 
 ---
 
@@ -61,11 +62,23 @@ Not applied to the live database — needs the same review-then-apply step as `2
 ### 4/5. [WARN] `SECURITY DEFINER` functions executable by `anon` / `authenticated`
 Supabase linter 0028 / 0029. Needs a per-function triage: keep deliberate RPCs, `REVOKE EXECUTE` on the rest.
 
+## E. Fixed this pass (2026-08-18 — edge-function auth audit)
+
+Same root cause on both: no `supabase/config.toml` entry (platform default `verify_jwt=true`, satisfied trivially by the public anon key shipped in the frontend bundle) combined with **zero in-body authorization check**. Full writeup in `EMAIL_RELEASE_AUDIT.md` §2.
+
+| ID | Finding | Fix | Status |
+|---|---|---|---|
+| EF-01 | `send-notification-email` — unauthenticated open relay. `type: 'general'` accepted arbitrary title/message/link content to an arbitrary `to`/`recipientId`, sent through the real verified `info@kretopia.com` sender. Exploitable as unauthenticated phishing-as-a-service and mail-bombing. | Added `authorizeSend()` — service-role callers, authenticated self-service, or admin-role lookup for any other recipient. | Fixed + pushed (`8572f0f8`) |
+| EF-02 | `send-push-notification` — unauthenticated push relay. `userId`/`title`/`body`/`data`/`tag` fully caller-controlled, sent as a real Web Push to that user's device via VAPID. | Added a lighter guard (any authenticated caller or service-role — self-service-only would have broken two legitimate cross-user flows, see doc) closing the fully-anonymous no-account path. | Fixed + pushed (`1e886071`) |
+
+Related, lower-severity findings documented but **not fixed** this pass (see `EMAIL_RELEASE_AUDIT.md` §3 for full reasoning): `send-user-email` has the same class of auth gap but zero live call sites (dead code, recommend deletion); `send-reengagement-emails` has no cron/admin gate but a bounded blast radius; several older templates (`send-invoice-email`, `send-notification-email`, `send-user-email`) interpolate user-controlled strings into email HTML without escaping.
+
 ## D. Gate decision
 
 | Condition | Met |
 |---|---|
 | No unauthenticated admin endpoints | YES (after TG-01/02) |
+| No unauthenticated arbitrary-content relay | YES (after EF-01/02, 2026-08-18) |
 | No PII on public endpoints | YES (after INV-01) |
 | No secrets in client bundle | YES |
 | No critical RLS finding open | **PARTIAL** — `curated_stages` + `review_requests` closed; `credit_claim_disputes_challenger_self_resolve` has a written migration (`20260817140000`) not yet applied to the live database |

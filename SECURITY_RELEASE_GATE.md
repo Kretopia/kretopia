@@ -43,8 +43,14 @@ Re-scan confirms both are gone.
 
 Surfaced by the 2026-08-17 re-scan.
 
-### 1. [ERROR] `credit_claim_disputes` — challenger can self-resolve
-The *"Owner or admin resolves dispute"* UPDATE policy lets `challenger_id` update a pending dispute with **no `WITH CHECK`**, so a challenger can set `status = 'resolved'` and win a credit-ownership dispute unilaterally. Proposed fix: `WITH CHECK` limiting challengers to `status = 'withdrawn'`; full resolution restricted to `current_owner_id` or admin. Blocks any public claim/dispute demo.
+### 1. [ERROR → MIGRATION WRITTEN, NOT APPLIED] `credit_claim_disputes` — challenger can self-resolve
+The *"Owner or admin resolves dispute"* UPDATE policy lets `challenger_id` update a pending dispute with no explicit `WITH CHECK`. Migration `20260817140000_harden_credit_dispute_resolution_rls.sql` adds an explicit `WITH CHECK` limiting challengers to `status = 'withdrawn'`, with full resolution restricted to `current_owner_id` or admin (both already independently covered by the sibling "Owner can respond to dispute" / "Admins can update any dispute" policies, so this change only narrows what a challenger can do).
+
+**Verification note**: PostgreSQL reuses the `USING` expression as the implicit `WITH CHECK` when none is given, which on a careful read of the original 3-branch `USING` clause already pins a challenger's update to rows that *stay* `pending` — meaning the practical exploit this finding describes (challenger sets `status = 'approved'`) should already fail against the live policy today, not just after this fix. That's real but easy-to-miss Postgres semantics, not a reason to leave it implicit on a trust-and-money-adjacent table — the migration makes it explicit and, as a genuine side effect of the implicit version, adds the one legitimate transition (challenger withdrawing their own dispute) that currently has no working path at all despite `'withdrawn'` being a real status value with an admin-dashboard filter tab for it.
+
+**Also fixed in the same migration** (found while tracing this table's real status values, unrelated to the RLS finding): the `status` CHECK constraint only allowed `pending/approved/rejected/withdrawn`, but two shipped flows write values outside that list and would fail against the live constraint today — `DisputeManage.tsx`'s owner-initiated `transferCredit()` (`status = 'transferred'`) and `AdminDisputes.tsx`'s `arbitrate()` (`status = 'resolved_for_challenger'` / `'resolved_for_owner'`). The constraint now includes all seven values actually in use.
+
+Not applied to the live database — needs the same review-then-apply step as `20260812071205`.
 
 ### 2. [WARN] `icdb_project_roles` — claim policy allows rewriting the credit
 *"Authenticated users can claim unclaimed roles"* only constrains `claimed_by`, so a claimer can also rewrite `role_title`, `person_name`, `industry_code`, `department` — credit spoofing. Proposed fix: trigger that rejects changes to any column other than `claimed_by` on this path.
@@ -62,6 +68,6 @@ Supabase linter 0028 / 0029. Needs a per-function triage: keep deliberate RPCs, 
 | No unauthenticated admin endpoints | YES (after TG-01/02) |
 | No PII on public endpoints | YES (after INV-01) |
 | No secrets in client bundle | YES |
-| No critical RLS finding open | **NO** — `curated_stages` + `review_requests` closed, but `credit_claim_disputes_challenger_self_resolve` (error) is now open |
+| No critical RLS finding open | **PARTIAL** — `curated_stages` + `review_requests` closed; `credit_claim_disputes_challenger_self_resolve` has a written migration (`20260817140000`) not yet applied to the live database |
 
-**Verdict: do not activate legacy users or open Private Beta until finding C-bis.1 is fixed.** No secret rotation was performed or required; none was discovered in tracked source.
+**Verdict: do not activate legacy users or open Private Beta until `20260817140000_harden_credit_dispute_resolution_rls.sql` is reviewed and applied.** No secret rotation was performed or required; none was discovered in tracked source.

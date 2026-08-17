@@ -119,7 +119,7 @@ const MeetupManage = () => {
       </Helmet>
 
       {/* Cinematic header */}
-      <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
+      <div className="relative border-b border-border/50 bg-cinematic bg-grid-quadrille overflow-hidden pt-[env(safe-area-inset-top)]">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
         <div className="relative container mx-auto max-w-6xl px-4 pt-4 pb-5 sm:pt-7 sm:pb-8">
           <button

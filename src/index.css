@@ -553,6 +553,20 @@ All colors MUST be HSL.
     background: hsl(var(--background));
   }
 
+  /* Restrained technical grid texture for a feature page's first section —
+     subtle graph-paper lines, faded via a radial mask so it reads as
+     texture near the top and disappears toward the edges rather than
+     tiling flatly to infinity. Layers on top of .bg-cinematic's color;
+     never used alone. */
+  .bg-grid-quadrille {
+    background-image:
+      linear-gradient(to right, hsl(0 0% 100% / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(0 0% 100% / 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 25%, transparent 90%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 25%, transparent 90%);
+  }
+
   .shadow-card {
     box-shadow: var(--shadow-card);
   }

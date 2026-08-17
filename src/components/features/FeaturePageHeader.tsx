@@ -37,6 +37,8 @@ export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs,
         className="pointer-events-none absolute inset-0 ai-ambient-breathe"
         style={{ background: "radial-gradient(60% 55% at 50% 0%, rgba(255,45,161,0.14), transparent 62%)" }}
       />
+      {/* quadrillé grid texture — restrained graph-paper lines, faded via mask */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
       {/* grain */}
       <div
         aria-hidden

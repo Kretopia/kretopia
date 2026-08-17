@@ -16,6 +16,35 @@ interface PushNotificationPayload {
   tag?: string;
 }
 
+function parseJwtClaims(token: string): Record<string, unknown> | null {
+  const parts = token.split(".");
+  if (parts.length < 2) return null;
+  try {
+    const payload = parts[1]
+      .replaceAll("-", "+")
+      .replaceAll("_", "/")
+      .padEnd(Math.ceil(parts[1].length / 4) * 4, "=");
+    return JSON.parse(atob(payload)) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+// Legitimate callers (project collaborator call invites, event comment
+// notifications) already target other users' devices from an authenticated
+// session, so this only requires *a* real caller — service-role (internal
+// edge functions) or an authenticated user — not self-service/ownership.
+// Previously this had no check at all: userId/title/body/data were fully
+// caller-controlled with zero authentication, a push-spam vector reachable
+// with just the public anon key.
+function isAuthorizedCaller(req: Request): boolean {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return false;
+  const claims = parseJwtClaims(authHeader.slice("Bearer ".length).trim());
+  if (!claims) return false;
+  return claims.role === "service_role" || typeof claims.sub === "string";
+}
+
 // VAPID helper functions
 function base64UrlToUint8Array(base64Url: string): Uint8Array {
   const padding = '='.repeat((4 - base64Url.length % 4) % 4);
@@ -115,6 +144,13 @@ serve(async (req) => {
   }
 
   try {
+    if (!isAuthorizedCaller(req)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
     const vapidSubject = Deno.env.get("VAPID_SUBJECT") || "mailto:info@kretopia.com";

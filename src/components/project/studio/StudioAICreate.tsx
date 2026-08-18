@@ -47,12 +47,17 @@ export const StudioAICreate = ({ projectId, currentUserId, isPro }: StudioAICrea
   const handleGenerationError = async (error: unknown) => {
     // supabase.functions.invoke() throws FunctionsHttpError with `context`
     // set to the raw, unparsed Response object for non-2xx responses — the
-    // JSON body (with our `code`/`used`/`cap` fields) has to be read from it.
-    const context = (error as { context?: Response })?.context;
+    // JSON body (with our `code`/`used`/`cap` fields) has to be read from
+    // it. Other error subtypes (FunctionsFetchError/FunctionsRelayError,
+    // thrown when the request never reaches the function at all) carry a
+    // differently-shaped `context` with no `.json()` method, so this must
+    // stay fully defensive rather than assuming a Response.
+    const context = (error as { context?: unknown })?.context as { status?: number; json?: () => Promise<unknown> } | undefined;
     const status = context?.status;
-    const body: { error?: string; code?: string; used?: number; cap?: number } | null = context
-      ? await context.json().catch(() => null)
-      : null;
+    const body =
+      context && typeof context.json === "function"
+        ? ((await context.json().catch(() => null)) as { error?: string; code?: string; used?: number; cap?: number } | null)
+        : null;
 
     if (status === 429 && body?.code === "STUDIO_AI_DAILY_LIMIT") {
       setBlocked(true);

@@ -44,6 +44,11 @@ const SOURCE_ICON: Record<string, React.ComponentType<{ className?: string }>> =
   web: Globe, linkedin: Linkedin, instagram: Instagram, ats: Briefcase, gigboard: Briefcase,
 };
 
+// Scouted listings sometimes store a placeholder string instead of leaving
+// compensation null — don't surface those as if they were real information.
+const PLACEHOLDER_COMPENSATION = /^(not specified|unspecified|n\/?a|tbd|none|unknown|-)$/i;
+const hasRealCompensation = (comp: string | null) => !!comp && !PLACEHOLDER_COMPENSATION.test(comp.trim());
+
 // Lightweight markdown renderer for the brief (headings + paragraphs + lists)
 function MiniMarkdown({ md }: { md: string }) {
   const blocks = md.split(/\n{2,}/);
@@ -256,7 +261,11 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
     return (
       <div
         onClick={() => openDetail(g)}
-        className="group relative h-full flex flex-col rounded-2xl overflow-hidden border border-border bg-card cursor-pointer transition-all hover:border-energy/40 hover:shadow-2xl hover:shadow-energy/10"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(g); } }}
+        aria-label={`View brief for ${g.title}`}
+        className="group relative h-full flex flex-col rounded-2xl overflow-hidden border border-border bg-card cursor-pointer transition-all hover:border-energy/40 hover:shadow-2xl hover:shadow-energy/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-energy"
       >
         <div className="relative aspect-[16/9] overflow-hidden shrink-0">
           {g.image_url ? (
@@ -418,7 +427,11 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
         {gigs[0] && (
           <div
             onClick={() => openDetail(gigs[0])}
-            className="group relative rounded-2xl overflow-hidden border border-energy/30 bg-card cursor-pointer transition-all hover:border-energy/50 hover:shadow-2xl hover:shadow-energy/10 sm:flex"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(gigs[0]); } }}
+            aria-label={`View brief for ${gigs[0].title}, your strongest match`}
+            className="group relative rounded-2xl overflow-hidden border border-energy/30 bg-card cursor-pointer transition-all hover:border-energy/50 hover:shadow-2xl hover:shadow-energy/10 sm:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-energy"
           >
             <div className="relative aspect-[16/9] sm:aspect-auto sm:w-64 shrink-0 overflow-hidden">
               {gigs[0].image_url ? (
@@ -447,11 +460,12 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                   {gigs[0].fit_score}% fit
                 </Badge>
               </div>
-              {(gigs[0].company || gigs[0].location) && (
+              {(gigs[0].company || gigs[0].location || hasRealCompensation(gigs[0].compensation)) && (
                 <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
                   {gigs[0].company && <span className="font-medium text-foreground/90">{gigs[0].company}</span>}
                   {gigs[0].location && <><span>·</span><MapPin className="h-3 w-3" />{gigs[0].location}</>}
                   {gigs[0].remote && <Badge variant="outline" className="h-4 text-[9px] px-1">Remote</Badge>}
+                  {hasRealCompensation(gigs[0].compensation) && <><span>·</span><span className="font-medium text-foreground/90">{gigs[0].compensation}</span></>}
                 </div>
               )}
               {gigs[0].fit_reason && (
@@ -559,7 +573,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                   )}
                 </div>
 
-                {openGig.compensation && (
+                {hasRealCompensation(openGig.compensation) && (
                   <div className="rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-xs">
                     <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider mr-2">Comp</span>
                     {openGig.compensation}

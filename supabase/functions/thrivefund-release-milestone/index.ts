@@ -74,17 +74,27 @@ serve(async (req) => {
     const trancheCents = Math.round(Number(campaign.total_raised) * 100 * (pct / 100));
     const currency = (campaign.currency || "USD").toLowerCase();
 
-    const transfer = await stripe.transfers.create({
-      amount: trancheCents,
-      currency,
-      destination: creator.stripe_account_id,
-      metadata: {
-        source: "thrivefund_milestone",
-        campaign_id: campaignId,
-        milestone_index: String(milestoneIndex),
-        pct: String(pct),
+    // Deterministic per (campaign, milestone) key: a retried/replayed/
+    // double-clicked call for the same tranche returns Stripe's cached
+    // original transfer instead of creating a new one. Previously this had
+    // no idempotency protection at all — every repeated call moved real
+    // money again. Stripe caches idempotency keys for 24h; a permanent
+    // DB-level guard (reject before ever calling Stripe) is written as a
+    // migration for review, see supabase/migrations for the follow-up.
+    const transfer = await stripe.transfers.create(
+      {
+        amount: trancheCents,
+        currency,
+        destination: creator.stripe_account_id,
+        metadata: {
+          source: "thrivefund_milestone",
+          campaign_id: campaignId,
+          milestone_index: String(milestoneIndex),
+          pct: String(pct),
+        },
       },
-    });
+      { idempotencyKey: `thrivefund_milestone_${campaignId}_${milestoneIndex}` }
+    );
 
     log("transfer_created", { transferId: transfer.id, trancheCents });
 

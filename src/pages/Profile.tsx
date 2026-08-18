@@ -408,12 +408,8 @@ const ProfileContent = () => {
 
       <FeaturePageHeader
         eyebrow="Passport"
-        title={
-          <>
-            Passport.<br />
-            <span className="text-energy-glow">Your work, verified.</span>
-          </>
-        }
+        title="Passport."
+        accentTitle="Your work, verified."
         subtitle="Your identity, your strongest credits, and every co-sign — one card you actually control."
         tutorial={{ featureKey: "passport", label: "How Passport works", steps: PASSPORT_TUTORIAL }}
       />

@@ -553,6 +553,20 @@ All colors MUST be HSL.
     background: hsl(var(--background));
   }
 
+  /* Restrained technical grid texture for a feature page's first section —
+     subtle graph-paper lines, faded via a radial mask so it reads as
+     texture near the top and disappears toward the edges rather than
+     tiling flatly to infinity. Layers on top of .bg-cinematic's color;
+     never used alone. */
+  .bg-grid-quadrille {
+    background-image:
+      linear-gradient(to right, hsl(0 0% 100% / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(0 0% 100% / 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 25%, transparent 90%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 25%, transparent 90%);
+  }
+
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
@@ -928,6 +942,21 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
    static emission as .landing-glow under reduced motion. */
 .pink-glow-breathe {
   animation: pink-glow-breathe 4.5s ease-in-out infinite;
+}
+
+/* The one canonical pink accent word/phrase — identical to the hero's
+   "what's next" in "Prove what you've done. / Get found for what's next."
+   Use <span className="landing-accent">…</span> inside any landing-h1/h2. */
+.landing-accent {
+  color: #FF2DA1;
+  font-style: italic;
+  animation: pink-glow-breathe 4.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-accent {
+    animation: none;
+    text-shadow: 0 0 24px rgba(255, 45, 161, 0.18), 0 0 60px rgba(255, 45, 161, 0.08);
+  }
 }
 @keyframes pink-glow-breathe {
   0%, 100% {

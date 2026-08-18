@@ -2,8 +2,7 @@
  * KretopiaHero — Section 1 of the Kretopia landing page.
  *
  * Search-first. The hierarchy is deliberate and fixed:
- *   eyebrow → headline → supporting sentence (a second, longer sentence is
- *   hidden below `sm:` so mobile's first viewport stays uncluttered) →
+ *   eyebrow → headline → supporting sentence →
  *   dominant search, whose own submit button IS the primary action — no
  *   competing CTA row sits underneath it.
  *
@@ -22,6 +21,12 @@ import { analytics } from "@/lib/analytics";
 
 const ACCENT = "#FF2DA1";
 const EXAMPLE_SEARCHES = ["Maya Solano", "Event Producer in Bali", "Creative Director", "Sound Designer"];
+
+/** Headline, split into words so each can resolve out of a blur on load. */
+const HEADLINE: { text: string; accent?: boolean }[][] = [
+  [{ text: "Prove" }, { text: "what" }, { text: "you've" }, { text: "done." }],
+  [{ text: "Get" }, { text: "found" }, { text: "for" }, { text: "what's next", accent: true }],
+];
 
 interface KretopiaHeroProps {
   onSearchSubmit: (query: string) => void;
@@ -70,48 +75,83 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
         }}
       />
 
+      {/* Living aurora — two slow, counter-drifting magenta fields. Reads as
+          "something is thinking behind the glass" without ever competing
+          with the type. Disabled under prefers-reduced-motion. */}
+      {!reducedMotion && (
+        <>
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -top-1/3 left-1/2 h-[70vh] w-[70vh] -translate-x-1/2 rounded-full blur-[110px]"
+            style={{ background: `radial-gradient(circle, ${ACCENT}26, transparent 65%)` }}
+            animate={{ x: ["-55%", "-40%", "-55%"], y: [0, 40, 0], scale: [1, 1.12, 1] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-1/4 right-0 h-[50vh] w-[50vh] rounded-full blur-[120px]"
+            style={{ background: "radial-gradient(circle, rgba(120,80,255,0.16), transparent 65%)" }}
+            animate={{ x: [0, -60, 0], y: [0, -30, 0], scale: [1.1, 1, 1.1] }}
+            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </>
+      )}
+
+      {/* Faint signal grid, masked to fade out — the "machine" layer */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.16]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.16) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(70% 55% at 50% 35%, #000 0%, transparent 75%)",
+          WebkitMaskImage: "radial-gradient(70% 55% at 50% 35%, #000 0%, transparent 75%)",
+        }}
+      />
+
       <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 lg:px-12 pt-14 sm:pt-20 lg:pt-24 pb-20 sm:pb-28">
-        {/* Eyebrow */}
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center justify-center gap-3 mb-6 sm:mb-8"
-        >
-          <span className="h-px w-8 bg-white/25" />
-          <span className="landing-eyebrow">The Creative Passport</span>
-          <span className="h-px w-8 bg-white/25" />
-        </motion.div>
+        {/* Headline — words reveal one by one out of a blur, like the page is
+            resolving the sentence rather than printing it. */}
+        <h1 className="landing-h1 landing-glow text-center max-w-full mx-auto">
+          <motion.span
+            className="block"
+            initial="hidden"
+            animate="show"
+            variants={{ show: { transition: { staggerChildren: reducedMotion ? 0 : 0.075 } } }}
+          >
+            {HEADLINE.map((line, li) => (
+              <span key={li} className="block">
+                {line.map((word, wi) => (
+                  <motion.span
+                    key={`${li}-${wi}`}
+                    className="inline-block"
+                    variants={
+                      reducedMotion
+                        ? { hidden: {}, show: {} }
+                        : {
+                            hidden: { opacity: 0, y: 22, filter: "blur(10px)" },
+                            show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.7, ease: [0.2, 0.65, 0.3, 0.95] } },
+                          }
+                    }
+                  >
+                    {word.accent ? (
+                      <><span className="italic pink-glow-breathe" style={{ color: ACCENT }}>{word.text}</span>.</>
+                    ) : (
+                      word.text
+                    )}
+                    {wi < line.length - 1 && "\u00A0"}
+                  </motion.span>
+                ))}
+              </span>
+            ))}
+          </motion.span>
+        </h1>
 
-        {/* Headline — the single most important thing on the page */}
-        <motion.h1
-          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.2, 0.65, 0.3, 0.95] }}
-          className="landing-h1 landing-glow text-center max-w-full mx-auto"
-        >
-          Prove what you've done.
-          <br />
-          Get found for <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>what's next</span>.
-        </motion.h1>
-
-        <motion.p
-          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.12 }}
-          className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center"
-        >
+        {/* Fixed subtitle — no rotation, no animation. */}
+        <p className="landing-sub mt-5 sm:mt-6 max-w-xl mx-auto text-center">
           Search your name to find or create your Creative Passport.
-        </motion.p>
-        <motion.p
-          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.16 }}
-          className="hidden sm:block mt-2 max-w-lg mx-auto text-center text-sm text-white/50"
-          style={{ fontFamily: "'Work Sans', sans-serif" }}
-        >
-          Bring your credits, collaborators and creative history together, build trust around the work you've done, and unlock opportunities matched to what you do.
-        </motion.p>
+        </p>
 
         {/* ─────────────────────────────────────────────────────────────
             SEARCH — the dominant, centered surface. Real global search

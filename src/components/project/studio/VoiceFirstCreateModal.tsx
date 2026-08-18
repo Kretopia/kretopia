@@ -415,10 +415,10 @@ export const VoiceFirstCreateModal = ({
         {mode === "prompt" && (
           <>
             <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
-              What are you making?
+              Create a project
             </h1>
             <p className="text-sm text-muted-foreground max-w-sm mb-5">
-              Pick the kind of room — or just speak. We'll shape it around you.
+              Kreto will help shape the workspace around your brief, team and next milestone.
             </p>
 
             {/* How it works — compact, explains the flow before anyone commits to it */}
@@ -451,8 +451,11 @@ export const VoiceFirstCreateModal = ({
               })}
             </div>
 
-            {/* Workspace type chips — visible from the start */}
+            {/* Workspace type chips — visible from the start; this is Step 1 */}
             <div className="w-full max-w-md mb-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                Step 1 · Choose the project type
+              </p>
               <div className="flex flex-wrap justify-center gap-1.5">
                 {(Object.keys(WORKSPACE_CONFIGS) as WorkspaceType[]).map((t) => {
                   const cfg = WORKSPACE_CONFIGS[t];
@@ -482,6 +485,10 @@ export const VoiceFirstCreateModal = ({
                 </p>
               )}
             </div>
+
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+              Step 2 · Describe the idea
+            </p>
 
             {!showText ? (
               <>
@@ -609,7 +616,7 @@ export const VoiceFirstCreateModal = ({
         {mode === "review" && brief && (
           <div className="w-full max-w-md space-y-5 text-left">
             <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-              Here's what we caught
+              Step 3 · Kreto structured your project — review and edit
             </p>
             <div className="space-y-2">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">

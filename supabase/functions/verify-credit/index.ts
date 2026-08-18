@@ -14,18 +14,60 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { credit_id, project_name, role, year, platform } = await req.json();
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    if (!credit_id || !project_name) {
-      return new Response(JSON.stringify({ error: 'credit_id and project_name are required' }), {
+    const { credit_id } = await req.json();
+    if (!credit_id) {
+      return new Response(JSON.stringify({ error: 'credit_id is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // Previously trusted client-supplied project_name/role/year/platform with
+    // no check that credit_id even belonged to the caller -- any logged-in
+    // user could plant a fabricated AI verification against any other
+    // user's credit. Re-derive everything from the credit's own DB row.
+    const { data: credit, error: creditError } = await supabase
+      .from('credits')
+      .select('user_id, project_name, role, year, platform')
+      .eq('id', credit_id)
+      .single();
+
+    if (creditError || !credit) {
+      return new Response(JSON.stringify({ error: 'Credit not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (credit.user_id !== user.id) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { project_name, role, year, platform } = credit;
     const searchQuery = [project_name, role, platform, year].filter(Boolean).join(' ');
     let confidenceScore = 0;
     let evidenceLinks: any[] = [];

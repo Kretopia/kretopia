@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import {
-  Camera, MapPin, ShieldCheck, Share2, QrCode, FileDown, ArrowRight, Star, Gauge, Fingerprint,
+  Camera, PencilLine, MapPin, ShieldCheck, Share2, QrCode, FileDown, ArrowRight, Star, Gauge, Fingerprint,
 } from "lucide-react";
 import { HoloCard } from "./HoloCard";
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
@@ -126,10 +126,10 @@ export function PassportHero({
             variant="secondary"
             className="absolute top-2 right-2 h-7 text-xs gap-1 shadow-md opacity-90 hover:opacity-100"
             onClick={onEdit}
-            aria-label="Edit cover image"
+            aria-label="Edit Passport"
           >
-            <Camera className="h-3 w-3" />
-            {profile.cover_image_url ? "Change cover" : "Add cover"}
+            <PencilLine className="h-3 w-3" />
+            Edit Passport
           </Button>
           <div className="absolute top-2 left-2 px-2.5 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-full">
             Creative Passport
@@ -183,7 +183,7 @@ export function PassportHero({
           {/* Name + roles + location */}
           <div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-xl font-black tracking-tight leading-tight break-words">{displayName}</h1>
+              <h2 className="text-xl font-black tracking-tight leading-tight break-words">{displayName}</h2>
               {profile.verification_status === "verified" && (
                 <div className="flex items-center justify-center h-4 w-4 rounded-full bg-primary shrink-0" title="Verified">
                   <ShieldCheck className="h-2.5 w-2.5 text-primary-foreground" />
@@ -305,9 +305,14 @@ export function PassportHero({
             </div>
           </div>
 
-          {/* One primary action + secondary icon row */}
+          {/* One primary action + secondary icon row — neutral Liquid Glass,
+              not a loud pink fill. #FF2DA1 shows only on hover/focus/active. */}
           <div className="flex items-center gap-2">
-            <Button onClick={onShare} className="flex-1 h-10 gap-1.5 bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))]/90">
+            <Button
+              onClick={onShare}
+              variant="outline"
+              className="glass-surface flex-1 h-10 gap-1.5 border-white/10 text-foreground transition-colors hover:border-[#FF2DA1]/50 hover:text-[#FF2DA1] focus-visible:ring-[#FF2DA1] active:text-[#FF2DA1]"
+            >
               <Share2 className="h-4 w-4" />
               Share Passport
             </Button>

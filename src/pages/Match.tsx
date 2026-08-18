@@ -1,17 +1,21 @@
 import { lazy, Suspense, useState } from "react";
 import { SEO } from "@/components/SEO";
-import { Sparkles, LayoutGrid, Loader2 } from "lucide-react";
+import { Sparkles, LayoutGrid, Loader2, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SwipeFeature } from "@/components/swipe";
 import { KretoTip } from "@/components/agent/KretoTip";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { MATCH_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
+const LikesYouGrid = lazy(() =>
+  import("@/components/swipe/LikesYouGrid").then((m) => ({ default: m.LikesYouGrid }))
+);
+
 const BrowseCreators = lazy(() =>
   import("@/components/discover/BrowseCreators").then((m) => ({ default: m.BrowseCreators }))
 );
 
-type Mode = "swipe" | "browse";
+type Mode = "swipe" | "browse" | "likes";
 
 /**
  * Match — standalone Hinge-style page.
@@ -28,12 +32,8 @@ export default function Match() {
       />
       <FeaturePageHeader
         eyebrow="Collaborators"
-        title={
-          <>
-            Match.<br />
-            <span className="text-energy-glow">The right person for the work.</span>
-          </>
-        }
+        title="Match."
+        accentTitle="Find your people."
         subtitle="Swipe the deck or browse the grid — connect by skill, city, and the people you've already made things with."
         tutorial={{ featureKey: "match", label: "How Match works", steps: MATCH_TUTORIAL }}
         tabs={
@@ -41,6 +41,7 @@ export default function Match() {
             {([
               { id: "swipe", label: "Swipe", icon: Sparkles },
               { id: "browse", label: "Browse", icon: LayoutGrid },
+              { id: "likes", label: "Likes you", icon: Heart },
             ] as const).map((m) => {
               const Icon = m.icon;
               const active = mode === m.id;
@@ -66,7 +67,24 @@ export default function Match() {
       </div>
 
       <div className="px-3 py-3">
-        {mode === "swipe" && <SwipeFeature />}
+        {mode === "swipe" && (
+          <div className="flex justify-center">
+            <div className="w-full max-w-md">
+              <SwipeFeature />
+            </div>
+          </div>
+        )}
+        {mode === "likes" && (
+          <Suspense
+            fallback={
+              <div className="flex items-center gap-2 text-xs text-muted-foreground py-10 justify-center">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading likes…
+              </div>
+            }
+          >
+            <LikesYouGrid />
+          </Suspense>
+        )}
         {mode === "browse" && (
           <Suspense
             fallback={

@@ -119,7 +119,7 @@ const MeetupManage = () => {
       </Helmet>
 
       {/* Cinematic header */}
-      <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
+      <div className="relative border-b border-border/50 bg-cinematic bg-grid-quadrille overflow-hidden pt-[env(safe-area-inset-top)]">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
         <div className="relative container mx-auto max-w-6xl px-4 pt-4 pb-5 sm:pt-7 sm:pb-8">
           <button
@@ -136,7 +136,7 @@ const MeetupManage = () => {
               </p>
               <h1 className="text-xl sm:text-4xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
                 Command Center.<br />
-                <span className="text-energy-glow">Run your event like a pro.</span>
+                <span className="landing-accent">Run your event like a pro.</span>
               </h1>
             </div>
             <Button onClick={() => setShowCreate(true)} variant="gradient" size="sm" className="rounded-full shrink-0">

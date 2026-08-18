@@ -18,6 +18,10 @@ export interface AchievementCardProps {
   url?: string;
   verificationStatus?: "unverified" | "pending" | "pending_review" | "verified" | "auto_discovered" | "rejected" | "disputed";
   endorsementCount?: number;
+  /** Real provenance, when known — e.g. "IMDb", "Spotify". Only shown when actually present; never assumed. */
+  source?: string | null;
+  /** Name of the person/org who confirmed this credit, when known. */
+  verifiedByName?: string | null;
   isFeatured?: boolean;
   isOwnProfile?: boolean;
   onDelete?: () => void;
@@ -38,6 +42,8 @@ export const AchievementCard = ({
   url,
   verificationStatus = "unverified",
   endorsementCount = 0,
+  source,
+  verifiedByName,
   isFeatured = false,
   isOwnProfile = false,
   onDelete,
@@ -65,14 +71,19 @@ export const AchievementCard = ({
     let Icon: any = Shield;
     let cls = "bg-muted text-muted-foreground border-border";
 
-    if (evidence === "verified" && hasPeers) {
+    if (evidence === "verified") {
+      // Never assert a specific provenance we can't back with real data —
+      // "verified" alone doesn't tell us which of several paths produced
+      // it. Only cite a platform/confirmer name when the credit actually
+      // carries one.
       label = "Verified";
-      why = `Sourced from an authoritative platform and vouched by ${endorsementCount} collaborator${endorsementCount === 1 ? "" : "s"}.`;
-      Icon = ShieldCheck;
-      cls = "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40";
-    } else if (evidence === "verified") {
-      label = "Verified";
-      why = "Sourced from an authoritative platform (e.g. IMDb, Spotify, Behance).";
+      const parts: string[] = [];
+      if (source) parts.push(`Sourced from ${source}`);
+      else if (verifiedByName) parts.push(`Confirmed by ${verifiedByName}`);
+      if (hasPeers) parts.push(`vouched by ${endorsementCount} collaborator${endorsementCount === 1 ? "" : "s"}`);
+      why = parts.length > 0
+        ? `${parts.join(" and ")}.`
+        : "Confirmed through Kretopia's verification process.";
       Icon = ShieldCheck;
       cls = "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40";
     } else if (evidence === "publicly_sourced") {

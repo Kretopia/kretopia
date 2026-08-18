@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, Play, Star, List, AlertCircle, RefreshCw,
+  Play, Star, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -20,12 +20,26 @@ import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlacehol
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
-import { deriveEvidenceState, EVIDENCE_STATE_ORDER } from "@/lib/creditEvidence";
+import { deriveEvidenceState } from "@/lib/creditEvidence";
 import { SmartWidget } from "@/components/ui/smart-widget";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
-import { VERIFIED_CREDITS_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
+import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { CreditsBoard } from "@/components/kretopia/CreditsBoard";
+import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
+import { Reveal } from "@/components/kretopia/Reveal";
+import { Link } from "react-router-dom";
+import { Fingerprint, Handshake, FileCheck2 } from "lucide-react";
+
+const ACCENT = "#FF2DA1";
+
+const PROOF_POINTS = [
+  { icon: FileCheck2, title: "Evidence first", body: "Links, files and receipts attached to the work — not a self-written bio." },
+  { icon: Handshake, title: "Co-signed by humans", body: "The people who were there confirm it in one tap. No paperwork." },
+  { icon: ShieldCheck, title: "Reviewed, then stamped", body: "Verified credits carry a stamp anyone can check, anywhere." },
+  { icon: Fingerprint, title: "Yours forever", body: "Your record travels with you across cities, clients and industries." },
+];
+
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -309,6 +323,42 @@ const CreditDatabase = () => {
 
   const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0 || webResults.length > 0;
 
+  const searchControls = (
+    <>
+      <UnifiedSearchDropdown
+        variant={isSearchActive ? "inline" : "hero"}
+        value={search}
+        onValueChange={setSearch}
+        onQuerySubmit={handleSearchSubmit}
+        placeholder="Search projects, creators, labels, studios..."
+        className="max-w-xl mx-auto"
+      />
+
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
+        {CATEGORY_GROUPS.map(g => {
+          const Icon = g.icon;
+          const isActive = category === g.value;
+          return (
+            <button
+              key={g.value}
+              className={cn(
+                "flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shrink-0 transition-all border",
+                isActive
+                  ? "text-white border-[rgba(255,45,161,0.45)] bg-[rgba(255,45,161,0.14)]"
+                  : "text-white/60 border-white/10 bg-white/[0.02] hover:text-white/90 hover:border-white/20"
+              )}
+              onClick={() => setCategory(g.value)}
+            >
+              <Icon className="h-3 w-3" />
+              {g.label}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+
+
   return (
     <>
       <Helmet>
@@ -349,83 +399,28 @@ const CreditDatabase = () => {
 
         <>
 
-        {/* Search Hero */}
-        <div className={cn(
-          "transition-all duration-300",
-          isSearchActive
-            ? "border-b bg-background py-4"
-            : "bg-gradient-to-b from-primary/8 to-background py-8 md:py-12"
-        )}>
-          <div className="container mx-auto px-4">
-            {!isSearchActive && (
-              <div className="mb-5 max-w-xl mx-auto text-center">
-                <p
-                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] mb-3 px-2.5 py-1 rounded-full border"
-                  style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)", color: "#FF2DA1" }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#FF2DA1" }} />
-                  Creative Passport
-                </p>
-                <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-white leading-[0.95]">
-                  Verified Credits.<br />
-                  <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>The record no one can fake.</span>
-                </h1>
-                <p className="mt-3 text-sm sm:text-base text-white/60">
-                  Search any project, person, or production across the global creative industry.
-                </p>
-                <div className="mt-2 flex justify-center">
-                  <FeatureAITutorial featureKey="verified-credits" label="How Verified Credits works" steps={VERIFIED_CREDITS_TUTORIAL} />
-                </div>
+        {!isSearchActive && (
+          <EditorialPageHero
+            kicker="Verified Credits"
+            oneLine
+            title="Verified Credits."
+            accentTitle="Proof you can't fake."
+            subtitle="Search any project, person, or production across the global creative industry — and see exactly what backs every claim."
+          />
+        )}
 
-                {/* Verified Credit / Passport Stamp explainer — official terms,
-                    honest evidence tiers. "Verified" is never shown without
-                    the evidence backing it up. */}
-                <div className="mt-4 rounded-xl border border-border/60 bg-card/50 p-3.5">
-                  <p className="text-xs text-foreground leading-relaxed">
-                    <strong>A Verified Credit</strong> is a project backed by real evidence — not just a claim.
-                    Once it's fully confirmed, it becomes a <strong>Passport Stamp</strong>: the visible proof on a Creative Passport.
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {EVIDENCE_STATE_ORDER.map((s) => (
-                      <EvidenceStateBadge key={s} state={s} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <UnifiedSearchDropdown
-              variant={isSearchActive ? "inline" : "hero"}
-              value={search}
-              onValueChange={setSearch}
-              onQuerySubmit={handleSearchSubmit}
-              placeholder="Search projects, creators, labels, studios..."
-              className="max-w-xl mx-auto"
-            />
-
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
-              {CATEGORY_GROUPS.map(g => {
-                const Icon = g.icon;
-                const isActive = category === g.value;
-                return (
-                  <button
-                    key={g.value}
-                    className={cn(
-                      "flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shrink-0 transition-all",
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted/60 text-muted-foreground hover:bg-muted"
-                    )}
-                    onClick={() => setCategory(g.value)}
-                  >
-                    <Icon className="h-3 w-3" />
-                    {g.label}
-                  </button>
-                );
-              })}
-            </div>
+        {/* I — The search */}
+        {isSearchActive ? (
+          <div className="py-4" style={{ backgroundColor: "#05070D" }}>
+            <div className="container mx-auto px-4">{searchControls}</div>
           </div>
-        </div>
+        ) : (
+          <EditorialChapter index="I" kicker="The search" title="Start with a name." accentWord="Any name.">
+            <Reveal>{searchControls}</Reveal>
+          </EditorialChapter>
+        )}
+
+
 
         <div className="container mx-auto px-4">
           {loading ? (
@@ -564,109 +559,78 @@ const CreditDatabase = () => {
               </div>
             )
           ) : (
-            /* Browse mode */
-            <div className="py-5 space-y-8">
-              {/* Visual credits with art — hero spotlight */}
-              {recentCredits.length > 0 && (() => {
-                const withArt = recentCredits.filter(c => resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
-                const withoutArt = recentCredits.filter(c => !resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
-                return (
-                  <>
-                    {withArt.length > 0 && (
-                      <section>
-                        <div className="flex items-center gap-2 mb-3">
-                          <Star className="h-4 w-4 text-primary" />
-                          <h2 className="text-sm font-semibold">Featured Work</h2>
-                          <span className="text-[11px] text-muted-foreground">Visual credits</span>
-                        </div>
-                        <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Featured work">
-                          <CarouselContent className="-ml-3">
-                            {withArt.slice(0, 20).map(credit => (
-                              <CarouselItem key={credit.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
-                                <CreditPosterCard
-                                  credit={credit}
-                                  onClick={() => navigate(`/profile/${credit.user_id}`)}
-                                  formatType={formatType}
-                                  getCategoryForType={getCategoryForType}
-                                />
-                              </CarouselItem>
-                            ))}
-                          </CarouselContent>
-                          <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous featured work" />
-                          <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next featured work" />
-                        </Carousel>
-                      </section>
-                    )}
+            /* Browse mode — one dashboard board inside an editorial chapter */
+            <EditorialChapter index="II" kicker="The record" title="Everything already" accentWord="on file.">
+              <Reveal>
 
-                    {withoutArt.length > 0 && (
-                      <section>
-                        <div className="flex items-center gap-2 mb-3">
-                          <List className="h-4 w-4 text-muted-foreground" />
-                          <h2 className="text-xs font-medium text-muted-foreground">Other Credits ({withoutArt.length})</h2>
-                        </div>
-                        <div className="space-y-0.5 max-h-[200px] overflow-y-auto rounded-lg border border-border/40 bg-muted/20 p-1">
-                          {withoutArt.slice(0, 10).map(credit => (
-                            <CompactCreditRow
-                              key={credit.id}
-                              credit={credit}
-                              onClick={() => navigate(`/profile/${credit.user_id}`)}
-                              formatType={formatType}
-                              getCategoryForType={getCategoryForType}
-                            />
-                          ))}
-                        </div>
-                      </section>
-                    )}
-                  </>
-                );
-              })()}
-
-              {/* Recently added projects */}
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  <h2 className="text-sm font-semibold">Recently Added</h2>
-                </div>
-                {initialLoading ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  </div>
-                ) : trendingProjects.length > 0 ? (
-                  <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Recently added projects">
-                    <CarouselContent className="-ml-3">
-                      {trendingProjects.map(project => (
-                        <CarouselItem key={project.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
-                          <PosterCard
-                            title={project.title}
-                            type={project.type}
-                            year={project.year}
-                            imageUrl={project.cover_image_url}
-                            isVerified={project.is_verified}
-                            roleCount={project.icdb_project_roles?.length || 0}
-                            claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
-                            clientBrand={project.client_brand}
-                            onClick={() => navigate(`/credits/project/${project.id}`)}
-                            formatType={formatType}
-                            getCategoryForType={getCategoryForType}
-                          />
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous recently added projects" />
-                    <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next recently added projects" />
-                  </Carousel>
-                ) : (
-                  <div className="text-center py-12">
-                    <Database className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">Start searching to discover creative projects</p>
-                  </div>
-                )}
-              </section>
-            </div>
+              <CreditsBoard
+                loading={initialLoading}
+                rows={[
+                  ...recentCredits.map((credit) => {
+                    const img = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
+                    return {
+                      id: credit.id,
+                      group: (img ? "featured" : "other") as "featured" | "other",
+                      title: credit.project_name,
+                      subtitle: credit.role,
+                      typeLabel: formatType(credit.credit_category || ""),
+                      year: credit.year,
+                      imageUrl: img,
+                      verified: credit.verification_status === "verified",
+                      onClick: () => navigate(`/profile/${credit.user_id}`),
+                    };
+                  }),
+                  ...trendingProjects.map((project) => ({
+                    id: project.id,
+                    group: "recent" as const,
+                    title: project.title,
+                    subtitle: project.client_brand,
+                    typeLabel: formatType(project.type),
+                    year: project.year,
+                    imageUrl: project.cover_image_url,
+                    verified: project.is_verified,
+                    onClick: () => navigate(`/credits/project/${project.id}`),
+                  })),
+                ]}
+              />
+              </Reveal>
+            </EditorialChapter>
           )}
+
         </div>
+
+        {!isSearchActive && (
+          <>
+            {/* III — Why verified */}
+            <EditorialChapter index="III" kicker="Why it counts" title="Anyone can claim it." accentWord="You can prove it.">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {PROOF_POINTS.map((p, i) => (
+                  <Reveal key={p.title} delayIndex={i}>
+                    <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+                      <span
+                        className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                      >
+                        <p.icon className="h-4 w-4" style={{ color: ACCENT }} />
+                      </span>
+                      <p className="text-white font-semibold text-sm mb-1.5">{p.title}</p>
+                      <p className="text-sm leading-relaxed text-white/55">{p.body}</p>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+              <Reveal delayIndex={2}>
+                <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+                  "A credit is only worth what backs it. Here, every line has someone or something standing behind it."
+                </p>
+              </Reveal>
+            </EditorialChapter>
+
+          </>
+        )}
         </>
       </div>
+
 
       {/* Claim Dialog */}
       <Dialog open={!!claimDialog} onOpenChange={() => setClaimDialog(null)}>

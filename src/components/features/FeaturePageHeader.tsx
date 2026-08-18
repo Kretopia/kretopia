@@ -1,15 +1,17 @@
 import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import { FeatureAITutorial } from "./FeatureAITutorial";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface FeaturePageHeaderProps {
   /** e.g. "Live gigs" — short, uppercase, pill-badged */
   eyebrow: string;
-  /** e.g. <>Gigs.<br /><span className="text-energy-glow">Find your next one.</span></> */
+  /** White first line — keep it short (2-4 words). */
   title: ReactNode;
+  /** Magenta second line, rendered exactly like the landing hero's accent. */
+  accentTitle?: ReactNode;
   subtitle: string;
-  /** Optional right-aligned chip, matching Opportunities' "All gigs · One feed" badge. */
-  meta?: ReactNode;
   /** Optional segmented tab toggle, rendered below the title block. */
   tabs?: ReactNode;
   /** Feature key + tutorial steps -- omit to render the header with no tutorial trigger. */
@@ -17,32 +19,75 @@ interface FeaturePageHeaderProps {
 }
 
 /**
- * Shared cinematic page header -- the exact classes/structure from
- * Opportunities.tsx, extracted so every overhauled feature gets the
- * identical treatment instead of nine bespoke re-implementations.
+ * Shared cinematic page header. Same plate, scale and reveal motion as the
+ * landing hero: one white line, one magenta line — never more than two.
  */
-export function FeaturePageHeader({ eyebrow, title, subtitle, meta, tabs, tutorial }: FeaturePageHeaderProps) {
+export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs, tutorial }: FeaturePageHeaderProps) {
+  const reducedMotion = useReducedMotion();
+
+
   return (
-    <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
-      <div className="relative container mx-auto max-w-5xl px-4 pt-6 pb-5 sm:pt-8 sm:pb-7">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
-              <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-              {eyebrow}
+    <div
+      className="dark relative overflow-hidden pt-[env(safe-area-inset-top)]"
+      style={{ backgroundColor: "#05070D" }}
+    >
+      {/* aurora — same plate as the landing chapters / EditorialPageHero */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 ai-ambient-breathe"
+        style={{ background: "radial-gradient(60% 55% at 50% 0%, rgba(255,45,161,0.14), transparent 62%)" }}
+      />
+      {/* quadrillé grid texture — restrained graph-paper lines, faded via mask */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
+      {/* grain */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.13]"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
+        }}
+      />
+      <div className="relative container mx-auto max-w-5xl px-4 pt-10 pb-8 sm:pt-14 sm:pb-12">
+        {/* The tutorial trigger floats in the header's corner instead of
+            sitting between the subtitle and the first card — no sandwich. */}
+        {tutorial && (
+          <FeatureAITutorial
+            featureKey={tutorial.featureKey}
+            label={tutorial.label}
+            steps={tutorial.steps}
+            variant="floating"
+            className="absolute right-4 top-4 z-10"
+          />
+        )}
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, ease: [0.2, 0.65, 0.3, 0.95] }}
+          className="flex flex-col items-center gap-4 text-center"
+        >
+          <div className="flex flex-col items-center w-full">
+            <p
+              className="inline-flex items-center gap-2 rounded-full border px-3 py-1 mb-6"
+              style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.06)" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full ai-ambient-breathe" style={{ backgroundColor: "#FF2DA1" }} />
+              <span className="landing-eyebrow" style={{ color: "#FF2DA1" }}>{eyebrow}</span>
             </p>
-            <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
+            <h1 className="landing-h1 landing-glow max-w-4xl text-balance">
               {title}
+              {accentTitle && (
+                <>
+                  <br />
+                  <span className="landing-accent">{accentTitle}</span>
+                </>
+              )}
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md">{subtitle}</p>
-            {tutorial && (
-              <FeatureAITutorial featureKey={tutorial.featureKey} label={tutorial.label} steps={tutorial.steps} />
-            )}
+            <p className="landing-sub mt-5 max-w-xl mx-auto">{subtitle}</p>
           </div>
-          {meta}
-        </div>
-        {tabs && <div className="mt-5">{tabs}</div>}
+        </motion.div>
+        {tabs && <div className="mt-6">{tabs}</div>}
+
       </div>
     </div>
   );

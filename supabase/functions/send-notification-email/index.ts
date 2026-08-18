@@ -27,6 +27,84 @@ const EmailRequestSchema = z.object({
   { message: "Either 'to' or 'recipientId' must be provided" }
 );
 
+function parseJwtClaims(token: string): Record<string, unknown> | null {
+  const parts = token.split(".");
+  if (parts.length < 2) return null;
+  try {
+    const payload = parts[1]
+      .replaceAll("-", "+")
+      .replaceAll("_", "/")
+      .padEnd(Math.ceil(parts[1].length / 4) * 4, "=");
+    return JSON.parse(atob(payload)) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+// Authorizes the caller against the recipient they asked for. Three paths:
+//  1. Service-role JWT (other edge functions / cron, e.g. notify-swipe,
+//     send-streak-warning) — always allowed.
+//  2. An authenticated user sending to themselves (self-service, e.g. the
+//     onboarding welcome email) — allowed.
+//  3. An authenticated admin sending to someone else (e.g. AdminBroadcast) —
+//     allowed after a live role check against public.user_roles.
+// Anything else — including an anon-key-only caller, which is public and
+// ships in the frontend bundle — is denied. Without this check this handler
+// was an unauthenticated open relay: `type: 'general'` accepts arbitrary
+// title/message/link content sent through the real verified sender.
+async function authorizeSend(
+  req: Request,
+  to: string | undefined,
+  recipientId: string | undefined,
+): Promise<{ ok: true } | { ok: false; response: Response }> {
+  const deny = (status: number, message: string) =>
+    new Response(JSON.stringify({ error: message }), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return { ok: false, response: deny(401, "Unauthorized") };
+  }
+
+  const token = authHeader.slice("Bearer ".length).trim();
+  const claims = parseJwtClaims(token);
+  if (!claims) {
+    return { ok: false, response: deny(401, "Unauthorized") };
+  }
+
+  if (claims.role === "service_role") {
+    return { ok: true };
+  }
+
+  const callerId = claims.sub as string | undefined;
+  const callerEmail = claims.email as string | undefined;
+  if (!callerId) {
+    return { ok: false, response: deny(401, "Unauthorized") };
+  }
+
+  const isSelf =
+    (!!recipientId && recipientId === callerId) ||
+    (!!to && !!callerEmail && to.toLowerCase() === callerEmail.toLowerCase());
+  if (isSelf) {
+    return { ok: true };
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const roleResponse = await fetch(
+    `${supabaseUrl}/rest/v1/user_roles?user_id=eq.${callerId}&role=eq.admin&select=role`,
+    { headers: { apikey: supabaseServiceKey, Authorization: `Bearer ${supabaseServiceKey}` } },
+  );
+  const roles = roleResponse.ok ? await roleResponse.json() : [];
+  if (Array.isArray(roles) && roles.length > 0) {
+    return { ok: true };
+  }
+
+  return { ok: false, response: deny(403, "Forbidden: cannot send notifications to other users") };
+}
+
 interface EmailRequest {
   to?: string;
   recipientId?: string;
@@ -315,25 +393,32 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Allow calls from other edge functions (via supabase.functions.invoke which passes service role)
-  // and from cron jobs. verify_jwt=false in config.toml handles basic access control.
-
   try {
     // Parse and validate input
     const rawData = await req.json();
     const validationResult = EmailRequestSchema.safeParse(rawData);
-    
+
     if (!validationResult.success) {
       return new Response(
-        JSON.stringify({ 
-          error: "Invalid input", 
-          details: validationResult.error.errors 
+        JSON.stringify({
+          error: "Invalid input",
+          details: validationResult.error.errors
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const body = validationResult.data;
+
+    // Not in supabase/config.toml, so this function runs with the platform
+    // default (verify_jwt=true) — but that only proves the caller holds *a*
+    // signed JWT, and the public anon key qualifies. authorizeSend() is the
+    // real gate: service-role callers, self-service, or admin-only.
+    const authResult = await authorizeSend(req, body.to, body.recipientId);
+    if (!authResult.ok) {
+      return authResult.response;
+    }
+
     let to = body.to;
     const type = body.type;
     let data = body.data || {};

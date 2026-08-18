@@ -101,7 +101,7 @@ const Ambassadors = () => {
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-[-0.04em] text-foreground leading-[0.95] mb-5">
             Get paid to grow<br />
-            <span className="text-energy-glow">the Creative OS.</span>
+            <span className="landing-accent">the Creative OS.</span>
           </h1>
 
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-4">

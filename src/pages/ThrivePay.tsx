@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,11 +31,11 @@ import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
-import { MoneyStreakChip } from "@/components/thrivepay/MoneyStreakChip";
 import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
 import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
 import { PaymentLinksSection } from "@/components/thrivepay/PaymentLinksSection";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import {
   DollarSign,
@@ -256,19 +255,6 @@ export default function ThrivePay() {
     fetchWallet();
   };
 
-  const getStatusBadge = () => {
-    switch (connectStatus) {
-      case "active":
-        return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Active</Badge>;
-      case "pending":
-        return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
-      case "restricted":
-        return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Restricted</Badge>;
-      default:
-        return <Badge variant="outline">Not Connected</Badge>;
-    }
-  };
-
   if (loading) {
     return (
       <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
@@ -291,20 +277,10 @@ export default function ThrivePay() {
 
       <FeaturePageHeader
         eyebrow="Your money, daily"
-        title={
-          <>
-            KrePay.<br />
-            <span className="text-energy-glow">Invoices, expenses, payouts — one place.</span>
-          </>
-        }
+        title="KrePay."
+        accentTitle="Get paid, all in one place."
         subtitle="Everything about getting paid for your creative work, without the spreadsheet."
         tutorial={{ featureKey: "krepay", label: "How KrePay works", steps: KREPAY_TUTORIAL }}
-        meta={
-          <div className="flex items-center gap-2 flex-wrap">
-            {getStatusBadge()}
-            <MoneyStreakChip />
-          </div>
-        }
         tabs={
           <div className="flex items-center gap-2">
             {/* Top Up — primary lime CTA */}
@@ -375,6 +351,8 @@ export default function ThrivePay() {
 
       <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         <PassportAnchorStrip className="mb-3" />
+
+        <KretoTip compact className="mb-5" />
 
         {/* Kretopia Wallet — frictionless payouts (Path 2) */}
         <div className="mb-6">

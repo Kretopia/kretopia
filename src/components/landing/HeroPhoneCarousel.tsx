@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Verified, Sparkles, CheckCircle, MessageSquare, DollarSign, MapPin, Briefcase, Search } from "lucide-react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 /**
  * HeroPhoneCarousel — single phone frame whose screen rotates between the
@@ -20,11 +21,15 @@ const LABELS: Record<Screen, { eyebrow: string; tag: string }> = {
 
 export const HeroPhoneCarousel = () => {
   const [idx, setIdx] = useState(0);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // Reduced motion: leave the carousel on its first screen instead of
+    // auto-rotating — the dots below still let a user step through manually.
+    if (reducedMotion) return;
     const t = setInterval(() => setIdx((i) => (i + 1) % SCREENS.length), 3800);
     return () => clearInterval(t);
-  }, []);
+  }, [reducedMotion]);
 
   const screen = SCREENS[idx];
   const label = LABELS[screen];
@@ -53,10 +58,10 @@ export const HeroPhoneCarousel = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={screen}
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.98 }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
+            exit={reducedMotion ? undefined : { opacity: 0, y: -20, scale: 0.98 }}
+            transition={{ duration: reducedMotion ? 0 : 0.45, ease: "easeOut" }}
             className="absolute inset-0 bg-gradient-to-b from-background to-card"
           >
             {screen === "match" && <MatchScreen />}

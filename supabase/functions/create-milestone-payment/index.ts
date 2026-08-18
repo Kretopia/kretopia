@@ -52,13 +52,10 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { milestoneId, amount, title, projectId, useEscrow } = await req.json();
-    if (!milestoneId || !amount || !title) {
-      throw new Error("Missing required fields: milestoneId, amount, or title");
+    const { milestoneId, amount: clientAmount, title, projectId, useEscrow } = await req.json();
+    if (!milestoneId || !title) {
+      throw new Error("Missing required fields: milestoneId or title");
     }
-
-    const talentRate = parseFloat(amount);
-    logStep("Payment request received", { milestoneId, talentRate, title, useEscrow });
 
     // Get the brand's subscription tier to determine service fee
     const { data: brandProfile } = await supabaseAdmin
@@ -70,23 +67,64 @@ serve(async (req) => {
     const brandTier = brandProfile?.subscription_tier || 'free';
     const platformFeeRate = getPlatformFeeRate(brandTier);
 
-    // Check if a talent manager is involved (via talent_referrals)
-    const { data: milestone } = await supabaseAdmin
+    // Amount is ALWAYS sourced from the milestone's own DB row, never from
+    // the client request body -- a modified/replayed request must not be
+    // able to set an arbitrary charge amount for a real milestoneId. Same
+    // pattern already used by batch-milestone-payout.
+    const { data: milestone, error: milestoneError } = await supabaseAdmin
       .from('milestones')
-      .select('created_by, status')
+      .select('created_by, status, amount, project_id')
       .eq('id', milestoneId)
       .single();
+
+    if (milestoneError || !milestone) {
+      logStep("Rejected: milestone not found", { milestoneId, error: milestoneError?.message });
+      return new Response(JSON.stringify({ error: "Milestone not found." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      });
+    }
+
+    // Nothing previously checked that the caller has any relationship to
+    // this milestone's project before building a checkout session for it.
+    // Combined with escrowAuth.ts trusting whoever's user id lands in the
+    // PaymentIntent metadata, an unrelated user could pay someone else's
+    // milestone with their own card and become the only party authorized to
+    // ever release/cancel that escrow -- locking out the real client. Only
+    // the project's client or owner may pay a milestone, same authorized-
+    // payer set batch-milestone-payout already uses for the release side.
+    const { data: milestoneProject } = await supabaseAdmin
+      .from('projects')
+      .select('client_user_id, created_by')
+      .eq('id', milestone.project_id)
+      .maybeSingle();
+    const authorizedPayers = [milestoneProject?.client_user_id, milestoneProject?.created_by].filter(Boolean);
+    if (!authorizedPayers.includes(user.id)) {
+      logStep("Rejected: caller not authorized to pay this milestone", { milestoneId, userId: user.id });
+      return new Response(JSON.stringify({ error: "You are not authorized to pay this milestone." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+      });
+    }
 
     // Guard against duplicate payment attempts (double-click, two tabs,
     // retried request) -- this is the authoritative check; a disabled
     // button client-side helps but isn't a security boundary.
-    if (milestone?.status === 'paid') {
+    if (milestone.status === 'paid') {
       logStep("Rejected: milestone already paid", { milestoneId });
       return new Response(JSON.stringify({ error: "This milestone has already been paid." }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 409,
       });
     }
+
+    const talentRate = milestone.amount;
+    if (clientAmount !== undefined && parseFloat(clientAmount) !== talentRate) {
+      logStep("Client-submitted amount ignored — mismatch with DB milestone amount", {
+        milestoneId, clientAmount, dbAmount: talentRate,
+      });
+    }
+    logStep("Payment request received", { milestoneId, talentRate, title, useEscrow });
 
     let hasManager = false;
     let managerTableId: string | null = null;

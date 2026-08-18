@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -34,8 +35,34 @@ serve(async (req) => {
 
     const { circleId, sessionId } = await req.json();
     if (!circleId) throw new Error("Circle ID is required");
+    if (!sessionId) throw new Error("Session ID is required");
 
     logStep("Verifying payment", { circleId, userId: user.id, sessionId });
+
+    // This previously updated circle_subscriptions to 'active' on a bare
+    // client claim with no Stripe interaction at all — any authenticated
+    // user could join any paid Circle for free. Retrieve and verify the
+    // real Stripe session before granting access, same pattern as
+    // verify-founder-payment / wallet-topup-confirm.
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2025-08-27.basil",
+    });
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    logStep("Session retrieved", { status: session.payment_status, metadata: session.metadata });
+
+    if (session.payment_status !== "paid") {
+      throw new Error("Payment not completed");
+    }
+    if (session.metadata?.type !== "circle_subscription") {
+      throw new Error("Invalid session type");
+    }
+    if (session.metadata?.circle_id !== circleId) {
+      throw new Error("Session does not match this circle");
+    }
+    if (session.metadata?.buyer_id !== user.id) {
+      throw new Error("Session does not belong to this user");
+    }
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",

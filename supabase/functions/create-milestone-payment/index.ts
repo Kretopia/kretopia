@@ -73,7 +73,7 @@ serve(async (req) => {
     // pattern already used by batch-milestone-payout.
     const { data: milestone, error: milestoneError } = await supabaseAdmin
       .from('milestones')
-      .select('created_by, status, amount')
+      .select('created_by, status, amount, project_id')
       .eq('id', milestoneId)
       .single();
 
@@ -82,6 +82,28 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Milestone not found." }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 404,
+      });
+    }
+
+    // Nothing previously checked that the caller has any relationship to
+    // this milestone's project before building a checkout session for it.
+    // Combined with escrowAuth.ts trusting whoever's user id lands in the
+    // PaymentIntent metadata, an unrelated user could pay someone else's
+    // milestone with their own card and become the only party authorized to
+    // ever release/cancel that escrow -- locking out the real client. Only
+    // the project's client or owner may pay a milestone, same authorized-
+    // payer set batch-milestone-payout already uses for the release side.
+    const { data: milestoneProject } = await supabaseAdmin
+      .from('projects')
+      .select('client_user_id, created_by')
+      .eq('id', milestone.project_id)
+      .maybeSingle();
+    const authorizedPayers = [milestoneProject?.client_user_id, milestoneProject?.created_by].filter(Boolean);
+    if (!authorizedPayers.includes(user.id)) {
+      logStep("Rejected: caller not authorized to pay this milestone", { milestoneId, userId: user.id });
+      return new Response(JSON.stringify({ error: "You are not authorized to pay this milestone." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
       });
     }
 

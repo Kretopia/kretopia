@@ -60,6 +60,15 @@ serve(async (req) => {
       throw new Error("Invalid session type");
     }
 
+    // The session ID rides in the success-redirect URL (create-founder-checkout's
+    // success_url), which can leak via browser history, a shared screenshot, or
+    // referrer headers on the destination page. Without this check, anyone who
+    // obtained another user's real paid session ID could call this function
+    // themselves and be granted founder status on someone else's payment.
+    if (session.metadata?.user_id !== user.id) {
+      throw new Error("Session does not belong to this user");
+    }
+
     // Check if already processed
     const { data: existing } = await supabaseAdmin
       .from('founder_circle_purchases')

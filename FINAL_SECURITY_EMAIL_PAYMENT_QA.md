@@ -13,13 +13,13 @@ Status categories used throughout, per the charter: **Implemented** / **Verified
 | 1 | Unauthenticated open relay — arbitrary content to arbitrary recipient | `send-notification-email` | Critical | Implemented, verified locally, pushed (`8572f0f8`) |
 | 2 | Unauthenticated push-notification relay | `send-push-notification` | Critical | Implemented, verified locally, pushed (`1e886071`) |
 | 3 | Free paid-Circle-membership exploit (zero Stripe verification) | `verify-circle-payment` | Critical | Implemented, verified locally, pushed (`7dbfb363`) |
-| 4 | No idempotency guard on real Stripe transfers | `thrivefund-release-milestone` | Critical | Implemented (Stripe idempotency key) + migration written for permanent guard, not applied. Pushed (`7dbfb363`) |
+| 4 | No idempotency guard on real Stripe transfers | `thrivefund-release-milestone` | Critical | Implemented (Stripe idempotency key, pushed `7dbfb363`) + permanent DB guard migration applied to production 2026-08-18 (user-reviewed, verified by query) + follow-up code wired and pushed (`25fa0425`) — deployment status of that follow-up not independently re-verified |
 | 5 | Missing session-ownership check on founder-tier grant | `verify-founder-payment` | Moderate | Implemented, verified locally, pushed (`7dbfb363`) |
 | 6 | Missing ownership check on milestone-payment checkout | `create-milestone-payment` | Moderate | Implemented, verified locally, pushed (`7dbfb363`) |
 | 7 | AI plausibility guess mislabeled as "Verified" on public Passport | `ICDBTimeline.tsx` | Major (trust/UX) | Implemented, pushed (`02d9abc6`) |
 | 8 | No auth/ownership check — IDOR on AI credit verification | `verify-credit` | Moderate | Implemented, verified locally, pushed (`02d9abc6`) |
 
-All 8 are safe, non-destructive, app-level code changes — no RLS policy was applied, no production data was touched, no secret was rotated, no live Stripe/email config changed. Two items also produced a written-but-not-applied migration (see §6), consistent with this charter's rule that database changes require human review before application.
+All 8 started as safe, non-destructive, app-level code changes — no RLS policy was applied by Claude directly, no secret was rotated, no live Stripe/email config changed. Two items also produced a written migration (see §6); both were later reviewed and applied to production by the user on 2026-08-18, verified by direct query (`SECURITY_RELEASE_GATE.md` §F) — the one database change in this report that did land in production, and only after explicit human review and application, consistent with this charter's standing rule.
 
 Every commit passed the full local gate before being pushed: `npx tsc --noEmit -p .` (silent), `npm run build` (clean), `npm run test -- --run` (62/62 passing), each time.
 
@@ -28,7 +28,7 @@ Every commit passed the full local gate before being pushed: `npx tsc --noEmit -
 ## 2. Phase-by-phase status
 
 ### Phase 0 — Security and release audit
-**Status: Implemented.** `SECURITY_RELEASE_GATE.md` updated with a new 2026-08-18 scan section (finding IDs EF-01/EF-02) alongside the existing 2026-08-16/17 history. The gate's blocking condition remains the `credit_claim_disputes` migration written in an earlier pass of this same session (`20260817140000_harden_credit_dispute_resolution_rls.sql`) — still not applied, still requires human review.
+**Status: Implemented, and now Applied to production.** `SECURITY_RELEASE_GATE.md` updated with a new 2026-08-18 scan section (finding IDs EF-01/EF-02) alongside the existing 2026-08-16/17 history. The gate's former blocking condition — the `credit_claim_disputes` migration (`20260817140000_harden_credit_dispute_resolution_rls.sql`) — was reviewed by the user and applied to production later the same day, verified by direct query (see `SECURITY_RELEASE_GATE.md` §F). This is no longer a release blocker.
 
 ### Phase 1 — Component hierarchy and IA audit
 **Status: Implemented, verified in browser (partial).** `COMPONENT_HIERARCHY_AUDIT.md` — 13-point breakdown across Today, Studio, Scout, Passport, Kreto, Messages, Circle, Admin, Auth, and the public Passport page. Two of its findings were independently corroborated live in the browser this session: the duplicate-heading pattern on Today ("What are we moving forward today?" rendered twice) and on Circle ("STAGES" + "SOUND STAGES"), and the honest empty/real-data states on Scout and Circle. The remaining findings (duplicated Passport next-action, conflicting claim CTAs on the public EPK) were confirmed by direct source read, not separately re-verified in the browser this pass.
@@ -66,8 +66,8 @@ For every fix listed in §1: the code change exists on `feature/activation-prior
 
 ## 4. Unresolved blockers requiring manual/human action
 
-1. **`credit_claim_disputes` migration** (`20260817140000_harden_credit_dispute_resolution_rls.sql`, written in a prior pass this session) — needs review and manual `supabase db push` / dashboard application. Blocks Private Beta exit per the existing `SECURITY_RELEASE_GATE.md` verdict.
-2. **`thrivefund_milestone_releases` migration** (`20260818120000_thrivefund_milestone_release_idempotency.sql`, new this session) — needs review and application for the permanent (beyond Stripe's 24h idempotency-key cache) duplicate-transfer guard on `thrivefund-release-milestone`. The immediate code-level fix (Stripe idempotency key) is already live and does not depend on this migration.
+1. ~~**`credit_claim_disputes` migration**~~ — **Resolved 2026-08-18.** Reviewed and applied to production by the user via the Lovable Cloud SQL editor; verified by direct query (`SECURITY_RELEASE_GATE.md` §F). No longer blocks Private Beta exit.
+2. ~~**`thrivefund_milestone_releases` migration**~~ — **Resolved 2026-08-18.** Same process, same verification. The table exists in production. Remaining open item: the edge-function follow-up that depends on it (commit `25fa0425`) was pushed to `feature/activation-priority-plan` but its live deployment status was not independently re-verified — worth a real test call before relying on the permanent guard rather than just the Stripe idempotency key.
 3. **Dual email-provider DNS/deliverability question** (§6 of `EMAIL_RELEASE_AUDIT.md`) — needs a manual check of whether both the Lovable-managed sending path and the direct-Resend path have correct SPF/DKIM/DMARC alignment for `kretopia.com`. Cannot be verified from source code.
 4. **Stripe sandbox testing** (Phases 6-7) — needs a human with Stripe test-mode dashboard access to run the 20-test matrix this charter specifies.
 5. **Controlled email test send** (Phase 4) — needs a human with either an authenticated Kretopia session in a working browser, or service-role access, to actually trigger the two requested test emails.
@@ -78,9 +78,9 @@ For every fix listed in §1: the code change exists on `feature/activation-prior
 
 ## 5. Release recommendation
 
-**Do not open Private Beta or activate legacy users yet** — this is unchanged from the standing `SECURITY_RELEASE_GATE.md` verdict, and is now reinforced by this session's findings: two of the eight vulnerabilities fixed today (`verify-circle-payment`, `send-notification-email`) were live, unauthenticated, exploitable-today issues in a payments-and-trust product, not theoretical gaps. Before release:
-- Blocker #1 and #2 above (both migrations) should be reviewed and applied.
+**Updated 2026-08-18, post-migration-apply:** the RLS-migration blocker is cleared — both migrations are reviewed, applied, and verified against production (see `SECURITY_RELEASE_GATE.md` §F). **Still do not open Private Beta or activate legacy users yet**, though, since two of the eight vulnerabilities fixed today (`verify-circle-payment`, `send-notification-email`) were live, unauthenticated, exploitable-today issues in a payments-and-trust product, not theoretical gaps, and the remaining items below are unresolved. Before release:
 - The dual-email-provider DNS question (blocker #3) should be resolved so Phase 4's test send can actually happen and be trusted.
 - A human with Stripe test-mode access should run at minimum the highest-value subset of the Phase 6 matrix (successful payment, webhook replay, duplicate-click) against the newly-fixed `verify-circle-payment` and `thrivefund-release-milestone` specifically, since those are the two functions whose entire purpose changed this session.
+- The `thrivefund-release-milestone` follow-up code (commit `25fa0425`) should get a real test call to confirm it's actually live and behaving as written, now that its table dependency exists in production.
 
 Everything else in this report — the fixes themselves, the four audit documents, and the bounded live-browser corroboration — is real, evidence-based work product ready for review now.

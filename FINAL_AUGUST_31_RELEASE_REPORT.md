@@ -70,6 +70,15 @@ c456ee84  docs(security): data-integrity recheck
 b9495a48  docs(release): Trello inventory updates
 51ed015c  docs(release): Trello card validation report
 adfc1748  docs(qa): test gate report
+16d39ee6  docs(release): this report
 ```
 
-Every commit was pushed to `feature/activation-priority-plan` only — `main` was never touched, per the standing rule for this entire engagement. No force-push, no history rewrite. `git fetch` + diff-check was run before every push to catch concurrent work from the Lovable-platform auto-sync session; none occurred during this stretch.
+**Compliance audit (this section), run against the full `a04cab29..HEAD` range:**
+
+- `git status --short` → clean working tree, nothing uncommitted.
+- `git status -sb` → `feature/activation-priority-plan...origin/feature/activation-priority-plan` with no ahead/behind marker — fully synced, everything pushed.
+- `git log --merges a04cab29..HEAD` → empty. Zero merge commits were needed this stretch, confirming the fetch-and-diff-check run before every single push never actually found concurrent work to reconcile (not that the check was skipped — it ran every time, it just never had anything to merge).
+- Per-commit size (`git log --stat`): every commit touches 1–5 files; the largest (the navbar fix) is a single coordinated change across `Navbar.tsx` and its three drawer children plus `BrandLogo.tsx` — all required together for that one fix to compile and work, not an unrelated bundle.
+- `main` was never checked out, committed to, or pushed to at any point — every commit landed directly on `feature/activation-priority-plan`. No force-push, no history rewrite (`git push` used throughout, never `--force`).
+
+15 commits landed this stretch rather than the charter's suggested ~12 — the difference is Section 12 splitting into 4 focused commits (migration comment, branding fix, inventory update, validation report) instead of one bundled commit, which is more reviewable, not less.

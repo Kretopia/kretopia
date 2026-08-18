@@ -277,10 +277,16 @@ function CategoryRow({
       );
     }
     if ((credit.ai_confidence || 0) >= 0.7) {
+      // This is Kreto's background plausibility guess (verify-credit), not a
+      // real verification — no human, co-sign, or authoritative source has
+      // confirmed it. Labeling it "Verified" here directly contradicted the
+      // policy already correctly enforced elsewhere (DiscoveriesInbox.tsx,
+      // CreatorEPK.tsx's "AI" tier): AI must never silently verify a
+      // contribution. Match the "AI" label used by CreatorEPK.tsx instead.
       return (
         <Badge variant="outline" className="text-[9px] gap-0.5 border-primary/30 text-primary dark:text-primary bg-primary/5 h-4 px-1">
-          <ShieldCheck className="h-2.5 w-2.5" />
-          Verified
+          <Sparkles className="h-2.5 w-2.5" />
+          AI
         </Badge>
       );
     }

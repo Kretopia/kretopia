@@ -40,6 +40,11 @@ interface CreativeAsset {
   created_at: string;
 }
 
+/** file_url is a path in the private `project-files` bucket, not a public
+ * URL — every render site needs a fresh signed URL. Resolved once per
+ * fetchData() pass and cached by asset id rather than per-render. */
+type SignedUrlMap = Record<string, string>;
+
 interface CreativeAssetLibraryProps {
   projectId: string;
   currentUserId: string;
@@ -58,6 +63,7 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
   const [uploading, setUploading] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<CreativeAsset | null>(null);
   const [newTag, setNewTag] = useState("");
+  const [signedUrls, setSignedUrls] = useState<SignedUrlMap>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -75,8 +81,18 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
       supabase.from('creative_assets').select('*').eq('project_id', projectId).order('created_at', { ascending: false }),
     ]);
     setFolders(foldersRes.data || []);
-    setAssets(assetsRes.data || []);
+    const fetchedAssets = (assetsRes.data || []) as CreativeAsset[];
+    setAssets(fetchedAssets);
     setLoading(false);
+
+    // file_url is a path in the private `project-files` bucket, not a
+    // renderable URL — resolve a signed URL for every asset (thumbnails
+    // need it for image/video/audio, "Open file"/Download need it for
+    // documents too).
+    const resolved = await Promise.all(
+      fetchedAssets.map(async (a) => [a.id, await getProjectFileSignedUrl(a.file_url)] as const)
+    );
+    setSignedUrls(Object.fromEntries(resolved.filter(([, url]) => !!url)) as SignedUrlMap);
   };
 
   const handleCreateFolder = async () => {
@@ -267,8 +283,8 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
           {currentAssets.map(asset => (
             <div key={asset.id} className="group rounded-lg border bg-card overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all" onClick={() => setSelectedAsset(asset)}>
               <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
-                {asset.media_type === 'image' ? (
-                  <img src={asset.file_url} alt={asset.name} className="h-full w-full object-cover" />
+                {asset.media_type === 'image' && signedUrls[asset.id] ? (
+                  <img src={signedUrls[asset.id]} alt={asset.name} className="h-full w-full object-cover" />
                 ) : asset.media_type === 'video' ? (
                   <div className="relative h-full w-full bg-black/80 flex items-center justify-center">
                     <Film className="h-10 w-10 text-muted-foreground" />
@@ -297,7 +313,7 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
           {currentAssets.map(asset => (
             <div key={asset.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setSelectedAsset(asset)}>
               <div className="h-10 w-10 rounded bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-                {asset.media_type === 'image' ? <img src={asset.file_url} alt="" className="h-full w-full object-cover" /> : <span className="text-muted-foreground">{getMediaIcon(asset.media_type)}</span>}
+                {asset.media_type === 'image' && signedUrls[asset.id] ? <img src={signedUrls[asset.id]} alt="" className="h-full w-full object-cover" /> : <span className="text-muted-foreground">{getMediaIcon(asset.media_type)}</span>}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{asset.name}</p>
@@ -324,17 +340,23 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
               {/* Preview */}
               <div className="rounded-lg overflow-hidden bg-muted">
                 {selectedAsset.media_type === 'image' ? (
-                  <img src={selectedAsset.file_url} alt={selectedAsset.name} className="w-full max-h-96 object-contain" />
+                  signedUrls[selectedAsset.id] ? (
+                    <img src={signedUrls[selectedAsset.id]} alt={selectedAsset.name} className="w-full max-h-96 object-contain" />
+                  ) : (
+                    <div className="p-8 text-center text-muted-foreground text-sm">Loading preview…</div>
+                  )
                 ) : selectedAsset.media_type === 'video' ? (
-                  <video src={selectedAsset.file_url} controls className="w-full max-h-96" />
+                  signedUrls[selectedAsset.id] && <video src={signedUrls[selectedAsset.id]} controls className="w-full max-h-96" />
                 ) : selectedAsset.media_type === 'audio' ? (
                   <div className="p-6">
-                    <audio src={selectedAsset.file_url} controls className="w-full" />
+                    {signedUrls[selectedAsset.id] && <audio src={signedUrls[selectedAsset.id]} controls className="w-full" />}
                   </div>
                 ) : (
                   <div className="p-8 text-center">
                     <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-2" />
-                    <a href={selectedAsset.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">Open file</a>
+                    {signedUrls[selectedAsset.id] && (
+                      <a href={signedUrls[selectedAsset.id]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">Open file</a>
+                    )}
                   </div>
                 )}
               </div>
@@ -365,7 +387,12 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
               </div>
               {/* Actions */}
               <div className="flex gap-2 border-t pt-3">
-                <Button size="sm" variant="outline" onClick={() => window.open(selectedAsset.file_url, '_blank')}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!signedUrls[selectedAsset.id]}
+                  onClick={() => signedUrls[selectedAsset.id] && window.open(signedUrls[selectedAsset.id], '_blank')}
+                >
                   <Download className="h-4 w-4 mr-1" /> Download
                 </Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDeleteAsset(selectedAsset.id)}>

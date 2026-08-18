@@ -3,6 +3,7 @@
 Scan date: 2026-08-16 · Scanners: supabase linter, supabase_lov v3.2, connector scan, app MCP
 Scan re-run: 2026-08-17 · Result: **1 error · 4 warnings** · Gate status: **NOT CLEARED** (original 2 findings fixed; 1 new critical-class finding open)
 Scan re-run: 2026-08-18 · Manual edge-function auth audit (full read of all 18 email-related functions plus `send-push-notification`) · **2 critical unauthenticated-relay findings fixed** (see §E). Full detail in `EMAIL_RELEASE_AUDIT.md`.
+Migration apply: 2026-08-18 · Both previously-written migrations (`20260817140000`, `20260818120000`) reviewed by the user and applied to production via the Lovable Cloud SQL editor · **verified by direct query against the live database** (see §F).
 
 ---
 
@@ -44,14 +45,14 @@ Re-scan confirms both are gone.
 
 Surfaced by the 2026-08-17 re-scan.
 
-### 1. [ERROR → MIGRATION WRITTEN, NOT APPLIED] `credit_claim_disputes` — challenger can self-resolve
+### 1. [ERROR → FIXED, APPLIED TO PRODUCTION 2026-08-18] `credit_claim_disputes` — challenger can self-resolve
 The *"Owner or admin resolves dispute"* UPDATE policy lets `challenger_id` update a pending dispute with no explicit `WITH CHECK`. Migration `20260817140000_harden_credit_dispute_resolution_rls.sql` adds an explicit `WITH CHECK` limiting challengers to `status = 'withdrawn'`, with full resolution restricted to `current_owner_id` or admin (both already independently covered by the sibling "Owner can respond to dispute" / "Admins can update any dispute" policies, so this change only narrows what a challenger can do).
 
 **Verification note**: PostgreSQL reuses the `USING` expression as the implicit `WITH CHECK` when none is given, which on a careful read of the original 3-branch `USING` clause already pins a challenger's update to rows that *stay* `pending` — meaning the practical exploit this finding describes (challenger sets `status = 'approved'`) should already fail against the live policy today, not just after this fix. That's real but easy-to-miss Postgres semantics, not a reason to leave it implicit on a trust-and-money-adjacent table — the migration makes it explicit and, as a genuine side effect of the implicit version, adds the one legitimate transition (challenger withdrawing their own dispute) that currently has no working path at all despite `'withdrawn'` being a real status value with an admin-dashboard filter tab for it.
 
 **Also fixed in the same migration** (found while tracing this table's real status values, unrelated to the RLS finding): the `status` CHECK constraint only allowed `pending/approved/rejected/withdrawn`, but two shipped flows write values outside that list and would fail against the live constraint today — `DisputeManage.tsx`'s owner-initiated `transferCredit()` (`status = 'transferred'`) and `AdminDisputes.tsx`'s `arbitrate()` (`status = 'resolved_for_challenger'` / `'resolved_for_owner'`). The constraint now includes all seven values actually in use.
 
-Not applied to the live database — needs the same review-then-apply step as `20260812071205`.
+**Applied to production 2026-08-18** via the Lovable Cloud SQL editor, reviewed and run by the user. Verified directly against the live database — `pg_get_constraintdef` and `pg_get_expr(polwithcheck, ...)` confirm the constraint and policy both match this migration's SQL exactly. See §F.
 
 ### 2. [WARN] `icdb_project_roles` — claim policy allows rewriting the credit
 *"Authenticated users can claim unclaimed roles"* only constrains `claimed_by`, so a claimer can also rewrite `role_title`, `person_name`, `industry_code`, `department` — credit spoofing. Proposed fix: trigger that rejects changes to any column other than `claimed_by` on this path.
@@ -73,6 +74,17 @@ Same root cause on both: no `supabase/config.toml` entry (platform default `veri
 
 Related, lower-severity findings documented but **not fixed** this pass (see `EMAIL_RELEASE_AUDIT.md` §3 for full reasoning): `send-user-email` has the same class of auth gap but zero live call sites (dead code, recommend deletion); `send-reengagement-emails` has no cron/admin gate but a bounded blast radius; several older templates (`send-invoice-email`, `send-notification-email`, `send-user-email`) interpolate user-controlled strings into email HTML without escaping.
 
+## F. Applied to production (2026-08-18, post-review)
+
+Both previously-written, not-yet-applied migrations were reviewed by the user and run against the live database via the Lovable Cloud SQL editor (`lovable.dev/projects/8bc8181d-6585-46a0-82d6-4570d2fbb82c`, Cloud → SQL editor). Neither was applied by Claude directly — an attempt to drive the SQL editor via browser automation produced unreliable click feedback and was abandoned; the user ran both statements themselves and Claude verified the result with a read-only query rather than trusting the editor's own success/failure messages.
+
+| Migration | What it does | Verified state |
+|---|---|---|
+| `20260817140000_harden_credit_dispute_resolution_rls.sql` | Narrows the challenger's UPDATE path on `credit_claim_disputes` to `status = 'withdrawn'` only; widens the status CHECK constraint to the 7 values actually in use | `pg_get_constraintdef` returned all 7 values; `pg_get_expr(polwithcheck, polrelid)` for "Owner or admin resolves dispute" returned the exact narrowed expression from the migration |
+| `20260818120000_thrivefund_milestone_release_idempotency.sql` | Creates `public.thrivefund_milestone_releases` (composite PK on `campaign_id, milestone_index`) as a permanent duplicate-release guard for `thrivefund-release-milestone` | `information_schema.tables` confirms the table now exists |
+
+The `thrivefund-release-milestone` edge function code that depends on this table (commit `25fa0425`, insert-before-Stripe-call guard) was already pushed to `feature/activation-priority-plan` before the migration was applied, with an explicit deployment-order comment. Whether that code is currently deployed to the live edge function runtime was not independently re-verified in this pass — Lovable appears to auto-sync from this branch (its own activity feed shows the commit), but no test call was made against the live function.
+
 ## D. Gate decision
 
 | Condition | Met |
@@ -81,6 +93,6 @@ Related, lower-severity findings documented but **not fixed** this pass (see `EM
 | No unauthenticated arbitrary-content relay | YES (after EF-01/02, 2026-08-18) |
 | No PII on public endpoints | YES (after INV-01) |
 | No secrets in client bundle | YES |
-| No critical RLS finding open | **PARTIAL** — `curated_stages` + `review_requests` closed; `credit_claim_disputes_challenger_self_resolve` has a written migration (`20260817140000`) not yet applied to the live database |
+| No critical RLS finding open | **YES** — `curated_stages`, `review_requests`, and `credit_claim_disputes_challenger_self_resolve` are all closed and applied to production as of 2026-08-18 (see §F) |
 
-**Verdict: do not activate legacy users or open Private Beta until `20260817140000_harden_credit_dispute_resolution_rls.sql` is reviewed and applied.** No secret rotation was performed or required; none was discovered in tracked source.
+**Verdict: the RLS-migration blocker that previously gated Private Beta/legacy-user activation is now cleared.** Remaining open items before release are tracked in `FINAL_SECURITY_EMAIL_PAYMENT_QA.md` (§4) — most notably the still-unverified live deployment status of the `thrivefund-release-milestone` follow-up code, the dual-email-provider DNS question, and Stripe sandbox testing, none of which block on a database migration anymore. No secret rotation was performed or required; none was discovered in tracked source.

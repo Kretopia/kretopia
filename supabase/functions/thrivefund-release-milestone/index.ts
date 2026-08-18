@@ -4,6 +4,13 @@
 // To support tranche payouts, we use Stripe transfers from the platform balance after
 // initial capture. This function performs a 'transfer' from the platform to the creator
 // for the tranche amount (already captured at finalize time).
+//
+// DEPLOYMENT ORDER: this function depends on public.thrivefund_milestone_releases
+// (migration 20260818120000_thrivefund_milestone_release_idempotency.sql). Do NOT
+// deploy this version before that migration has been reviewed and applied — every
+// release attempt would fail closed (the reserve-row insert below would error on a
+// missing table), not silently skip the guard, but the feature would be unusable
+// until the migration lands.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
@@ -72,29 +79,83 @@ serve(async (req) => {
 
     // Tranche amount = pct of total_raised
     const trancheCents = Math.round(Number(campaign.total_raised) * 100 * (pct / 100));
-    const currency = (campaign.currency || "USD").toLowerCase();
+    const currencyUpper = campaign.currency || "USD";
+    const currency = currencyUpper.toLowerCase();
 
-    // Deterministic per (campaign, milestone) key: a retried/replayed/
-    // double-clicked call for the same tranche returns Stripe's cached
-    // original transfer instead of creating a new one. Previously this had
-    // no idempotency protection at all — every repeated call moved real
-    // money again. Stripe caches idempotency keys for 24h; a permanent
-    // DB-level guard (reject before ever calling Stripe) is written as a
-    // migration for review, see supabase/migrations for the follow-up.
-    const transfer = await stripe.transfers.create(
-      {
-        amount: trancheCents,
-        currency,
-        destination: creator.stripe_account_id,
-        metadata: {
-          source: "thrivefund_milestone",
-          campaign_id: campaignId,
-          milestone_index: String(milestoneIndex),
-          pct: String(pct),
+    // Permanent, unlimited-window duplicate-release guard: reserve this
+    // (campaign, milestone) pair BEFORE calling Stripe. The table's
+    // composite primary key means a second concurrent or later-retried
+    // request for the same tranche fails right here — before any money
+    // moves — rather than relying solely on Stripe's 24h idempotency-key
+    // cache (kept below as defense-in-depth). Any insert failure (including
+    // "table does not exist" if this ever runs before the migration lands)
+    // fails closed: the function aborts and no transfer is attempted.
+    const { error: reserveError } = await supabaseAdmin
+      .from("thrivefund_milestone_releases")
+      .insert({
+        campaign_id: campaignId,
+        milestone_index: milestoneIndex,
+        status: "pending",
+        amount_cents: trancheCents,
+        currency: currencyUpper,
+        released_by: user.id,
+      });
+    if (reserveError) {
+      if (reserveError.code === "23505") {
+        // Unique-violation on the (campaign_id, milestone_index) primary
+        // key -- this tranche was already released or is currently being
+        // released by another request.
+        log("rejected_duplicate", { campaignId, milestoneIndex });
+        return new Response(
+          JSON.stringify({ error: "This milestone tranche has already been released." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 409 }
+        );
+      }
+      throw new Error(`Failed to reserve milestone release: ${reserveError.message}`);
+    }
+
+    let transfer;
+    try {
+      // Deterministic per (campaign, milestone) key: belt-and-suspenders
+      // alongside the DB reservation above -- if two requests somehow both
+      // pass the reserve step (they can't, the primary key prevents it),
+      // Stripe's own idempotency cache would still return the same transfer
+      // instead of creating a second one.
+      transfer = await stripe.transfers.create(
+        {
+          amount: trancheCents,
+          currency,
+          destination: creator.stripe_account_id,
+          metadata: {
+            source: "thrivefund_milestone",
+            campaign_id: campaignId,
+            milestone_index: String(milestoneIndex),
+            pct: String(pct),
+          },
         },
-      },
-      { idempotencyKey: `thrivefund_milestone_${campaignId}_${milestoneIndex}` }
-    );
+        { idempotencyKey: `thrivefund_milestone_${campaignId}_${milestoneIndex}` }
+      );
+    } catch (stripeError) {
+      // Free the reservation so a legitimate retry (e.g. after a transient
+      // Stripe error) isn't permanently blocked by this failed attempt.
+      await supabaseAdmin
+        .from("thrivefund_milestone_releases")
+        .delete()
+        .eq("campaign_id", campaignId)
+        .eq("milestone_index", milestoneIndex)
+        .eq("status", "pending");
+      throw stripeError;
+    }
+
+    await supabaseAdmin
+      .from("thrivefund_milestone_releases")
+      .update({
+        status: "completed",
+        stripe_transfer_id: transfer.id,
+        completed_at: new Date().toISOString(),
+      })
+      .eq("campaign_id", campaignId)
+      .eq("milestone_index", milestoneIndex);
 
     log("transfer_created", { transferId: transfer.id, trancheCents });
 

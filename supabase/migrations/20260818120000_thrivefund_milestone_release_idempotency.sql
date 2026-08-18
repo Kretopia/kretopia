@@ -1,9 +1,12 @@
 -- Fix for STRIPE_SECURITY_AUDIT.md finding: "thrivefund-release-milestone —
 -- no idempotency guard on real Stripe transfers" (2026-08-18 audit).
 --
--- NOT YET APPLIED TO THE LIVE DATABASE. This is a written-for-review
--- migration, per the standing rule that database changes require explicit
--- human review before being applied.
+-- APPLIED TO PRODUCTION 2026-08-18, reviewed and run by the user via the
+-- Lovable Cloud SQL editor, independently verified by a read-only query
+-- (information_schema.tables confirmed thrivefund_milestone_releases
+-- exists) -- see SECURITY_RELEASE_GATE.md §F. The "not yet applied" language
+-- below is preserved as written at authoring time for the record of what
+-- was reviewed before being run; it no longer describes the current state.
 --
 -- supabase/functions/thrivefund-release-milestone/index.ts calls
 -- stripe.transfers.create() to send a real payout tranche to a campaign
@@ -15,14 +18,18 @@
 -- key (`thrivefund_milestone_${campaignId}_${milestoneIndex}`), which closes
 -- the common case (double-click, network-retry, webhook-style replay) via
 -- Stripe's own 24-hour idempotency cache. This table is the permanent,
--- unlimited-window guard: the edge function should INSERT a 'pending' row
--- here (which fails on a duplicate (campaign_id, milestone_index) pair)
--- *before* ever calling Stripe, then update it to 'completed' with the real
--- transfer_id on success, or delete it on a genuine Stripe-side failure so a
--- legitimate retry can proceed. That edge-function change is a follow-up
--- once this migration is reviewed and applied — it is not wired in yet,
--- since deploying code that depends on a table that doesn't exist yet would
--- break the function in production.
+-- unlimited-window guard: the edge function INSERTs a 'pending' row here
+-- (which fails on a duplicate (campaign_id, milestone_index) pair) *before*
+-- ever calling Stripe, then updates it to 'completed' with the real
+-- transfer_id on success, or deletes it on a genuine Stripe-side failure so a
+-- legitimate retry can proceed. The edge-function side of this (commit
+-- 25fa0425) is wired in and deployed alongside this table -- confirmed by
+-- direct grep of supabase/functions/thrivefund-release-milestone/index.ts,
+-- which reads/writes public.thrivefund_milestone_releases at 3 call sites.
+-- Its live-deployment status on the Edge Functions runtime (as opposed to
+-- being present in this repo) has not been independently re-verified this
+-- pass -- see SECURITY_DATA_INTEGRITY_RECHECK.md and TRELLO_RELEASE_INVENTORY.md
+-- card 5.1 for what's still open.
 
 CREATE TABLE IF NOT EXISTS public.thrivefund_milestone_releases (
   campaign_id uuid NOT NULL REFERENCES public.campaigns(id) ON DELETE CASCADE,

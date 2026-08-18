@@ -84,7 +84,7 @@ const MagazineArticlePage = () => {
   return (
     <>
       <Helmet>
-        <title>{article.title} | ThriveIN Magazine</title>
+        <title>{article.title} | Kretopia Magazine</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={canonicalUrl} />
 
@@ -93,7 +93,7 @@ const MagazineArticlePage = () => {
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:site_name" content="ThriveIN Magazine" />
+        <meta property="og:site_name" content="Kretopia Magazine" />
         {article.cover_image_url && <meta property="og:image" content={article.cover_image_url} />}
 
         {/* Twitter Card */}
@@ -110,7 +110,7 @@ const MagazineArticlePage = () => {
             headline: article.title,
             description,
             image: article.cover_image_url || undefined,
-            author: { "@type": "Organization", name: article.author_name || "ThriveIN Magazine" },
+            author: { "@type": "Organization", name: article.author_name || "Kretopia Magazine" },
             publisher: {
               "@type": "Organization",
               name: "Kretopia",

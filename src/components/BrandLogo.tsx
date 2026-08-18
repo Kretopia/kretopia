@@ -58,7 +58,7 @@ export function BrandLogo({
         />
       )}
       {showBeta && (
-        <span className="hidden sm:inline-flex items-center border border-white/20 text-foreground/70 text-[9px] uppercase tracking-[0.18em] font-semibold px-1.5 py-0.5 rounded-md leading-none">
+        <span className="hidden sm:inline-flex items-center border border-white/20 text-white/70 text-[9px] uppercase tracking-[0.18em] font-semibold px-1.5 py-0.5 rounded-md leading-none">
           Beta
         </span>
       )}

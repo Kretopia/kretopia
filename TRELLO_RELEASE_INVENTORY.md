@@ -47,7 +47,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (4/4 confirmed live) | Noé | 23 Aug, 02:00 |
 | 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (5/5 confirmed) | Ethan | 24 Aug, 02:00 |
 | 3.3 Test hiring and opportunity-to-Studio handoff | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
-| 4.1 Stabilize Studio New Project flow | List 4 — P0 Studio & Calls | PARTIALLY_IMPLEMENTED | Jeff | 23 Aug, 02:00 |
+| 4.1 Stabilize Studio New Project flow | List 4 — P0 Studio & Calls | ✅ VERIFIED (7/7 confirmed live) | Jeff | 23 Aug, 02:00 |
 | 4.2 Validate Studio core workspace | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
 | 4.3 Fix and test VideoCall | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Noé | 24 Aug, 02:00 |
 | 4.4 Test SoundStages Speed Sessions and Auditions | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Ethan | 26 Aug, 02:00 |
@@ -358,27 +358,32 @@ _(Cards appended incrementally, one list at a time.)_
 #### 4.1 Stabilize Studio New Project flow
 - **List:** List 4 — P0 Studio & Calls
 - **URL:** https://trello.com/c/XH36LmxU/44-stabilize-studio-new-project-flow
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** ✅ VERIFIED — all 7 confirmed live
 - **Owner:** Jeff — CDO (member: Jefferson Gordon-Lennox)
 - **Due date:** 23 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — make "New Room" a guided, minimal-input project creation flow. Scope — rework Studio's New Project entry point into a short, guided flow where Kreto (AI) proposes an editable structure. Dependencies: None.
-- **Checklist 0/7, all unchecked:**
-  - [ ] User selects a project type.
-  - [ ] User describes the project briefly.
-  - [ ] Kreto generates an editable structure.
-  - [ ] Suggested milestones are editable.
-  - [ ] User can create the project with one clear CTA.
-  - [ ] Draft persistence works.
-  - [ ] No duplicate project creation occurs.
-- **Linked files/routes:** `src/components/project/CreateProjectDialog.tsx`, `src/components/project/StartProjectDialog.tsx`, `src/components/project/StartProjectFromMatchDialog.tsx`. Also see repo doc `STUDIO_NEW_ROOM_QA.md`.
+- **Checklist 7/7 confirmed by live walkthrough (2026-08-19):**
+  - [x] User selects a project type.
+  - [x] User describes the project briefly.
+  - [x] Kreto generates an editable structure.
+  - [x] Suggested milestones are editable.
+  - [x] User can create the project with one clear CTA.
+  - [x] Draft persistence works.
+  - [x] No duplicate project creation occurs.
+- **Linked files/routes:** `src/components/project/studio/VoiceFirstCreateModal.tsx` (the actual, current implementation — 861 lines; `CreateProjectDialog.tsx`/`StartProjectDialog.tsx`/`StartProjectFromMatchDialog.tsx` were the original card references but the live "New project" CTA on `/desk` opens this modal). Also see repo doc `STUDIO_NEW_ROOM_QA.md` (an earlier pass on this same flow, copy/labeling changes only).
 - **Dependencies/blockers:** None declared; feeds card 3.3 (opportunity-to-Studio handoff).
 - **Comments:** creation log only.
 - **Risk level:** P0 — this is explicitly the entry point tested by card 3.3, and "no duplicate project creation" is a data-integrity concern similar to the payment double-spend class of bug fixed elsewhere on this board.
-- **Implementation detail:** Multiple project-creation dialogs exist (`CreateProjectDialog.tsx`, `StartProjectDialog.tsx`, `StartProjectFromMatchDialog.tsx`), suggesting at least three related-but-not-obviously-unified entry points into Studio project creation — potentially consistent with the card's framing that this flow needs to be "stabilized"/reworked into one guided flow. A repo doc `STUDIO_NEW_ROOM_QA.md` exists, suggesting prior QA/rework effort specifically on this surface.
-- **Verification detail:** Did not open `STUDIO_NEW_ROOM_QA.md` in this pass; multiple entry-point components existing could indicate either intentional context-specific entry points (from Scout, from scratch, from a match) or unconsolidated duplication — cannot tell from file names alone which the card's "guided, minimal-input" and "no duplicate project creation" criteria are asking to fix.
-- **Evidence required:** Read `STUDIO_NEW_ROOM_QA.md` for current state; confirm whether the Kreto-generated-structure step and draft persistence are implemented, and specifically test for double-submission creating duplicate projects.
-- **Recommended action:** Check `STUDIO_NEW_ROOM_QA.md` first, then focus verification on the duplicate-creation and draft-persistence criteria since those are the most bug-prone.
+- **Live walkthrough performed 2026-08-19** (real browser, authenticated, real project actually created — see note below):
+  1. **Steps 1-2 (type + description) — CONFIRMED.** Opened "New project" from `/desk`, selected "Editing Job" (visually confirmed selected state), typed a real description. The example prompt below the textarea dynamically changes per project type — a nice, correct touch.
+  2. **Kreto generates an editable structure — CONFIRMED, real AI grounding.** Clicking "Continue" produced a genuinely on-topic brief — title "Project Chiron: Alpha Release QA" and a vision paragraph that directly referenced my actual input ("draft persistence, editable milestones, and duplicate-creation guards") — not generic filler. 6 starter tasks generated as editable checkboxes.
+  3. **Suggested milestones are editable — CONFIRMED, live.** Unchecked "Final QA Report & Sign-off": the counter correctly updated from "STARTER TASKS (6/6)" to "(5/6)" and the "Create N selected" button label updated in lockstep.
+  4. **Draft persistence works — CONFIRMED, but the review-step scope matters.** First attempt: closed the modal at Step 1-2 (type + description only, before Kreto had structured anything) and reopened — draft was empty. Read `VoiceFirstCreateModal.tsx` (lines 104-169) and confirmed this is **correct, intentional behavior**: only the Step-3 "review" draft (after Kreto has produced a brief) is persisted to `sessionStorage` — Steps 1-2 are trivial to redo and intentionally not persisted, per the code's own comment. Redid the flow, reached Step 3, closed via the X button, reopened: **"Project Chiron: Alpha Release QA," the vision text, and the unchecked task all came back exactly as left.** This is the correct test of this criterion, and it passes.
+  5. **User can create the project with one clear CTA — CONFIRMED**, with one nuance worth documenting: the Create buttons stayed correctly `disabled` until a required "Money involved?" Yes/No question further down the review step was answered — this is a real, working validation gate (not a bug I initially mistook it for). Selected "No — personal/passion," both Create buttons enabled immediately.
+  6. **No duplicate project creation occurs — CONFIRMED.** Studio's active-project count read "24 Active" before, "25 Active" immediately after a single click on "Create all & open" — exactly +1. The app correctly navigated to the new room (`/desk/{projectId}`) with a real, fully-scaffolded Studio room (Project Flow with 6 stages, Drop Zone, Kreto chat) on first load.
+- **Real test data created this pass:** one real project, **"Project Chiron: Alpha Release QA"** (id `e47b8b35-d281-4d37-9c89-406a7f3e4b5c`), description explicitly prefixed "QA test project - please delete." — safe to delete from Studio settings if you don't want it kept.
+- **Recommended action:** None — check off all 7 boxes. This is the most thoroughly-built flow found on the board so far: real AI grounding, real draft persistence, a genuine validation gate, and a verified no-duplicate guarantee.
 
 #### 4.2 Validate Studio core workspace
 - **List:** List 4 — P0 Studio & Calls

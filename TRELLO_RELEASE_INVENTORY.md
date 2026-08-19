@@ -58,7 +58,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 6.2 Run cross-product UX consistency pass | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (1 confirmed; 1 real regression found — stray #9413D2) | Jeff | 27 Aug, 02:00 |
 | 6.3 Optimize Today command center | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/6 confirmed; empty states need a zero-data account) | Jeff | 27 Aug, 02:00 |
 | 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (4/7 confirmed live at 375px; 1 minor touch-target finding) | Jeff | 28 Aug, 02:00 |
-| 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 28 Aug, 02:00 |
+| 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | 🟡 PARTIALLY_VERIFIED (3/4 confirmed; 1 spot-checked not exhaustive) | Noé | 28 Aug, 02:00 |
 | 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | 🔴 BLOCKED — feedback widget is unreachable (3/4 confirmed) | Ethan | 28 Aug, 02:00 |
 | 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | ✅ VERIFIED (4/5 confirmed; suspicious-activity logging confirmed absent) | Noé | 29 Aug, 02:00 |
 | 8.1 Prepare the core product demo | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 29 Aug, 02:00 |
@@ -650,24 +650,26 @@ _(Cards appended incrementally, one list at a time.)_
 #### 7.1 Instrument the core funnel
 - **List:** List 7 — P1 Analytics, Safety & Feedback
 - **URL:** https://trello.com/c/bG7vBa8M/55-instrument-the-core-funnel
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 3/4 confirmed, 1 spot-checked (not exhaustively audited)
 - **Owner:** Noé — CTO
 - **Due date:** 28 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — track Search, Passport claim, credit confirmation, Co-Sign, opportunity view, application (funnel stages). Scope — instrument the full core funnel with consistently named events so drop-offs are visible. Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Events are named consistently.
-  - [ ] No unnecessary sensitive data is collected.
-  - [ ] Funnel drop-offs are visible.
-  - [ ] Errors are logged safely.
-- **Linked files/routes:** `src/lib/analytics.ts`, `src/lib/platformAnalytics.ts`, `src/hooks/useSiteAnalytics.ts`. Repo doc `ANALYTICS_EVENT_TAXONOMY.md` (14,959 bytes, modified 2026-08-07 — the oldest analytics-related doc found, predates the board by 11 days) and `KRETOPIA_MTD_FUNNEL_AUDIT_AUG_1_14_2026.md`.
+- **Checklist 3/4 confirmed, 1 spot-checked (2026-08-19):**
+  - [x] Events are named consistently.
+  - [~] No unnecessary sensitive data is collected — spot-checked ~10/58 events, all clean; not an exhaustive audit.
+  - [x] Funnel drop-offs are visible.
+  - [x] Errors are logged safely.
+- **Linked files/routes:** `src/lib/analytics.ts` (510 lines), `src/lib/platformAnalytics.ts`, `src/components/admin/CreativeActionFunnels.tsx`, `src/components/admin/ScoutFunnelTab.tsx`.
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P1, with a privacy-adjacent criterion ("no unnecessary sensitive data is collected").
-- **Implementation detail:** A real analytics layer exists (three distinct files: general analytics, platform analytics, and a site-analytics hook), plus a dedicated event-taxonomy doc and a dated funnel audit report already in the repo — meaningful prior investment in this exact area.
-- **Verification detail:** `ANALYTICS_EVENT_TAXONOMY.md` is 11 days older than this Trello card and may be stale relative to whatever funnel stages exist today (Search→Passport, Co-Sign, Scout application flows have all had recent code changes per other cards in this catalog). The "no unnecessary sensitive data" and "errors logged safely" criteria were not directly checked against actual event payloads in this pass.
-- **Evidence required:** Diff the current event-firing code against `ANALYTICS_EVENT_TAXONOMY.md` to find drift; spot-check a few event payloads for PII.
-- **Recommended action:** Treat the taxonomy doc as a starting point, not a finished answer — refresh it against the current funnel before checking off "consistently named" and "drop-offs are visible."
+- **Verification performed 2026-08-19:**
+  1. **Events are named consistently — CONFIRMED.** Grepped every `eventName:` literal in `src/lib/analytics.ts` (58 total) — 100% consistent snake_case, no drift. Every funnel stage named in this card's description maps directly onto a real event: Search → `search_started`/`creative_search_started`/`creative_search_completed`; Passport claim → `passport_found`/`claim_started`/`passport_build_started`/`passport_build_completed`/`activation_completed`; credit confirmation → `credit_confirmed`/`credit_removed`; Co-Sign → `trust_action_started`; opportunity view/application → `opportunity_viewed`/`opportunity_applied`. The `ANALYTICS_EVENT_TAXONOMY.md` doc referenced in the original inventory entry is superseded by this direct code check, not relied on.
+  2. **Funnel drop-offs are visible — CONFIRMED, and this is a genuine dashboard, not mock data.** `src/components/admin/CreativeActionFunnels.tsx` computes real drop-off percentages (`pct()`, `drop = 100 - conv`) across 4 named funnels (Scout, Connection, Studio, Invoice) for a selectable date range, sourced from a real Supabase RPC call — `supabase.rpc("get_creative_action_funnels", { _start, _end })` — not a hardcoded or fabricated dataset. `ScoutFunnelTab.tsx` provides a second, Scout-specific admin view over the same event data.
+  3. **Errors are logged safely — CONFIRMED.** `trackEvent()` (the core function every `analytics.*` call funnels through) wraps its Supabase insert in a try/catch that fails silently — a broken analytics call never crashes the app or surfaces to the user. A dedicated `errorOccurred(errorType, errorMessage, context)` event exists for intentionally logging app errors into the same `analytics_events` table, keeping error telemetry in the same consistently-named system as everything else.
+  4. **No unnecessary sensitive data is collected — spot-checked, not exhaustive.** Reviewed ~10 of the 58 events' property definitions (covering `sign_up`, `sign_in`, `opportunity_applied`, `credit_confirmed`, `passport_build_completed`, `search_started`, among others) — all properties are non-PII: IDs, counts, categorical strings/tiers, booleans. Separately, `platformAnalytics.ts` (the sibling site-wide traffic system) self-describes as "privacy-respecting" and has real bot/preview/admin-route filtering (`isPreviewOrBot()`, `isExcludedPath()`). No email addresses, names, or free-text user content were found in the properties reviewed. This is a sample, not a full audit of all 58 events' payloads.
+- **Recommended action:** Check off 3/4 boxes now. For the 4th, either accept the spot-check as sufficient given the consistent non-PII pattern observed, or run one follow-up pass grepping all 58 event property objects specifically for free-text/user-content fields (message bodies, bios, search queries) before final release sign-off.
 
 #### 7.2 Add bug reporting and feedback
 - **List:** List 7 — P1 Analytics, Safety & Feedback

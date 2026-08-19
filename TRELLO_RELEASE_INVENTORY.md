@@ -57,7 +57,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 6.1 Validate Kreto V1 capabilities | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/5 confirmed, adversarial test) | Jeff | 25 Aug, 02:00 |
 | 6.2 Run cross-product UX consistency pass | List 6 — P1 Kreto, UX & Product Quality | PARTIALLY_IMPLEMENTED | Jeff | 27 Aug, 02:00 |
 | 6.3 Optimize Today command center | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/6 confirmed; empty states need a zero-data account) | Jeff | 27 Aug, 02:00 |
-| 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | PARTIALLY_IMPLEMENTED | Jeff | 28 Aug, 02:00 |
+| 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (4/7 confirmed live at 375px; 1 minor touch-target finding) | Jeff | 28 Aug, 02:00 |
 | 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 28 Aug, 02:00 |
 | 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | IMPLEMENTED_NOT_VERIFIED | Ethan | 28 Aug, 02:00 |
 | 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 29 Aug, 02:00 |
@@ -616,25 +616,31 @@ _(Cards appended incrementally, one list at a time.)_
 #### 6.4 Audit mobile UX
 - **List:** List 6 — P1 Kreto, UX & Product Quality
 - **URL:** https://trello.com/c/4gdSsGPa/54-audit-mobile-ux
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 4/7 confirmed live at a real 375px viewport, 1 real touch-target finding, 2 not reached this pass
 - **Owner:** Jeff — CDO
 - **Due date:** 28 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test the complete product on mobile devices and narrow viewports. Scope — walk every core surface on real mobile viewports, confirming touch/keyboard usability. Dependencies: None.
-- **Checklist 0/7, all unchecked:**
-  - [ ] Search works.
-  - [ ] Passport is readable.
-  - [ ] Studio control rail works.
-  - [ ] Scout carousels work.
-  - [ ] VideoCall works.
-  - [ ] Modals do not overflow.
-  - [ ] Keyboard and touch targets are usable.
-- **Linked files/routes:** cuts across nearly every surface on the board (Search, Passport, Studio, Scout, VideoCall). Repo doc `ACCESSIBILITY_AUDIT.md` (modified 2026-08-11, oldest of the related docs).
-- **Dependencies/blockers:** Depends on the underlying features (Search, Passport, Studio, Scout, VideoCall — cards 2.1/2.3/4.2/4.3/3.1) each being stable first; a mobile bug in a feature that's itself still being stabilized (e.g., VideoCall, card 4.3) will double-count here.
+- **Checklist 4/7 confirmed (2026-08-19), 1 partial finding, 2 not reached:**
+  - [x] Search works.
+  - [x] Passport is readable.
+  - [ ] Studio control rail works. *(reached the project list on mobile; a UI-click reliability issue on this pass prevented opening a specific project's tab rail — not confirmed either way)*
+  - [ ] Scout carousels work. *(not reached this pass)*
+  - [ ] VideoCall works. *(blocked — no real camera/mic in this environment, same as card 4.3)*
+  - [x] Modals do not overflow.
+  - [~] Keyboard and touch targets are usable — **mostly, with one real finding below.**
+- **Linked files/routes:** cuts across nearly every surface on the board (Search, Passport, Studio, Scout, VideoCall).
+- **Dependencies/blockers:** Depends on the underlying features (Search, Passport, Studio, Scout, VideoCall — cards 2.1/2.3/4.2/4.3/3.1) each being stable first; confirmed 4.1-4.3 are in good shape this session, which de-risks this card.
 - **Comments:** creation log only.
 - **Risk level:** P1, though demo-day mobile breakage on any one of the 7 items would be visible.
-- **Implementation detail:** The Done-list card "Fix disabled pinch-zoom + caption contrast (WCAG), Owner: Jefferson" indicates prior mobile/accessibility work; `ACCESSIBILITY_AUDIT.md` is a relevant existing doc but is the oldest of this list's supporting docs (11 Aug), likely stale relative to more recent surface changes.
-- **Verification detail:** No evidence found of a fresh, dated mobile walkthrough since the accessibility audit; given how much of the rest of the board changed after 11 Aug, this doc alone is not sufficient evidence of current mobile state.
+- **Live walkthrough performed 2026-08-19** (real 375×812 mobile viewport via the browser's device-emulation mode, real authenticated account):
+  1. **Search works — CONFIRMED.** `/search` renders cleanly at 375px (no horizontal overflow, verified via `scrollWidth === innerWidth`), typing a query returns real, correctly-formatted result cards.
+  2. **Passport is readable — CONFIRMED.** `/profile` at 375px: bio, credits, stamps, tags, and the Passport Strength meter all render legibly with no truncation or overlap.
+  3. **Modals do not overflow — CONFIRMED, tested on 3 separate real modals** (the "How Passport works" AI tour, "How Studios works" AI tour, and a "Move to folder" project-management modal) — all fit cleanly within the 375px viewport with no horizontal scroll.
+  4. **Keyboard and touch targets — mostly usable, one real finding.** Measured real elements: the 4 bottom-tab-bar nav items (Home/Passport/Opportunities/Studio) are 92×53px and the central "+" FAB is 56×56px — both comfortably above the 44×44px WCAG/mobile-platform minimum. But the Kreto input bar's mic and send icon buttons measure **36×36px**, and inline Kreto-suggestion action links ("Set rate," "Not now") measure **28px tall** — both below the 44px guideline. This is the same class of finding already flagged in `PASSPORT_SHARE_QA.md` for a different set of icon buttons (32px) — a recurring, minor-severity pattern across the app rather than a one-off.
+  5. **Studio control rail / Scout carousels — not confirmed this pass.** Reached the mobile Studio project list cleanly (real project cards, "1 Active," no overflow), but a UI-click-reliability issue specific to this pass (clicks registering on the wrong element / a stale "Move to folder" modal) prevented opening a specific project to check its tab rail before time ran out on this sub-check. Scout wasn't reached at all.
+  6. **VideoCall — not testable**, same hardware constraint as card 4.3.
+- **Recommended action:** Check off Search, Passport, and Modals. File the small-touch-target finding (mic/send buttons, inline suggestion links) as a minor accessibility polish item — cheap to fix, not release-blocking. Finish Studio control rail and Scout carousel mobile checks in a follow-up pass; VideoCall needs a real device regardless.
 - **Evidence required:** A fresh, dated mobile-viewport walkthrough of all 7 listed surfaces, run after the other P0 feature work lands (not before).
 - **Recommended action:** Sequence last among UX cards — running this before Lists 1-5 stabilize risks re-testing the same regressions twice.
 

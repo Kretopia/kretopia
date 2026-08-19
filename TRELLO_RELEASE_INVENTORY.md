@@ -36,11 +36,11 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 
 | Card | List | Status | Owner | Due Date |
 |---|---|---|---|---|
-| 1.1 Run final security audit | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 19 Aug, 02:00 |
-| 1.2 Confirm production migrations and schema integrity | List 1 — P0 Security & Release Gate | IMPLEMENTED_NOT_VERIFIED | Noé | 19 Aug, 02:00 |
-| 1.3 Audit authentication and legacy user access | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 20 Aug, 02:00 |
-| 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 21 Aug, 02:00 |
-| 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | PARTIALLY_IMPLEMENTED (2/6 confirmed live) | Noé | 21 Aug, 02:00 |
+| 1.1 Run final security audit | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (2/5 confirmed; 3 WARN findings + card 2.2's P0 still open) | Noé | 19 Aug, 02:00 |
+| 1.2 Confirm production migrations and schema integrity | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (no dup migrations across 690 files; full prod drift check needs DB CLI access) | Noé | 19 Aug, 02:00 |
+| 1.3 Audit authentication and legacy user access | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (protected-route gate confirmed live; legacy/magic-link/OTP paths untested) | Noé | 20 Aug, 02:00 |
+| 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED — real correction found: send-user-email is NOT dead code | Noé | 21 Aug, 02:00 |
+| 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (2/6 confirmed live; needs an unclaimed test record) | Noé | 21 Aug, 02:00 |
 | 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | 🔴 BLOCKED — P0 bug found, fix written not applied (3/5 confirmed live) | Noé | 22 Aug, 02:00 |
 | 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | NOT_STARTED | Jeff | 22 Aug, 02:00 |
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; EPK guest-access data question open) | Jeff | 23 Aug, 02:00 |
@@ -82,102 +82,96 @@ _(Cards appended incrementally, one list at a time.)_
 #### 1.1 Run final security audit
 - **List:** List 1 — P0 Security & Release Gate
 - **URL:** https://trello.com/c/iO9UPS8B/33-run-final-security-audit
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 2/5 confirmed, 3 open findings block full sign-off
 - **Owner:** Noé — CTO (member: Noé Plantier)
 - **Due date:** 19 Aug, 02:00 ("Due soon")
 - **Labels:** none
 - **Description:** Objective — audit authentication, RLS, RPCs, Edge Functions, ownership checks, exposed secrets, public links, Passport visibility, Co-Signs, Studio permissions, payment authorization. Scope — full security sweep of Kretopia's auth and data-access layers ahead of release. Dependencies: None.
-- **Checklist (Acceptance Criteria) 0/5, all unchecked in Trello:**
-  - [ ] No unresolved Critical security issue.
-  - [ ] High-risk findings have owners and mitigation plans.
-  - [ ] No service-role key is exposed in frontend code.
-  - [ ] User ownership checks are verified.
-  - [ ] Findings are documented in SECURITY_RELEASE_GATE.md.
+- **Checklist 2/5 confirmed, 3 blocked (2026-08-19 reconciliation):**
+  - [ ] **No unresolved Critical security issue — BLOCKED. Card 2.2's Co-Sign accept constraint bug (P0, discovered this session) is unresolved.** All RLS/auth-class critical findings from the linter-based scan are separately closed (see below).
+  - [ ] High-risk findings have owners and mitigation plans — the 3 open WARN items below have proposed fixes documented but no assigned owner/date.
+  - [x] No service-role key is exposed in frontend code.
+  - [x] User ownership checks are verified — `_shared/escrowAuth.ts`, `_shared/admin-guard.ts` used across 9+ functions, confirmed live via this session's guest-mode/ownership tests on cards 2.2, 4.2, 5.2.
+  - [ ] Findings are documented in SECURITY_RELEASE_GATE.md — mostly true, but that document does not yet include card 2.2's newly-discovered P0 or the `send-user-email` correction from card 1.4 below.
 - **Linked files/attachments:** none attached to card, but description explicitly points at `SECURITY_RELEASE_GATE.md`.
-- **Dependencies/blockers:** None declared.
+- **Dependencies/blockers:** Directly blocked by card 2.2 (P0, fix written, not applied) and card 1.4 below (real correction to a documented finding).
 - **Comments:** none beyond the automatic "added to list" activity log entry (18 Aug 2026, 08:53).
 - **Risk level:** P0 — Security (highest).
-- **Implementation detail:** `/Users/noeplantier/thrivein-new-beta/SECURITY_RELEASE_GATE.md` (11,989 bytes, modified 2026-08-18) documents real, substantive audit work: service-role-key-in-frontend check PASS (`rg SERVICE_ROLE src` → 0 hits), SSRF protection module, admin-guard helper used by 9+ functions, payment-amount trust resolved server-side, three critical/high findings fixed and deployed (TG-01 telegram-webhook hijack, TG-02 telegram-status leak, INV-01 PII exposure), two critical unauthenticated-relay edge functions fixed 2026-08-18 (EF-01 `send-notification-email`, EF-02 `send-push-notification`), and one RLS/constraint migration applied to production and verified by direct query.
-- **Verification detail:** The same file documents **3 still-open WARN-level findings** as of the 2026-08-17 re-scan: (2) `icdb_project_roles` claim policy allows credit spoofing — proposed fix not yet applied; (3) `talent_managers` fully enumerable by anon — proposed fix not yet applied; (4/5) `SECURITY DEFINER` functions executable by anon/authenticated — needs per-function triage, not yet done. The Trello checklist itself is 0/5 unchecked, so no team sign-off is recorded even though most items already appear satisfied in code.
-- **Evidence required:** Triage and close the 3 open WARN findings, then check off the Trello acceptance criteria against the final state of `SECURITY_RELEASE_GATE.md`.
-- **Recommended action:** Do not mark this card DONE until the 3 open WARN items are resolved or explicitly deferred with sign-off; then check the Trello boxes to match reality.
+- **Verification performed 2026-08-19 (reconciliation against SECURITY_RELEASE_GATE.md plus a fresh check):** `SECURITY_RELEASE_GATE.md` §D shows every *linter-scanned* critical RLS/auth finding closed and applied to production as of 2026-08-18 (service-role-key check PASS, SSRF protection module, admin-guard on 9+ functions, payment-amount trust resolved server-side, TG-01/TG-02/INV-01 fixed, EF-01/EF-02 unauthenticated-relay findings fixed 2026-08-18). Re-confirmed the **3 still-open WARN findings are genuinely still open**, not stale documentation: grepped every migration touching `icdb_project_roles` (most recent: 2026-08-12, before the finding was even raised) and `talent_managers` (most recent: 2026-03-26) — no fix has landed for either since the 2026-08-17 scan flagged them. The 4th/5th WARN (`SECURITY DEFINER` functions executable by anon/authenticated) also has no evidence of the per-function triage being done. **Not previously in this document:** this session's own QA (card 2.2) found a new Critical-class functional bug outside the linter's scope — a check-constraint mismatch that silently fails every real Co-Sign acceptance — which is exactly the kind of "unresolved Critical security issue" this card's first checklist item asks about, even though it's a data-integrity bug rather than an access-control one.
+- **Recommended action:** Apply card 2.2's migration first (highest severity, actively broken in production). Then triage the 3 WARN items — even a documented "defer to post-launch, tracked in [ticket]" would satisfy "high-risk findings have owners and mitigation plans," which is currently the weakest-evidenced item.
 
 #### 1.2 Confirm production migrations and schema integrity
 - **List:** List 1 — P0 Security & Release Gate
 - **URL:** https://trello.com/c/wg0jO0Yu/34-confirm-production-migrations-and-schema-integrity
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** 🟡 PARTIALLY_VERIFIED — no duplicate migrations confirmed; full production drift check needs DB CLI access this environment doesn't have
 - **Owner:** Noé — CTO
 - **Due date:** 19 Aug, 02:00 ("Due soon")
 - **Labels:** none
 - **Description:** Objective — confirm production migrations match tracked migration history and no duplicate/non-replay-safe migration remains. Scope — reconcile production DB schema against tracked migration history so it can be reliably replayed and matches source control. Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Production schema is verified.
-  - [ ] No duplicate migration files remain.
-  - [ ] No unexpected schema drift exists.
-  - [ ] Types regenerate successfully.
-  - [ ] No destructive migration is applied without approval.
+- **Checklist 2/5 confirmed, 3 not independently verifiable in this environment (2026-08-19):**
+  - [x] No duplicate migration files remain — **re-confirmed this pass**: `ls supabase/migrations | sort | uniq -d` across the current **690** files returns empty.
+  - [ ] Production schema is verified — confirmed for only the 2 most recent migrations (see below), not a full reconciliation.
+  - [ ] No unexpected schema drift exists — would need `supabase db diff` against the live project; this session has no authenticated Supabase CLI/MCP access to run it.
+  - [ ] Types regenerate successfully — same blocker; can't run `supabase gen types` without project-linked CLI auth. Spot-checked instead: `src/integrations/supabase/types.ts` (622KB, last modified 2026-08-17) types `verification_status` as `string | null` (not a strict literal union), so it would not be broken by card 2.2's still-unapplied `'peer'`-status migration — no drift risk from that specific change once applied.
+  - [x] No destructive migration is applied without approval — every migration this whole engagement has gone through the "written by Claude, reviewed and run by the user" protocol; none applied directly.
 - **Linked files/attachments:** none on card.
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P0 — Security/data integrity.
-- **Implementation detail:** `supabase/migrations/` contains 688 files with no exact-name duplicates (`ls | sort | uniq -d` → empty). `SECURITY_RELEASE_GATE.md` §F states both pending migrations (`20260817140000_harden_credit_dispute_resolution_rls.sql`, `20260818120000_thrivefund_milestone_release_idempotency.sql`) were reviewed by the user and applied to production via the Lovable Cloud SQL editor on 2026-08-18, then verified with a read-only query against the live database (`pg_get_constraintdef`/`pg_get_expr` matched the migration SQL). Recent git log also shows `docs(security): record both migrations as applied to production, verified` and `feat(security): wire thrivefund-release-milestone to permanent duplicate-release guard`.
-- **Verification detail:** This is real, credible evidence of migration application and a manual verification step — but it covers only the two most recent migrations, not a full reconciliation of all 688 files against a fresh `supabase db diff`/schema-drift check, and "types regenerate successfully" was not independently confirmed in this pass.
-- **Evidence required:** Run a full schema-drift check (`supabase db diff` or equivalent) and confirm generated TypeScript types compile, then check the Trello boxes.
-- **Recommended action:** Treat as substantively done for the two named migrations; still run one full drift/regeneration pass before checking off "no unexpected schema drift" and "types regenerate successfully."
+- **Verification performed 2026-08-19:** `SECURITY_RELEASE_GATE.md` §F documents both prior pending migrations (`20260817140000_harden_credit_dispute_resolution_rls.sql`, `20260818120000_thrivefund_milestone_release_idempotency.sql`) as reviewed by the user, applied via the Lovable Cloud SQL editor on 2026-08-18, and verified by a read-only query against the live database (`pg_get_constraintdef`/`pg_get_expr` matched the migration SQL exactly) — this is real, credible evidence, just scoped to 2 of 690 files.
+- **Evidence required:** A full `supabase db diff` (or equivalent) run and a `supabase gen types` run, both of which require Supabase CLI access authenticated against the live project — not available to Claude in this environment (the Supabase MCP server here is unauthenticated). This needs to be run by the user or in an environment with that access.
+- **Recommended action:** Treat as substantively done for migration hygiene (no dupes, disciplined apply process) and the 2 most recently applied migrations; the full drift/type-regeneration check remains a genuine gap that only the user (or a CLI-authenticated environment) can close.
 
 #### 1.3 Audit authentication and legacy user access
 - **List:** List 1 — P0 Security & Release Gate
 - **URL:** https://trello.com/c/mSRGXImr/35-audit-authentication-and-legacy-user-access
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — protected-route gate confirmed live; legacy/magic-link/OTP/expired-link paths untested
 - **Owner:** Noé — CTO
 - **Due date:** 20 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test signup, login, logout, magic link, OTP, verification, password recovery, sessions, redirects and existing user access. Scope — end-to-end validation of every authentication pathway, including handling of pre-existing (legacy) user accounts carried over into Kretopia. Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Existing users can log in.
-  - [ ] Kretopia redirects work correctly.
-  - [ ] Protected routes remain protected.
-  - [ ] Expired links fail safely.
-  - [ ] Session refresh works.
+- **Checklist 2/5 confirmed, 3 not tested this pass (2026-08-19):**
+  - [x] Existing users can log in — indirectly but robustly confirmed: this whole session alone required 5-6+ real re-authentications after session logouts, every one of them successful (via the user signing back in themselves, never via credentials Claude entered).
+  - [ ] Kretopia redirects work correctly — not specifically tested (e.g. old ThriveIN-style URLs redirecting to Kretopia equivalents).
+  - [x] Protected routes remain protected — **live-tested this pass.** Using the reversible localStorage-token-swap technique (real session token backed up, cleared, restored afterward — never a real sign-out), navigated to `/desk` as a true unauthenticated guest: the route did not crash or leak data, it rendered a clean "Sign up to unlock — Create a free account to access this feature, build your credits, and start collaborating" gate with Sign Up / Sign In actions. Session restoration verified afterward (`localStorage` token present, `/today` re-rendered real authenticated content). This is the third independent confirmation of this exact gating pattern this session (also seen on cards 2.2 and 4.2), making it very solid evidence.
+  - [ ] Expired links fail safely — not tested; would need a genuinely expired magic-link/recovery token, which isn't producible without waiting out a real expiry window or DB access to backdate one.
+  - [ ] Session refresh works — not directly tested; `AuthContext.tsx` implements `onAuthStateChange` (confirmed present in code), but no live long-running-session refresh was observed in this pass.
 - **Linked files/attachments:** none on card.
 - **Dependencies/blockers:** None declared; in practice this depends on the "Datas Migration from ThriveIN to Kretopia" Done-list card (legacy user accounts).
 - **Comments:** creation log only.
 - **Risk level:** P0 — Auth/security.
-- **Implementation detail:** `src/contexts/AuthContext.tsx` implements `onAuthStateChange`/session handling; 118 files under `src/` call `supabase.auth`. This confirms a real, non-trivial auth implementation exists.
-- **Verification detail:** No first-pass evidence was found of an actual **end-to-end test pass** (manual or automated) covering legacy-account login, magic link, OTP, expired-link handling, specifically. Existence of the auth code is not equivalent to the card's ask, which is a QA sweep.
-- **Evidence required:** A test log or QA note (manual run-through or e2e test suite output) covering each acceptance-criteria bullet, especially legacy/ThriveIN-migrated accounts.
-- **Recommended action:** Schedule/execute the manual QA pass described in the card; this is a testing task, not an implementation gap.
+- **Evidence required:** A genuinely legacy (pre-Kretopia, ThriveIN-migrated) test account to exercise the "existing users" criterion precisely as worded, plus a magic-link/OTP/expired-link test pass.
+- **Recommended action:** The one criterion most central to security (protected routes staying protected) is now genuinely live-confirmed, not just code-inferred. The remaining items are lower-risk QA sweep items, not known gaps — schedule a pass with a real legacy account if one exists, or explicitly confirm none needs separate testing if all users were migrated identically.
 
 #### 1.4 Confirm transactional email delivery and branding
 - **List:** List 1 — P0 Security & Release Gate
 - **URL:** https://trello.com/c/iFpU77K8/36-confirm-transactional-email-delivery-and-branding
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — branding confirmed; real correction found to a prior audit claim
 - **Owner:** Noé — CTO
 - **Due date:** 21 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — audit verification, welcome, Passport, Co-Sign, Scout, Studio, call, payment, invoice, milestone (etc.) transactional emails. Scope — confirm every transactional email is correctly branded, correctly routed, and respects user notification preferences. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] No duplicate emails are sent.
-  - [ ] Notification preferences are respected.
-  - [ ] User-facing branding is Kretopia.
-  - [ ] Links point to valid Kretopia routes.
-  - [ ] Sender-domain status is documented.
-  - [ ] Unverified sender changes are not forced into production.
+- **Checklist 2/6 confirmed, 1 real correction found, 3 not directly tested (2026-08-19):**
+  - [ ] No duplicate emails are sent — not directly tested.
+  - [x] Notification preferences are respected — confirmed in code: `send-user-email`'s `shouldSendEmail()` checks `notification_preferences.email_messages/email_matches/email_opportunities` before sending, for every email type.
+  - [x] User-facing branding is Kretopia — re-confirmed this pass: grepped every `send-*` edge function's `from:` field; 10+ functions consistently use `"Kretopia <info@kretopia.com>"` with zero ThriveIN references found in sender identities.
+  - [ ] Links point to valid Kretopia routes — not directly tested.
+  - [ ] Sender-domain status is documented — `send-transactional-email/index.ts` still references `SENDER_DOMAIN = "notify.thrivein.io"` alongside `FROM_DOMAIN = "kretopia.com"` as separate constants; whether this reflects an intentional dual-domain DNS setup (as `SECURITY_RELEASE_GATE.md`'s "dual-email-provider DNS question" suggests) or stale config wasn't resolved in this pass.
+  - [ ] Unverified sender changes are not forced into production — not directly tested.
 - **Linked files/attachments:** none on card; corresponds directly to `EMAIL_RELEASE_AUDIT.md` in the repo.
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P0 — release-blocking, moderate trust impact (phishing/spam risk if wrong).
-- **Implementation detail:** `EMAIL_RELEASE_AUDIT.md` (15,255 bytes, modified 2026-08-18) is referenced from `SECURITY_RELEASE_GATE.md` §E and documents a full manual audit of 18 email-related edge functions plus `send-push-notification`, with two critical unauthenticated-relay findings (EF-01, EF-02) fixed and deployed same day.
-- **Verification detail:** The security-gate doc also flags remaining lower-severity, **unfixed** issues in this exact area: `send-user-email` has the same class of auth gap (recommended for deletion, dead code); `send-reengagement-emails` has no cron/admin gate; several older templates (`send-invoice-email`, `send-notification-email`, `send-user-email`) interpolate user-controlled strings into email HTML unescaped. Branding/sender-domain/notification-preference verification was not directly confirmed in this pass.
-- **Evidence required:** Sender-domain verification status (SPF/DKIM), a branding pass across templates, and resolution (or explicit defer) of the unescaped-HTML-interpolation findings.
-- **Recommended action:** Close out the unescaped-HTML and dead-code findings from `EMAIL_RELEASE_AUDIT.md` before treating this card as done; the security-relay class of bug is fixed.
+- **Real correction found this pass (2026-08-19):** `SECURITY_RELEASE_GATE.md` §E and `EMAIL_RELEASE_AUDIT.md` both describe `send-user-email` as having "the same class of auth gap [as EF-01/EF-02] but zero live call sites (dead code, recommend deletion)." **This is factually incorrect** — a fresh grep found **6 real, live call sites**: `src/components/DirectMessageDialog.tsx`, `src/components/swipe/MatchModal.tsx`, `src/components/project/StartProjectFromMatchDialog.tsx`, `src/components/circle/BrowseCreators.tsx`, `src/pages/messages/useSendMessage.ts`, and `supabase/functions/agent-send-dm/index.ts`. Reading the function itself (not "dead code," genuinely in production use): it **does** require authentication (`getUser()` against the caller's JWT, 401 if missing/invalid) — so it's not the EF-01/EF-02 class of fully-open relay — but it has **no check that the caller has any real relationship to `recipientId`**. Any authenticated user can call it with `type: 'message'|'match'|'connection_request'|'project_invite'` and an arbitrary `recipientId`, and the function will look up that real user's real email/name server-side and send them a branded, real-domain email, gated only by the recipient's own notification-preference toggle — not by whether an actual message/match/connection/invite exists. Compounding this: the `message` template interpolates `data.messagePreview` — a fully client-controlled, 100-char-truncated but **unescaped** string — directly into the email HTML (`send-user-email/index.ts:142`, `"${data.messagePreview}"`), a real HTML-injection vector into an email sent from Kretopia's verified domain.
+- **Evidence required:** Fix or explicitly accept the `send-user-email` authorization gap (verify the caller actually has a real message/match/connection/invite with `recipientId` before sending) and escape `messagePreview` before interpolation. Sender-domain SPF/DKIM documentation and a full branding pass across all templates remain open.
+- **Recommended action:** Correct `SECURITY_RELEASE_GATE.md`/`EMAIL_RELEASE_AUDIT.md`'s "dead code" claim — this function is live and should be triaged at the same severity tier as the WARN-level findings in card 1.1, not dismissed. The escaping fix is small and low-risk; the relationship-check fix is slightly larger but should land before Aug 31 given it's a real live authenticated-abuse path, not a hypothetical one.
 
 ### List 2 — P0 Core Product Loop
 
 #### 2.1 Test Search → Passport end-to-end
 - **List:** List 2 — P0 Core Product Loop
 - **URL:** https://trello.com/c/dDKqG6xw/37-test-search-%E2%86%92-passport-end-to-end
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 2/6 confirmed live, needs a genuinely unclaimed test record for the rest
 - **Owner:** Noé — CTO
 - **Due date:** 21 Aug, 02:00
 - **Labels:** none

@@ -56,7 +56,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 5.3 Validate project completion loop | List 5 — P0 Payments & Project Completion | IMPLEMENTED_NOT_VERIFIED | Ethan | 28 Aug, 02:00 |
 | 6.1 Validate Kreto V1 capabilities | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/5 confirmed, adversarial test) | Jeff | 25 Aug, 02:00 |
 | 6.2 Run cross-product UX consistency pass | List 6 — P1 Kreto, UX & Product Quality | PARTIALLY_IMPLEMENTED | Jeff | 27 Aug, 02:00 |
-| 6.3 Optimize Today command center | List 6 — P1 Kreto, UX & Product Quality | PARTIALLY_IMPLEMENTED | Jeff | 27 Aug, 02:00 |
+| 6.3 Optimize Today command center | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/6 confirmed; empty states need a zero-data account) | Jeff | 27 Aug, 02:00 |
 | 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | PARTIALLY_IMPLEMENTED | Jeff | 28 Aug, 02:00 |
 | 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 28 Aug, 02:00 |
 | 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | IMPLEMENTED_NOT_VERIFIED | Ethan | 28 Aug, 02:00 |
@@ -590,26 +590,28 @@ _(Cards appended incrementally, one list at a time.)_
 #### 6.3 Optimize Today command center
 - **List:** List 6 — P1 Kreto, UX & Product Quality
 - **URL:** https://trello.com/c/kHnSeJXD/53-optimize-today-command-center
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** ✅ VERIFIED — 5/6 confirmed live + code trace, 1 needs a zero-data account
 - **Owner:** Jeff — CDO
 - **Due date:** 27 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — make Today a focused artist dashboard showing next actions, calls, projects, messages, opportunities. Scope — consolidate the Today page into a single prioritized command-center component instead of a redundant card wall. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] One command-center component.
-  - [ ] No redundant card wall.
-  - [ ] Search is accessible.
-  - [ ] Next action is obvious.
-  - [ ] Information is prioritized by urgency and value.
-  - [ ] Empty states are useful.
-- **Linked files/routes:** `src/components/home/TodayCommandCenter.tsx`, `src/components/home/TodayThreeCards.tsx`, `src/components/desk/TodayStrip.tsx`, `src/components/project/today/` (TodayWorkspace, TodayActivityFeed, TodayTasksPanel). Repo doc `TODAY_COMMAND_CENTER_QA.md` (modified 2026-08-15).
+- **Checklist 5/6 confirmed (2026-08-19):**
+  - [x] One command-center component.
+  - [x] No redundant card wall.
+  - [x] Search is accessible.
+  - [x] Next action is obvious.
+  - [x] Information is prioritized by urgency and value.
+  - [ ] Empty states are useful. *(needs a genuinely zero-data account, not tested this pass)*
+- **Linked files/routes:** `src/components/home/UnifiedHome.tsx` (the actual page — resolves the earlier open question about how the Today-prefixed components relate), `src/components/home/TodayCommandCenter.tsx`, `src/components/home/TodayThreeCards.tsx`.
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P1.
-- **Implementation detail:** A dedicated `TodayCommandCenter.tsx` already exists matching the card's exact objective wording, alongside `TodayThreeCards.tsx` (possibly the "redundant card wall" the card wants replaced/consolidated — naming is suggestive but not conclusive) and several other Today-related components (`TodayStrip.tsx`, `TodayWorkspace.tsx`, etc.). The multiplicity of Today-prefixed components (6 found) could itself indicate the redundancy the card is asking to fix.
-- **Verification detail:** `TODAY_COMMAND_CENTER_QA.md` exists and predates the card by 3 days — likely directly relevant but not opened in this pass.
-- **Evidence required:** Read `TODAY_COMMAND_CENTER_QA.md`; confirm whether `TodayCommandCenter.tsx` is the sole rendered component on the route or whether `TodayThreeCards.tsx`/others still render alongside it (would indicate "card overload" is not yet resolved).
-- **Recommended action:** Read the existing QA doc first; if `TodayThreeCards.tsx` is still live alongside `TodayCommandCenter.tsx`, that is likely the literal "redundant card wall" this card is meant to remove.
+- **Verification performed 2026-08-19 — resolved the card's central ambiguity via code, then confirmed live:**
+  1. **One command-center component / No redundant card wall — CONFIRMED, and the earlier worry was unfounded.** Read `UnifiedHome.tsx` (~line 501): `TodayThreeCards` is not a sibling of `TodayCommandCenter` competing for the same space — it's deliberately passed *as the content* for `TodayCommandCenter`'s `nextAction` slot (`<TodayCommandCenter nextAction={<><TodayThreeCards />...}>`), alongside separate `schedule` and `opportunities` slots. This is exactly the "one command-center component with prioritized sections" architecture the card asks for, not the "redundant card wall" the file names alone suggested might still exist.
+  2. **Next action is obvious / Information is prioritized by urgency and value — CONFIRMED, live.** Loaded `/` authenticated: directly below the Kreto entry hero, the very first card is **"NEXT MOVE — 4 — 4 pending approvals — Review →"**, followed by "OPPORTUNITY — 1 fresh — [real gig name] — Open →," then "MONEY SIGNAL — All paid — No outstanding invoices — Open Pay →" — a genuine urgency-ordered stack (action needed → opportunity → financial status), not a flat grid.
+  3. **Search is accessible — CONFIRMED**, already established through this session's own deep functional testing of the search bar (card 2.1) — the search icon is present in the top nav on every route.
+  4. **Empty states are useful — not tested this pass.** This account has real data (pending approvals, opportunities, connections), so its "empty" behavior wasn't exercised; would need a genuinely fresh zero-data account to check the empty-state copy/CTAs specifically.
+- **Recommended action:** Check off the 5 confirmed boxes. For the last one, either seed a throwaway zero-data account or check with whoever ran the original Today Command Center QA pass (`TODAY_COMMAND_CENTER_QA.md`) for empty-state coverage.
 
 #### 6.4 Audit mobile UX
 - **List:** List 6 — P1 Kreto, UX & Product Quality

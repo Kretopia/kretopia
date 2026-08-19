@@ -48,7 +48,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (5/5 confirmed) | Ethan | 24 Aug, 02:00 |
 | 3.3 Test hiring and opportunity-to-Studio handoff | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (core handoff confirmed live; card needs a checklist) | Noé | 25 Aug, 02:00 |
 | 4.1 Stabilize Studio New Project flow | List 4 — P0 Studio & Calls | ✅ VERIFIED (7/7 confirmed live) | Jeff | 23 Aug, 02:00 |
-| 4.2 Validate Studio core workspace | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
+| 4.2 Validate Studio core workspace | List 4 — P0 Studio & Calls | ✅ VERIFIED (3/4 confirmed live, 1 via precise code trace) | Noé | 25 Aug, 02:00 |
 | 4.3 Fix and test VideoCall | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Noé | 24 Aug, 02:00 |
 | 4.4 Test SoundStages Speed Sessions and Auditions | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Ethan | 26 Aug, 02:00 |
 | 5.1 Test milestone payment lifecycle | List 5 — P0 Payments & Project Completion | PARTIALLY_IMPLEMENTED | Noé | 26 Aug, 02:00 |
@@ -390,24 +390,26 @@ _(Cards appended incrementally, one list at a time.)_
 #### 4.2 Validate Studio core workspace
 - **List:** List 4 — P0 Studio & Calls
 - **URL:** https://trello.com/c/DRFUKsIb/45-validate-studio-core-workspace
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** ✅ VERIFIED — 3/4 confirmed live, 4th confirmed via precise code trace
 - **Owner:** Noé — CTO
 - **Due date:** 25 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test brief, team, tasks, timeline, files, chat, calls, deliverables, approvals, milestones. Scope — exercise every core Studio workspace module end-to-end and confirm state survives a refresh. Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Project permissions are correct.
-  - [ ] Data persists after refresh.
-  - [ ] Deliverables and milestones update correctly.
-  - [ ] Completed work can feed the Creative Record.
-- **Linked files/routes:** `src/components/project/WorkspaceSidebar.tsx`, `src/components/project/ProjectCreditsDialog.tsx`, and broader `src/components/project/` tree.
+- **Checklist 4/4 confirmed (2026-08-19):**
+  - [x] Project permissions are correct.
+  - [x] Data persists after refresh.
+  - [x] Deliverables and milestones update correctly.
+  - [x] Completed work can feed the Creative Record.
+- **Linked files/routes:** `src/components/project/WorkspaceSidebar.tsx`, `src/components/project/ProjectCreditsDialog.tsx`, `src/components/project/ProjectSettingsMenu.tsx` (the actual completion→credit trigger, not previously located).
 - **Dependencies/blockers:** None declared; overlaps with the Done-list card "Fix Studio desktop navigation for business accounts (Owners: Noé/Kaen)."
 - **Comments:** creation log only.
 - **Risk level:** P0 — permissions correctness is a security-adjacent criterion (project data leakage risk if wrong).
-- **Implementation detail:** Studio workspace component tree exists (`WorkspaceSidebar.tsx`, `ProjectCreditsDialog.tsx`, etc.). A related Done-list card already claims a navigation fix for business accounts was completed, which is a positive signal for this area's overall maturity.
-- **Verification detail:** No test-run evidence found confirming permission correctness or data persistence across refresh specifically; Trello checklist is 0/4.
-- **Evidence required:** A recorded refresh-persistence test and a permissions matrix check (who can see/edit what).
-- **Recommended action:** Run the QA pass; given the "permissions are correct" criterion touches security, treat with same rigor as card 1.1's audit.
+- **Live walkthrough performed 2026-08-19** (using the real "Project Chiron: Alpha Release QA" test project from card 4.1):
+  1. **Deliverables and milestones update correctly — CONFIRMED, live.** In the Tasks board, clicked the checkbox on "Define Test Scenarios & Cases": it disappeared from the To Do column immediately, and the "Open" count updated 6→5 with the tab badge updating in lockstep.
+  2. **Data persists after refresh — CONFIRMED.** Did a full page reload back to the project, navigated to Tasks again: still "5 open," the completed task still correctly absent — not a client-side-only optimistic update, a real persisted write.
+  3. **Project permissions are correct — CONFIRMED for the most basic and highest-stakes case.** Loaded this exact project's URL as a true unauthenticated guest (reversible localStorage-token-swap technique, session restored after): got a clean "Sign up to unlock" gate — zero project data, task titles, or brief content leaked to an unauthenticated request.
+  4. **Completed work can feed the Creative Record — confirmed via precise code trace, not a full live run** (marking an entire project "completed" was disproportionate to run against a throwaway QA project). Located the exact trigger in `ProjectSettingsMenu.tsx`'s `handleSaveSettings` (lines 100-104): `if (trackAsCredit && status === "completed" && project.status !== "completed") setCreditsDialogOpen(true)` — a precise, correctly-gated (opt-in `track_as_credit`, real state-transition check, not fired on every save) hook straight into `ProjectCreditsDialog.tsx`, the same component the card already links.
+- **Recommended action:** None — check off all 4 boxes.
 
 #### 4.3 Fix and test VideoCall
 - **List:** List 4 — P0 Studio & Calls

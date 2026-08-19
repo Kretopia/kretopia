@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Settings as SettingsIcon } from "lucide-react";
 import Settings from "@/pages/Settings";
+import { cn } from "@/lib/utils";
 
 /**
  * Settings navbar entry — icon button next to Notifications, opening a side
@@ -13,13 +14,13 @@ import Settings from "@/pages/Settings";
  * (header/back-button chrome hidden, all settings logic untouched) so
  * there's no second settings implementation to keep in sync.
  */
-export const SettingsDrawer = () => {
+export const SettingsDrawer = ({ triggerClassName }: { triggerClassName?: string } = {}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10" aria-label="Settings">
+        <Button variant="ghost" size="icon" className={cn("relative h-8 w-8 sm:h-10 sm:w-10", triggerClassName)} aria-label="Settings">
           <SettingsIcon className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
         </Button>
       </SheetTrigger>

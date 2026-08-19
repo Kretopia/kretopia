@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/pages/messages/useConversations";
+import { cn } from "@/lib/utils";
 
 /**
  * Navbar "Messages" entry point — jumps straight to the full-screen
@@ -14,7 +15,7 @@ import { useConversations } from "@/pages/messages/useConversations";
  * inbox →" link to get to the real page; that middle step is gone, the
  * badge count is all that's left to compute here.
  */
-export const MessagesDrawer = () => {
+export const MessagesDrawer = ({ triggerClassName }: { triggerClassName?: string }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { unreadCounts } = useConversations(user?.id || "");
@@ -28,7 +29,7 @@ export const MessagesDrawer = () => {
     <Button
       variant="ghost"
       size="icon"
-      className="relative h-8 w-8 sm:h-10 sm:w-10"
+      className={cn("relative h-8 w-8 sm:h-10 sm:w-10", triggerClassName)}
       aria-label="Messages"
       onClick={() => navigate("/messages")}
     >

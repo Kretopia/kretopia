@@ -52,6 +52,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
   const isLandingPage = location.pathname === "/" && !user;
+  // Spotlight/Verified Credits/About all force a #05070D background on their
+  // own hero content (EditorialPageHero) regardless of theme or auth state --
+  // previously only the true landing page forced the navbar to match, so
+  // these three routes fell through to glass-surface-elevated's theme-
+  // dependent token (an off-white bar in light mode, a slightly different
+  // dark shade even in dark mode) sitting directly above a solid-black hero.
+  // isDarkChromeRoute controls ONLY that visual treatment; isLandingPage is
+  // left untouched for the behavioral differences (search bar, nav item set)
+  // that are specific to the marketing landing page, not these feature pages.
+  const isDarkChromeRoute = isLandingPage || ["/spotlight", "/credits", "/about"].includes(location.pathname);
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
   const { unreadCount } = useNotifications();
@@ -162,7 +172,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
     <nav
       className={cn(
         "sticky top-0 z-50 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none",
-        isLandingPage
+        isDarkChromeRoute
           ? "dark-surface border-b border-white/10 bg-[#05070D] text-white"
           : "border-b border-border/60 glass-surface-elevated rounded-none border-x-0 border-t-0",
       )}
@@ -182,7 +192,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
     >
       <div className="container mx-auto flex items-center justify-between gap-1 px-2 sm:px-4 py-2.5">
         <div className="shrink-0">
-          <BrandLogo size="md" showBeta linkToHome onDark={isLandingPage} />
+          <BrandLogo size="md" showBeta linkToHome onDark={isDarkChromeRoute} />
         </div>
 
         {/* Global search — reachable from every route, not just Today.
@@ -217,10 +227,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
-                    isLandingPage
+                    isDarkChromeRoute
                       ? "text-white/70 hover:text-white hover:bg-white/5"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-                    active && (isLandingPage ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
+                    active && (isDarkChromeRoute ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
                   )}
                 >
                   <Icon
@@ -284,7 +294,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
           {!isLandingPage && (
             <Sheet open={mobileSearchOpen} onOpenChange={setMobileSearchOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10 lg:hidden" aria-label="Search">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("relative h-8 w-8 sm:h-10 sm:w-10 lg:hidden", isDarkChromeRoute && "text-white hover:text-white hover:bg-white/10")}
+                  aria-label="Search"
+                >
                   <Search className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
@@ -302,16 +317,27 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </SheetContent>
             </Sheet>
           )}
-          {!isLandingPage && user && <MessagesDrawer />}
+          {!isLandingPage && user && (
+            <MessagesDrawer triggerClassName={isDarkChromeRoute ? "text-white hover:text-white hover:bg-white/10" : undefined} />
+          )}
 
-          {!isLandingPage && user && <NotificationCenter />}
-          {!isLandingPage && user && <SettingsDrawer />}
+          {!isLandingPage && user && (
+            <NotificationCenter triggerClassName={isDarkChromeRoute ? "text-white hover:text-white hover:bg-white/10" : undefined} />
+          )}
+          {!isLandingPage && user && (
+            <SettingsDrawer triggerClassName={isDarkChromeRoute ? "text-white hover:text-white hover:bg-white/10" : undefined} />
+          )}
           {!user && !isLandingPage && <ThemeToggle />}
           
           {user && !isLandingPage ? (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open menu" className="h-8 w-8 sm:h-10 sm:w-10">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open menu"
+                  className={cn("h-8 w-8 sm:h-10 sm:w-10", isDarkChromeRoute && "text-white hover:text-white hover:bg-white/10")}
+                >
                   <Menu className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
@@ -450,7 +476,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   way to reach these links, never neither. */}
               <Sheet open={guestMenuOpen} onOpenChange={setGuestMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Open menu" className="h-9 w-9 lg:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Open menu"
+                    className={cn("h-9 w-9 lg:hidden", isDarkChromeRoute && "text-white hover:text-white hover:bg-white/10")}
+                  >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -505,7 +536,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   size="sm"
                   className={cn(
                     "gap-2",
-                    isLandingPage && "border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white",
+                    isDarkChromeRoute && "border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white",
                   )}
                 >
                   <Briefcase className="h-4 w-4" aria-hidden />

@@ -7,7 +7,7 @@ import {
   Scissors, FileText, Briefcase, Sparkles, User,
   // Tab icons
   MessageSquare, CheckSquare, FolderOpen, LayoutGrid, CheckCircle2, Wallet,
-  FileSignature, StickyNote, Image as ImageIcon, ListChecks, Bot, ClipboardList,
+  FileSignature, StickyNote, Image as ImageIcon, ListChecks, ClipboardList, Wand2,
   Clock, UserCheck, ArrowRightLeft, RotateCcw, Shield, ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -356,7 +356,7 @@ export const TAB_META: Record<DeskTabKey, TabMeta> = {
   finance:      { label: "Finance",     icon: Wallet },
   notes:        { label: "Notes",       icon: StickyNote },
   templates:    { label: "Templates",   icon: ClipboardList },
-  ai:           { label: "Copilot",     icon: Bot },
+  ai:           { label: "Create",      icon: Wand2 },
   call_sheet:   { label: "Call Sheet",  icon: ClipboardList },
   run_of_show:  { label: "Run of Show", icon: Clock },
   roll_call:    { label: "Roll Call",   icon: UserCheck },

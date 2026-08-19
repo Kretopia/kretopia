@@ -7,10 +7,7 @@
  * reads as one continuous film rather than separate product screens.
  */
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
-
-const ACCENT = "#FF2DA1";
+import { CinematicHeaderPlate } from "@/components/features/CinematicHeaderPlate";
 
 export interface EditorialPageHeroProps {
   /** Small uppercase kicker in the pill, eg. "Verified Credits". */
@@ -31,7 +28,6 @@ export interface EditorialPageHeroProps {
 export const EditorialPageHero = ({
   kicker, title, accentTitle, subtitle, children, align = "center", oneLine = false,
 }: EditorialPageHeroProps) => {
-  const reducedMotion = useReducedMotion();
   const centered = align === "center";
 
   return (
@@ -57,41 +53,15 @@ export const EditorialPageHero = ({
       {/* quadrillé grid texture — restrained graph-paper lines, faded via mask */}
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
 
-      <motion.div
-        initial={reducedMotion ? false : { opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.85, ease: [0.2, 0.65, 0.3, 0.95] }}
-        className={`relative mx-auto max-w-[1100px] px-5 sm:px-8 py-10 sm:py-16 ${centered ? "text-center flex flex-col items-center" : ""}`}
-      >
-        <p
-          className="inline-flex items-center gap-2 rounded-full border px-3 py-1 mb-6"
-          style={{
-            borderColor: "rgba(255,45,161,0.3)",
-            backgroundColor: "rgba(255,45,161,0.06)",
-          }}
-        >
-          <span className="h-1.5 w-1.5 rounded-full ai-ambient-breathe" style={{ backgroundColor: ACCENT }} />
-          <span className="landing-eyebrow" style={{ color: ACCENT }}>{kicker}</span>
-        </p>
-
-        <h1
-          className={`landing-h1 landing-glow ${oneLine ? "whitespace-nowrap max-w-none text-[clamp(1.05rem,4.2vw,3rem)]" : "max-w-4xl"}`}
-        >
-          {title}
-          {accentTitle && (
-            <>
-              {oneLine ? " " : <br />}
-              <span className="landing-accent">{accentTitle}</span>
-            </>
-          )}
-        </h1>
-
-        {subtitle && (
-          <p className={`landing-sub mt-6 max-w-xl ${centered ? "mx-auto" : ""}`}>{subtitle}</p>
-        )}
-
-        {children && <div className={`mt-8 w-full ${centered ? "flex flex-col items-center" : ""}`}>{children}</div>}
-      </motion.div>
+      <CinematicHeaderPlate
+        eyebrow={kicker}
+        title={title}
+        accentTitle={accentTitle}
+        subtitle={subtitle}
+        align={align}
+        oneLine={oneLine}
+        footer={children && <div className={`mt-8 w-full ${centered ? "flex flex-col items-center" : ""}`}>{children}</div>}
+      />
     </section>
   );
 };

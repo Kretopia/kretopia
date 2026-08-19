@@ -454,7 +454,7 @@ const Auth = () => {
 
           {/* Editorial form shell — same language as the Hire Talent brief form */}
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
-            {!isPasswordReset && (
+            {!isPasswordReset && activeTab === "signup" && (
               <div className="p-4 sm:p-5 border-b border-white/10 bg-gradient-to-r from-[rgba(255,45,161,0.08)] via-transparent to-transparent">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[rgba(255,45,161,0.12)]">

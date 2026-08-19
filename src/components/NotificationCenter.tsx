@@ -8,8 +8,9 @@ import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle, ThumbsUp,
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { cn } from "@/lib/utils";
 
-export const NotificationCenter = () => {
+export const NotificationCenter = ({ triggerClassName }: { triggerClassName?: string } = {}) => {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification, vouchOnCredit } = useNotifications();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +64,7 @@ export const NotificationCenter = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Open notifications">
+        <Button variant="ghost" size="icon" className={cn("relative", triggerClassName)} aria-label="Open notifications">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge 

@@ -13,6 +13,7 @@ import { AIBriefBuilder } from "@/components/project/AIBriefBuilder";
 import { AIAutomation } from "@/components/project/AIAutomation";
 import { ApprovalWorkflows } from "@/components/project/ApprovalWorkflows";
 import { CreativeAssetLibrary } from "@/components/project/CreativeAssetLibrary";
+import { StudioAICreate } from "@/components/project/studio/StudioAICreate";
 import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicker";
 import { CreativeBoard } from "@/components/project/CreativeBoard";
 import { ScopeGuardian } from "@/components/project/ScopeGuardian";
@@ -150,6 +151,10 @@ export const DeskTabContent = memo(({
 
         {activeTab === "board" && (
           <CreativeBoard projectId={projectId} currentUserId={currentUserId} />
+        )}
+
+        {activeTab === "ai" && (
+          <StudioAICreate projectId={projectId} currentUserId={currentUserId} isPro={isPro} />
         )}
 
         {activeTab === "contracts" && (

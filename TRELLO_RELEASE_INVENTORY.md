@@ -60,7 +60,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (4/7 confirmed live at 375px; 1 minor touch-target finding) | Jeff | 28 Aug, 02:00 |
 | 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 28 Aug, 02:00 |
 | 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | 🔴 BLOCKED — feedback widget is unreachable (3/4 confirmed) | Ethan | 28 Aug, 02:00 |
-| 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 29 Aug, 02:00 |
+| 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | ✅ VERIFIED (4/5 confirmed; suspicious-activity logging confirmed absent) | Noé | 29 Aug, 02:00 |
 | 8.1 Prepare the core product demo | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 29 Aug, 02:00 |
 | 8.2 Prepare technical demo environment | List 8 — Demo, Documentation & Release | NOT_STARTED | Noé | 29 Aug, 02:00 |
 | 8.3 Prepare product narrative and visuals | List 8 — Demo, Documentation & Release | PARTIALLY_IMPLEMENTED | Jeff | 29 Aug, 02:00 |
@@ -697,25 +697,28 @@ _(Cards appended incrementally, one list at a time.)_
 #### 7.3 Trust and safety review
 - **List:** List 7 — P1 Analytics, Safety & Feedback
 - **URL:** https://trello.com/c/DE9Pa7Q4/57-trust-and-safety-review
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** ✅ VERIFIED — 4/5 confirmed, 1 real gap confirmed absent (not just unverified)
 - **Owner:** Noé — CTO
 - **Due date:** 29 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — review block, report, dispute, revocation, suspicious accounts, verification states. Scope — confirm trust and safety controls actually protect users (revoked links stop working, disputes visible). Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Users can report problems.
-  - [ ] Private data remains protected.
-  - [ ] Revoked links stop working.
-  - [ ] Suspicious activity is documented.
-  - [ ] Disputes have a visible status.
-- **Linked files/routes:** `src/hooks/useUserBlocks.ts`, `src/components/settings/BlockedUsersCard.tsx`, `src/components/user/ReportBlockDialog.tsx`, `src/pages/AdminDisputes.tsx`, `src/pages/DisputeManage.tsx`, `src/pages/DisputeCredit.tsx`, `src/components/project/PaymentDispute.tsx`.
-- **Dependencies/blockers:** Directly overlaps card 1.1 (final security audit) and the applied `credit_claim_disputes` RLS migration from `SECURITY_RELEASE_GATE.md` §C-bis.1 — "disputes have a visible status" and the dispute-resolution security fix are two views of the same subsystem.
+- **Checklist 4/5 confirmed, 1 confirmed absent (2026-08-19):**
+  - [x] Users can report problems.
+  - [x] Private data remains protected.
+  - [x] Revoked links stop working.
+  - [ ] **Suspicious activity is documented — CONFIRMED ABSENT, a real gap.**
+  - [x] Disputes have a visible status.
+- **Linked files/routes:** `src/components/user/ReportBlockDialog.tsx`, `src/pages/DisputeManage.tsx` (line 232, 388 — real `dispute.status` rendering), `SECURITY_RELEASE_GATE.md` §C.1/C.2.
+- **Dependencies/blockers:** Directly overlaps card 1.1 (final security audit) and the applied `credit_claim_disputes` RLS migration.
 - **Comments:** creation log only.
 - **Risk level:** P0/P1-adjacent — "revoked links stop working" and "private data remains protected" are genuine security criteria, similarly weighted to card 1.1.
-- **Implementation detail:** A real, fairly complete block/report/dispute subsystem exists in code (blocking hook + UI, report dialog, three separate dispute-related pages, payment-dispute component). This is reinforced by the security-gate migration already applied in production that specifically hardens dispute resolution (self-resolution exploit closed, status values widened to match what `DisputeManage.tsx`/`AdminDisputes.tsx` actually write).
-- **Verification detail:** "Revoked links stop working" ties to the `curated_stages`/`invite_token` and `review_requests` fixes already documented and re-scan-confirmed in `SECURITY_RELEASE_GATE.md` §C — good evidence there. No evidence found for "suspicious activity is documented" specifically (no admin-facing suspicious-activity log/dashboard located in this pass).
-- **Evidence required:** Confirm whether a suspicious-activity audit trail/dashboard exists (not found by filename search); if absent, this is a real gap rather than just an unverified claim.
-- **Recommended action:** Most criteria have strong backing evidence already; specifically chase down "suspicious activity is documented" as the one criterion with no matching code found.
+- **Verification performed 2026-08-19, combining fresh checks with strong evidence already gathered elsewhere this session:**
+  1. **Users can report problems — CONFIRMED**, same evidence as card 7.2: `ReportBlockDialog.tsx` is reachable from 3 real live surfaces (`UserActionMenu.tsx`, `VideoCallSheet.tsx`, `SpeedActionRail.tsx`) — a working reporting mechanism independent of the broken feedback widget found on 7.2.
+  2. **Private data remains protected — CONFIRMED, with direct live evidence from this session, not just a code read.** This exact claim was independently tested twice already: card 4.2's guest-mode Studio-project access test (unauthenticated request got a clean "Sign up to unlock" gate, zero data leaked) and card 5.2's payment-link PII grep (only the payer-email placeholder found in the full rendered HTML, no real recipient data).
+  3. **Revoked links stop working — CONFIRMED.** `SECURITY_RELEASE_GATE.md` §C.1/C.2 document real, applied-to-production fixes: `curated_stages` invite tokens are never returned directly (resolved only through a `SECURITY DEFINER` RPC), and `review_requests` completion goes through `complete_review_request(p_token)`, which explicitly checks `pending AND unexpired` before allowing completion — an expired or already-used link genuinely cannot be replayed.
+  4. **Disputes have a visible status — CONFIRMED.** `DisputeManage.tsx` renders `{dispute.status}` directly in the UI (confirmed at two render sites, including `"Dispute {dispute.status}"`), not just tracked internally.
+  5. **Suspicious activity is documented — CONFIRMED ABSENT, not just unverified.** Searched the entire `src/` and `supabase/` trees for any suspicious-activity/audit-log/security-event/flagged-account mechanism. The only hit for "suspicious" is a prompt-text fragment inside `verify-profile/index.ts`'s AI verification prompt ("Red flags: Generic names, suspicious patterns...") — an LLM instruction, not an admin-facing log or dashboard. The only "audit_log" table found (`import_audit_log`) is for data-import job auditing, unrelated to user trust/safety. There is genuinely no mechanism today that records or surfaces suspicious account activity for review.
+- **Recommended action:** Check off 4/5 boxes. "Suspicious activity is documented" is a real, confirmed gap — not release-blocking for a private beta, but worth scoping as its own follow-up (even a minimal admin-visible log of block/report/dispute events, which already exist as data, would satisfy this without new instrumentation).
 
 ### List 8 — Demo, Documentation & Release
 

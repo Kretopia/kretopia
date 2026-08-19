@@ -50,7 +50,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 4.1 Stabilize Studio New Project flow | List 4 — P0 Studio & Calls | ✅ VERIFIED (7/7 confirmed live) | Jeff | 23 Aug, 02:00 |
 | 4.2 Validate Studio core workspace | List 4 — P0 Studio & Calls | ✅ VERIFIED (3/4 confirmed live, 1 via precise code trace) | Noé | 25 Aug, 02:00 |
 | 4.3 Fix and test VideoCall | List 4 — P0 Studio & Calls | 🟡 PARTIALLY_VERIFIED (3/7 confirmed; 4 need real hardware) | Noé | 24 Aug, 02:00 |
-| 4.4 Test SoundStages Speed Sessions and Auditions | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Ethan | 26 Aug, 02:00 |
+| 4.4 Test SoundStages Speed Sessions and Auditions | List 4 — P0 Studio & Calls | 🟡 PARTIALLY_VERIFIED (mode separation confirmed; 3 need real hardware) | Ethan | 26 Aug, 02:00 |
 | 5.1 Test milestone payment lifecycle | List 5 — P0 Payments & Project Completion | PARTIALLY_IMPLEMENTED | Noé | 26 Aug, 02:00 |
 | 5.2 Test invoices and payout flows | List 5 — P0 Payments & Project Completion | PARTIALLY_IMPLEMENTED | Noé | 27 Aug, 02:00 |
 | 5.3 Validate project completion loop | List 5 — P0 Payments & Project Completion | IMPLEMENTED_NOT_VERIFIED | Ethan | 28 Aug, 02:00 |
@@ -441,24 +441,24 @@ _(Cards appended incrementally, one list at a time.)_
 #### 4.4 Test SoundStages Speed Sessions and Auditions
 - **List:** List 4 — P0 Studio & Calls
 - **URL:** https://trello.com/c/sJTgu65o/47-test-soundstages-speed-sessions-and-auditions
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** 🟡 PARTIALLY_VERIFIED — mode separation confirmed live; video/participant/results need real hardware + multiple participants (same blocker as card 4.3)
 - **Owner:** Ethan — CEO (member: ethan104)
 - **Due date:** 26 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — validate both distinct SoundStages modes: Speed Session (waiting room, timed video rounds) and Auditions. Scope — confirm both modes are clearly separated in the UI and participant states/results hold up. Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Modes are clearly separated.
-  - [ ] Video flow is usable.
-  - [ ] Participant states are correct.
-  - [ ] Results persist after the session.
-- **Linked files/routes:** `src/pages/SpeedSession.tsx`, `src/pages/SoundStages.tsx`, `src/components/circle/SoundStageRoom.tsx`, `src/components/circle/SoundStagesRail.tsx`, `src/components/circle/SpeedSessionCreateDialog.tsx`.
-- **Dependencies/blockers:** None declared; shares underlying call infrastructure with card 4.3 (VideoCall), so a VideoCall bug could cascade here.
+- **Checklist 1/4 confirmed live (2026-08-19), 3 blocked on real hardware/multi-participant testing:**
+  - [x] Modes are clearly separated.
+  - [ ] Video flow is usable. *(not testable — no camera/mic in this environment, same as card 4.3)*
+  - [ ] Participant states are correct. *(needs 2+ simultaneous real participants)*
+  - [ ] Results persist after the session. *(needs a full session to actually run and end)*
+- **Linked files/routes:** `src/pages/SoundStages.tsx`, `src/components/circle/SpeedSessionCreateDialog.tsx` (Speed Session), `src/components/circle/CreateStageSheet.tsx` (the actual "Auditions" mode — labeled "Scout Stage" in the UI, not literally "Auditions"; `src/pages/SpeedSession.tsx`/`SoundStageRoom.tsx` are the live-room surfaces, not exercised this pass for the reasons above).
+- **Dependencies/blockers:** None declared; shares underlying call infrastructure with card 4.3 (VideoCall) — VideoCall's confirmed server-side protections (auth + duplicate-room handling) apply here too, so this doesn't need to be re-verified.
 - **Comments:** creation log only.
 - **Risk level:** P0.
-- **Implementation detail:** Both modes have dedicated pages/components (`SpeedSession.tsx`, `SoundStages.tsx`, `SoundStageRoom.tsx`, `SpeedSessionCreateDialog.tsx`), a reasonably strong code-existence signal that both modes are built out, not just one.
-- **Verification detail:** No evidence found of a QA pass confirming mode separation clarity or results-persistence specifically.
-- **Evidence required:** A recorded test run through both modes with results-persistence check after session end.
-- **Recommended action:** Run the QA pass; sequence after card 4.3 (VideoCall) since these modes likely share call infrastructure.
+- **Live walkthrough + code trace performed 2026-08-19:**
+  1. **Modes are clearly separated — CONFIRMED, live and in code.** `/soundstages` shows two visually and functionally distinct creation paths on the same page: "START STAGE" (Sound Stages / Open Stage) and a separate "SCHEDULE A SPEED SESSION" card with its own section ("CALL SHEET — SPEED SESSIONS," themed-night picker, 6-12 RSVP guidance). Opened the real "Schedule a Speed Session" dialog: title, themed night (10 creator-type options), start time, Video/Audio mode, total length, per-match length — a genuine 1:1 timed-rounds concept. Separately, `CreateStageSheet.tsx` (the "Schedule a stage" sheet) has its own **Scout Stage** vs **Showcase** type selector — Scout Stage's own hint text is literally *"You're auditioning creators"* (application-gated, private/unlisted/public visibility, 5-min turn slots) vs Showcase's *"You're performing / speaking"* (public, no application gate). This is the actual "Auditions" mode the card refers to — three genuinely distinct concepts (Speed Session, Scout/Audition Stage, Showcase Stage), not one feature wearing two names.
+  2. **The remaining 3 items require conditions this session's remote browser can't provide** — real camera/mic for the video flow, at least two simultaneous real participants to check state transitions (waiting → matched → next round), and a session actually running to completion to check what persists after. Faking any of these would produce a false "confirmed."
+- **Recommended action:** Check off "Modes are clearly separated" now. The other 3 need the same real-device pass flagged for card 4.3 — worth bundling into one manual QA session since they share infrastructure, ideally with two real people joining at once to exercise participant-state transitions honestly.
 
 ### List 5 — P0 Payments & Project Completion
 

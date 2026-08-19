@@ -41,7 +41,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 1.3 Audit authentication and legacy user access | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 20 Aug, 02:00 |
 | 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 21 Aug, 02:00 |
 | 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | PARTIALLY_IMPLEMENTED (2/6 confirmed live) | Noé | 21 Aug, 02:00 |
-| 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | PARTIALLY_IMPLEMENTED | Noé | 22 Aug, 02:00 |
+| 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | 🔴 BLOCKED — P0 bug found, fix written not applied (3/5 confirmed live) | Noé | 22 Aug, 02:00 |
 | 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | NOT_STARTED | Jeff | 22 Aug, 02:00 |
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | IMPLEMENTED_NOT_VERIFIED | Jeff | 23 Aug, 02:00 |
 | 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Noé | 23 Aug, 02:00 |
@@ -204,25 +204,30 @@ _(Cards appended incrementally, one list at a time.)_
 #### 2.2 Validate Verified Credits and Co-Signs
 - **List:** List 2 — P0 Core Product Loop
 - **URL:** https://trello.com/c/o2YRbncz/38-validate-verified-credits-and-co-signs
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🔴 BLOCKED — P0 BUG FOUND (live-reproduced, fix written, not yet applied)
 - **Owner:** Noé — CTO
 - **Due date:** 22 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test Claimed, Publicly Sourced, Evidence-backed, Co-Signed and Organization Confirmed credit trust states. Scope — verify each Verified Credit trust state and the full Co-Sign request/response cycle. Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Co-Sign requests work.
-  - [ ] Recipient authentication works.
-  - [ ] Confirm and reject actions work.
-  - [ ] Passport evidence updates correctly.
-  - [ ] Self-claimed work is never presented as verified.
-- **Linked files/routes:** `src/components/profile/CoSignsSection.tsx`; the Done-list card "Fix Co-Signs constraint & column bugs (Owner: Kaen)" and the security-gate migration `20260817140000_harden_credit_dispute_resolution_rls.sql` (credit-dispute RLS) are directly relevant.
-- **Dependencies/blockers:** Overlaps with the already-applied `credit_claim_disputes` RLS fix in `SECURITY_RELEASE_GATE.md` §C-bis.1.
+- **Checklist 3/5 confirmed by live walkthrough (2026-08-19):**
+  - [x] Co-Sign requests work.
+  - [x] Recipient authentication works — no-account-required token flow, by design (see below).
+  - [ ] **Confirm and reject actions work — HALF BROKEN. Reject works; Confirm/Accept fails every time (P0 bug, see below).**
+  - [ ] Passport evidence updates correctly — cannot confirm the positive case while Confirm is broken; confirmed no silent corruption on failure.
+  - [x] Self-claimed work is never presented as verified.
+- **Linked files/routes:** `src/components/profile/CoSignsSection.tsx`, `src/components/profile/CreditEndorsementDialog.tsx`, `src/pages/CreditVerify.tsx`, `src/lib/passport/creditEvidence.ts`; RPC `submit_credit_endorsement_by_token` in `supabase/migrations/20260812071205_c57b2c1c-1974-49bb-9075-ffff9ffb5e30.sql`; constraint fix written this pass: `supabase/migrations/20260819140000_fix_credits_peer_status_constraint.sql` (**not yet applied — needs to be pasted into the Lovable Cloud SQL editor**).
+- **Dependencies/blockers:** **New, this pass:** the Confirm/Accept path is fully non-functional in production right now — see bug writeup below. Previously noted overlap with the already-applied `credit_claim_disputes` RLS fix (`SECURITY_RELEASE_GATE.md` §C-bis.1) still stands and is unaffected by this bug.
 - **Comments:** creation log only.
-- **Risk level:** P0 — trust/credibility-critical (a core differentiator: "no credit silently invented").
-- **Implementation detail:** `CoSignsSection.tsx` exists; a real RLS hardening migration for credit disputes was written and applied to production (per §C-bis.1 of `SECURITY_RELEASE_GATE.md`), including a documented fix for `credit_claim_disputes` self-resolution and a widened status CHECK constraint to match code (`DisputeManage.tsx` transferCredit, `AdminDisputes.tsx` arbitrate). This shows real, recent hardening work directly on this feature's trust guarantees.
-- **Verification detail:** The self-resolution fix was migration-based (backend-only); no evidence found of a UI-level functional test confirming Co-Sign request/confirm/reject flows or "self-claimed work is never presented as verified" end-to-end.
-- **Evidence required:** Functional QA pass on the Co-Sign UI cycle plus explicit confirmation that self-claimed credits render with a distinct (non-verified) visual state.
-- **Recommended action:** Backend trust/RLS layer looks solid post-migration; still needs a UI-level QA pass before checking off.
+- **Risk level:** P0 — trust/credibility-critical, and currently **broken in production**, not just unverified.
+- **Live walkthrough performed 2026-08-19** (real browser, both authenticated and true-guest sessions — guest tested via the reversible localStorage-token-swap technique on a second tab, session restored afterward, never signed out):
+  1. **Co-Sign requests work — CONFIRMED.** From the authenticated Passport → Co-signs tab, clicked "Request Co-Sign" on a self-claimed credit ("Launch of Thrive in Dubai"). The `CreditEndorsementDialog` opened correctly, showing the right project/role. Entering a guest name and clicking "Create verify link" produced a real `credit_endorsements` row and a working `/credit-verify?token=...` link, with a "Verify link ready" toast — the real DB write path (`credit_endorsements.insert`) works.
+  2. **Self-co-sign guard — CONFIRMED, a genuine positive finding.** Opening the generated link in a second tab *while still authenticated as the same account that made the request* and clicking "Yes, we worked together" was correctly rejected with the toast "You cannot co-sign your own credit" — the RPC's `_caller = _endorsement.requested_by` guard (from the earlier "Phase 4: Self-Co-Sign security migration" work) is genuinely live and effective.
+  3. **Recipient authentication works — CONFIRMED, but re-scope the criterion.** The actual shipped design is a token-based, no-account-required flow (`/credit-verify?token=...`, RPC granted to both `anon` and `authenticated`) — confirmed by testing the exact same link as a *true, unauthenticated guest* (cleared the local session via the established reversible technique; nav bar correctly switched to "Hire Talent / Get Started"). The page loaded the right request data with zero account needed, matching the UI's own "No account required" copy. There is no separate "recipient authentication" step to test beyond this token identification — the checklist item's literal wording predates this design.
+  4. **Confirm and reject actions work — REJECT CONFIRMED, CONFIRM IS A P0 BUG.** As the true guest from step 3, clicking **"Not me / I can't confirm"** on a second test request worked cleanly end-to-end: "Response recorded — Thanks — your response has been noted." But clicking **"Yes, we worked together"** (the accept path) failed with a hard, user-visible error toast: **`new row for relation "credits" violates check constraint "credits_verification_status_check"`**. Root-caused by reading the RPC and every migration that ever touched this constraint: `submit_credit_endorsement_by_token` (and two prior versions of the same RPC, dating back to 2026-05-03) writes `verification_status = 'peer'` for a credit's first accepted endorsement — `'peer'` is a real, intentional status already consumed by five other frontend files (`creativeRecord.ts`, `StatusProgressCard.tsx`, `statusEngine.ts`, `ProductionPage.tsx`, `CreatorEPK.tsx`) — but the table's `credits_verification_status_check` constraint (last touched 2026-04-18, months before the RPC was written) never allowed `'peer'` as a value. **Every real Co-Sign accept from an actual collaborator has been silently failing since this RPC shipped**, and would have kept failing straight through the Aug 31 release. Confirmed the failure is atomic/clean — no partial writes, the credit stayed correctly in "Self-claimed," nothing corrupted.
+  5. **Self-claimed work is never presented as verified — CONFIRMED, both in UI and DB.** `CoSignsSection.tsx` buckets credits into 4 visually and textually distinct groups (Verified / Publicly Sourced / Pending / Self-claimed) via the single shared `classifyCreditEvidence()` classifier, so the Stamps grid and Co-Signs carousel can never disagree. `classifyCreditEvidence` only returns `"verified"` when `verification_status === "verified"` — which per the RPC requires **2** accepted endorsements, not 1 — so even a fixed/working single accept would correctly land a credit in "Pending" (1 endorsement, awaiting a 2nd), never "Verified." The DB-level lockdown from the earlier C3/C9 migration (escalation to `'verified'`/`'auto_discovered'` blocked outside an authorized RPC) remains in force and untouched by this bug.
+- **Fix written, not applied:** `supabase/migrations/20260819140000_fix_credits_peer_status_constraint.sql` adds `'peer'` to the allowed `credits_verification_status_check` values (matching what the RPC and 5 frontend files already assume). Per this engagement's standing rule, this was **not applied directly** — needs to be pasted into the Lovable Cloud SQL editor and run, then re-verified with a real accept.
+- **Test data created this pass (real, needs no cleanup but is visible if anyone looks):** two `credit_endorsements` rows on Noé/Ethan's real account — one on "Launch of Thrive in Dubai" (attempted accept, named "QA Verification Test (2026-08-19)", failed and rolled back — credit unaffected), one on "ThriveIN Social Bali" (declined, named "QA Decline Test (2026-08-19)", `credit_endorsements.status = 'declined'`, does not touch the credit or appear anywhere on the public Passport).
+- **Recommended action:** Apply `20260819140000_fix_credits_peer_status_constraint.sql` before Aug 31 — this is a release blocker, not a nice-to-have. After applying, re-run a real accept (a fresh guest link, true-guest tab) to confirm the credit correctly lands in "Pending," then a second accept from a different endorser to confirm it correctly reaches "Verified" at 2.
 
 #### 2.3 Review Passport as the core product
 - **List:** List 2 — P0 Core Product Loop

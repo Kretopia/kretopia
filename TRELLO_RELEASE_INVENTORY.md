@@ -62,8 +62,8 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | 🔴 BLOCKED — feedback widget is unreachable (3/4 confirmed) | Ethan | 28 Aug, 02:00 |
 | 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | ✅ VERIFIED (4/5 confirmed; suspicious-activity logging confirmed absent) | Noé | 29 Aug, 02:00 |
 | 8.1 Prepare the core product demo | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 29 Aug, 02:00 |
-| 8.2 Prepare technical demo environment | List 8 — Demo, Documentation & Release | NOT_STARTED | Noé | 29 Aug, 02:00 |
-| 8.3 Prepare product narrative and visuals | List 8 — Demo, Documentation & Release | PARTIALLY_IMPLEMENTED | Jeff | 29 Aug, 02:00 |
+| 8.2 Prepare technical demo environment | List 8 — Demo, Documentation & Release | 🟡 PARTIALLY_VERIFIED — confirmed no seed/fixture infra exists; rest is human/rehearsal work | Noé | 29 Aug, 02:00 |
+| 8.3 Prepare product narrative and visuals | List 8 — Demo, Documentation & Release | 🟡 PARTIALLY_VERIFIED (1/4 resolved; 3/4 evidenced via 2.3/6.2 + a landing-copy overclaim found) | Jeff | 29 Aug, 02:00 |
 | 8.4 Final full regression | List 8 — Demo, Documentation & Release | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; 2 blocked on the open card 2.2 P0) | Noé | 30 Aug, 02:00 |
 | 8.5 CEO acceptance review | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 31 Aug, 02:00 |
 | 8.6 August 31 submission and release | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan (unassigned in Trello) | 1 Sept, 02:00 |
@@ -222,6 +222,7 @@ _(Cards appended incrementally, one list at a time.)_
   5. **Self-claimed work is never presented as verified — CONFIRMED, both in UI and DB.** `CoSignsSection.tsx` buckets credits into 4 visually and textually distinct groups (Verified / Publicly Sourced / Pending / Self-claimed) via the single shared `classifyCreditEvidence()` classifier, so the Stamps grid and Co-Signs carousel can never disagree. `classifyCreditEvidence` only returns `"verified"` when `verification_status === "verified"` — which per the RPC requires **2** accepted endorsements, not 1 — so even a fixed/working single accept would correctly land a credit in "Pending" (1 endorsement, awaiting a 2nd), never "Verified." The DB-level lockdown from the earlier C3/C9 migration (escalation to `'verified'`/`'auto_discovered'` blocked outside an authorized RPC) remains in force and untouched by this bug.
 - **Fix written, not applied:** `supabase/migrations/20260819140000_fix_credits_peer_status_constraint.sql` adds `'peer'` to the allowed `credits_verification_status_check` values (matching what the RPC and 5 frontend files already assume). Per this engagement's standing rule, this was **not applied directly** — needs to be pasted into the Lovable Cloud SQL editor and run, then re-verified with a real accept.
 - **Test data created this pass (real, needs no cleanup but is visible if anyone looks):** two `credit_endorsements` rows on Noé/Ethan's real account — one on "Launch of Thrive in Dubai" (attempted accept, named "QA Verification Test (2026-08-19)", failed and rolled back — credit unaffected), one on "ThriveIN Social Bali" (declined, named "QA Decline Test (2026-08-19)", `credit_endorsements.status = 'declined'`, does not touch the credit or appear anywhere on the public Passport).
+- **Re-verified 2026-08-20 — bug still live, migration not yet applied.** Created a fresh Co-Sign request on the same "Launch of Thrive in Dubai" credit ("QA Retest (2026-08-20)"), got a real `/credit-verify?token=...` link, opened it as a true guest (reversible localStorage-token-swap technique, session restored and confirmed afterward), and clicked "Yes, we worked together." **Same exact failure reproduces**: `new row for relation "credits" violates check constraint "credits_verification_status_check"`. Confirms `20260819140000_fix_credits_peer_status_constraint.sql` has not been applied yet — this remains the release blocker for cards 2.2 and 8.4.
 - **Recommended action:** Apply `20260819140000_fix_credits_peer_status_constraint.sql` before Aug 31 — this is a release blocker, not a nice-to-have. After applying, re-run a real accept (a fresh guest link, true-guest tab) to confirm the credit correctly lands in "Pending," then a second accept from a different endorser to confirm it correctly reaches "Verified" at 2.
 
 #### 2.3 Review Passport as the core product
@@ -752,47 +753,49 @@ _(Cards appended incrementally, one list at a time.)_
 #### 8.2 Prepare technical demo environment
 - **List:** List 8 — Demo, Documentation & Release
 - **URL:** https://trello.com/c/k7RA7ySn/59-prepare-technical-demo-environment
-- **Status:** NOT_STARTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 1 confirmed absence (no seed infra exists), rest is human/rehearsal work
 - **Owner:** Noé — CTO
 - **Due date:** 29 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — create clean demo accounts, deterministic data, fallback data and a recorded backup. Scope — prepare a resilient demo environment that behaves predictably with a recorded fallback. Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Demo account works.
-  - [ ] Data is deterministic.
-  - [ ] No private data appears.
-  - [ ] Backup video exists.
-  - [ ] Critical provider failure has a fallback.
+- **Checklist 0/5, 1 confirmed absent, 4 remain human/rehearsal work (2026-08-20):**
+  - [ ] Demo account works — no dedicated demo account exists; this session's real Ethan Auguste account (used throughout this whole QA pass) is the closest thing, and it does work, but it's a live real account, not a purpose-built demo one.
+  - [ ] **Data is deterministic — CONFIRMED there is no mechanism for this. No seed script or fixture-data system exists anywhere in the repo.**
+  - [ ] No private data appears — not independently re-tested here; overlaps the privacy checks already done in cards 1.1, 2.4, 5.2, and 2.3 (this session), all of which found no leaked PII on the surfaces they covered.
+  - [ ] Backup video exists — literal recorded media file; not a code-checkable claim.
+  - [ ] Critical provider failure has a fallback — no dedicated "demo contingency mode" exists; what exists instead is ordinary production error handling (try/catch around Stripe, Daily.co, and Lovable AI Gateway calls throughout `supabase/functions/`) that keeps the app from crashing on a provider outage, but there's no demo-specific fallback (e.g. an offline/mock mode) beyond the backup video itself.
 - **Linked files/routes:** N/A — environment/ops task, not a code-existence question. "No private data appears" overlaps privacy criteria from cards 1.1, 2.4, and 5.2.
 - **Dependencies/blockers:** Same as 8.1 — tied to "Record an offline backup video of the full live demo" in the Blocked list.
 - **Comments:** creation log only.
 - **Risk level:** P0-adjacent for the privacy criterion; otherwise operational.
-- **Implementation detail:** N/A.
-- **Verification detail:** No demo-account seeding script or fixture-data mechanism was located in this pass (not specifically searched for; flagged as a gap in this catalog rather than a confirmed absence).
-- **Evidence required:** Locate (or confirm the need to build) a deterministic demo-seed script/fixture set.
-- **Recommended action:** Sequence after Lists 1-5 stabilize; do not seed demo data against a still-changing schema.
+- **Verification performed 2026-08-20:** the earlier note in this card said a demo-seed/fixture mechanism "was not specifically searched for." Ran that search this pass: `find . -iname "*seed*"` and `find . -iname "*fixture*"` across the repo (excluding `node_modules`), plus a grep for `demo_account`/`DEMO_USER`/`demoMode` across `src/` and `supabase/`. Found two unrelated `seed-*` edge functions (`seed-atlas-locations`, `seed-icdb` — these seed reference/location data, not demo accounts) and one unrelated in-app "demo mode" (`ForYouFeed.tsx` — a hardcoded 4-card fallback shown to a *real* user when they run out of real swipe candidates, not a presentation/demo-account tool). **No demo-account-seeding or fixture-data infrastructure exists anywhere in this codebase.** This confirms, rather than just flags, that "data is deterministic" has no supporting mechanism today — whoever runs the demo will be working with whatever state the real account happens to be in at the time.
+- **Evidence required:** A decision on whether to build a lightweight demo-seed script before Aug 29, or accept using a real, carefully-curated account (this session's test account already has a rich, realistic Passport/credits/connections history that would demo well) as the de facto "demo account."
+- **Recommended action:** Given the short runway to Aug 29 and that a real, populated account already exists and works, building new seed infrastructure now is likely lower-value than: (a) picking one real account and treating it as the fixed demo account, (b) taking a data snapshot or screenshots of its current state as the "deterministic" reference, and (c) prioritizing the backup video and provider-outage rehearsal (both genuinely human tasks) over new seeding code this close to the deadline.
 
 #### 8.3 Prepare product narrative and visuals
 - **List:** List 8 — Demo, Documentation & Release
 - **URL:** https://trello.com/c/O6UhnaOI/60-prepare-product-narrative-and-visuals
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 1/4 fully resolved, 3/4 now evidenced via 2.3/6.2 plus fresh narrative-copy check
 - **Owner:** Jeff — CDO
 - **Due date:** 29 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — prepare screenshots, landing-page polish, product terminology and visual consistency for the submission. Scope — finalize the visual/narrative package, ensuring Passport reads as the core product. Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Passport is clearly the core product.
-  - [ ] Verified Credits and Co-Signs are explained correctly.
-  - [ ] UI is consistent across the four core surfaces.
-  - [ ] No obsolete ThriveIN branding appears in user-facing surfaces.
-- **Linked files/routes:** overlaps card 2.3 (Review Passport as core product) and 6.2 (cross-product UX pass). "No obsolete ThriveIN branding" is directly checkable in `src/`.
-- **Dependencies/blockers:** Depends on 2.3 and 6.2 landing first.
+- **Checklist 1/4 resolved, 3/4 evidenced with real findings (2026-08-20):**
+  - [ ] **Passport is clearly the core product — evidenced via card 2.3: 4/6 confirmed, but 2 real contradicting-statistics bugs found (100% vs 0% Passport-strength meters; redundant Kreto Action Center suggestions). Not a clean pass yet.**
+  - [ ] **Verified Credits and Co-Signs are explained correctly — MOSTLY accurate in-app, 1 real overclaim found in landing copy.**
+  - [ ] **UI is consistent across the four core surfaces — evidenced via card 6.2: 1 confirmed, 1 real regression (stray pre-migration #9413D2 violet). Not a clean pass yet.**
+  - [x] No obsolete ThriveIN branding appears in user-facing surfaces.
+- **Linked files/routes:** overlaps card 2.3 (Review Passport as core product) and 6.2 (cross-product UX pass). `src/components/landing/CoreValueBlocks.tsx`, `src/components/passport/*` (Co-signs tab copy), `src/pages/CreditVerify.tsx`, `src/components/passport/PassportHero.tsx` ("How Passport works" AI tour).
+- **Dependencies/blockers:** Depended on 2.3 and 6.2 landing first — both now complete (this session).
 - **Comments:** creation log only.
 - **Risk level:** P1 — brand/narrative coherence for submission.
-- **Implementation detail:** A repo-wide search for "thrivein" (case-insensitive) in `src/` found 20 matching files, but the ones spot-checked (`PWAInstallPrompt.tsx`, `NewsletterPopup.tsx`, `AuthPrompt.tsx`) use it only in internal `localStorage`/`sessionStorage` key names (e.g. `'thrivein-pwa-prompt-dismissed'`), not user-visible text — so this specific criterion looks likely satisfied for user-facing surfaces, though the full 20-file list was not exhaustively reviewed in this pass.
-- **Verification detail:** **RESOLVED (2026-08-18, this pass)**: completed the full sweep across all 34 files a fresh `grep -ril thrivein src/` actually returned (the board's count of 20 was stale relative to the current tree). 30 of 34 were storage keys/config identifiers/a legitimately-defensive reserved-subdomain-slug entry — all safe. **4 were real user/SEO-visible leaks**, all in the Magazine feature: `SceneHero.tsx`'s fallback article subtitle ("Read the latest from ThriveIN Magazine"), `MagazineEditor.tsx`'s default `author_name` written to every new article record, and `MagazineArticlePage.tsx`/`Magazine.tsx`'s `<title>`, meta description, `og:site_name`, and JSON-LD structured-data fields — the exact kind of surface (browser tab title, social-share previews, search-result snippets) this acceptance criterion is about. All 4 files fixed to say "Kretopia Magazine"; `tsc`/`build`/`test` (68/68) all clean after the change.
-- **Evidence required:** none remaining for this criterion.
-- **Recommended action:** Check this box off — the specific acceptance criterion ("No obsolete ThriveIN branding appears in user-facing surfaces") is now genuinely satisfied, not just likely-satisfied from a sample.
+- **Verification detail (ThriveIN branding, resolved 2026-08-18):** completed the full sweep across all 34 files a fresh `grep -ril thrivein src/` actually returned (the board's count of 20 was stale relative to the current tree). 30 of 34 were storage keys/config identifiers/a legitimately-defensive reserved-subdomain-slug entry — all safe. **4 were real user/SEO-visible leaks**, all in the Magazine feature: `SceneHero.tsx`'s fallback article subtitle ("Read the latest from ThriveIN Magazine"), `MagazineEditor.tsx`'s default `author_name` written to every new article record, and `MagazineArticlePage.tsx`/`Magazine.tsx`'s `<title>`, meta description, `og:site_name`, and JSON-LD structured-data fields — the exact kind of surface (browser tab title, social-share previews, search-result snippets) this acceptance criterion is about. All 4 files fixed to say "Kretopia Magazine"; `tsc`/`build`/`test` (68/68) all clean after the change.
+- **Verification performed 2026-08-20 (remaining 3 items):**
+  1. **"Passport is clearly the core product"** — this is exactly what card 2.3 tested live this session. Result: 4/6 confirmed (one dominant surface, identity/credits/skills visible, clear share action, clean mobile layout) but 2 real bugs found — see 2.3 for full detail. Cannot check this box until Bug A (the 100%/0% contradiction) is fixed; it's a visible, flagship-page trust problem.
+  2. **"Verified Credits and Co-Signs are explained correctly"** — checked both the in-app explanations and the public landing narrative. **In-app: accurate.** The Co-signs tab's 4 trust-state sections each carry a correct, plain-language one-liner directly under their headers ("Verified — Confirmed via a known platform, collaborator vouching, or Kretopia's review process"; "Pending — Waiting on a collaborator to confirm"; "Self-claimed — Added by you. Ask a collaborator to co-sign it to build trust"; "Publicly Sourced — Kreto found this from public information and you confirmed it's yours"). The `/credit-verify` confirmation page itself clearly states what accepting does ("Your confirmation becomes part of Kretopia's verified creative record"). None of this copy makes a claim the system doesn't back up. **Landing narrative: one real overclaim.** `CoreValueBlocks.tsx`'s Pillar 1 body reads: *"Collaborators co-sign each credit and Kretopia verifies it against public records, giving every artist... an un-falsifiable, portable work history they actually own."* Two problems, both confirmed against the actual RPC logic reviewed in card 2.2: (a) "un-falsifiable" overstates the guarantee — the primary "Verified" path is 2 accepted peer co-signs with no cross-reference to any public record at all, so two colluding accounts could in principle satisfy it; (b) "Kretopia verifies it against public records" describes the separate "Publicly Sourced" pathway (YouTube/Spotify auto-discovery), not the peer-co-sign mechanism the same sentence just described — the copy conflates two genuinely different verification pathways into one claim. This is marketing copy, not a functional bug, but it's exactly the kind of claim a Trello-card criterion titled "explained correctly" exists to catch.
+  3. **"UI is consistent across the four core surfaces"** — this is precisely what card 6.2 tested this session (Home/Passport/Scout/Studio, matching the bottom-nav's four tabs). Result: 1 item confirmed, 1 real regression found (a stray pre-rebrand `#9413D2` violet in `BrandDots.tsx`, `moodGradient.ts`, `GuestPassDialog.tsx`, `EventShareKit.tsx` against the now-established `#FF2DA1` pink accent used everywhere else). See 6.2 for full detail. Cannot check this box until that's fixed.
+- **Evidence required:** Fix card 2.3's Bug A (Passport-strength contradiction) and card 6.2's stray-violet regression before checking those two boxes. Soften or correct the "un-falsifiable" / "verifies it against public records" landing copy in `CoreValueBlocks.tsx` to describe the real, two-pathway mechanism (peer co-sign vs. public-record auto-discovery) without overclaiming either one.
+- **Recommended action:** None of these three are release-blocking on their own, but all three touch the same "Passport as the flagship, trustworthy core product" narrative this card exists to protect — worth clearing before demo/submission screenshots are taken, since 2.3's Bug A in particular would be visible in any screen recording of the Passport page.
 
 #### 8.4 Final full regression
 - **List:** List 8 — Demo, Documentation & Release

@@ -42,7 +42,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED — send-user-email auth gap found and fixed this session | Noé | 21 Aug, 02:00 |
 | 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (2/6 confirmed live; needs an unclaimed test record) | Noé | 21 Aug, 02:00 |
 | 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | 🔴 BLOCKED — P0 bug found, fix written not applied (3/5 confirmed live) | Noé | 22 Aug, 02:00 |
-| 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | NOT_STARTED | Jeff | 22 Aug, 02:00 |
+| 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; 2 real contradicting-statistics bugs found) | Jeff | 22 Aug, 02:00 |
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; EPK guest-access data question open) | Jeff | 23 Aug, 02:00 |
 | 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (4/4 confirmed live) | Noé | 23 Aug, 02:00 |
 | 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (5/5 confirmed) | Ethan | 24 Aug, 02:00 |
@@ -227,26 +227,34 @@ _(Cards appended incrementally, one list at a time.)_
 #### 2.3 Review Passport as the core product
 - **List:** List 2 — P0 Core Product Loop
 - **URL:** https://trello.com/c/4NCUXnRC/39-review-passport-as-the-core-product
-- **Status:** NOT_STARTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 4/6 confirmed live, 2 real contradicting-statistics bugs found and root-caused
 - **Owner:** Jeff — CDO (member: Jefferson Gordon-Lennox)
 - **Due date:** 22 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — ensure Passport is the clearest and strongest product surface. Scope — review the Passport page against other surfaces so it reads as the unambiguous core product. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] One dominant Passport surface.
-  - [ ] Roles, bio, credits, skills and trust status are immediately visible.
-  - [ ] No duplicate cards or repeated statistics.
-  - [ ] Share action is clear.
-  - [ ] Visibility settings are understandable.
-  - [ ] Mobile layout is clean.
-- **Linked files/routes:** `src/components/passport/*` (PassportHero, PassportCommandCenter, PassportAnchorStrip, PassportMomentum, etc.).
-- **Dependencies/blockers:** None declared; this is a UX/design review task, not a code-existence question.
+- **Checklist 4/6 confirmed, 2 failed with root cause (2026-08-20):**
+  - [x] One dominant Passport surface.
+  - [x] Roles, bio, credits, skills and trust status are immediately visible.
+  - [ ] **No duplicate cards or repeated statistics — FAILS, 2 confirmed bugs.**
+  - [x] Share action is clear.
+  - [~] Visibility settings are understandable — mixed: one real, narrow control exists; no whole-Passport privacy setting is reachable anywhere.
+  - [x] Mobile layout is clean.
+- **Linked files/routes:** `src/components/passport/PassportHero.tsx`, `src/components/passport/KretoActionCenter.tsx`, `src/components/agent/SurfaceProactiveCards.tsx`, `supabase/functions/surface-agent-watch/index.ts`, `src/components/profile/RateCardSection.tsx`, `src/components/profile/ProfileVisibilityDashboard.tsx` (dead), `src/pages/Settings.tsx`.
+- **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P1/P0-adjacent — UX coherence for the flagship surface, demo-critical.
-- **Implementation detail:** N/A — this is a design/UX review task, not an implementation task. Many Passport components exist (see 2.1), but whether they read as "one dominant surface" without duplication is a subjective design judgment call, not something a code grep can confirm.
-- **Verification detail:** No design review artifact (Figma link, before/after notes, screenshots) found attached to the card or in the repo docs skimmed so far.
-- **Evidence required:** A completed UX review note/screenshot set from Jefferson confirming the 6 acceptance criteria.
-- **Recommended action:** Awaiting owner (Jefferson) to perform and document the review; first-pass code check cannot substitute for this design judgment.
+- **Verification performed 2026-08-20**, live against an authenticated account (Ethan Auguste) at `/profile` (the real, single owner-facing Passport route):
+  1. **One dominant Passport surface — CONFIRMED.** `/profile` (`ProtectedRoute`) is the one editable Passport a signed-in user lands on; `/passport` is a separate public *directory* (browse other creators), and `/passport/:passportId` resolves an individual's public share view — distinct purposes, not competing "which page is my real Passport" surfaces. Confirmed via `App.tsx` route table, not just visual inspection.
+  2. **Roles, bio, credits, skills, trust status immediately visible — CONFIRMED.** One scroll from the top: name, ICDB-style id (`THR-EF429`), handle, role + up to 3 sub-role chips, location, live availability status, trust-level badge (`L2`), full bio, "Strongest Credits" (2 featured, verified), stamps/co-sign counts, and skill chips — all above the fold or one scroll down.
+  3. **No duplicate cards or repeated statistics — FAILS, 2 real bugs, both root-caused:**
+     - **Bug A — two contradicting completeness meters on the same page.** `PassportHero.tsx` renders "Passport Strength — 100%" (a live, correctly-computed client-side score from real profile/credit fields). A few screens below it, `KretoActionCenter.tsx` mounts `SurfaceProactiveCards`, which rendered an AI-generated nudge card reading "Your Passport is at 0%" — the *opposite* claim, on the same page, for the same account. Root cause found in `supabase/functions/surface-agent-watch/index.ts`'s `computeStrength()` (lines 273-284): it checks `p.primary_role` and `p.day_rate`, **neither of which exists as a column anywhere in the `profiles` table** (confirmed by a full grep of the generated Supabase types — zero matches for either name) — these two checks are permanently `undefined`/falsy for every user, silently zeroing 30 of the function's 100 possible points, and because generated `agent_proposals` rows are never invalidated/regenerated when the underlying profile improves (only a 45min client + 60min server throttle on *creating new* ones), a stale or structurally-undercounted score can sit on-screen directly contradicting the real, correct meter shown moments earlier. This is a genuine, live, currently-reproducing bug, not a hypothetical.
+     - **Bug B — redundant suggestion stacking inside Kreto Action Center itself.** The same underlying two actions are surfaced as six separate-looking prompts in one scroll: "Turn claimed experience into trusted experience / 12 credits could use a Co-Sign," then "Slipping. Add a recent credit or start a Studio to hold your standing," then "You qualify on score. Finish verification to claim Headliner" (banner) immediately followed by its own duplicate standalone row "Finish verification to claim Headliner," plus two more variants of the same "add a credit" nudge: "Add a recent credit to hold your standing" and "Add a credit from the last 90 days."
+     - **Observation, lower confidence — a possible duplicate credit record.** "ThriveXchange Bali 2022 Promo Video" (role: Creator) appears with three different presentations in the full credits list: once in "Strongest Credits" marked `Verified`, once near the top of the full list marked `Self-claimed · Request verify`, and once further down (dated 2023, source `youtube`) marked `Verified`. No dedup logic was found anywhere in the credits-rendering path (`PassportHero.tsx`, `PassportCommandCenter.tsx`). This reads as either the same credit rendered inconsistently or two un-merged rows (a manual self-claim plus an auto-discovered YouTube one) for the same real-world credit — flagged as observed, not confirmed via a direct DB query (Supabase MCP isn't authorized in this session).
+  4. **Share action is clear — CONFIRMED.** A single, prominent "Share Passport" button sits directly under the strength meter, with adjacent QR-code and export/download icon buttons, plus a further "Preview public Passport ↗" link lower on the page. No ambiguity about how to share.
+  5. **Visibility settings are understandable — MIXED, a real gap.** No whole-Passport "who can see this" privacy toggle exists anywhere reachable in the live app today. `src/pages/Settings.tsx` has its own code comments confirming this was deliberate, not missed: line 110, `// Privacy switches removed — were never persisted. Re-add when wired to backend.`, and line 746, `{/* Privacy toggles hidden for MVP — were never persisted (local state only). Re-add when wired to backend. */}`. A separate `ProfileVisibilityDashboard.tsx` component exists in the repo (profile-view-stats/search-appearance framing, not a privacy toggle) but is **never imported or rendered anywhere** — confirmed via a repo-wide grep for its name outside its own file — dead code, same class of finding as card 7.2's orphaned feedback widget. The one visibility control that *is* real, live, and well-designed is `RateCardSection.tsx`'s per-rate-card-entry selector (`public` / `connections` / `on_request`, with distinct icons and color-coded badges) — but it's scoped to individual rate line items, not the Passport as a whole.
+  6. **Mobile layout is clean — CONFIRMED.** Tested live at 375×812: `document.documentElement.scrollWidth === window.innerWidth` (no horizontal overflow), cards stack cleanly, text wraps correctly, bottom nav and primary CTA stay reachable. Bug A (the 100%/0% contradiction) reproduces identically on mobile — confirmed it's not a desktop-only rendering artifact.
+- **Evidence required:** Fix `computeStrength()` in `surface-agent-watch/index.ts` to check real columns (or drop the two dead checks and rescale), and add invalidation so a pending `passport_polish` proposal gets superseded once the real score changes meaningfully. Consolidate the 6 Kreto Action Center rows down to the 2-3 real underlying actions. Confirm whether the "ThriveXchange Bali 2022 Promo Video" entries are one record or a genuine duplicate needing a merge/dedup pass. Decide whether whole-Passport visibility settings are in scope for this release or explicitly deferred post-beta.
+- **Recommended action:** Bug A is the highest-priority item here — a flagship page contradicting its own headline statistic ("100%" vs "0%" for the same profile) is a visible, demo-risking trust problem, and the root cause (wrong column names) is a small, precise fix. Bugs B and the visibility gap are real but lower-severity UX/scope items suitable for a fast-follow rather than blocking release.
 
 #### 2.4 Test Passport sharing and public EPK
 - **List:** List 2 — P0 Core Product Loop

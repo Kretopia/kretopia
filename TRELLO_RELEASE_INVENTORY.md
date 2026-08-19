@@ -49,7 +49,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 3.3 Test hiring and opportunity-to-Studio handoff | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (core handoff confirmed live; card needs a checklist) | Noé | 25 Aug, 02:00 |
 | 4.1 Stabilize Studio New Project flow | List 4 — P0 Studio & Calls | ✅ VERIFIED (7/7 confirmed live) | Jeff | 23 Aug, 02:00 |
 | 4.2 Validate Studio core workspace | List 4 — P0 Studio & Calls | ✅ VERIFIED (3/4 confirmed live, 1 via precise code trace) | Noé | 25 Aug, 02:00 |
-| 4.3 Fix and test VideoCall | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Noé | 24 Aug, 02:00 |
+| 4.3 Fix and test VideoCall | List 4 — P0 Studio & Calls | 🟡 PARTIALLY_VERIFIED (3/7 confirmed; 4 need real hardware) | Noé | 24 Aug, 02:00 |
 | 4.4 Test SoundStages Speed Sessions and Auditions | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Ethan | 26 Aug, 02:00 |
 | 5.1 Test milestone payment lifecycle | List 5 — P0 Payments & Project Completion | PARTIALLY_IMPLEMENTED | Noé | 26 Aug, 02:00 |
 | 5.2 Test invoices and payout flows | List 5 — P0 Payments & Project Completion | PARTIALLY_IMPLEMENTED | Noé | 27 Aug, 02:00 |
@@ -414,27 +414,29 @@ _(Cards appended incrementally, one list at a time.)_
 #### 4.3 Fix and test VideoCall
 - **List:** List 4 — P0 Studio & Calls
 - **URL:** https://trello.com/c/zQ83fdZE/46-fix-and-test-videocall
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** 🟡 PARTIALLY_VERIFIED — the 2 security-critical items confirmed server-side; 4 client/hardware items not testable in this environment
 - **Owner:** Noé — CTO
 - **Due date:** 24 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test one-click call creation, incoming links, permissions, connection, retry, rejoin and cleanup. Scope — harden VideoCall against duplicate-call creation, permission edge cases, dropped connections. Dependencies: None.
-- **Checklist 0/7, all unchecked:**
-  - [ ] One click creates one call.
-  - [ ] Double-click cannot create duplicates.
-  - [ ] Camera and microphone permissions are explicit.
-  - [ ] Failed calls can be retried.
-  - [ ] Leaving stops media tracks.
-  - [ ] Unauthorized users cannot join.
-  - [ ] Rejoining does not corrupt call state.
-- **Linked files/routes:** `src/components/project/VideoCallSheet.tsx`; also see repo doc `LOVABLE_LANDING_VIDEOCALL_QA.md` (name suggests it may cover a different surface — landing page video, not necessarily Studio calls — needs confirming, not assumed equivalent).
+- **Checklist 3/7 confirmed via code trace (2026-08-19), 4 need real hardware to finish:**
+  - [x] One click creates one call.
+  - [x] Double-click cannot create duplicates.
+  - [ ] Camera and microphone permissions are explicit. *(not testable in this environment — see below)*
+  - [ ] Failed calls can be retried. *(not testable in this environment)*
+  - [x] Leaving stops media tracks. *(confirmed via SDK-standard cleanup pattern, not a live camera-light observation)*
+  - [x] Unauthorized users cannot join.
+  - [ ] Rejoining does not corrupt call state. *(not testable in this environment)*
+- **Linked files/routes:** `src/components/project/VideoCallSheet.tsx` (client UI — display-only, matching the pattern found on cards 3.2/3.3/4.1 where the real logic lives elsewhere), `src/lib/dailyFrame.ts` (frame lifecycle), **`supabase/functions/create-video-room/index.ts`** (the real call-creation + auth logic, not previously located).
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
-- **Risk level:** P0 — "Unauthorized users cannot join" is a genuine access-control/security criterion; "Leaving stops media tracks" is a privacy criterion (camera/mic left hot).
-- **Implementation detail:** `VideoCallSheet.tsx` exists as the core call UI. Only one dedicated VideoCall component was found via this pass's grep, which is a thin surface for the number of edge cases (7) this card lists — worth confirming there isn't a second call-session/state-management module elsewhere (e.g., a hook or edge function) that wasn't matched by filename.
-- **Verification detail:** No evidence found of retry/rejoin/duplicate-call-prevention logic being exercised or the two security-relevant criteria (unauthorized join, leaving-stops-tracks) being confirmed.
-- **Evidence required:** Locate call-session state management code (likely a hook and/or edge function beyond `VideoCallSheet.tsx`) and confirm duplicate-call and unauthorized-join protections exist server-side, not just client-side.
-- **Recommended action:** Treat the two security-flavored criteria (unauthorized join, media-track cleanup on leave) as highest priority to verify before demo day, given they're the closest to genuine security bugs on this card.
+- **Risk level:** P0 — "Unauthorized users cannot join" is a genuine access-control/security criterion; "Leaving stops media tracks" is a privacy criterion (camera/mic left hot). Both are resolved well.
+- **Verification performed 2026-08-19 (code trace — real WebRTC calls need a camera/mic this remote browser environment doesn't have, so this card's remaining 4 items could not be live-tested honestly; the two most safety-critical items were fully resolvable via code, which is the right place to look for them anyway):**
+  1. **Unauthorized users cannot join — CONFIRMED, server-enforced.** `create-video-room/index.ts` verifies the caller's JWT (`supabase.auth.getClaims`), then calls a real RPC (`user_has_project_access`) before minting anything — returns a hard 403 if the caller isn't a project member. The Daily.co room itself is created `privacy: "private"` with `enable_knocking: false` — meaning the *only* way in is a per-user meeting token that can only be minted after that same server-side access check. Not a client-side gate that could be bypassed by hitting the room URL directly.
+  2. **One click creates one call / Double-click cannot create duplicates — CONFIRMED, by design not by luck.** The Daily room name is deterministic (`td-{project_id}`), so a second call to this function for the same project doesn't create a second room — Daily's API returns 409 "already exists," which the function explicitly handles by PATCHing/fetching the *existing* room instead of erroring or duplicating. Structurally idempotent, not reliant on a client-side debounce.
+  3. **Leaving stops media tracks — reasonably confirmed via code, not a live camera-light check.** Every exit path (explicit leave button, the `left-meeting` Daily event, error paths) calls `destroyExistingDailyFrameAsync()` in `dailyFrame.ts`, which calls the Daily call object's own `.leave()` then `.destroy()` — the SDK-documented, correct way to release local media tracks. This is the right pattern; confirming the camera indicator light actually turns off would need a real device.
+  4. **Camera/mic permissions, retry, rejoin — not exercised.** These are inherently hardware/browser-permission-dependent (real `getUserMedia` prompts, a real dropped connection to retry, a real second join to test state) and this session's remote browser has no camera/microphone to grant — attempting to fake this would produce a false "confirmed."
+- **Recommended action:** Check off the 3 code-confirmed boxes now. The remaining 4 need a human with a real device (or a Playwright/Cypress run with `--use-fake-device-for-media-stream` in CI) — flag to Noé as needing an actual manual pass before demo day, since this is exactly the class of bug ("looks fine until two people actually join a real call") that a code review alone can't catch.
 
 #### 4.4 Test SoundStages Speed Sessions and Auditions
 - **List:** List 4 — P0 Studio & Calls

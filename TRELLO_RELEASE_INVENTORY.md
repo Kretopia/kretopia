@@ -40,7 +40,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 1.2 Confirm production migrations and schema integrity | List 1 — P0 Security & Release Gate | IMPLEMENTED_NOT_VERIFIED | Noé | 19 Aug, 02:00 |
 | 1.3 Audit authentication and legacy user access | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 20 Aug, 02:00 |
 | 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 21 Aug, 02:00 |
-| 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | IMPLEMENTED_NOT_VERIFIED | Noé | 21 Aug, 02:00 |
+| 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | PARTIALLY_IMPLEMENTED (2/6 confirmed live) | Noé | 21 Aug, 02:00 |
 | 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | PARTIALLY_IMPLEMENTED | Noé | 22 Aug, 02:00 |
 | 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | NOT_STARTED | Jeff | 22 Aug, 02:00 |
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | IMPLEMENTED_NOT_VERIFIED | Jeff | 23 Aug, 02:00 |
@@ -177,26 +177,29 @@ _(Cards appended incrementally, one list at a time.)_
 #### 2.1 Test Search → Passport end-to-end
 - **List:** List 2 — P0 Core Product Loop
 - **URL:** https://trello.com/c/dDKqG6xw/37-test-search-%E2%86%92-passport-end-to-end
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** PARTIALLY_IMPLEMENTED
 - **Owner:** Noé — CTO
 - **Due date:** 21 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test claimed Passport, unclaimed record, no result, email verification, credit confirmation flows. Scope — validate the full Search-to-Passport journey across every entry state a user can land in. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] Search results load correctly.
+- **Checklist 2/6 confirmed by live walkthrough (2026-08-19):**
+  - [x] Search results load correctly.
   - [ ] Users can claim a record.
-  - [ ] Users can create a Passport when no record exists.
+  - [x] Users can create a Passport when no record exists.
   - [ ] AI-generated content is editable.
   - [ ] No credit is silently invented.
   - [ ] Users can confirm, edit or remove generated content.
-- **Linked files/routes:** none attached; corresponds to `src/pages/SearchResults.tsx`, `src/components/search/*`, `src/components/passport/*`, `src/pages/PassportDirectory.tsx`.
+- **Linked files/routes:** `src/components/search/SearchV2.tsx`, `src/components/search/UnifiedSearchDropdown.tsx`, `src/pages/ViewProfile.tsx`, `src/components/home/UnifiedHome.tsx` (`handleHeroClaimSearch`), `src/pages/Auth.tsx`.
 - **Dependencies/blockers:** None declared; functionally depends on Verified Credits behavior (card 2.2) and AI-generation guardrails.
 - **Comments:** creation log only.
 - **Risk level:** P0 — core product loop.
-- **Implementation detail:** Substantial Passport and Search code exists in the repo (`src/components/passport/` has 8+ components including `PassportHero.tsx`, `PassportCommandCenter.tsx`, `KretoPassportBuilder.tsx`; `src/components/search/SearchV2.tsx`, `UnifiedSearchDropdown.tsx`; `src/pages/SearchResults.tsx`). This is first-pass code-existence confirmation only, not a functional trace of the claim/create/edit/confirm flows.
-- **Verification detail:** No evidence found of an executed end-to-end test pass; Trello checklist is 0/6.
-- **Evidence required:** A recorded manual or automated E2E run covering all 4 entry states (claimed / unclaimed / no-result / new-Passport-creation) plus a check that AI-generated credit content cannot be silently fabricated.
-- **Recommended action:** Run the described QA pass; this is a testing gap, not obviously a missing-feature gap.
+- **Live walkthrough performed 2026-08-19** (real browser, both authenticated and guest sessions — guest tested via the reversible localStorage-token-swap technique, session restored afterward, never signed out):
+  1. **Search results load correctly — CONFIRMED.** Authenticated in-app global search (`/search`) for a 1-character query correctly shows nothing (below the 2-char threshold); a real query ("an") returned a well-organized result set — top match card with name/role/location/bio, a distinct "Other potential matches" section, and a separate "Creative Work" (credits) section. A genuinely-nonexistent query correctly showed a clean "No results found" empty state, not an error or blank screen.
+  2. **Users can create a Passport when no record exists — CONFIRMED, and well-built.** This flow lives on the **guest landing page** search (not the authenticated in-app `/search`) — `KretopiaHero`'s search calls `handleHeroClaimSearch` in `UnifiedHome.tsx`, which runs a real `search-credits-web` edge-function query, stores the query+results as `claim_intent` in sessionStorage (even on a failed/empty search, via the `catch` branch), and unconditionally routes to `/auth?tab=signup&claim=1&q=<query>`. Live-tested as a guest with a genuinely nonexistent name ("Xyztotallynewname"): landed on the real 3-step signup flow (Sign up → First Stamp → Launch Passport) with a clear "Nothing found for '...'" message, "New to the scene? No problem — just sign up and we'll build your profile from scratch. Or paste a portfolio link (IMDb, Behance, Spotify, your site)" copy, a primary "Just sign me up" CTA, and a "Paste a link" alternative for auto-import — exactly the acceptance criterion, genuinely implemented, not just plausible from reading the code. (Did not complete an actual signup — that would create a real throwaway account; the routing + messaging is what needed verifying, and both are confirmed.)
+  - Correctly scoped this criterion to the guest entry point rather than the authenticated in-app search: an already-authenticated user's own zero-results search reasonably has no "create Passport" CTA (they already have one) — confirmed this is not a bug by reading `UnifiedSearchDropdown.tsx`'s empty-state block (lines ~966-975), which has no such CTA on the authenticated path.
+- **Not yet verified this pass:** the actual "claim a record" flow for a genuinely *unclaimed* record specifically (the one profile clicked into, `crystal.sankar22`, already had a `VERIFIED` badge and full data — i.e. it read as an already-claimed account, not an unclaimed one waiting to be claimed); AI-generated-content editability; the "no credit silently invented" guarantee; confirm/edit/remove controls on generated content. These need a genuinely-unclaimed test record to exercise, which wasn't identified in this pass.
+- **Minor, unconfirmed cosmetic note:** a bare "0" rendered briefly below the bio on the post-search "You're matched!" transition view (`ViewProfile.tsx`) that did not reproduce on a direct page reload — likely a transient render-order quirk tied to the match-celebration transition state, not chased further since it didn't reproduce and isn't part of this card's acceptance criteria.
+- **Recommended action:** Find or seed one genuinely unclaimed profile record to exercise the remaining 4 checklist items (claim flow, AI-content editability, anti-fabrication guarantee, confirm/edit/remove controls) — the two criteria tested this pass are both genuinely confirmed working, not just present in code.
 
 #### 2.2 Validate Verified Credits and Co-Signs
 - **List:** List 2 — P0 Core Product Loop

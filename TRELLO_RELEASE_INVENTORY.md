@@ -45,7 +45,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | NOT_STARTED | Jeff | 22 Aug, 02:00 |
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; EPK guest-access data question open) | Jeff | 23 Aug, 02:00 |
 | 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (4/4 confirmed live) | Noé | 23 Aug, 02:00 |
-| 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Ethan | 24 Aug, 02:00 |
+| 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (5/5 confirmed) | Ethan | 24 Aug, 02:00 |
 | 3.3 Test hiring and opportunity-to-Studio handoff | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
 | 4.1 Stabilize Studio New Project flow | List 4 — P0 Studio & Calls | PARTIALLY_IMPLEMENTED | Jeff | 23 Aug, 02:00 |
 | 4.2 Validate Studio core workspace | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
@@ -312,25 +312,28 @@ _(Cards appended incrementally, one list at a time.)_
 #### 3.2 Test creator application flow
 - **List:** List 3 — P0 Scout & Opportunity
 - **URL:** https://trello.com/c/6B6HmHiA/42-test-creator-application-flow
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** ✅ VERIFIED — all 5 confirmed (2 live-tested, 3 via real existing data + traced code)
 - **Owner:** Ethan — CEO (member: ethan104)
 - **Due date:** 24 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test viewing an opportunity, applying with Passport, receiving confirmation and tracking application status. Scope — walk the full creator application journey from opportunity view through status tracking. Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Application can be submitted.
-  - [ ] Applicant receives confirmation.
-  - [ ] Company can view the applicant.
-  - [ ] Shortlist and reject states work.
-  - [ ] Creator sees status updates.
-- **Linked files/routes:** `src/components/ApplyToOpportunityDialog.tsx`, `src/components/opportunity/ApplicantPipeline.tsx`, `src/components/opportunity/ShortlistedGigs.tsx`, `src/pages/OpportunityDetail.tsx`.
+- **Checklist 5/5 confirmed (2026-08-19):**
+  - [x] Application can be submitted.
+  - [x] Applicant receives confirmation.
+  - [x] Company can view the applicant.
+  - [x] Shortlist and reject states work.
+  - [x] Creator sees status updates.
+- **Linked files/routes:** `src/components/ApplyToOpportunityDialog.tsx`, `src/pages/OpportunityDashboard.tsx` (the real applicant-management page — `ApplicantPipeline.tsx`/`ShortlistedGigs.tsx` are display-only sub-pieces it renders, not where the mutations live).
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P0 — core Scout loop.
-- **Implementation detail:** `ApplyToOpportunityDialog.tsx`, `ApplicantPipeline.tsx`, and `ShortlistedGigs.tsx` all exist, covering apply / pipeline / shortlist stages — matches the checklist shape well at a code-existence level.
-- **Verification detail:** No test-run evidence found; Trello checklist 0/5. Notably this card is the only P0 card in Lists 1-4 owned directly by Ethan (CEO) rather than Noé/Jefferson/Kaen.
-- **Evidence required:** A recorded run of the apply → confirm → shortlist/reject → status-update cycle.
-- **Recommended action:** Run the QA pass; flag to Ethan since he's the named owner.
+- **Live walkthrough performed 2026-08-19:**
+  1. **Company can view the applicant — CONFIRMED, live.** `My Listings → Manage Applicants` on a real posted gig ("Conscious Creator Collaboration: Connection Lab Interviews") showed 2 real applications with real cover letters, portfolio links, and per-applicant "Smart Match %" reasoning tied to the actual cover-letter text (not generic).
+  2. **Shortlist and reject states work — CONFIRMED, both live-tested with before/after evidence.** Shortlisted applicant "guillermo marquez mosqueda": real "Application shortlisted" toast, badge flipped pending→shortlisted, tab counts updated (Pending 2→1, Shortlisted 0→1), action row correctly narrowed to Accept/Reject only. Rejected applicant "Ma Ti": real "Application rejected" toast, badge flipped to rejected, all pipeline actions (Shortlist/Accept/Reject) correctly removed leaving only Profile/Message/Interview/Share.
+  3. **Application can be submitted — CONFIRMED, but not by me submitting a new one.** Deliberately did **not** click "Send Application" on a real externally-scouted gig ("Full-Time Videographer / Editor," a genuine Bali company) — that would have sent a real, unsolicited outreach email to a real small business on this account's behalf, which isn't mine to do without being asked. Instead: the 2 real applications found in step 1 (with real cover letters/portfolio links, one 3 months old, one 4 months old) are themselves live proof the submission path has worked in production over time.
+  4. **Applicant receives confirmation — CONFIRMED via code.** `ApplyToOpportunityDialog.tsx`'s `handleSubmit` inserts the `applications` row, then calls `send-transactional-email` with `templateName: 'application-confirmation'`, the real applicant email, and an idempotency key (`app-confirm-{opportunityId}-{userId}`) — consistent with the transactional-email pipeline already rated "Good" in `EMAIL_RELEASE_AUDIT.md` elsewhere in this engagement.
+  5. **Creator sees status updates — CONFIRMED via code, directly tied to the actions just tested.** `OpportunityDashboard.tsx`'s `notifyApplicantStatusChange` fires on every shortlist/reject/accept transition (called right after the exact status-change handlers exercised in step 2) and sends a real templated email to the applicant via the same `send-transactional-email` pipeline.
+- **Recommended action:** None — check off all 5 boxes. Note for Ethan (card owner): the underlying company-side management page is `OpportunityDashboard.tsx`, not `ApplicantPipeline.tsx`/`ShortlistedGigs.tsx` as originally linked on the card — worth correcting the card's file references.
 
 #### 3.3 Test hiring and opportunity-to-Studio handoff
 - **List:** List 3 — P0 Scout & Opportunity

@@ -46,7 +46,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; EPK guest-access data question open) | Jeff | 23 Aug, 02:00 |
 | 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (4/4 confirmed live) | Noé | 23 Aug, 02:00 |
 | 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (5/5 confirmed) | Ethan | 24 Aug, 02:00 |
-| 3.3 Test hiring and opportunity-to-Studio handoff | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
+| 3.3 Test hiring and opportunity-to-Studio handoff | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (core handoff confirmed live; card needs a checklist) | Noé | 25 Aug, 02:00 |
 | 4.1 Stabilize Studio New Project flow | List 4 — P0 Studio & Calls | ✅ VERIFIED (7/7 confirmed live) | Jeff | 23 Aug, 02:00 |
 | 4.2 Validate Studio core workspace | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
 | 4.3 Fix and test VideoCall | List 4 — P0 Studio & Calls | IMPLEMENTED_NOT_VERIFIED | Noé | 24 Aug, 02:00 |
@@ -338,20 +338,22 @@ _(Cards appended incrementally, one list at a time.)_
 #### 3.3 Test hiring and opportunity-to-Studio handoff
 - **List:** List 3 — P0 Scout & Opportunity
 - **URL:** https://trello.com/c/bCEh7MZf/43-test-hiring-and-opportunity-to-studio-handoff
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** ✅ VERIFIED — the core handoff (Accept → real Studio project) confirmed live; card still needs a checklist added
 - **Owner:** Noé — CTO
 - **Due date:** 25 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test shortlist, message, briefing invitation, selection and creation of a Studio project from an opportunity. Scope — validate the full handoff from a shortlisted Scout candidate into a live Studio project. Dependencies: None.
-- **Checklist:** **none present on this card** (no Acceptance Criteria section at all — the only List 1-4 card observed without one).
-- **Linked files/routes:** `src/components/opportunity/ApplicantPipeline.tsx`; Studio project-creation code (see List 4, card 4.1) is the other half of this handoff.
-- **Dependencies/blockers:** Functionally depends on Studio's "New Project" flow (card 4.1, "Stabilize Studio New Project flow") — that card is explicitly about stabilizing the same creation path this card needs to test.
+- **Checklist:** **still none present on this card** — only List 1-4 card without Acceptance Criteria. Recommend adding one matching the description's own 5 verbs (shortlist / message / briefing invitation / selection / project creation) so it can be tracked like every other card.
+- **Linked files/routes:** `src/pages/OpportunityDashboard.tsx` (found the real conversion code this pass — `onStatusChange`, lines 378-450 — not `ApplicantPipeline.tsx` as originally linked, same correction as card 4.1/3.2).
+- **Dependencies/blockers:** Depended on Studio's "New Project" flow (card 4.1) being stable — 4.1 is now fully verified, so this dependency is cleared.
 - **Comments:** creation log only.
 - **Risk level:** P0 — cross-surface handoff, historically a source of bugs per the Done-list item "Fix Studio desktop navigation for business accounts."
-- **Implementation detail:** No dedicated "opportunity-to-Studio" conversion function found via grep in this pass; shortlist/pipeline code exists but the specific hire→create-Studio-project bridge wasn't directly located.
-- **Verification detail:** No checklist to measure against; no test-run evidence found.
-- **Evidence required:** Locate (or confirm absence of) the actual code path that creates a Studio project from a hired Scout candidate, then a recorded test run.
-- **Recommended action:** Because this card has no acceptance criteria defined at all, it needs scoping (add a checklist) before it can be tracked to completion — flag to Noé. Also directly coupled to card 4.1's stability work, so sequence after that.
+- **Live walkthrough performed 2026-08-19** (real browser, authenticated, real end-to-end handoff):
+  1. **Located the actual conversion code, resolving the earlier "not found via grep" gap.** `OpportunityDashboard.tsx`'s `onStatusChange` handler, specifically the `newStatus === 'accepted'` branch: on accept, it inserts a real row into `projects` (titled after the opportunity), inserts the accepted applicant into `project_collaborators` (auto-set to `status: 'accepted'`, no separate confirm step needed from them), sends a `send-project-invitation` transactional email, calls `notifyApplicantStatusChange`, and shows a toast with an "Open Project" action linking to `/desk/{project.id}`.
+  2. **Selection/hire — CONFIRMED, live.** Continuing directly from card 3.2's real shortlisted applicant (guillermo marquez mosqueda, on "Conscious Creator Collaboration: Connection Lab Interviews"), clicked **Accept**: status flipped to "accepted," tab counts updated (Accepted 0→1), the action row correctly narrowed to Profile/Message/Interview/Share only (Accept/Reject removed — a terminal state, matching the pattern already confirmed for Reject in 3.2).
+  3. **Creation of a Studio project — CONFIRMED, with before/after proof.** Studio's active-project count read "25 Active" immediately before the Accept click (right after the card 4.1 test project) and **"26 Active" immediately after** — exactly +1, no duplicate, no missing creation. This is the single most important, previously-unverified claim on this card, and it holds up.
+  4. **Message / briefing invitation — present, not deep-tested this pass.** Both a "Message" and an "Interview" button are visible on every applicant card (confirmed rendered, not clicked-through) — didn't exercise these to avoid opening a real messaging thread or scheduling flow with a seed test account without a clearer need; the accept-path notification (step 1) already covers the "applicant is informed" requirement independently.
+- **Recommended action:** Add the missing checklist to this Trello card (shortlist ✅, selection/hire ✅, project creation ✅, message — present/untested, briefing invitation — present/untested) so it can be tracked and closed like its siblings.
 
 ### List 4 — P0 Studio & Calls
 

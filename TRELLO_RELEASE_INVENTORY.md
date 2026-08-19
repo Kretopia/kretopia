@@ -59,7 +59,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 6.3 Optimize Today command center | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/6 confirmed; empty states need a zero-data account) | Jeff | 27 Aug, 02:00 |
 | 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (4/7 confirmed live at 375px; 1 minor touch-target finding) | Jeff | 28 Aug, 02:00 |
 | 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 28 Aug, 02:00 |
-| 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | IMPLEMENTED_NOT_VERIFIED | Ethan | 28 Aug, 02:00 |
+| 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | 🔴 BLOCKED — feedback widget is unreachable (3/4 confirmed) | Ethan | 28 Aug, 02:00 |
 | 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 29 Aug, 02:00 |
 | 8.1 Prepare the core product demo | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 29 Aug, 02:00 |
 | 8.2 Prepare technical demo environment | List 8 — Demo, Documentation & Release | NOT_STARTED | Noé | 29 Aug, 02:00 |
@@ -672,24 +672,27 @@ _(Cards appended incrementally, one list at a time.)_
 #### 7.2 Add bug reporting and feedback
 - **List:** List 7 — P1 Analytics, Safety & Feedback
 - **URL:** https://trello.com/c/yCatYiHz/56-add-bug-reporting-and-feedback
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** 🔴 BLOCKED — P1 bug found: the feedback widget is currently unreachable by any user
 - **Owner:** Ethan — CEO
 - **Due date:** 28 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — ensure beta users can report bugs, content, users and suggestions. Scope — add an easy-to-find feedback entry point that captures route/context automatically and reliably. Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Feedback entry point is easy to find.
-  - [ ] Bug reports include route and context.
-  - [ ] User and content reporting exists.
-  - [ ] Feedback is stored or delivered reliably.
-- **Linked files/routes:** `src/components/FeedbackWidget.tsx`, `src/pages/FeedbackAdmin.tsx`, `src/components/admin/FeedbackTab.tsx`, `src/components/user/ReportBlockDialog.tsx`.
-- **Dependencies/blockers:** None declared.
+- **Checklist 3/4 confirmed, 1 confirmed BROKEN (2026-08-19):**
+  - [ ] **Feedback entry point is easy to find — FALSE. It doesn't exist at all right now.**
+  - [x] Bug reports include route and context.
+  - [x] User and content reporting exists (a separate mechanism — see below).
+  - [x] Feedback is stored or delivered reliably (the backend, if ever reached).
+- **Linked files/routes:** `src/components/FeedbackWidget.tsx` (line 123: `{/* FAB removed — feedback is now opened from the hamburger menu via the "open-feedback" event */}`), `src/components/Navbar.tsx` (line 444-445, a comment claiming the same thing), `supabase/functions/feedback-chat/index.ts`.
+- **Dependencies/blockers:** None declared. Likely regressed during the menu-cleanup work referenced in Navbar.tsx's own comment ("Settings and Support sections removed from this menu by request").
 - **Comments:** creation log only.
-- **Risk level:** P1.
-- **Implementation detail:** This card's acceptance criteria map almost one-to-one onto existing components: `FeedbackWidget.tsx` (entry point), `FeedbackAdmin.tsx`/`FeedbackTab.tsx` (storage/delivery), `ReportBlockDialog.tsx` (user/content reporting) — the strongest code-existence match of any card in this list.
-- **Verification detail:** No evidence found confirming the widget actually auto-captures route/context on submission, or that it's discoverable ("easy to find") in current placement — these are UX/behavior details a filename match can't confirm.
-- **Evidence required:** A quick manual check that `FeedbackWidget.tsx` is mounted globally (not just on select pages) and that submitted reports include the current route.
-- **Recommended action:** Very likely close to done given the component match — verify placement/route-capture and check off.
+- **Risk level:** P1 — for a **beta** product, a broken feedback loop is a real problem: real users hitting real bugs currently have no in-app way to tell anyone.
+- **Verification performed 2026-08-19 — code trace, then live-confirmed:**
+  1. **Bug reports include route and context — CONFIRMED.** `FeedbackWidget.tsx` captures `pageUrl: window.location.pathname` and sends it with every message to the `feedback-chat` edge function.
+  2. **Feedback is stored reliably — CONFIRMED, if reached.** `feedback-chat/index.ts` inserts every submission into a real `feedback` table with error logging on failure — a solid backend, genuinely built end-to-end.
+  3. **User and content reporting exists — CONFIRMED, via a separate, correctly-wired mechanism.** `ReportBlockDialog.tsx` (not the feedback widget) is reachable from 3 real live surfaces: `UserActionMenu.tsx`, `VideoCallSheet.tsx` (in-call report/block), and `SpeedActionRail.tsx` — this criterion doesn't depend on the broken widget at all.
+  4. **Feedback entry point is easy to find — CONFIRMED FALSE, a real regression.** `FeedbackWidget.tsx`'s own code comment says the floating action button was deliberately removed in favor of a hamburger-menu item dispatching an `"open-feedback"` custom event. Grepped the **entire** `src/` tree for any `dispatchEvent`/`CustomEvent` call for `"open-feedback"`: **zero matches, anywhere.** Live-confirmed by opening the actual hamburger menu and reading every item top to bottom (Account, Workspace, Explore, More, Sign Out) — no "Feedback" entry exists. The widget's own `window.addEventListener("open-feedback", ...)` is registered and waiting, but nothing in the entire app ever fires that event. The feature is fully built and would work correctly — it's just currently unreachable by any user, beta or otherwise.
+- **Evidence required:** None — root cause is fully identified. Needs a one-line fix: add a "Feedback" `MenuButton` to `Navbar.tsx`'s hamburger menu that dispatches `window.dispatchEvent(new CustomEvent("open-feedback"))`.
+- **Recommended action:** Flag to Ethan (card owner) as a real, fully-diagnosed bug, not just an unverified claim — the fix is small and precise (one menu item), not a rebuild.
 
 #### 7.3 Trust and safety review
 - **List:** List 7 — P1 Analytics, Safety & Feedback

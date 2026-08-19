@@ -43,7 +43,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | PARTIALLY_IMPLEMENTED (2/6 confirmed live) | Noé | 21 Aug, 02:00 |
 | 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | 🔴 BLOCKED — P0 bug found, fix written not applied (3/5 confirmed live) | Noé | 22 Aug, 02:00 |
 | 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | NOT_STARTED | Jeff | 22 Aug, 02:00 |
-| 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | IMPLEMENTED_NOT_VERIFIED | Jeff | 23 Aug, 02:00 |
+| 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; EPK guest-access data question open) | Jeff | 23 Aug, 02:00 |
 | 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Noé | 23 Aug, 02:00 |
 | 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Ethan | 24 Aug, 02:00 |
 | 3.3 Test hiring and opportunity-to-Studio handoff | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
@@ -256,21 +256,28 @@ _(Cards appended incrementally, one list at a time.)_
 #### 2.4 Test Passport sharing and public EPK
 - **List:** List 2 — P0 Core Product Loop
 - **URL:** https://trello.com/c/fma8deCh/40-test-passport-sharing-and-public-epk
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** 🟡 PARTIALLY_VERIFIED — share modal solid (4/6), public EPK access needs a data-integrity check (see below)
 - **Owner:** Jeff — CDO (member: Jefferson Gordon-Lennox)
 - **Due date:** 23 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test centered Share Passport modal, Copy Link, WhatsApp, LinkedIn, X, Email, QR and public EPK page. Scope — validate every sharing channel from the Passport share modal and confirm the resulting public page. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] Modal opens centered.
-  - [ ] Escape and overlay close work.
-  - [ ] Share URLs are correct.
-  - [ ] QR code works.
-  - [ ] Public EPK uses correct Kretopia branding.
-  - [ ] Private fields never leak.
-- **Linked files/routes:** `src/components/passport/PassportShareSheet.tsx`, `src/components/profile/ProfileShareModal.tsx`, `src/pages/CreatorEPK.tsx`, `src/components/epk/EPKShareToolbar.tsx`, `src/lib/epkPdfGenerator.ts`. Also see repo doc `PASSPORT_SHARE_QA.md`.
+- **Checklist 4/6 confirmed (2 by an earlier live QA pass documented in `PASSPORT_SHARE_QA.md`, 2 more by a fresh live pass 2026-08-19):**
+  - [x] Modal opens centered. *(PASSPORT_SHARE_QA.md, live-verified.)*
+  - [x] Escape and overlay close work. *(PASSPORT_SHARE_QA.md, live-verified — Escape confirmed closing.)*
+  - [x] Share URLs are correct. *(PASSPORT_SHARE_QA.md — every href inspected directly: real `linkedin.com/sharing/share-offsite`, `twitter.com/intent/tweet`, `wa.me`, `mailto:` links.)*
+  - [x] QR code works. *(PASSPORT_SHARE_QA.md — real `<svg>` with correct `<title>`, correct `aria-label` toggle.)*
+  - [ ] Public EPK uses correct Kretopia branding — **confirmed correct where reachable**, see below.
+  - [ ] Private fields never leak — **no leak found in the code path checked**, see below.
+- **Linked files/routes:** `src/components/passport/PassportShareSheet.tsx`, `src/components/profile/ProfileShareModal.tsx`, `src/pages/CreatorEPK.tsx`, `src/components/epk/EPKShareToolbar.tsx`, `src/lib/epkPdfGenerator.ts`. RLS: `public.public_profiles_safe` view + `"Public discovery via safe view"` policy (`supabase/migrations/20260408214234_fa20e89a-c261-4faf-a061-12107eb686be.sql`). Also see repo doc `PASSPORT_SHARE_QA.md`.
 - **Dependencies/blockers:** None declared. "Private fields never leak" overlaps with the general security audit (card 1.1) — a privacy-leak finding here would be P0.
 - **Comments:** creation log only (18 Aug 2026, 09:03 — this card was added slightly later than its siblings, ~8 min after).
+- **Live walkthrough performed 2026-08-19 (public EPK page, `/epk/:userId`), plus RLS trace:**
+  1. Tried loading the public EPK for two different real, populated accounts as a true unauthenticated guest (reversible localStorage-token-swap technique) — **both returned "Profile Not Found — This creator profile doesn't exist or is not public."** One was the QA account itself (heavily populated: 51 stamps, 39 verified); the other was `crystal.sankar22`, a genuinely `VERIFIED`, search-discoverable creator profile.
+  2. Traced the anon-access gate: `profiles` RLS for the `anon` role requires `onboarding_completed = true` (`"Public discovery via safe view"` policy). Reloading the exact same `crystal.sankar22` EPK URL **while authenticated** rendered correctly — real data, correct "VERIFIED CREATIVE PASSPORT" badge, correct "Kretopia Credits" badge, correct **"Powered by Kretopia"** footer branding (no ThriveIN references), no email/phone/other clearly-sensitive PII visible on the card.
+  3. **Branding — CONFIRMED correct** on the one page render I could reach (authenticated). Column-level review of `CreatorEPK.tsx`'s actual `profiles` select (`user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, ... rate_range, is_claimed, ...`) shows a deliberately curated field list with no `email`, `phone`, or similarly sensitive column requested — **no leak found in the query itself**, whether via the safe view or the base table.
+  4. **The real open question:** *why did two different real, non-trivial accounts both fail the `onboarding_completed = true` guest gate?* If this flag is broadly `false` for real/active accounts (as opposed to just these two specific test accounts), the entire "share your EPK with a client who doesn't have a Kretopia account" flow — the actual point of a public EPK link — would be unusable at launch, even though the share modal itself works perfectly. Could not confirm which case this is without direct DB read access this session.
+- **Evidence required:** A quick DB check (`SELECT count(*) FILTER (WHERE onboarding_completed), count(*) FROM profiles WHERE is_claimed = true` or similar) to see whether `onboarding_completed` is actually being set true for real/active creators, or whether it's a stale/unused flag from an earlier onboarding-flow design that the current signup flow never sets.
+- **Recommended action:** Branding + no-obvious-leak can be checked off. Before checking off the full card, confirm `onboarding_completed` is set correctly for real accounts — if it's mostly `false`, either fix whatever should be setting it, or change the EPK anon-gate to a more meaningful condition (e.g. `is_claimed = true` or `verification_status = 'verified'`), since right now a "verified" creator's EPK can still be unreachable by the exact audience — clients without an account — it exists to serve.
 - **Risk level:** P0 — one item ("Private fields never leak") is a genuine security/privacy concern, not just polish.
 - **Implementation detail:** Share/EPK code exists (share sheet, share modal, EPK page, PDF generator, share toolbar). A repo doc `PASSPORT_SHARE_QA.md` exists at the root, suggesting prior QA work specifically on this feature was at least started.
 - **Verification detail:** Did not open `PASSPORT_SHARE_QA.md` in this pass to confirm its currency/completeness against this exact checklist — flagged as the fastest next step. Trello checklist itself is 0/6.

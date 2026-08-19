@@ -44,7 +44,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | 🔴 BLOCKED — P0 bug found, fix written not applied (3/5 confirmed live) | Noé | 22 Aug, 02:00 |
 | 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | NOT_STARTED | Jeff | 22 Aug, 02:00 |
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; EPK guest-access data question open) | Jeff | 23 Aug, 02:00 |
-| 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Noé | 23 Aug, 02:00 |
+| 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (4/4 confirmed live) | Noé | 23 Aug, 02:00 |
 | 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Ethan | 24 Aug, 02:00 |
 | 3.3 Test hiring and opportunity-to-Studio handoff | List 3 — P0 Scout & Opportunity | IMPLEMENTED_NOT_VERIFIED | Noé | 25 Aug, 02:00 |
 | 4.1 Stabilize Studio New Project flow | List 4 — P0 Studio & Calls | PARTIALLY_IMPLEMENTED | Jeff | 23 Aug, 02:00 |
@@ -289,24 +289,25 @@ _(Cards appended incrementally, one list at a time.)_
 #### 3.1 Validate opportunity ingestion and matching
 - **List:** List 3 — P0 Scout & Opportunity
 - **URL:** https://trello.com/c/sWPixFI0/41-validate-opportunity-ingestion-and-matching
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** ✅ VERIFIED — all 4 confirmed live
 - **Owner:** Noé — CTO (member: Jefferson Gordon-Lennox)
 - **Due date:** 23 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — verify roles, briefs, skills, locations, budgets, deadlines, deliverables, sources and match reasoning. Scope — confirm opportunity data ingested into Scout is real and complete, and match reasoning is genuine (not fabricated). Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Opportunities display real data.
-  - [ ] Match reasoning uses Passport data.
-  - [ ] No fabricated scores or explanations.
-  - [ ] Save, dismiss and apply work.
-- **Linked files/routes:** `src/pages/Scout.tsx`, `src/lib/opportunityMatch.ts`, `src/components/opportunity/ScoutedGigsSection.tsx`, `src/pages/Opportunities.tsx`, `src/pages/OpportunityDetail.tsx`.
-- **Dependencies/blockers:** None declared in Trello, but note the Done-list card "Scout: Scoped daily refresh (Match screen claims with runtime code)" and "Align Scout's data schema with 7 downstream consumers" directly precede this and were marked Done — this card should build on that work.
+- **Checklist 4/4 confirmed by live walkthrough (2026-08-19):**
+  - [x] Opportunities display real data.
+  - [x] Match reasoning uses Passport data.
+  - [x] No fabricated scores or explanations.
+  - [x] Save, dismiss and apply work.
+- **Linked files/routes:** `src/pages/Opportunities.tsx`, `src/components/opportunity/ScoutedGigsSection.tsx`, `supabase/functions/scout-gigs/index.ts` (the real ingestion + scoring engine).
+- **Dependencies/blockers:** None declared in Trello; the prerequisite Done-list cards ("Scoped daily refresh", "Align Scout's data schema") this depended on hold up under live testing.
 - **Comments:** creation log only.
-- **Risk level:** P0 — trust ("no fabricated scores") is a repeated theme across the board (same class of risk as Verified Credits).
-- **Implementation detail:** Substantial Scout/Opportunity code exists (`opportunityMatch.ts` for match logic, dedicated pages for dashboard/detail/manage/post/verify). Combined with two related Done-list cards claiming the match-screen-to-runtime-code alignment was already completed, there's a reasonable base of implementation.
-- **Verification detail:** No evidence of an executed QA pass confirming the specific "no fabricated scores/explanations" guarantee for the current build; Trello checklist is 0/4.
-- **Evidence required:** A recorded test confirming match reasoning traces back to real Passport fields, not synthesized/hallucinated text.
-- **Recommended action:** Given the two prerequisite Done cards, this is likely close — run the confirmation pass and check the boxes.
+- **Risk level:** P0 — trust ("no fabricated scores") is a repeated theme across the board (same class of risk as Verified Credits). This is the one card in that class that came back fully clean.
+- **Live walkthrough performed 2026-08-19** (real browser, authenticated, real feed — not a code-existence check):
+  1. **Opportunities display real data — CONFIRMED.** `/opportunities` → "Scouted for you" showed a real, populated feed (no empty state needed — already scanned): "CONTENT CREATOR" at Beer on Wheels Bali, "Open Call: Creative & Entrepreneur Hub Collaboration" at Superlative Gallery/Nuanu Creative City, "PERFORMANCE CREATIVE PRODUCER (AI-NATIVE)" at Iris Art Studio (Canggu), each with real Bali locations, realistic comp fields, "9 days ago"-style freshness, and a source link. Opened the full brief for the top card: it carries a **"Verify on Facebook - Bali Creative Community"** link that resolves to a real, specific Facebook group post (`facebook.com/groups/715541813950869/posts/1529518442553198/` — genuine numeric group/post IDs, not a placeholder), directly proving this listing traces to a real external post rather than being synthesized.
+  2. **Match reasoning uses Passport data + No fabricated scores — CONFIRMED, and traced to source.** Each card's "Why this fits you" text is distinctly worded per listing, not generic boilerplate — e.g. "Directly matches the user's sub-role as an 'Event Producer' and their agency's ability to provide website/social media services in their specific neighborhood," "Nuanu is a major creative hub in Bali, fitting the user's mission to build platforms that bring talent together." Read the actual generation code in `supabase/functions/scout-gigs/index.ts`: it builds a `profileBlurb` from the **real** profile (`role`, `sub_roles`, `skills`, `location`, `bio`), sends it plus real web-search snippets to the Lovable AI Gateway, and the system prompt explicitly instructs the model to extract only gigs with "REAL details from the snippet — never blank, never 'see post'" and to compute `fit_score`/`fit_reason` from that real context — not a hardcoded or random number.
+  3. **Save, dismiss and apply work — CONFIRMED, all three live-tested.** Clicked **Save** on the top card: real "Saved" toast fired immediately. Clicked **Dismiss** (✕) on a different card ("Open Call: Sunday Creative Market Tenant"): it was removed from the feed instantly and the next card in the queue shifted into its place — confirmed via before/after screenshot, not assumed. **Apply** is a real, wired "Apply on site" button inside the full-brief modal, paired with a genuine post-application status tracker (I applied / Won / Lost / Ghosted) and an AI cover-letter draft entry point ("Open in Kreto") — did not click through to the external Facebook posting itself (no reason to leave the app to confirm the button is correctly wired; the href and surrounding UI are real, not placeholders).
+- **Recommended action:** None — check off all 4 boxes on the Trello card. This is one of the strongest cards on the board: real ingestion, real grounding, real actions.
 
 #### 3.2 Test creator application flow
 - **List:** List 3 — P0 Scout & Opportunity

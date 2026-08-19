@@ -12,9 +12,9 @@ Scope: Phase 3 of the "Security-First Automation, Email Reliability and Stripe P
 | **`auth-email-hook`** | Same Lovable API, invoked as a genuine Supabase Auth webhook | Signature-verified (`verifyWebhookRequest` against `LOVABLE_API_KEY`, HMAC + timestamp) — Supabase Auth itself calls this on signup/magic-link/recovery/invite/email-change/reauthentication. | **Good.** Correct webhook-auth pattern; not user- or anon-key-invokable. |
 | **`send-notification-email`** | Direct Resend (`resend@4.0.0`, `RESEND_API_KEY`) | Synchronous send, no queue, no retry, no DLQ, its own separate unsubscribe-token lookup (not the shared `email_unsubscribe_tokens` table), no suppression-list check, no `email_send_log` insert. | **Was critical, fixed this session** (see §2). 5 real call sites. |
 
-A fourth, smaller system (`send-user-email`, direct Resend, `welcome`/`match`/`message`/`connection_request`/`project_invite`) also exists but has **zero call sites anywhere in the app** — confirmed by repo-wide grep. It is dead code that is still directly invokable as a live edge function; see §3.
+A fourth, smaller system (`send-user-email`, direct Resend, `welcome`/`match`/`message`/`connection_request`/`project_invite`) also exists. **Correction (2026-08-19): the "zero call sites, dead code" claim below was wrong** — a fresh grep found 6 real, live callers (`DirectMessageDialog.tsx`, `MatchModal.tsx`, `StartProjectFromMatchDialog.tsx`, `BrowseCreators.tsx`, `useSendMessage.ts`, `agent-send-dm/index.ts`). Its auth gap (§3.1) has since been fixed, not left as a "recommend deletion" item — see the update in §3.
 
-**Recommendation:** migrate the 5 real call sites of `send-notification-email` onto `send-transactional-email` + the modern template registry, then delete `send-notification-email` and `send-user-email` outright. Two Resend-vs-Lovable-API sending paths for the same brand is itself a deliverability risk (only one of the two sending identities may have correct SPF/DKIM/DMARC alignment with `kretopia.com` — this was not verifiable from the codebase and needs a DNS check, see §6).
+**Recommendation:** migrate the 5 real call sites of `send-notification-email` onto `send-transactional-email` + the modern template registry, then delete `send-notification-email`. `send-user-email` is in active use for message/connection/project-invite notifications and should stay, now that its authorization gap is fixed (§3.1) — do not delete it. Two Resend-vs-Lovable-API sending paths for the same brand is itself a deliverability risk (only one of the two sending identities may have correct SPF/DKIM/DMARC alignment with `kretopia.com` — this was not verifiable from the codebase and needs a DNS check, see §6).
 
 ---
 
@@ -38,12 +38,25 @@ Same missing-config.toml-entry, zero-in-body-check pattern. `userId`/`title`/`bo
 
 ## 3. Remaining findings — not fixed, documented for prioritization
 
-| # | Function | Finding | Severity | Why not fixed now |
+### 3.1 `send-user-email` — FIXED 2026-08-19
+
+The original entry here read: *"Authenticated (real `getUser()` check) but no ownership/event verification — any logged-in user can trigger a `match`/`message`/`connection_request`/`project_invite` email to any `recipientId`... Zero live call sites (dead code) — no active abuse surface today... deleting is simpler since nothing calls it."*
+
+**That "zero live call sites" premise was wrong.** A fresh grep (2026-08-19, during a Trello QA reconciliation pass) found 6 real, live callers: `src/components/DirectMessageDialog.tsx`, `src/components/swipe/MatchModal.tsx`, `src/components/project/StartProjectFromMatchDialog.tsx`, `src/components/circle/BrowseCreators.tsx`, `src/pages/messages/useSendMessage.ts`, `supabase/functions/agent-send-dm/index.ts`. The function is in active production use for message/connection/project-invite notifications — it should not be deleted.
+
+**Fixed, not deleted.** `supabase/functions/send-user-email/index.ts` now has a `requireRelationship()` check before every `match`/`message`/`connection_request`/`project_invite` send:
+- `match` → requires a real row in `matches` between caller and recipient.
+- `message` → requires a real row in `messages` with `sender_id = caller`.
+- `connection_request` → requires a real row in `connections` with `user_id = caller`.
+- `project_invite` → requires a real row in `project_collaborators` matching `project_id` + `user_id = recipient` + `invited_by = caller`, and the email now uses the DB-verified project title rather than the client-supplied one.
+
+Also fixed in the same pass: `messagePreview` and every other user-controlled value interpolated into the HTML body is now run through a shared `escapeHtml()` (closing the injection finding in row 3 below, for this function specifically); `recipientId` is validated as a well-formed UUID before use in any query, closing a PostgREST filter-injection vector the relationship check itself would otherwise have opened via `.or()`.
+
+| # | Function | Finding | Severity | Status |
 |---|---|---|---|---|
-| 1 | `send-user-email` | Authenticated (real `getUser()` check) but no ownership/event verification — any logged-in user can trigger a `match`/`message`/`connection_request`/`project_invite` email to *any* `recipientId`, with a caller-supplied preview/title string, without a real underlying match/message/invite existing. | Moderate | Zero live call sites (dead code) — no active abuse surface today, but the endpoint is still invokable directly. Recommend either wiring a real ownership check (verify the message/match/invite record exists and the caller is a party to it) or deleting the function; deleting is simpler since nothing calls it. |
-| 2 | `send-reengagement-emails` | No cron/admin gate (no config.toml entry, no in-body check) — but blast radius is bounded: self-selects real dormant users from the DB (caller can't choose targets or content), weekly idempotency key per user, 30/day cap. | Low | Should still get a `requireAdminOrCron`-style guard as defense in depth, consistent with `send-broadcast-email` which already has one. Not urgent given the bounded impact. |
-| 3 | `send-invoice-email` | Real ownership check (`invoice.issued_by === user.id`) is present and correct — **not an auth bug**. But `invoice.notes`, `brand_name`, `recipient_name`, and line-item `description` are interpolated into the email HTML without escaping. Since the issuer already owns/controls that data, this is self-inflicted HTML injection into an email they choose to send, not a privilege escalation — but worth closing. | Low (hardening) | Systemic pattern across several older templates (also present in `send-notification-email`, `send-user-email`); best handled as one follow-up pass with a shared `escapeHtml()` helper rather than a piecemeal fix mid-audit. |
-| 4 | `send-notification-email` / `send-user-email` templates | Accent colors (`#4338CA` indigo, `#8B5CF6` violet, `#D9FF00` lime on the `'general'` type) don't match the established `#FF2DA1` pink brand accent used everywhere else in the product. | Low (branding) | Cosmetic; folds into the "migrate onto the modern template registry" recommendation in §1 rather than a standalone fix. |
+| 2 | `send-reengagement-emails` | No cron/admin gate (no config.toml entry, no in-body check) — but blast radius is bounded: self-selects real dormant users from the DB (caller can't choose targets or content), weekly idempotency key per user, 30/day cap. | Low | Not fixed. Should still get a `requireAdminOrCron`-style guard as defense in depth, consistent with `send-broadcast-email` which already has one. Not urgent given the bounded impact. |
+| 3 | `send-invoice-email` | Real ownership check (`invoice.issued_by === user.id`) is present and correct — **not an auth bug**. But `invoice.notes`, `brand_name`, `recipient_name`, and line-item `description` are interpolated into the email HTML without escaping. Since the issuer already owns/controls that data, this is self-inflicted HTML injection into an email they choose to send, not a privilege escalation — but worth closing. | Low (hardening) | Not fixed. `send-user-email`'s instance of this same pattern is now fixed (see 3.1); this one remains open. |
+| 4 | `send-notification-email` / `send-user-email` templates | Accent colors (`#4338CA` indigo, `#8B5CF6` violet, `#D9FF00` lime on the `'general'` type) don't match the established `#FF2DA1` pink brand accent used everywhere else in the product. | Low (branding) | Not fixed. Cosmetic; folds into the "migrate onto the modern template registry" recommendation in §1 rather than a standalone fix. |
 
 **Verified clean, no action needed:** `auth-email-hook`, `handle-email-suppression`, `handle-email-unsubscribe` (real webhook-signature or capability-token models, all correctly scoped), `preview-transactional-email` (gated by `LOVABLE_API_KEY`), `send-broadcast-email` (already uses `requireAdminOrCron`), `notify-speed-pool-ping` / `notify-speed-session-update` (real host-or-admin ownership check, fixed template content, targets derived from real RSVP rows, not caller input), `draft-outreach-email` / `send-outreach-email` (real cron-secret-or-authenticated-user check).
 
@@ -62,7 +75,7 @@ Notably **absent** from this list — and therefore not covered by the queue/ret
 ## 5. Notification preferences — enforcement is inconsistent by system
 
 - `send-transactional-email`: checks the shared `suppressed_emails` table before enqueueing (fail-closed).
-- `send-user-email`: checks `notification_preferences` (`email_messages`/`email_matches`/`email_opportunities`) per category before sending — correctly implemented, just dead code (§3.1).
+- `send-user-email`: checks `notification_preferences` (`email_messages`/`email_matches`/`email_opportunities`) per category before sending — correctly implemented, and in active production use (§3.1).
 - `send-notification-email`: **no preference check of any kind** — fetches an unsubscribe token to print in the footer, but never gates sending on it. This means a user who unsubscribed via the shared system could still receive email through this path. This is a reliability/compliance gap independent of the auth fix in §2a — the auth fix stops *unauthorized* senders; it doesn't add a preference check for the *legitimate* remaining call sites (`useOnboarding.tsx` welcome email, `notify-swipe`/`send-streak-warning` server-side sends). Worth a follow-up.
 - `notify-speed-pool-ping` / `notify-speed-session-update`: these write to the in-app `notifications` table only (no email sent directly from these two functions), so preference-check scope doesn't apply the same way.
 
@@ -93,7 +106,7 @@ No test email was sent. `EMAIL_TEST_REPORT.md` is not being created since there 
 |---|---|
 | `send-notification-email` open relay | **Fixed** — commit `8572f0f8`, verified locally (tsc/build/tests) |
 | `send-push-notification` open relay | **Fixed** — commit `1e886071`, verified locally (tsc/build/tests) |
-| `send-user-email` dead-code auth gap | Documented, not fixed — recommend deletion |
+| `send-user-email` auth gap | **Fixed 2026-08-19** — was miscategorized as dead code; has 6 real live callers. Added `requireRelationship()` ownership checks, `escapeHtml()` on all interpolated values, UUID validation on `recipientId`. |
 | `send-reengagement-emails` missing cron gate | Documented, not fixed — low urgency |
 | HTML-escaping gap in older templates | Documented, not fixed — recommend one shared follow-up pass |
 | Off-brand colors in older templates | Documented, not fixed — folds into system consolidation |

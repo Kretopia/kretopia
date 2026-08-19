@@ -55,7 +55,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 5.2 Test invoices and payout flows | List 5 — P0 Payments & Project Completion | 🟡 PARTIALLY_VERIFIED (no-PII-leak confirmed live; 3 need a 2nd account) | Noé | 27 Aug, 02:00 |
 | 5.3 Validate project completion loop | List 5 — P0 Payments & Project Completion | IMPLEMENTED_NOT_VERIFIED | Ethan | 28 Aug, 02:00 |
 | 6.1 Validate Kreto V1 capabilities | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/5 confirmed, adversarial test) | Jeff | 25 Aug, 02:00 |
-| 6.2 Run cross-product UX consistency pass | List 6 — P1 Kreto, UX & Product Quality | PARTIALLY_IMPLEMENTED | Jeff | 27 Aug, 02:00 |
+| 6.2 Run cross-product UX consistency pass | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (1 confirmed; 1 real regression found — stray #9413D2) | Jeff | 27 Aug, 02:00 |
 | 6.3 Optimize Today command center | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/6 confirmed; empty states need a zero-data account) | Jeff | 27 Aug, 02:00 |
 | 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (4/7 confirmed live at 375px; 1 minor touch-target finding) | Jeff | 28 Aug, 02:00 |
 | 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 28 Aug, 02:00 |
@@ -565,27 +565,28 @@ _(Cards appended incrementally, one list at a time.)_
 #### 6.2 Run cross-product UX consistency pass
 - **List:** List 6 — P1 Kreto, UX & Product Quality
 - **URL:** https://trello.com/c/CjIcXV1T/52-run-cross-product-ux-consistency-pass
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 1 confirmed, 1 real regression found, 5 still need the full sweep
 - **Owner:** Jeff — CDO
 - **Due date:** 27 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — review Today, Studio, Scout, Passport, Messages, Kreto and landing page. Scope — sweep every core surface for shared header usage, typography/spacing consistency, and a single accent color. Dependencies: None.
-- **Checklist 0/7, all unchecked:**
-  - [ ] Shared FeaturePageHeader is used.
-  - [ ] Typography and spacing are consistent.
-  - [ ] #FF2DA1 remains the only accent.
-  - [ ] No decorative gradient regression exists.
-  - [ ] Card overload is reduced.
-  - [ ] Primary CTA is clear on every route.
-  - [ ] Mobile and desktop layouts are coherent.
-- **Linked files/routes:** `src/components/features/FeaturePageHeader.tsx`; `#FF2DA1` referenced in `src/index.css`, `Navbar.tsx`, `ui/smart-widget.tsx`, `ui/button.tsx`, `KretopiaHero.tsx`. Repo docs: `GLOBAL_UX_QA.md` (modified 2026-08-15), `UX_NAVIGATION_AUDIT.md` (2026-08-11).
-- **Dependencies/blockers:** None declared; overlaps the Done-list card "Unify Home vs. About brand voice, type, and accent color (Owners: Jefferson/Ethan)" and "Visual polish pass across the 5 priority surfaces (Owner: Jefferson)."
+- **Checklist 1/7 confirmed, 1 confirmed-broken (2026-08-19):**
+  - [x] Shared FeaturePageHeader is used.
+  - [ ] Typography and spacing are consistent. *(not swept)*
+  - [ ] **#FF2DA1 remains the only accent — CONFIRMED FALSE, see finding below.**
+  - [ ] No decorative gradient regression exists. *(not swept)*
+  - [ ] Card overload is reduced. *(not swept — but see card 6.3, which resolved this for Today specifically)*
+  - [ ] Primary CTA is clear on every route. *(not swept)*
+  - [ ] Mobile and desktop layouts are coherent. *(see card 6.4 — partial evidence there)*
+- **Linked files/routes:** `src/components/brand/BrandDots.tsx`, `src/components/project/studio/moodGradient.ts`, `src/components/sessions/GuestPassDialog.tsx`, `src/components/sessions/EventShareKit.tsx`, `src/components/brand-vault/BrandVaultEditor.tsx` (the actual files this pass's finding is in).
+- **Dependencies/blockers:** None declared; overlaps the Done-list card "Unify Home vs. About brand voice, type, and accent color (Owners: Jefferson/Ethan)."
 - **Comments:** creation log only.
 - **Risk level:** P1 — polish/coherence, demo-relevant but not trust/security-critical.
-- **Implementation detail:** `FeaturePageHeader.tsx` exists as a shared component, and the brand accent color is referenced consistently in several core files, both positive signals. Two related Done-list cards claim prior brand/visual-polish work is complete, which this card is meant to verify held.
-- **Verification detail:** `GLOBAL_UX_QA.md` predates this Trello card's creation (18 Aug) by 3 days (dated 15 Aug) — it may already answer several of these criteria but wasn't opened in this pass to confirm currency. **Update from this pass**: the first checklist item ("Shared FeaturePageHeader is used") advanced concretely — [MAJOR_PAGE_UX_OVERHAUL.md](MAJOR_PAGE_UX_OVERHAUL.md) documents extracting `CinematicHeaderPlate.tsx` so `FeaturePageHeader` and the separate `EditorialPageHero` (previously a hand-matched duplicate, not literally shared) now render from the same underlying component, verified live across Spotlight/Verified Credits/Founding Circle/Creative Circle/Admin plus Scout. This directly satisfies that one criterion with fresh evidence; the other 6 (typography/spacing, single accent color, no gradient regression, card overload, clear CTA, mobile/desktop coherence) are unchanged from the original read.
-- **Evidence required:** Read `GLOBAL_UX_QA.md` and `UX_NAVIGATION_AUDIT.md` for the remaining 6 criteria; then a fresh visual sweep for anything shipped since 15 Aug.
-- **Recommended action:** One of seven criteria now has direct, current-session evidence. Start from the existing UX QA docs for the rest rather than a blind re-sweep.
+- **Verification performed 2026-08-19 — a grep-based accent-color audit, not a full visual sweep:**
+  1. **Shared FeaturePageHeader is used — CONFIRMED** (carried forward from the earlier pass: `CinematicHeaderPlate.tsx` extraction verified live across 6 surfaces, documented in `MAJOR_PAGE_UX_OVERHAUL.md`).
+  2. **#FF2DA1 remains the only accent — CONFIRMED FALSE, a real pre-migration leftover.** Grepped every hardcoded hex color across `src/components` and `src/pages`: `#FF2DA1` is overwhelmingly dominant (88 occurrences, as expected), but **`#9413D2`** (a violet/purple — the pre-rebrand primary, before this engagement's earlier "Violet-to-pink color migration") still appears in real, live, currently-rendered code: `BrandDots.tsx` (confirmed imported by 9+ live pages including `App.tsx`, `PersonalRoom.tsx`, `PassportDirectory.tsx`), `moodGradient.ts`'s own code comment literally says *"On-brand: rooted in #9413D2 primary"* (confirmed used by `LooseProjectsCarousel.tsx`, `StudioCardsGrid.tsx`, and Today's `MorningPulse.tsx`), and QR-code styling in `GuestPassDialog.tsx` and `EventShareKit.tsx`. (Ruled out as false positives: `#ff00ff`/`#00ffff` in `BoldElectricTemplate.tsx` and the `#FF0A78`/`#9413D2` pair in `BrandVaultEditor.tsx` — both are user-selectable *personal site/brand-kit* template presets, not Kretopia's own app chrome, so they're correctly out of scope for this criterion.)
+- **Evidence required:** A full visual sweep of Today/Studio/Scout/Passport/Messages/Kreto/landing for the remaining 5 criteria, plus a decision on whether to update `#9413D2` references to the current pink brand or confirm they're an intentional secondary accent (the `moodGradient.ts` comment reads like an unintentional leftover, not a deliberate secondary palette).
+- **Recommended action:** Check off "Shared FeaturePageHeader." Flag the `#9413D2` finding to Jefferson/Ethan (owners of the original color-migration work) — it's a small, precise fix (a handful of files) rather than a large one. The other 5 criteria still need the fuller sweep the original recommendation called for.
 
 #### 6.3 Optimize Today command center
 - **List:** List 6 — P1 Kreto, UX & Product Quality

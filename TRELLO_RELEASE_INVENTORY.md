@@ -64,7 +64,7 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 8.1 Prepare the core product demo | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 29 Aug, 02:00 |
 | 8.2 Prepare technical demo environment | List 8 — Demo, Documentation & Release | NOT_STARTED | Noé | 29 Aug, 02:00 |
 | 8.3 Prepare product narrative and visuals | List 8 — Demo, Documentation & Release | PARTIALLY_IMPLEMENTED | Jeff | 29 Aug, 02:00 |
-| 8.4 Final full regression | List 8 — Demo, Documentation & Release | NOT_STARTED | Noé | 30 Aug, 02:00 |
+| 8.4 Final full regression | List 8 — Demo, Documentation & Release | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; 2 blocked on the open card 2.2 P0) | Noé | 30 Aug, 02:00 |
 | 8.5 CEO acceptance review | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 31 Aug, 02:00 |
 | 8.6 August 31 submission and release | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan (unassigned in Trello) | 1 Sept, 02:00 |
 | B.1 Storyboard and script the live demo walkthrough | 🛑 Blocked | BLOCKED | Jefferson/Ethan | 17 Aug, 21:00 (overdue) |
@@ -794,26 +794,32 @@ _(Cards appended incrementally, one list at a time.)_
 #### 8.4 Final full regression
 - **List:** List 8 — Demo, Documentation & Release
 - **URL:** https://trello.com/c/aRgq4jUC/61-final-full-regression
-- **Status:** NOT_STARTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 4/6 confirmed, 2 blocked on the open card 2.2 P0
 - **Owner:** Noé — CTO
 - **Due date:** 30 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — run full typecheck, lint, build, test, browser, mobile, auth, payment, email, Passport, Scout (regression sweep). Scope — execute the complete pre-release regression suite across every P0 surface and document known limitations. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] No unresolved Critical security issue.
-  - [ ] No P0 regression.
-  - [ ] Build succeeds.
-  - [ ] Tests pass.
-  - [ ] Core user loop passes.
-  - [ ] Known limitations are documented.
-- **Linked files/routes:** `package.json` (`build`, `build:dev`, `dev` scripts confirmed present); `vitest.config.ts` exists. Only **6 test files** were found under `src/` (`*.test.ts(x)`/`*.spec.ts`) in this pass — thin coverage for a "Tests pass" gate on a codebase this large.
-- **Dependencies/blockers:** This card is explicitly the capstone gate for every P0 card in Lists 1-5 — by design it cannot be meaningfully started until those are done, and its first criterion duplicates card 1.1's "No unresolved Critical security issue."
+- **Checklist 4/6 confirmed, 2 blocked (2026-08-19):**
+  - [ ] **No unresolved Critical security issue — BLOCKED. One open P0: card 2.2's Co-Sign accept constraint bug (fix written, not yet applied).**
+  - [ ] **No P0 regression — same blocker as above; not a regression introduced this session, but a genuinely unresolved P0 defect discovered during this session's QA.**
+  - [x] Build succeeds.
+  - [x] Tests pass.
+  - [x] Core user loop passes — with the one known exception below.
+  - [x] Known limitations are documented — this document plus `SECURITY_RELEASE_GATE.md`, `EMAIL_RELEASE_AUDIT.md`, and the per-card sections throughout this catalog.
+- **Linked files/routes:** `package.json` (`build`, `build:dev`, `dev`, `test` scripts), `vitest.config.ts`, `SECURITY_RELEASE_GATE.md` §D (gate decision table).
+- **Dependencies/blockers:** Directly blocked by card 2.2 (P0, migration `20260819140000_fix_credits_peer_status_constraint.sql` written this session, not yet applied — pending the user pasting it into the Lovable Cloud SQL editor per standing protocol).
 - **Comments:** creation log only.
 - **Risk level:** P0 — final release gate.
-- **Implementation detail:** Build tooling exists and works in principle (`vite build` script, `vitest.config.ts`), but automated test coverage is thin (6 test files repo-wide), meaning "Tests pass" will mostly reflect typecheck/lint/build success rather than genuine behavioral regression coverage.
-- **Verification detail:** No evidence this regression pass has been run yet; 0/6 unchecked, and it logically cannot be meaningfully complete before Lists 1-5 are resolved.
-- **Evidence required:** An actual run log (`tsc`, `eslint`, `vite build`, `vitest run`) plus a manual core-loop walkthrough, dated close to 30 Aug.
-- **Recommended action:** Correctly sequenced last in the plan; flag the thin automated-test coverage as a real gap — recommend supplementing with the manual QA passes from Lists 1-5 rather than relying on `vitest` alone to catch regressions.
+- **Verification performed 2026-08-19:**
+  1. **Build succeeds — CONFIRMED.** `npm run build` completes cleanly (`✓ built in 13.81s`, PWA precache generated). Only pre-existing chunk-size warnings (`ThriveDesk`, `Discover`, `index` bundles >500kB), already noted as out-of-scope in `GLOBAL_UX_QA.md` Phase 11 — no new warnings.
+  2. **Tests pass — CONFIRMED.** `npm run test -- --run` → 68/68 passing, 6/6 files, 1.2s. Unchanged from the count recorded earlier in this engagement (`GLOBAL_UX_QA.md` recorded 62/62 at that point in the codebase's history; the 6-suite/68-test count here matches the most recent baseline).
+  3. **Typecheck — CONFIRMED clean.** `npx tsc --noEmit -p .` produced zero output (zero errors).
+  4. **Lint — no new issues.** `npx eslint .` → 10,359 problems (9,451 errors, 908 warnings), matching the exact baseline count already recorded in the Studio AI Create plan document from earlier in this engagement — confirms no lint regression from any change made this session.
+  5. **No unresolved Critical security issue — BLOCKED, not clear.** `SECURITY_RELEASE_GATE.md` §D shows every *pre-existing* critical RLS/auth finding closed and applied to production as of 2026-08-18. But this session's own QA (card 2.2, 2026-08-19) found a new, real P0: the `submit_credit_endorsement_by_token` RPC writes `verification_status = 'peer'` on Co-Sign accept, and the live `credits_verification_status_check` constraint has never allowed that value — every real Co-Sign completion fails with a Postgres constraint violation. A fix migration exists (`20260819140000_fix_credits_peer_status_constraint.sql`) but has not been applied. This is the one item genuinely holding this checklist item open.
+  6. **No P0 regression — BLOCKED for the same reason.** Not a regression caused by this session's code changes (this session made zero application-code changes, only QA + one unapplied migration), but a real, currently-live P0 defect in the core Co-Sign flow that must be resolved before this box can be checked.
+  7. **Core user loop passes — CONFIRMED, with one known exception.** Across this session's Lists 1-7 QA (18 cards, live browser + code-trace evidence throughout this document), every other core-loop stage — Search, Passport claim, credit confirmation, Scout opportunity view/apply, Studio project creation/completion, video calls, Kreto — verified working live. The Co-Sign *completion* step (accepting an endorsement) is the sole broken link, consistent with item 5 above.
+  8. **Known limitations documented — CONFIRMED.** This catalog (34 cards, all with dated evidence), `SECURITY_RELEASE_GATE.md`, and `EMAIL_RELEASE_AUDIT.md` collectively constitute exactly this documentation requirement.
+- **Recommended action:** Apply migration `20260819140000_fix_credits_peer_status_constraint.sql` (already written, awaiting the user's SQL-editor paste per this engagement's standing protocol), then re-run this checklist — items 1/2 should clear immediately once verified against the live database, at which point 8.4 becomes a full 6/6 pass.
 
 #### 8.5 CEO acceptance review
 - **List:** List 8 — Demo, Documentation & Release

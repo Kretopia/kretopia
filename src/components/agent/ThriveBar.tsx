@@ -69,7 +69,7 @@ export const ThriveBar = () => {
     >
       <div
         className={cn(
-          "mx-auto flex items-center gap-2 h-12 px-2 rounded-2xl",
+          "mx-auto flex items-center gap-2 h-14 px-2 rounded-2xl",
           "bg-card border border-border shadow-lg",
         )}
       >
@@ -90,7 +90,7 @@ export const ThriveBar = () => {
         <button
           type="button"
           onClick={() => openChat("voice")}
-          className="h-9 w-9 shrink-0 rounded-full text-primary hover:bg-primary/10 active:scale-95 transition-all flex items-center justify-center"
+          className="h-11 w-11 shrink-0 rounded-full text-primary hover:bg-primary/10 active:scale-95 transition-all flex items-center justify-center"
           aria-label="Talk to Kreto"
           title="Tap to talk"
         >
@@ -99,7 +99,7 @@ export const ThriveBar = () => {
         <button
           type="button"
           onClick={() => openChat("chat")}
-          className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground active:scale-95 transition-all flex items-center justify-center"
+          className="h-11 w-11 shrink-0 rounded-full bg-primary text-primary-foreground active:scale-95 transition-all flex items-center justify-center"
           aria-label="Open Kreto"
         >
           <ArrowUp className="h-4 w-4" />

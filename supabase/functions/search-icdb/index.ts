@@ -149,37 +149,23 @@ serve(async (req) => {
       return [];
     })();
 
-    // Call search-credits-web for Firecrawl-powered web results
-    const webPromise = (async () => {
-      try {
-        const webResponse = await fetch(`${supabaseUrl}/functions/v1/search-credits-web`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseKey}`,
-            'apikey': supabaseKey,
-          },
-          body: JSON.stringify({ query: query.trim() }),
-        });
+    // Note: this endpoint used to also call search-credits-web (the same
+    // multi-platform Firecrawl scraper behind the landing page's hero
+    // search) and block the response on it — that single call routinely
+    // took 10-20s+, which meant even the fast DB-backed results below were
+    // held up behind it every time. Verified Credits is the on-Kretopia
+    // record; the open-web "find or claim your Passport" search already has
+    // its own dedicated surface on the landing page. Dropped here so this
+    // endpoint's latency is bounded by the DB query + one AI completion
+    // call instead of a full web scrape. webResults stays in the response
+    // shape (empty) so existing callers reading edgeData?.webResults don't
+    // need a shape change.
+    const [projects, aiSuggestions] = await Promise.all([dbSearchPromise, aiPromise]);
 
-        if (webResponse.ok) {
-          const webData = await webResponse.json();
-          return Array.isArray(webData?.results) ? webData.results : [];
-        } else {
-          console.warn('search-credits-web failed:', webResponse.status);
-        }
-      } catch (webErr) {
-        console.error('search-credits-web error:', webErr);
-      }
-      return [];
-    })();
-
-    const [projects, aiSuggestions, webResults] = await Promise.all([dbSearchPromise, aiPromise, webPromise]);
-
-    return new Response(JSON.stringify({ 
-      projects, 
+    return new Response(JSON.stringify({
+      projects,
       suggestions: aiSuggestions,
-      webResults: webResults.slice(0, 10),
+      webResults: [],
       total: projects.length,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

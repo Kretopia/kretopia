@@ -67,7 +67,7 @@ export const CreativeUniverseSection = () => {
               <Icon className="h-5 w-5" style={{ color: ACCENT }} aria-hidden />
               <span
                 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/70"
-                style={{ fontFamily: "'Work Sans', sans-serif" }}
+                style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
               >
                 {label}
               </span>

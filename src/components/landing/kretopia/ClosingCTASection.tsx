@@ -61,7 +61,7 @@ export const ClosingCTASection = () => {
             className="group flex w-full items-center gap-3 rounded-full border border-white/15 bg-white/[0.03] px-5 py-3.5 text-left transition-colors hover:border-white/30"
           >
             <Search className="h-4 w-4 shrink-0 text-white/40" aria-hidden />
-            <span className="text-sm text-white/45" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+            <span className="text-sm text-white/45" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
               Search your name or stage name
             </span>
           </button>
@@ -70,18 +70,18 @@ export const ClosingCTASection = () => {
             type="button"
             onClick={scrollToHeroSearch}
             className="mt-4 inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white"
-            style={{ backgroundColor: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
+            style={{ backgroundColor: ACCENT, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             Claim Your Creative Passport
           </button>
 
-          <p className="mt-4 text-xs text-white/45" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+          <p className="mt-4 text-xs text-white/45" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
             Free to claim.
           </p>
 
           <p
             className="mt-8 text-[10px] font-semibold uppercase tracking-[0.32em] text-white/30"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             Kretopia
             <br />

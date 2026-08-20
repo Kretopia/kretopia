@@ -176,7 +176,7 @@ export const SurfaceProactiveCards = ({ surface, className, limit = 2 }: Props) 
                   size="sm"
                   variant="ghost"
                   disabled={busyId === p.id}
-                  className="h-7 px-2 text-xs gap-1 text-foreground hover:bg-background/60 rounded-full font-semibold"
+                  className="h-11 px-3 text-xs gap-1 text-foreground hover:bg-background/60 rounded-full font-semibold"
                   onClick={() => handleAccept(p)}
                 >
                   <Check className="h-3 w-3" />
@@ -187,7 +187,7 @@ export const SurfaceProactiveCards = ({ surface, className, limit = 2 }: Props) 
                   size="sm"
                   variant="ghost"
                   disabled={busyId === p.id}
-                  className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:bg-background/40 rounded-full"
+                  className="h-11 px-3 text-xs gap-1 text-muted-foreground hover:bg-background/40 rounded-full"
                   onClick={() => handleDismiss(p)}
                   aria-label="Dismiss suggestion"
                 >

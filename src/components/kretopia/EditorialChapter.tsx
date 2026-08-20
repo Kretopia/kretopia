@@ -4,6 +4,7 @@
  */
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { cn } from "@/lib/utils";
 
 const ACCENT = "#FF2DA1";
 
@@ -16,10 +17,19 @@ interface EditorialChapterProps {
   title: string;
   accentWord: string;
   children: React.ReactNode;
+  /** Centre the kicker/title/children block instead of the default left
+   * alignment — use when the children (eg. a search bar) are themselves
+   * centered, so the title above them lines up with what's below it. */
+  align?: "left" | "center";
+  /** Drop the section's own top padding — use when this chapter sits
+   * directly under a hero/header that already supplies bottom spacing, so
+   * the two don't stack into an oversized gap. */
+  tightenTop?: boolean;
 }
 
-export const EditorialChapter = ({ index, kicker, title, accentWord, children }: EditorialChapterProps) => {
+export const EditorialChapter = ({ index, kicker, title, accentWord, children, align = "left", tightenTop = false }: EditorialChapterProps) => {
   const reducedMotion = useReducedMotion();
+  const centered = align === "center";
   return (
     <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
       <div
@@ -27,19 +37,23 @@ export const EditorialChapter = ({ index, kicker, title, accentWord, children }:
         className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.13]"
         style={{ backgroundImage: GRAIN }}
       />
-      <div className="relative mx-auto max-w-[1100px] px-5 sm:px-8 py-14 sm:py-20">
+      <div className={cn(
+        "relative mx-auto max-w-[1100px] px-5 sm:px-8 pb-14 sm:pb-20",
+        tightenTop ? "pt-0" : "pt-14 sm:pt-20",
+      )}>
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.9, ease: [0.2, 0.65, 0.3, 0.95] }}
+          className={centered ? "text-center" : undefined}
         >
-          <div className="flex items-center gap-3 mb-4">
+          <div className={cn("flex items-center gap-3 mb-4", centered && "justify-center")}>
             <span className="font-serif italic text-2xl pink-glow-breathe" style={{ color: ACCENT }}>{index}.</span>
             <span className="landing-eyebrow text-white/55">{kicker}</span>
           </div>
           <h2
-            className="font-serif font-normal text-white leading-[1.0] tracking-[-0.02em] max-w-3xl"
+            className={cn("font-serif font-normal text-white leading-[1.0] tracking-[-0.02em] max-w-3xl", centered && "mx-auto")}
             style={{ fontSize: "clamp(1.9rem, 4.4vw, 3.4rem)" }}
           >
             {title}{" "}

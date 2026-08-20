@@ -45,7 +45,7 @@ export const ForOrganisationsSection = () => {
           <h2 id="for-orgs-title" className="text-2xl sm:text-3xl font-black tracking-[-0.02em] text-white">
             Find people through the work they've actually done.
           </h2>
-          <p className="mt-4 text-sm sm:text-base text-white/55 max-w-xl" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+          <p className="mt-4 text-sm sm:text-base text-white/55 max-w-xl" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
             Kretopia helps hotels, agencies, festivals, production companies, brands and creative teams discover talent through verified creative context, not just profiles and follower counts.
           </p>
         </motion.div>
@@ -61,7 +61,7 @@ export const ForOrganisationsSection = () => {
             <span
               key={label}
               className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.02] px-3 py-1.5 text-xs text-white/65"
-              style={{ fontFamily: "'Work Sans', sans-serif" }}
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               <Icon className="h-3 w-3" style={{ color: ACCENT }} aria-hidden />
               {label}
@@ -80,7 +80,7 @@ export const ForOrganisationsSection = () => {
             to="/post-opportunity"
             onClick={() => analytics.ctaClick("hire_through_kretopia", "for_organisations")}
             className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white"
-            style={{ backgroundColor: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
+            style={{ backgroundColor: ACCENT, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             <Briefcase className="h-4 w-4" aria-hidden />
             Hire Through Kretopia
@@ -89,7 +89,7 @@ export const ForOrganisationsSection = () => {
             to="/auth?tab=signup"
             onClick={() => analytics.ctaClick("partner_with_us", "for_organisations")}
             className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:border-white/40 hover:text-white"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             <Handshake className="h-4 w-4" aria-hidden />
             Partner With Us

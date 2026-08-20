@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Search, Mic2, Loader2, Mic, Video, Globe, Lock, Link2 } from "lucide-react";
+import { AIStageBriefGenerator } from "./AIStageBriefGenerator";
 
 interface CreateStageSheetProps {
   open: boolean;
@@ -108,6 +109,15 @@ export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageS
               icon={<Mic2 className="h-4 w-4" />} title="Showcase"
               hint="You're performing / speaking" />
           </div>
+
+          <AIStageBriefGenerator
+            type={type}
+            onGenerated={(data) => {
+              setTitle(data.title);
+              setBlurb(data.blurb);
+              if (type === "scout" && data.description) setDescription(data.description);
+            }}
+          />
 
           <Field label="Title">
             <Input value={title} onChange={(e) => setTitle(e.target.value)}

@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import {
   Globe, Linkedin, Instagram, Sparkles, MapPin, ExternalLink,
-  Loader2, RefreshCw, Mail, Bookmark, X, Send, ShieldCheck, Briefcase, SlidersHorizontal,
+  RefreshCw, Mail, Bookmark, X, Send, ShieldCheck, Briefcase, SlidersHorizontal,
 } from "lucide-react";
 import { ScoutPreferencesDialog } from "./ScoutPreferencesDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -367,7 +367,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
             <span className="ml-1.5 text-xs hidden sm:inline">Tune</span>
           </Button>
           <Button size="sm" variant="outline" onClick={scanNow} disabled={scanning}>
-            {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            {scanning ? <KretoAvatar size="xs" state="thinking" /> : <RefreshCw className="h-3.5 w-3.5" />}
             <span className="ml-1.5 text-xs">Scan now</span>
           </Button>
         </div>
@@ -609,7 +609,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                       </Button>
                       {!coverLetter && (
                         <Button size="sm" variant="outline" className="h-7 text-xs px-2" onClick={draftLetter} disabled={drafting}>
-                          {drafting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                          {drafting ? <KretoAvatar size="xs" state="thinking" className="mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
                           Draft
                         </Button>
                       )}

@@ -972,10 +972,7 @@ export const ThriveAgentFab = () => {
           <div className="border-t border-border bg-background p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shrink-0">
             {recording ? (
               <div className="flex items-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-3 py-2.5">
-                <span className="relative flex h-3 w-3 shrink-0">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-destructive"></span>
-                </span>
+                <KretoAvatar size="xs" state="recording" className="shrink-0" />
                 <div className="flex-1 text-sm">
                   <div className="font-medium text-foreground">Listening…</div>
                   <div className="text-[11px] text-muted-foreground tabular-nums">

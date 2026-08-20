@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, ShieldAlert, TrendingDown, Lock } from "lucide-react";
+import { ArrowRight, ShieldCheck, Lock } from "lucide-react";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
 import { analytics } from "@/lib/analytics";
 import { SectionCard } from "@/components/ui/section-card";
@@ -51,26 +51,6 @@ export function KretoActionCenter({ credits, standing, onReviewCredits, classNam
           </div>
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
         </button>
-      )}
-
-      {standing.decaying && (
-        <div className="flex items-start gap-2 rounded-lg border border-[hsl(var(--signal-amber))]/30 bg-[hsl(var(--signal-amber))]/5 px-3 py-2 text-xs">
-          <TrendingDown className="h-3.5 w-3.5 text-[hsl(var(--signal-amber))] shrink-0 mt-0.5" />
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">Slipping.</span>{" "}
-            Add a recent credit or start a Studio to hold your standing.
-          </span>
-        </div>
-      )}
-
-      {standing.gatedAt && (
-        <div className="flex items-start gap-2 rounded-lg border border-[hsl(var(--signal-teal))]/30 bg-[hsl(var(--signal-teal))]/5 px-3 py-2 text-xs">
-          <ShieldAlert className="h-3.5 w-3.5 text-[hsl(var(--signal-teal))] shrink-0 mt-0.5" />
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">You qualify on score.</span>{" "}
-            {standing.gateReason ?? "Finish verification to claim the badge"}.
-          </span>
-        </div>
       )}
 
       {nextUnlock && (

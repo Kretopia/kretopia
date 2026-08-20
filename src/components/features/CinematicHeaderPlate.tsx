@@ -22,7 +22,9 @@ export interface CinematicHeaderPlateProps {
   subtitle?: string;
   /** Centre the whole block (default) or keep it left-aligned. */
   align?: "left" | "center";
-  /** Keep title + accent on a single line (auto-scaled to fit). */
+  /** Keep title + accent on a single line (auto-scaled to fit). Default true — every
+   *  feature-page title stays on one line; only the landing page's own hero (which
+   *  doesn't use this component) keeps the multi-line word-stagger treatment. */
   oneLine?: boolean;
   /** Absolutely-positioned extra (eg. a tutorial trigger) anchored to this plate's own container. */
   cornerSlot?: ReactNode;
@@ -31,7 +33,7 @@ export interface CinematicHeaderPlateProps {
 }
 
 export function CinematicHeaderPlate({
-  eyebrow, title, accentTitle, subtitle, align = "center", oneLine = false, cornerSlot, footer,
+  eyebrow, title, accentTitle, subtitle, align = "center", oneLine = true, cornerSlot, footer,
 }: CinematicHeaderPlateProps) {
   const reducedMotion = useReducedMotion();
   const centered = align === "center";
@@ -54,7 +56,8 @@ export function CinematicHeaderPlate({
             <span className="landing-eyebrow" style={{ color: ACCENT }}>{eyebrow}</span>
           </p>
           <h1
-            className={`landing-h1 landing-glow text-balance ${oneLine ? "whitespace-nowrap max-w-none text-[clamp(1.05rem,4.2vw,3rem)]" : "max-w-4xl"}`}
+            className={`landing-h1 landing-glow ${oneLine ? "whitespace-nowrap max-w-none" : "text-balance max-w-4xl"}`}
+            style={oneLine ? { fontSize: "clamp(1.05rem, 4.2vw, 3rem)" } : undefined}
           >
             {title}
             {accentTitle && (

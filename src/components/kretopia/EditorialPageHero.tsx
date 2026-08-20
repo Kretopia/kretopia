@@ -21,12 +21,12 @@ export interface EditorialPageHeroProps {
   children?: ReactNode;
   /** Centre the whole block (Spotlight / About) or keep it left (default). */
   align?: "left" | "center";
-  /** Keep title + accent on a single line (auto-scaled to fit). */
+  /** Keep title + accent on a single line (auto-scaled to fit). Defaults to true. */
   oneLine?: boolean;
 }
 
 export const EditorialPageHero = ({
-  kicker, title, accentTitle, subtitle, children, align = "center", oneLine = false,
+  kicker, title, accentTitle, subtitle, children, align = "center", oneLine = true,
 }: EditorialPageHeroProps) => {
   const centered = align === "center";
 

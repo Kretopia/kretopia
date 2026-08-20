@@ -19,6 +19,12 @@ interface EmailRequest {
   data?: Record<string, any>;
 }
 
+// Escapes user-controlled text before it's interpolated into an email HTML template.
+const escapeHtml = (value: unknown): string =>
+  String(value ?? '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+  ));
+
 const generateEmailContent = (type: EmailType, data: any) => {
   const unsubscribeFooter = `<p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">Don't want these emails? <a href="${baseUrl}/notification-settings" style="color: #8B5CF6;">Manage your notification preferences</a>.</p>`;
   
@@ -30,7 +36,7 @@ const generateEmailContent = (type: EmailType, data: any) => {
           <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
             <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
               <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to Kretopia 🎉</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${data.userName}, you're officially in.</p>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${escapeHtml(data.userName)}, you're officially in.</p>
             </div>
             <div style="padding: 30px; background: #ffffff;">
               <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Here's exactly how to get the most out of Kretopia — step by step. No guesswork needed.</p>
@@ -117,8 +123,8 @@ const generateEmailContent = (type: EmailType, data: any) => {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #8B5CF6;">New Match! 💫</h1>
-            <p>Hi ${data.userName},</p>
-            <p>Great news! You've matched with <strong>${data.matchName}</strong>${data.matchRole ? ` (${data.matchRole})` : ''}.</p>
+            <p>Hi ${escapeHtml(data.userName)},</p>
+            <p>Great news! You've matched with <strong>${escapeHtml(data.matchName)}</strong>${data.matchRole ? ` (${escapeHtml(data.matchRole)})` : ''}.</p>
             <p>This is a great opportunity to start a collaboration!</p>
             <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Connection</a>
             <p style="color: #666; margin-top: 30px;">Happy collaborating!<br>The Kretopia Team</p>
@@ -136,10 +142,10 @@ const generateEmailContent = (type: EmailType, data: any) => {
               <h1 style="color: white; margin: 0; font-size: 24px;">New Message 💬</h1>
             </div>
             <div style="padding: 30px; background: #ffffff;">
-              <p style="color: #333; font-size: 16px;">Hi ${data.recipientName},</p>
-              <p style="color: #6B7280; font-size: 16px;"><strong>${data.senderName}</strong> sent you a message:</p>
+              <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.recipientName)},</p>
+              <p style="color: #6B7280; font-size: 16px;"><strong>${escapeHtml(data.senderName)}</strong> sent you a message:</p>
               <div style="background: #F5F3FF; padding: 20px; margin: 20px 0; border-radius: 12px; border-left: 4px solid #8B5CF6;">
-                <p style="margin: 0; color: #333; font-style: italic;">"${data.messagePreview}"</p>
+                <p style="margin: 0; color: #333; font-style: italic;">"${escapeHtml(data.messagePreview)}"</p>
               </div>
               <div style="text-align: center; margin: 25px 0;">
                 <a href="${baseUrl}/messages" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">Reply Now</a>
@@ -162,8 +168,8 @@ const generateEmailContent = (type: EmailType, data: any) => {
               <h1 style="color: white; margin: 0; font-size: 24px;">New Connection Request 🤝</h1>
             </div>
             <div style="padding: 30px; background: #ffffff;">
-              <p style="color: #333; font-size: 16px;">Hi ${data.recipientName},</p>
-              <p style="color: #6B7280; font-size: 16px;"><strong>${data.senderName}</strong>${data.senderRole ? ` (${data.senderRole})` : ''} wants to connect with you on Kretopia!</p>
+              <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.recipientName)},</p>
+              <p style="color: #6B7280; font-size: 16px;"><strong>${escapeHtml(data.senderName)}</strong>${data.senderRole ? ` (${escapeHtml(data.senderRole)})` : ''} wants to connect with you on Kretopia!</p>
               <div style="text-align: center; margin: 25px 0;">
                 <a href="${baseUrl}/circle?tab=network" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">View Request</a>
               </div>
@@ -186,10 +192,10 @@ const generateEmailContent = (type: EmailType, data: any) => {
               <h1 style="color: white; margin: 0; font-size: 24px;">Project Invitation 🚀</h1>
             </div>
             <div style="padding: 30px; background: #ffffff;">
-              <p style="color: #333; font-size: 16px;">Hi ${data.recipientName},</p>
-              <p style="color: #6B7280; font-size: 16px;"><strong>${data.inviterName}</strong> has invited you to collaborate on <strong>${data.projectTitle}</strong>!</p>
+              <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.recipientName)},</p>
+              <p style="color: #6B7280; font-size: 16px;"><strong>${escapeHtml(data.inviterName)}</strong> has invited you to collaborate on <strong>${escapeHtml(data.projectTitle)}</strong>!</p>
               <div style="background: #F5F3FF; padding: 20px; margin: 20px 0; border-radius: 12px; border-left: 4px solid #8B5CF6;">
-                <p style="margin: 0; color: #5B21B6; font-weight: 600;">Project: ${data.projectTitle}</p>
+                <p style="margin: 0; color: #5B21B6; font-weight: 600;">Project: ${escapeHtml(data.projectTitle)}</p>
               </div>
               <div style="text-align: center; margin: 25px 0;">
                 <a href="${baseUrl}/desk/${data.projectId}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">View Project</a>
@@ -248,6 +254,14 @@ const handler = async (req: Request): Promise<Response> => {
     const body: EmailRequest = await req.json();
     const { type, recipientId, data: requestData } = body;
 
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (recipientId && !UUID_RE.test(recipientId)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid recipientId" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.log(`[send-user-email] Processing ${type} email request from user ${user.id}`);
 
     // Helper: get user profile
@@ -285,6 +299,68 @@ const handler = async (req: Request): Promise<Response> => {
       }
     };
 
+    // Helper: verify the caller actually has the relationship this email type claims,
+    // so an authenticated user can't spam an arbitrary recipientId with a fabricated
+    // notification. Each check looks for a real row the caller's own action would have
+    // created. Returns a 403 Response if the relationship doesn't exist, else null.
+    const requireRelationship = async (
+      relType: 'match' | 'message' | 'connection_request' | 'project_invite',
+      recipient: string,
+    ): Promise<{ ok: true; projectTitle?: string } | { ok: false; response: Response }> => {
+      const deny = () =>
+        new Response(
+          JSON.stringify({ error: "No matching relationship found for this notification" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+
+      if (relType === 'match') {
+        const { data } = await supabaseAdmin
+          .from('matches')
+          .select('id')
+          .or(`and(user1_id.eq.${user.id},user2_id.eq.${recipient}),and(user1_id.eq.${recipient},user2_id.eq.${user.id})`)
+          .limit(1)
+          .maybeSingle();
+        return data ? { ok: true } : { ok: false, response: deny() };
+      }
+
+      if (relType === 'message') {
+        const { data } = await supabaseAdmin
+          .from('messages')
+          .select('id')
+          .eq('sender_id', user.id)
+          .eq('receiver_id', recipient)
+          .limit(1)
+          .maybeSingle();
+        return data ? { ok: true } : { ok: false, response: deny() };
+      }
+
+      if (relType === 'connection_request') {
+        const { data } = await supabaseAdmin
+          .from('connections')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('connected_user_id', recipient)
+          .limit(1)
+          .maybeSingle();
+        return data ? { ok: true } : { ok: false, response: deny() };
+      }
+
+      // project_invite
+      const projectId = requestData?.projectId;
+      if (!projectId) return { ok: false, response: deny() };
+      const { data: invite } = await supabaseAdmin
+        .from('project_collaborators')
+        .select('project_id, projects(title)')
+        .eq('project_id', projectId)
+        .eq('user_id', recipient)
+        .eq('invited_by', user.id)
+        .limit(1)
+        .maybeSingle();
+      if (!invite) return { ok: false, response: deny() };
+      const projectTitle = (invite as any)?.projects?.title as string | undefined;
+      return { ok: true, projectTitle };
+    };
+
     // Helper: send email
     const sendEmail = async (to: string, subject: string, html: string) => {
       const response = await resend.emails.send({
@@ -312,6 +388,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // ---- MATCH ----
     if (type === 'match' && recipientId) {
+      const rel = await requireRelationship('match', recipientId);
+      if (!rel.ok) return rel.response;
+
       if (!await shouldSendEmail(recipientId, 'match')) {
         return new Response(JSON.stringify({ success: true, skipped: 'preferences' }), {
           status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -341,6 +420,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // ---- MESSAGE ----
     if (type === 'message' && recipientId) {
+      const rel = await requireRelationship('message', recipientId);
+      if (!rel.ok) return rel.response;
+
       if (!await shouldSendEmail(recipientId, 'message')) {
         return new Response(JSON.stringify({ success: true, skipped: 'preferences' }), {
           status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -373,6 +455,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // ---- CONNECTION REQUEST ----
     if (type === 'connection_request' && recipientId) {
+      const rel = await requireRelationship('connection_request', recipientId);
+      if (!rel.ok) return rel.response;
+
       if (!await shouldSendEmail(recipientId, 'connection')) {
         return new Response(JSON.stringify({ success: true, skipped: 'preferences' }), {
           status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -402,6 +487,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // ---- PROJECT INVITE ----
     if (type === 'project_invite' && recipientId) {
+      const rel = await requireRelationship('project_invite', recipientId);
+      if (!rel.ok) return rel.response;
+
       if (!await shouldSendEmail(recipientId, 'project')) {
         return new Response(JSON.stringify({ success: true, skipped: 'preferences' }), {
           status: 200, headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -421,7 +509,7 @@ const handler = async (req: Request): Promise<Response> => {
       const { subject, html } = generateEmailContent('project_invite', {
         recipientName: recipientProfile?.full_name || 'there',
         inviterName: senderProfile?.full_name || requestData?.inviterName || 'A creative',
-        projectTitle: requestData?.projectTitle || 'a project',
+        projectTitle: rel.projectTitle || 'a project',
         projectId: requestData?.projectId || '',
       });
       const emailResponse = await sendEmail(recipientEmail, subject, html);

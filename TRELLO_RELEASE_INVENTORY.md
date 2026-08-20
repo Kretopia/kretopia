@@ -36,13 +36,13 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 
 | Card | List | Status | Owner | Due Date |
 |---|---|---|---|---|
-| 1.1 Run final security audit | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 19 Aug, 02:00 |
-| 1.2 Confirm production migrations and schema integrity | List 1 — P0 Security & Release Gate | IMPLEMENTED_NOT_VERIFIED | Noé | 19 Aug, 02:00 |
-| 1.3 Audit authentication and legacy user access | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 20 Aug, 02:00 |
-| 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | PARTIALLY_IMPLEMENTED | Noé | 21 Aug, 02:00 |
-| 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | PARTIALLY_IMPLEMENTED (2/6 confirmed live) | Noé | 21 Aug, 02:00 |
+| 1.1 Run final security audit | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (2/5 confirmed; 3 WARN findings + card 2.2's P0 still open) | Noé | 19 Aug, 02:00 |
+| 1.2 Confirm production migrations and schema integrity | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (no dup migrations across 690 files; full prod drift check needs DB CLI access) | Noé | 19 Aug, 02:00 |
+| 1.3 Audit authentication and legacy user access | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (protected-route gate confirmed live; legacy/magic-link/OTP paths untested) | Noé | 20 Aug, 02:00 |
+| 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED — send-user-email auth gap found and fixed this session | Noé | 21 Aug, 02:00 |
+| 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (2/6 confirmed live; needs an unclaimed test record) | Noé | 21 Aug, 02:00 |
 | 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | 🔴 BLOCKED — P0 bug found, fix written not applied (3/5 confirmed live) | Noé | 22 Aug, 02:00 |
-| 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | NOT_STARTED | Jeff | 22 Aug, 02:00 |
+| 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; Bugs A and B both fixed, A pending deploy) | Jeff | 22 Aug, 02:00 |
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; EPK guest-access data question open) | Jeff | 23 Aug, 02:00 |
 | 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (4/4 confirmed live) | Noé | 23 Aug, 02:00 |
 | 3.2 Test creator application flow | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (5/5 confirmed) | Ethan | 24 Aug, 02:00 |
@@ -58,13 +58,13 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 6.2 Run cross-product UX consistency pass | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (1 confirmed; 1 real regression found — stray #9413D2) | Jeff | 27 Aug, 02:00 |
 | 6.3 Optimize Today command center | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/6 confirmed; empty states need a zero-data account) | Jeff | 27 Aug, 02:00 |
 | 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (4/7 confirmed live at 375px; 1 minor touch-target finding) | Jeff | 28 Aug, 02:00 |
-| 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 28 Aug, 02:00 |
-| 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | IMPLEMENTED_NOT_VERIFIED | Ethan | 28 Aug, 02:00 |
-| 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | PARTIALLY_IMPLEMENTED | Noé | 29 Aug, 02:00 |
+| 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | 🟡 PARTIALLY_VERIFIED (3/4 confirmed; 1 spot-checked not exhaustive) | Noé | 28 Aug, 02:00 |
+| 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | 🔴 BLOCKED — feedback widget is unreachable (3/4 confirmed) | Ethan | 28 Aug, 02:00 |
+| 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | ✅ VERIFIED (4/5 confirmed; suspicious-activity logging confirmed absent) | Noé | 29 Aug, 02:00 |
 | 8.1 Prepare the core product demo | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 29 Aug, 02:00 |
-| 8.2 Prepare technical demo environment | List 8 — Demo, Documentation & Release | NOT_STARTED | Noé | 29 Aug, 02:00 |
-| 8.3 Prepare product narrative and visuals | List 8 — Demo, Documentation & Release | PARTIALLY_IMPLEMENTED | Jeff | 29 Aug, 02:00 |
-| 8.4 Final full regression | List 8 — Demo, Documentation & Release | NOT_STARTED | Noé | 30 Aug, 02:00 |
+| 8.2 Prepare technical demo environment | List 8 — Demo, Documentation & Release | 🟡 PARTIALLY_VERIFIED — confirmed no seed/fixture infra exists; rest is human/rehearsal work | Noé | 29 Aug, 02:00 |
+| 8.3 Prepare product narrative and visuals | List 8 — Demo, Documentation & Release | 🟡 PARTIALLY_VERIFIED (1/4 resolved; 3/4 evidenced via 2.3/6.2 + a landing-copy overclaim found) | Jeff | 29 Aug, 02:00 |
+| 8.4 Final full regression | List 8 — Demo, Documentation & Release | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; 2 blocked on the open card 2.2 P0) | Noé | 30 Aug, 02:00 |
 | 8.5 CEO acceptance review | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan | 31 Aug, 02:00 |
 | 8.6 August 31 submission and release | List 8 — Demo, Documentation & Release | NOT_STARTED | Ethan (unassigned in Trello) | 1 Sept, 02:00 |
 | B.1 Storyboard and script the live demo walkthrough | 🛑 Blocked | BLOCKED | Jefferson/Ethan | 17 Aug, 21:00 (overdue) |
@@ -82,102 +82,97 @@ _(Cards appended incrementally, one list at a time.)_
 #### 1.1 Run final security audit
 - **List:** List 1 — P0 Security & Release Gate
 - **URL:** https://trello.com/c/iO9UPS8B/33-run-final-security-audit
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 2/5 confirmed, 3 open findings block full sign-off
 - **Owner:** Noé — CTO (member: Noé Plantier)
 - **Due date:** 19 Aug, 02:00 ("Due soon")
 - **Labels:** none
 - **Description:** Objective — audit authentication, RLS, RPCs, Edge Functions, ownership checks, exposed secrets, public links, Passport visibility, Co-Signs, Studio permissions, payment authorization. Scope — full security sweep of Kretopia's auth and data-access layers ahead of release. Dependencies: None.
-- **Checklist (Acceptance Criteria) 0/5, all unchecked in Trello:**
-  - [ ] No unresolved Critical security issue.
-  - [ ] High-risk findings have owners and mitigation plans.
-  - [ ] No service-role key is exposed in frontend code.
-  - [ ] User ownership checks are verified.
-  - [ ] Findings are documented in SECURITY_RELEASE_GATE.md.
+- **Checklist 2/5 confirmed, 3 blocked (2026-08-19 reconciliation):**
+  - [ ] **No unresolved Critical security issue — BLOCKED. Card 2.2's Co-Sign accept constraint bug (P0, discovered this session) is unresolved.** All RLS/auth-class critical findings from the linter-based scan are separately closed (see below).
+  - [ ] High-risk findings have owners and mitigation plans — the 3 open WARN items below have proposed fixes documented but no assigned owner/date.
+  - [x] No service-role key is exposed in frontend code.
+  - [x] User ownership checks are verified — `_shared/escrowAuth.ts`, `_shared/admin-guard.ts` used across 9+ functions, confirmed live via this session's guest-mode/ownership tests on cards 2.2, 4.2, 5.2.
+  - [ ] Findings are documented in SECURITY_RELEASE_GATE.md — mostly true, but that document does not yet include card 2.2's newly-discovered P0 or the `send-user-email` correction from card 1.4 below.
 - **Linked files/attachments:** none attached to card, but description explicitly points at `SECURITY_RELEASE_GATE.md`.
-- **Dependencies/blockers:** None declared.
+- **Dependencies/blockers:** Directly blocked by card 2.2 (P0, fix written, not applied) and card 1.4 below (real correction to a documented finding).
 - **Comments:** none beyond the automatic "added to list" activity log entry (18 Aug 2026, 08:53).
 - **Risk level:** P0 — Security (highest).
-- **Implementation detail:** `/Users/noeplantier/thrivein-new-beta/SECURITY_RELEASE_GATE.md` (11,989 bytes, modified 2026-08-18) documents real, substantive audit work: service-role-key-in-frontend check PASS (`rg SERVICE_ROLE src` → 0 hits), SSRF protection module, admin-guard helper used by 9+ functions, payment-amount trust resolved server-side, three critical/high findings fixed and deployed (TG-01 telegram-webhook hijack, TG-02 telegram-status leak, INV-01 PII exposure), two critical unauthenticated-relay edge functions fixed 2026-08-18 (EF-01 `send-notification-email`, EF-02 `send-push-notification`), and one RLS/constraint migration applied to production and verified by direct query.
-- **Verification detail:** The same file documents **3 still-open WARN-level findings** as of the 2026-08-17 re-scan: (2) `icdb_project_roles` claim policy allows credit spoofing — proposed fix not yet applied; (3) `talent_managers` fully enumerable by anon — proposed fix not yet applied; (4/5) `SECURITY DEFINER` functions executable by anon/authenticated — needs per-function triage, not yet done. The Trello checklist itself is 0/5 unchecked, so no team sign-off is recorded even though most items already appear satisfied in code.
-- **Evidence required:** Triage and close the 3 open WARN findings, then check off the Trello acceptance criteria against the final state of `SECURITY_RELEASE_GATE.md`.
-- **Recommended action:** Do not mark this card DONE until the 3 open WARN items are resolved or explicitly deferred with sign-off; then check the Trello boxes to match reality.
+- **Verification performed 2026-08-19 (reconciliation against SECURITY_RELEASE_GATE.md plus a fresh check):** `SECURITY_RELEASE_GATE.md` §D shows every *linter-scanned* critical RLS/auth finding closed and applied to production as of 2026-08-18 (service-role-key check PASS, SSRF protection module, admin-guard on 9+ functions, payment-amount trust resolved server-side, TG-01/TG-02/INV-01 fixed, EF-01/EF-02 unauthenticated-relay findings fixed 2026-08-18). Re-confirmed the **3 still-open WARN findings are genuinely still open**, not stale documentation: grepped every migration touching `icdb_project_roles` (most recent: 2026-08-12, before the finding was even raised) and `talent_managers` (most recent: 2026-03-26) — no fix has landed for either since the 2026-08-17 scan flagged them. The 4th/5th WARN (`SECURITY DEFINER` functions executable by anon/authenticated) also has no evidence of the per-function triage being done. **Not previously in this document:** this session's own QA (card 2.2) found a new Critical-class functional bug outside the linter's scope — a check-constraint mismatch that silently fails every real Co-Sign acceptance — which is exactly the kind of "unresolved Critical security issue" this card's first checklist item asks about, even though it's a data-integrity bug rather than an access-control one.
+- **Recommended action:** Apply card 2.2's migration first (highest severity, actively broken in production). Then triage the 3 WARN items — even a documented "defer to post-launch, tracked in [ticket]" would satisfy "high-risk findings have owners and mitigation plans," which is currently the weakest-evidenced item.
 
 #### 1.2 Confirm production migrations and schema integrity
 - **List:** List 1 — P0 Security & Release Gate
 - **URL:** https://trello.com/c/wg0jO0Yu/34-confirm-production-migrations-and-schema-integrity
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** 🟡 PARTIALLY_VERIFIED — no duplicate migrations confirmed; full production drift check needs DB CLI access this environment doesn't have
 - **Owner:** Noé — CTO
 - **Due date:** 19 Aug, 02:00 ("Due soon")
 - **Labels:** none
 - **Description:** Objective — confirm production migrations match tracked migration history and no duplicate/non-replay-safe migration remains. Scope — reconcile production DB schema against tracked migration history so it can be reliably replayed and matches source control. Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Production schema is verified.
-  - [ ] No duplicate migration files remain.
-  - [ ] No unexpected schema drift exists.
-  - [ ] Types regenerate successfully.
-  - [ ] No destructive migration is applied without approval.
+- **Checklist 2/5 confirmed, 3 not independently verifiable in this environment (2026-08-19):**
+  - [x] No duplicate migration files remain — **re-confirmed this pass**: `ls supabase/migrations | sort | uniq -d` across the current **690** files returns empty.
+  - [ ] Production schema is verified — confirmed for only the 2 most recent migrations (see below), not a full reconciliation.
+  - [ ] No unexpected schema drift exists — would need `supabase db diff` against the live project; this session has no authenticated Supabase CLI/MCP access to run it.
+  - [ ] Types regenerate successfully — same blocker; can't run `supabase gen types` without project-linked CLI auth. Spot-checked instead: `src/integrations/supabase/types.ts` (622KB, last modified 2026-08-17) types `verification_status` as `string | null` (not a strict literal union), so it would not be broken by card 2.2's still-unapplied `'peer'`-status migration — no drift risk from that specific change once applied.
+  - [x] No destructive migration is applied without approval — every migration this whole engagement has gone through the "written by Claude, reviewed and run by the user" protocol; none applied directly.
 - **Linked files/attachments:** none on card.
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P0 — Security/data integrity.
-- **Implementation detail:** `supabase/migrations/` contains 688 files with no exact-name duplicates (`ls | sort | uniq -d` → empty). `SECURITY_RELEASE_GATE.md` §F states both pending migrations (`20260817140000_harden_credit_dispute_resolution_rls.sql`, `20260818120000_thrivefund_milestone_release_idempotency.sql`) were reviewed by the user and applied to production via the Lovable Cloud SQL editor on 2026-08-18, then verified with a read-only query against the live database (`pg_get_constraintdef`/`pg_get_expr` matched the migration SQL). Recent git log also shows `docs(security): record both migrations as applied to production, verified` and `feat(security): wire thrivefund-release-milestone to permanent duplicate-release guard`.
-- **Verification detail:** This is real, credible evidence of migration application and a manual verification step — but it covers only the two most recent migrations, not a full reconciliation of all 688 files against a fresh `supabase db diff`/schema-drift check, and "types regenerate successfully" was not independently confirmed in this pass.
-- **Evidence required:** Run a full schema-drift check (`supabase db diff` or equivalent) and confirm generated TypeScript types compile, then check the Trello boxes.
-- **Recommended action:** Treat as substantively done for the two named migrations; still run one full drift/regeneration pass before checking off "no unexpected schema drift" and "types regenerate successfully."
+- **Verification performed 2026-08-19:** `SECURITY_RELEASE_GATE.md` §F documents both prior pending migrations (`20260817140000_harden_credit_dispute_resolution_rls.sql`, `20260818120000_thrivefund_milestone_release_idempotency.sql`) as reviewed by the user, applied via the Lovable Cloud SQL editor on 2026-08-18, and verified by a read-only query against the live database (`pg_get_constraintdef`/`pg_get_expr` matched the migration SQL exactly) — this is real, credible evidence, just scoped to 2 of 690 files.
+- **Evidence required:** A full `supabase db diff` (or equivalent) run and a `supabase gen types` run, both of which require Supabase CLI access authenticated against the live project — not available to Claude in this environment (the Supabase MCP server here is unauthenticated). This needs to be run by the user or in an environment with that access.
+- **Recommended action:** Treat as substantively done for migration hygiene (no dupes, disciplined apply process) and the 2 most recently applied migrations; the full drift/type-regeneration check remains a genuine gap that only the user (or a CLI-authenticated environment) can close.
 
 #### 1.3 Audit authentication and legacy user access
 - **List:** List 1 — P0 Security & Release Gate
 - **URL:** https://trello.com/c/mSRGXImr/35-audit-authentication-and-legacy-user-access
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — protected-route gate confirmed live; legacy/magic-link/OTP/expired-link paths untested
 - **Owner:** Noé — CTO
 - **Due date:** 20 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — test signup, login, logout, magic link, OTP, verification, password recovery, sessions, redirects and existing user access. Scope — end-to-end validation of every authentication pathway, including handling of pre-existing (legacy) user accounts carried over into Kretopia. Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Existing users can log in.
-  - [ ] Kretopia redirects work correctly.
-  - [ ] Protected routes remain protected.
-  - [ ] Expired links fail safely.
-  - [ ] Session refresh works.
+- **Checklist 2/5 confirmed, 3 not tested this pass (2026-08-19):**
+  - [x] Existing users can log in — indirectly but robustly confirmed: this whole session alone required 5-6+ real re-authentications after session logouts, every one of them successful (via the user signing back in themselves, never via credentials Claude entered).
+  - [ ] Kretopia redirects work correctly — not specifically tested (e.g. old ThriveIN-style URLs redirecting to Kretopia equivalents).
+  - [x] Protected routes remain protected — **live-tested this pass.** Using the reversible localStorage-token-swap technique (real session token backed up, cleared, restored afterward — never a real sign-out), navigated to `/desk` as a true unauthenticated guest: the route did not crash or leak data, it rendered a clean "Sign up to unlock — Create a free account to access this feature, build your credits, and start collaborating" gate with Sign Up / Sign In actions. Session restoration verified afterward (`localStorage` token present, `/today` re-rendered real authenticated content). This is the third independent confirmation of this exact gating pattern this session (also seen on cards 2.2 and 4.2), making it very solid evidence.
+  - [ ] Expired links fail safely — not tested; would need a genuinely expired magic-link/recovery token, which isn't producible without waiting out a real expiry window or DB access to backdate one.
+  - [ ] Session refresh works — not directly tested; `AuthContext.tsx` implements `onAuthStateChange` (confirmed present in code), but no live long-running-session refresh was observed in this pass.
 - **Linked files/attachments:** none on card.
 - **Dependencies/blockers:** None declared; in practice this depends on the "Datas Migration from ThriveIN to Kretopia" Done-list card (legacy user accounts).
 - **Comments:** creation log only.
 - **Risk level:** P0 — Auth/security.
-- **Implementation detail:** `src/contexts/AuthContext.tsx` implements `onAuthStateChange`/session handling; 118 files under `src/` call `supabase.auth`. This confirms a real, non-trivial auth implementation exists.
-- **Verification detail:** No first-pass evidence was found of an actual **end-to-end test pass** (manual or automated) covering legacy-account login, magic link, OTP, expired-link handling, specifically. Existence of the auth code is not equivalent to the card's ask, which is a QA sweep.
-- **Evidence required:** A test log or QA note (manual run-through or e2e test suite output) covering each acceptance-criteria bullet, especially legacy/ThriveIN-migrated accounts.
-- **Recommended action:** Schedule/execute the manual QA pass described in the card; this is a testing task, not an implementation gap.
+- **Evidence required:** A genuinely legacy (pre-Kretopia, ThriveIN-migrated) test account to exercise the "existing users" criterion precisely as worded, plus a magic-link/OTP/expired-link test pass.
+- **Recommended action:** The one criterion most central to security (protected routes staying protected) is now genuinely live-confirmed, not just code-inferred. The remaining items are lower-risk QA sweep items, not known gaps — schedule a pass with a real legacy account if one exists, or explicitly confirm none needs separate testing if all users were migrated identically.
 
 #### 1.4 Confirm transactional email delivery and branding
 - **List:** List 1 — P0 Security & Release Gate
 - **URL:** https://trello.com/c/iFpU77K8/36-confirm-transactional-email-delivery-and-branding
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — branding confirmed; the send-user-email gap found this session is now fixed
 - **Owner:** Noé — CTO
 - **Due date:** 21 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — audit verification, welcome, Passport, Co-Sign, Scout, Studio, call, payment, invoice, milestone (etc.) transactional emails. Scope — confirm every transactional email is correctly branded, correctly routed, and respects user notification preferences. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] No duplicate emails are sent.
-  - [ ] Notification preferences are respected.
-  - [ ] User-facing branding is Kretopia.
-  - [ ] Links point to valid Kretopia routes.
-  - [ ] Sender-domain status is documented.
-  - [ ] Unverified sender changes are not forced into production.
+- **Checklist 2/6 confirmed, 1 fixed this session, 3 not directly tested (2026-08-19):**
+  - [ ] No duplicate emails are sent — not directly tested.
+  - [x] Notification preferences are respected — confirmed in code: `send-user-email`'s `shouldSendEmail()` checks `notification_preferences.email_messages/email_matches/email_opportunities` before sending, for every email type.
+  - [x] User-facing branding is Kretopia — re-confirmed this pass: grepped every `send-*` edge function's `from:` field; 10+ functions consistently use `"Kretopia <info@kretopia.com>"` with zero ThriveIN references found in sender identities.
+  - [ ] Links point to valid Kretopia routes — not directly tested.
+  - [ ] Sender-domain status is documented — `send-transactional-email/index.ts` still references `SENDER_DOMAIN = "notify.thrivein.io"` alongside `FROM_DOMAIN = "kretopia.com"` as separate constants; whether this reflects an intentional dual-domain DNS setup (as `SECURITY_RELEASE_GATE.md`'s "dual-email-provider DNS question" suggests) or stale config wasn't resolved in this pass.
+  - [ ] Unverified sender changes are not forced into production — not directly tested.
 - **Linked files/attachments:** none on card; corresponds directly to `EMAIL_RELEASE_AUDIT.md` in the repo.
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P0 — release-blocking, moderate trust impact (phishing/spam risk if wrong).
-- **Implementation detail:** `EMAIL_RELEASE_AUDIT.md` (15,255 bytes, modified 2026-08-18) is referenced from `SECURITY_RELEASE_GATE.md` §E and documents a full manual audit of 18 email-related edge functions plus `send-push-notification`, with two critical unauthenticated-relay findings (EF-01, EF-02) fixed and deployed same day.
-- **Verification detail:** The security-gate doc also flags remaining lower-severity, **unfixed** issues in this exact area: `send-user-email` has the same class of auth gap (recommended for deletion, dead code); `send-reengagement-emails` has no cron/admin gate; several older templates (`send-invoice-email`, `send-notification-email`, `send-user-email`) interpolate user-controlled strings into email HTML unescaped. Branding/sender-domain/notification-preference verification was not directly confirmed in this pass.
-- **Evidence required:** Sender-domain verification status (SPF/DKIM), a branding pass across templates, and resolution (or explicit defer) of the unescaped-HTML-interpolation findings.
-- **Recommended action:** Close out the unescaped-HTML and dead-code findings from `EMAIL_RELEASE_AUDIT.md` before treating this card as done; the security-relay class of bug is fixed.
+- **Real correction found this pass (2026-08-19):** `SECURITY_RELEASE_GATE.md` §E and `EMAIL_RELEASE_AUDIT.md` both described `send-user-email` as having "the same class of auth gap [as EF-01/EF-02] but zero live call sites (dead code, recommend deletion)." **That was factually incorrect** — a fresh grep found **6 real, live call sites**: `src/components/DirectMessageDialog.tsx`, `src/components/swipe/MatchModal.tsx`, `src/components/project/StartProjectFromMatchDialog.tsx`, `src/components/circle/BrowseCreators.tsx`, `src/pages/messages/useSendMessage.ts`, and `supabase/functions/agent-send-dm/index.ts`. The function required authentication (`getUser()` against the caller's JWT) but had **no check that the caller had any real relationship to `recipientId`** — any authenticated user could call it with `type: 'message'|'match'|'connection_request'|'project_invite'` and an arbitrary `recipientId` and get a branded, real-domain email sent to that real user, without any actual message/match/connection/invite existing. It also interpolated `data.messagePreview` — a fully client-controlled, unescaped string — directly into the email HTML, a real HTML-injection vector.
+- **Fixed 2026-08-19** (same session, on request): `supabase/functions/send-user-email/index.ts` now has a `requireRelationship()` check before every `match`/`message`/`connection_request`/`project_invite` send — `match` requires a real `matches` row, `message` a real `messages` row with `sender_id = caller`, `connection_request` a real `connections` row with `user_id = caller`, `project_invite` a real `project_collaborators` row matching `project_id`+`user_id`(recipient)+`invited_by`(caller); on failure the function returns 403 instead of sending. `escapeHtml()` now wraps every user-controlled value interpolated into any HTML template (not just `messagePreview`). `recipientId` is validated as a well-formed UUID before any DB query, closing a PostgREST filter-injection vector that the relationship check's `.or()` filter would otherwise have opened. `project_invite` emails now use the DB-verified project title instead of trusting the client-supplied one. `SECURITY_RELEASE_GATE.md` and `EMAIL_RELEASE_AUDIT.md` both updated to correct the "dead code" claim and record the fix. Not deployed/verified live — this environment can't invoke Deno edge functions directly; verification is by code review only (brace/paren balance checked, schema/FK columns cross-checked against migrations, `tsc`/build/tests re-run clean for the rest of the repo).
+- **Evidence required:** Live re-test after this fix deploys (send a real message/connection-request/project-invite and confirm the email arrives; attempt a direct API call with an unrelated `recipientId` and confirm 403). Sender-domain SPF/DKIM documentation and a full branding pass across all templates remain open.
+- **Recommended action:** Deploy and live-verify the `send-user-email` fix, then re-check this box. The remaining 3 unchecked items (duplicate-email prevention, link validity, sender-change process) are lower-risk QA sweep items, not known gaps.
 
 ### List 2 — P0 Core Product Loop
 
 #### 2.1 Test Search → Passport end-to-end
 - **List:** List 2 — P0 Core Product Loop
 - **URL:** https://trello.com/c/dDKqG6xw/37-test-search-%E2%86%92-passport-end-to-end
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 2/6 confirmed live, needs a genuinely unclaimed test record for the rest
 - **Owner:** Noé — CTO
 - **Due date:** 21 Aug, 02:00
 - **Labels:** none
@@ -227,31 +222,40 @@ _(Cards appended incrementally, one list at a time.)_
   5. **Self-claimed work is never presented as verified — CONFIRMED, both in UI and DB.** `CoSignsSection.tsx` buckets credits into 4 visually and textually distinct groups (Verified / Publicly Sourced / Pending / Self-claimed) via the single shared `classifyCreditEvidence()` classifier, so the Stamps grid and Co-Signs carousel can never disagree. `classifyCreditEvidence` only returns `"verified"` when `verification_status === "verified"` — which per the RPC requires **2** accepted endorsements, not 1 — so even a fixed/working single accept would correctly land a credit in "Pending" (1 endorsement, awaiting a 2nd), never "Verified." The DB-level lockdown from the earlier C3/C9 migration (escalation to `'verified'`/`'auto_discovered'` blocked outside an authorized RPC) remains in force and untouched by this bug.
 - **Fix written, not applied:** `supabase/migrations/20260819140000_fix_credits_peer_status_constraint.sql` adds `'peer'` to the allowed `credits_verification_status_check` values (matching what the RPC and 5 frontend files already assume). Per this engagement's standing rule, this was **not applied directly** — needs to be pasted into the Lovable Cloud SQL editor and run, then re-verified with a real accept.
 - **Test data created this pass (real, needs no cleanup but is visible if anyone looks):** two `credit_endorsements` rows on Noé/Ethan's real account — one on "Launch of Thrive in Dubai" (attempted accept, named "QA Verification Test (2026-08-19)", failed and rolled back — credit unaffected), one on "ThriveIN Social Bali" (declined, named "QA Decline Test (2026-08-19)", `credit_endorsements.status = 'declined'`, does not touch the credit or appear anywhere on the public Passport).
+- **Re-verified 2026-08-20 — bug still live, migration not yet applied.** Created a fresh Co-Sign request on the same "Launch of Thrive in Dubai" credit ("QA Retest (2026-08-20)"), got a real `/credit-verify?token=...` link, opened it as a true guest (reversible localStorage-token-swap technique, session restored and confirmed afterward), and clicked "Yes, we worked together." **Same exact failure reproduces**: `new row for relation "credits" violates check constraint "credits_verification_status_check"`. Confirms `20260819140000_fix_credits_peer_status_constraint.sql` has not been applied yet — this remains the release blocker for cards 2.2 and 8.4.
 - **Recommended action:** Apply `20260819140000_fix_credits_peer_status_constraint.sql` before Aug 31 — this is a release blocker, not a nice-to-have. After applying, re-run a real accept (a fresh guest link, true-guest tab) to confirm the credit correctly lands in "Pending," then a second accept from a different endorser to confirm it correctly reaches "Verified" at 2.
 
 #### 2.3 Review Passport as the core product
 - **List:** List 2 — P0 Core Product Loop
 - **URL:** https://trello.com/c/4NCUXnRC/39-review-passport-as-the-core-product
-- **Status:** NOT_STARTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 4/6 confirmed live; Bugs A and B both fixed 2026-08-20 (A pending deploy, B verified live), visibility gap still open
 - **Owner:** Jeff — CDO (member: Jefferson Gordon-Lennox)
 - **Due date:** 22 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — ensure Passport is the clearest and strongest product surface. Scope — review the Passport page against other surfaces so it reads as the unambiguous core product. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] One dominant Passport surface.
-  - [ ] Roles, bio, credits, skills and trust status are immediately visible.
-  - [ ] No duplicate cards or repeated statistics.
-  - [ ] Share action is clear.
-  - [ ] Visibility settings are understandable.
-  - [ ] Mobile layout is clean.
-- **Linked files/routes:** `src/components/passport/*` (PassportHero, PassportCommandCenter, PassportAnchorStrip, PassportMomentum, etc.).
-- **Dependencies/blockers:** None declared; this is a UX/design review task, not a code-existence question.
+- **Checklist 4/6 confirmed, 2 failed with root cause (2026-08-20):**
+  - [x] One dominant Passport surface.
+  - [x] Roles, bio, credits, skills and trust status are immediately visible.
+  - [ ] **No duplicate cards or repeated statistics — FAILS, 2 confirmed bugs.**
+  - [x] Share action is clear.
+  - [~] Visibility settings are understandable — mixed: one real, narrow control exists; no whole-Passport privacy setting is reachable anywhere.
+  - [x] Mobile layout is clean.
+- **Linked files/routes:** `src/components/passport/PassportHero.tsx`, `src/components/passport/KretoActionCenter.tsx`, `src/components/agent/SurfaceProactiveCards.tsx`, `supabase/functions/surface-agent-watch/index.ts`, `src/components/profile/RateCardSection.tsx`, `src/components/profile/ProfileVisibilityDashboard.tsx` (dead), `src/pages/Settings.tsx`.
+- **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P1/P0-adjacent — UX coherence for the flagship surface, demo-critical.
-- **Implementation detail:** N/A — this is a design/UX review task, not an implementation task. Many Passport components exist (see 2.1), but whether they read as "one dominant surface" without duplication is a subjective design judgment call, not something a code grep can confirm.
-- **Verification detail:** No design review artifact (Figma link, before/after notes, screenshots) found attached to the card or in the repo docs skimmed so far.
-- **Evidence required:** A completed UX review note/screenshot set from Jefferson confirming the 6 acceptance criteria.
-- **Recommended action:** Awaiting owner (Jefferson) to perform and document the review; first-pass code check cannot substitute for this design judgment.
+- **Verification performed 2026-08-20**, live against an authenticated account (Ethan Auguste) at `/profile` (the real, single owner-facing Passport route):
+  1. **One dominant Passport surface — CONFIRMED.** `/profile` (`ProtectedRoute`) is the one editable Passport a signed-in user lands on; `/passport` is a separate public *directory* (browse other creators), and `/passport/:passportId` resolves an individual's public share view — distinct purposes, not competing "which page is my real Passport" surfaces. Confirmed via `App.tsx` route table, not just visual inspection.
+  2. **Roles, bio, credits, skills, trust status immediately visible — CONFIRMED.** One scroll from the top: name, ICDB-style id (`THR-EF429`), handle, role + up to 3 sub-role chips, location, live availability status, trust-level badge (`L2`), full bio, "Strongest Credits" (2 featured, verified), stamps/co-sign counts, and skill chips — all above the fold or one scroll down.
+  3. **No duplicate cards or repeated statistics — FAILS, 2 real bugs, both root-caused:**
+     - **Bug A — two contradicting completeness meters on the same page. FIXED 2026-08-20, pending deploy.** `PassportHero.tsx` renders "Passport Strength — 100%" (a live, correctly-computed client-side score from real profile/credit fields). A few screens below it, `KretoActionCenter.tsx` mounts `SurfaceProactiveCards`, which rendered an AI-generated nudge card reading "Your Passport is at 0%" — the *opposite* claim, on the same page, for the same account. Root cause found in `supabase/functions/surface-agent-watch/index.ts`'s `computeStrength()`: it checked `p.primary_role` and `p.day_rate`, **neither of which exists as a column anywhere in the `profiles` table** (confirmed by a full grep of the generated Supabase types). Worse, the same query's `.select()` requested both non-existent columns, so the query very likely failed outright — `computeStrength()`'s own `if (!p) return 0;` guard means a failed profile fetch produces a flat, hardcoded 0%, which matches exactly what was observed (not a partial undercount, a total one). **Fix:** rewrote `computeStrength()` to take the same inputs and weights as `PassportHero.tsx`'s real `strength` formula — `bio`, `avatar_url`, total credits, verified credits, and cosigns (from real `credits`/`reviews` table counts, all column names cross-checked against the generated Supabase types) — so the two numbers are now structurally the same calculation and can't contradict each other again. Also fixed a second, same-root-cause bug in the same function: the "Set your day rate" nudge checked `profile.day_rate` (also nonexistent), which would have made it fire for every user regardless of whether they'd set a rate — repointed it at the real `creator_rates` table (`is_active` rows), matching `RateCardSection.tsx`. `tsc --noEmit` clean; this Deno function isn't covered by the root tsconfig (consistent with every other edge function in this repo), so verification here is by code/schema review, not a local run — same caveat as the `send-user-email` fix. **Not yet live-reverified**: this environment can't invoke edge functions directly, and the already-inserted stale "Your Passport is at 0%" `agent_proposals` row will keep showing on screen until it's dismissed or superseded — the fix stops new wrong nudges from being generated, it doesn't retroactively clear the one already sitting in the database from this session's earlier testing.
+     - **Bug B — redundant suggestion stacking inside Kreto Action Center itself. FIXED 2026-08-20, verified live.** The same underlying two actions were surfaced as six separate-looking prompts in one scroll: "Turn claimed experience into trusted experience / 12 credits could use a Co-Sign," then "Slipping. Add a recent credit or start a Studio to hold your standing," then "You qualify on score. Finish verification to claim Headliner" (banner) immediately followed by its own duplicate standalone row "Finish verification to claim Headliner," plus two more variants of the same "add a credit" nudge: "Add a recent credit to hold your standing" and "Add a credit from the last 90 days." Root cause: `KretoActionCenter.tsx` rendered `standing.decaying` and `standing.gatedAt` as static, non-clickable informational banners — but `src/lib/passport/standing.ts`'s `suggestNextActions()` *also* pushes an item for the exact same two signals (`finish-verification` reusing the identical `gateReason` text, `stop-decay` reusing the same "add a recent credit" message) into `standing.nextActions`, which renders separately as a clickable row directly below. Both signals were genuinely shown twice — once inert, once actionable. **Fix:** removed the two static banners from `KretoActionCenter.tsx` (and their now-unused `TrendingDown`/`ShieldAlert` icon imports); confirmed via `suggestNextActions()`'s push order (gate/decay items are always pushed first, before the `.slice(0, 3)` cap) that nothing is lost — the same information still surfaces, now exactly once, as an actionable link instead of dead text. **Verified live**: reloaded `/profile`, confirmed the two duplicate lines are gone and the Action Center now reads as 5 distinct, non-overlapping items (co-sign nudge, next-unlock info, finish-verification, add-recent-credit, add-credit-90d) with no repeated wording. `tsc`/build/test (68/68) clean.
+     - **Observation, lower confidence — a possible duplicate credit record.** "ThriveXchange Bali 2022 Promo Video" (role: Creator) appears with three different presentations in the full credits list: once in "Strongest Credits" marked `Verified`, once near the top of the full list marked `Self-claimed · Request verify`, and once further down (dated 2023, source `youtube`) marked `Verified`. No dedup logic was found anywhere in the credits-rendering path (`PassportHero.tsx`, `PassportCommandCenter.tsx`). This reads as either the same credit rendered inconsistently or two un-merged rows (a manual self-claim plus an auto-discovered YouTube one) for the same real-world credit — flagged as observed, not confirmed via a direct DB query (Supabase MCP isn't authorized in this session).
+  4. **Share action is clear — CONFIRMED.** A single, prominent "Share Passport" button sits directly under the strength meter, with adjacent QR-code and export/download icon buttons, plus a further "Preview public Passport ↗" link lower on the page. No ambiguity about how to share.
+  5. **Visibility settings are understandable — MIXED, a real gap.** No whole-Passport "who can see this" privacy toggle exists anywhere reachable in the live app today. `src/pages/Settings.tsx` has its own code comments confirming this was deliberate, not missed: line 110, `// Privacy switches removed — were never persisted. Re-add when wired to backend.`, and line 746, `{/* Privacy toggles hidden for MVP — were never persisted (local state only). Re-add when wired to backend. */}`. A separate `ProfileVisibilityDashboard.tsx` component exists in the repo (profile-view-stats/search-appearance framing, not a privacy toggle) but is **never imported or rendered anywhere** — confirmed via a repo-wide grep for its name outside its own file — dead code, same class of finding as card 7.2's orphaned feedback widget. The one visibility control that *is* real, live, and well-designed is `RateCardSection.tsx`'s per-rate-card-entry selector (`public` / `connections` / `on_request`, with distinct icons and color-coded badges) — but it's scoped to individual rate line items, not the Passport as a whole.
+  6. **Mobile layout is clean — CONFIRMED.** Tested live at 375×812: `document.documentElement.scrollWidth === window.innerWidth` (no horizontal overflow), cards stack cleanly, text wraps correctly, bottom nav and primary CTA stay reachable. Bug A (the 100%/0% contradiction) reproduces identically on mobile — confirmed it's not a desktop-only rendering artifact.
+- **Evidence required:** Once this branch's edge functions deploy, re-test Bug A live: dismiss/clear the existing stale "0%" proposal, trigger a fresh `surface-agent-watch` run, and confirm the new nudge (if any) agrees with "Passport Strength." Confirm whether the "ThriveXchange Bali 2022 Promo Video" entries are one record or a genuine duplicate needing a merge/dedup pass. Decide whether whole-Passport visibility settings are in scope for this release or explicitly deferred post-beta.
+- **Recommended action:** Bugs A and B are both fixed — A needs a post-deploy live re-check (frontend fixes like B verify immediately in this environment; edge function fixes like A don't). The remaining visibility gap and the possible duplicate credit record are real but lower-severity items suitable for a fast-follow rather than blocking release.
 
 #### 2.4 Test Passport sharing and public EPK
 - **List:** List 2 — P0 Core Product Loop
@@ -650,69 +654,77 @@ _(Cards appended incrementally, one list at a time.)_
 #### 7.1 Instrument the core funnel
 - **List:** List 7 — P1 Analytics, Safety & Feedback
 - **URL:** https://trello.com/c/bG7vBa8M/55-instrument-the-core-funnel
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 3/4 confirmed, 1 spot-checked (not exhaustively audited)
 - **Owner:** Noé — CTO
 - **Due date:** 28 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — track Search, Passport claim, credit confirmation, Co-Sign, opportunity view, application (funnel stages). Scope — instrument the full core funnel with consistently named events so drop-offs are visible. Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Events are named consistently.
-  - [ ] No unnecessary sensitive data is collected.
-  - [ ] Funnel drop-offs are visible.
-  - [ ] Errors are logged safely.
-- **Linked files/routes:** `src/lib/analytics.ts`, `src/lib/platformAnalytics.ts`, `src/hooks/useSiteAnalytics.ts`. Repo doc `ANALYTICS_EVENT_TAXONOMY.md` (14,959 bytes, modified 2026-08-07 — the oldest analytics-related doc found, predates the board by 11 days) and `KRETOPIA_MTD_FUNNEL_AUDIT_AUG_1_14_2026.md`.
+- **Checklist 3/4 confirmed, 1 spot-checked (2026-08-19):**
+  - [x] Events are named consistently.
+  - [~] No unnecessary sensitive data is collected — spot-checked ~10/58 events, all clean; not an exhaustive audit.
+  - [x] Funnel drop-offs are visible.
+  - [x] Errors are logged safely.
+- **Linked files/routes:** `src/lib/analytics.ts` (510 lines), `src/lib/platformAnalytics.ts`, `src/components/admin/CreativeActionFunnels.tsx`, `src/components/admin/ScoutFunnelTab.tsx`.
 - **Dependencies/blockers:** None declared.
 - **Comments:** creation log only.
 - **Risk level:** P1, with a privacy-adjacent criterion ("no unnecessary sensitive data is collected").
-- **Implementation detail:** A real analytics layer exists (three distinct files: general analytics, platform analytics, and a site-analytics hook), plus a dedicated event-taxonomy doc and a dated funnel audit report already in the repo — meaningful prior investment in this exact area.
-- **Verification detail:** `ANALYTICS_EVENT_TAXONOMY.md` is 11 days older than this Trello card and may be stale relative to whatever funnel stages exist today (Search→Passport, Co-Sign, Scout application flows have all had recent code changes per other cards in this catalog). The "no unnecessary sensitive data" and "errors logged safely" criteria were not directly checked against actual event payloads in this pass.
-- **Evidence required:** Diff the current event-firing code against `ANALYTICS_EVENT_TAXONOMY.md` to find drift; spot-check a few event payloads for PII.
-- **Recommended action:** Treat the taxonomy doc as a starting point, not a finished answer — refresh it against the current funnel before checking off "consistently named" and "drop-offs are visible."
+- **Verification performed 2026-08-19:**
+  1. **Events are named consistently — CONFIRMED.** Grepped every `eventName:` literal in `src/lib/analytics.ts` (58 total) — 100% consistent snake_case, no drift. Every funnel stage named in this card's description maps directly onto a real event: Search → `search_started`/`creative_search_started`/`creative_search_completed`; Passport claim → `passport_found`/`claim_started`/`passport_build_started`/`passport_build_completed`/`activation_completed`; credit confirmation → `credit_confirmed`/`credit_removed`; Co-Sign → `trust_action_started`; opportunity view/application → `opportunity_viewed`/`opportunity_applied`. The `ANALYTICS_EVENT_TAXONOMY.md` doc referenced in the original inventory entry is superseded by this direct code check, not relied on.
+  2. **Funnel drop-offs are visible — CONFIRMED, and this is a genuine dashboard, not mock data.** `src/components/admin/CreativeActionFunnels.tsx` computes real drop-off percentages (`pct()`, `drop = 100 - conv`) across 4 named funnels (Scout, Connection, Studio, Invoice) for a selectable date range, sourced from a real Supabase RPC call — `supabase.rpc("get_creative_action_funnels", { _start, _end })` — not a hardcoded or fabricated dataset. `ScoutFunnelTab.tsx` provides a second, Scout-specific admin view over the same event data.
+  3. **Errors are logged safely — CONFIRMED.** `trackEvent()` (the core function every `analytics.*` call funnels through) wraps its Supabase insert in a try/catch that fails silently — a broken analytics call never crashes the app or surfaces to the user. A dedicated `errorOccurred(errorType, errorMessage, context)` event exists for intentionally logging app errors into the same `analytics_events` table, keeping error telemetry in the same consistently-named system as everything else.
+  4. **No unnecessary sensitive data is collected — spot-checked, not exhaustive.** Reviewed ~10 of the 58 events' property definitions (covering `sign_up`, `sign_in`, `opportunity_applied`, `credit_confirmed`, `passport_build_completed`, `search_started`, among others) — all properties are non-PII: IDs, counts, categorical strings/tiers, booleans. Separately, `platformAnalytics.ts` (the sibling site-wide traffic system) self-describes as "privacy-respecting" and has real bot/preview/admin-route filtering (`isPreviewOrBot()`, `isExcludedPath()`). No email addresses, names, or free-text user content were found in the properties reviewed. This is a sample, not a full audit of all 58 events' payloads.
+- **Recommended action:** Check off 3/4 boxes now. For the 4th, either accept the spot-check as sufficient given the consistent non-PII pattern observed, or run one follow-up pass grepping all 58 event property objects specifically for free-text/user-content fields (message bodies, bios, search queries) before final release sign-off.
 
 #### 7.2 Add bug reporting and feedback
 - **List:** List 7 — P1 Analytics, Safety & Feedback
 - **URL:** https://trello.com/c/yCatYiHz/56-add-bug-reporting-and-feedback
-- **Status:** IMPLEMENTED_NOT_VERIFIED
+- **Status:** 🔴 BLOCKED — P1 bug found: the feedback widget is currently unreachable by any user
 - **Owner:** Ethan — CEO
 - **Due date:** 28 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — ensure beta users can report bugs, content, users and suggestions. Scope — add an easy-to-find feedback entry point that captures route/context automatically and reliably. Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Feedback entry point is easy to find.
-  - [ ] Bug reports include route and context.
-  - [ ] User and content reporting exists.
-  - [ ] Feedback is stored or delivered reliably.
-- **Linked files/routes:** `src/components/FeedbackWidget.tsx`, `src/pages/FeedbackAdmin.tsx`, `src/components/admin/FeedbackTab.tsx`, `src/components/user/ReportBlockDialog.tsx`.
-- **Dependencies/blockers:** None declared.
+- **Checklist 3/4 confirmed, 1 confirmed BROKEN (2026-08-19):**
+  - [ ] **Feedback entry point is easy to find — FALSE. It doesn't exist at all right now.**
+  - [x] Bug reports include route and context.
+  - [x] User and content reporting exists (a separate mechanism — see below).
+  - [x] Feedback is stored or delivered reliably (the backend, if ever reached).
+- **Linked files/routes:** `src/components/FeedbackWidget.tsx` (line 123: `{/* FAB removed — feedback is now opened from the hamburger menu via the "open-feedback" event */}`), `src/components/Navbar.tsx` (line 444-445, a comment claiming the same thing), `supabase/functions/feedback-chat/index.ts`.
+- **Dependencies/blockers:** None declared. Likely regressed during the menu-cleanup work referenced in Navbar.tsx's own comment ("Settings and Support sections removed from this menu by request").
 - **Comments:** creation log only.
-- **Risk level:** P1.
-- **Implementation detail:** This card's acceptance criteria map almost one-to-one onto existing components: `FeedbackWidget.tsx` (entry point), `FeedbackAdmin.tsx`/`FeedbackTab.tsx` (storage/delivery), `ReportBlockDialog.tsx` (user/content reporting) — the strongest code-existence match of any card in this list.
-- **Verification detail:** No evidence found confirming the widget actually auto-captures route/context on submission, or that it's discoverable ("easy to find") in current placement — these are UX/behavior details a filename match can't confirm.
-- **Evidence required:** A quick manual check that `FeedbackWidget.tsx` is mounted globally (not just on select pages) and that submitted reports include the current route.
-- **Recommended action:** Very likely close to done given the component match — verify placement/route-capture and check off.
+- **Risk level:** P1 — for a **beta** product, a broken feedback loop is a real problem: real users hitting real bugs currently have no in-app way to tell anyone.
+- **Verification performed 2026-08-19 — code trace, then live-confirmed:**
+  1. **Bug reports include route and context — CONFIRMED.** `FeedbackWidget.tsx` captures `pageUrl: window.location.pathname` and sends it with every message to the `feedback-chat` edge function.
+  2. **Feedback is stored reliably — CONFIRMED, if reached.** `feedback-chat/index.ts` inserts every submission into a real `feedback` table with error logging on failure — a solid backend, genuinely built end-to-end.
+  3. **User and content reporting exists — CONFIRMED, via a separate, correctly-wired mechanism.** `ReportBlockDialog.tsx` (not the feedback widget) is reachable from 3 real live surfaces: `UserActionMenu.tsx`, `VideoCallSheet.tsx` (in-call report/block), and `SpeedActionRail.tsx` — this criterion doesn't depend on the broken widget at all.
+  4. **Feedback entry point is easy to find — CONFIRMED FALSE, a real regression.** `FeedbackWidget.tsx`'s own code comment says the floating action button was deliberately removed in favor of a hamburger-menu item dispatching an `"open-feedback"` custom event. Grepped the **entire** `src/` tree for any `dispatchEvent`/`CustomEvent` call for `"open-feedback"`: **zero matches, anywhere.** Live-confirmed by opening the actual hamburger menu and reading every item top to bottom (Account, Workspace, Explore, More, Sign Out) — no "Feedback" entry exists. The widget's own `window.addEventListener("open-feedback", ...)` is registered and waiting, but nothing in the entire app ever fires that event. The feature is fully built and would work correctly — it's just currently unreachable by any user, beta or otherwise.
+- **Evidence required:** None — root cause is fully identified. Needs a one-line fix: add a "Feedback" `MenuButton` to `Navbar.tsx`'s hamburger menu that dispatches `window.dispatchEvent(new CustomEvent("open-feedback"))`.
+- **Recommended action:** Flag to Ethan (card owner) as a real, fully-diagnosed bug, not just an unverified claim — the fix is small and precise (one menu item), not a rebuild.
 
 #### 7.3 Trust and safety review
 - **List:** List 7 — P1 Analytics, Safety & Feedback
 - **URL:** https://trello.com/c/DE9Pa7Q4/57-trust-and-safety-review
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** ✅ VERIFIED — 4/5 confirmed, 1 real gap confirmed absent (not just unverified)
 - **Owner:** Noé — CTO
 - **Due date:** 29 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — review block, report, dispute, revocation, suspicious accounts, verification states. Scope — confirm trust and safety controls actually protect users (revoked links stop working, disputes visible). Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Users can report problems.
-  - [ ] Private data remains protected.
-  - [ ] Revoked links stop working.
-  - [ ] Suspicious activity is documented.
-  - [ ] Disputes have a visible status.
-- **Linked files/routes:** `src/hooks/useUserBlocks.ts`, `src/components/settings/BlockedUsersCard.tsx`, `src/components/user/ReportBlockDialog.tsx`, `src/pages/AdminDisputes.tsx`, `src/pages/DisputeManage.tsx`, `src/pages/DisputeCredit.tsx`, `src/components/project/PaymentDispute.tsx`.
-- **Dependencies/blockers:** Directly overlaps card 1.1 (final security audit) and the applied `credit_claim_disputes` RLS migration from `SECURITY_RELEASE_GATE.md` §C-bis.1 — "disputes have a visible status" and the dispute-resolution security fix are two views of the same subsystem.
+- **Checklist 4/5 confirmed, 1 confirmed absent (2026-08-19):**
+  - [x] Users can report problems.
+  - [x] Private data remains protected.
+  - [x] Revoked links stop working.
+  - [ ] **Suspicious activity is documented — CONFIRMED ABSENT, a real gap.**
+  - [x] Disputes have a visible status.
+- **Linked files/routes:** `src/components/user/ReportBlockDialog.tsx`, `src/pages/DisputeManage.tsx` (line 232, 388 — real `dispute.status` rendering), `SECURITY_RELEASE_GATE.md` §C.1/C.2.
+- **Dependencies/blockers:** Directly overlaps card 1.1 (final security audit) and the applied `credit_claim_disputes` RLS migration.
 - **Comments:** creation log only.
 - **Risk level:** P0/P1-adjacent — "revoked links stop working" and "private data remains protected" are genuine security criteria, similarly weighted to card 1.1.
-- **Implementation detail:** A real, fairly complete block/report/dispute subsystem exists in code (blocking hook + UI, report dialog, three separate dispute-related pages, payment-dispute component). This is reinforced by the security-gate migration already applied in production that specifically hardens dispute resolution (self-resolution exploit closed, status values widened to match what `DisputeManage.tsx`/`AdminDisputes.tsx` actually write).
-- **Verification detail:** "Revoked links stop working" ties to the `curated_stages`/`invite_token` and `review_requests` fixes already documented and re-scan-confirmed in `SECURITY_RELEASE_GATE.md` §C — good evidence there. No evidence found for "suspicious activity is documented" specifically (no admin-facing suspicious-activity log/dashboard located in this pass).
-- **Evidence required:** Confirm whether a suspicious-activity audit trail/dashboard exists (not found by filename search); if absent, this is a real gap rather than just an unverified claim.
-- **Recommended action:** Most criteria have strong backing evidence already; specifically chase down "suspicious activity is documented" as the one criterion with no matching code found.
+- **Verification performed 2026-08-19, combining fresh checks with strong evidence already gathered elsewhere this session:**
+  1. **Users can report problems — CONFIRMED**, same evidence as card 7.2: `ReportBlockDialog.tsx` is reachable from 3 real live surfaces (`UserActionMenu.tsx`, `VideoCallSheet.tsx`, `SpeedActionRail.tsx`) — a working reporting mechanism independent of the broken feedback widget found on 7.2.
+  2. **Private data remains protected — CONFIRMED, with direct live evidence from this session, not just a code read.** This exact claim was independently tested twice already: card 4.2's guest-mode Studio-project access test (unauthenticated request got a clean "Sign up to unlock" gate, zero data leaked) and card 5.2's payment-link PII grep (only the payer-email placeholder found in the full rendered HTML, no real recipient data).
+  3. **Revoked links stop working — CONFIRMED.** `SECURITY_RELEASE_GATE.md` §C.1/C.2 document real, applied-to-production fixes: `curated_stages` invite tokens are never returned directly (resolved only through a `SECURITY DEFINER` RPC), and `review_requests` completion goes through `complete_review_request(p_token)`, which explicitly checks `pending AND unexpired` before allowing completion — an expired or already-used link genuinely cannot be replayed.
+  4. **Disputes have a visible status — CONFIRMED.** `DisputeManage.tsx` renders `{dispute.status}` directly in the UI (confirmed at two render sites, including `"Dispute {dispute.status}"`), not just tracked internally.
+  5. **Suspicious activity is documented — CONFIRMED ABSENT, not just unverified.** Searched the entire `src/` and `supabase/` trees for any suspicious-activity/audit-log/security-event/flagged-account mechanism. The only hit for "suspicious" is a prompt-text fragment inside `verify-profile/index.ts`'s AI verification prompt ("Red flags: Generic names, suspicious patterns...") — an LLM instruction, not an admin-facing log or dashboard. The only "audit_log" table found (`import_audit_log`) is for data-import job auditing, unrelated to user trust/safety. There is genuinely no mechanism today that records or surfaces suspicious account activity for review.
+- **Recommended action:** Check off 4/5 boxes. "Suspicious activity is documented" is a real, confirmed gap — not release-blocking for a private beta, but worth scoping as its own follow-up (even a minimal admin-visible log of block/report/dispute events, which already exist as data, would satisfy this without new instrumentation).
 
 ### List 8 — Demo, Documentation & Release
 
@@ -741,71 +753,79 @@ _(Cards appended incrementally, one list at a time.)_
 #### 8.2 Prepare technical demo environment
 - **List:** List 8 — Demo, Documentation & Release
 - **URL:** https://trello.com/c/k7RA7ySn/59-prepare-technical-demo-environment
-- **Status:** NOT_STARTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 1 confirmed absence (no seed infra exists), rest is human/rehearsal work
 - **Owner:** Noé — CTO
 - **Due date:** 29 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — create clean demo accounts, deterministic data, fallback data and a recorded backup. Scope — prepare a resilient demo environment that behaves predictably with a recorded fallback. Dependencies: None.
-- **Checklist 0/5, all unchecked:**
-  - [ ] Demo account works.
-  - [ ] Data is deterministic.
-  - [ ] No private data appears.
-  - [ ] Backup video exists.
-  - [ ] Critical provider failure has a fallback.
+- **Checklist 0/5, 1 confirmed absent, 4 remain human/rehearsal work (2026-08-20):**
+  - [ ] Demo account works — no dedicated demo account exists; this session's real Ethan Auguste account (used throughout this whole QA pass) is the closest thing, and it does work, but it's a live real account, not a purpose-built demo one.
+  - [ ] **Data is deterministic — CONFIRMED there is no mechanism for this. No seed script or fixture-data system exists anywhere in the repo.**
+  - [ ] No private data appears — not independently re-tested here; overlaps the privacy checks already done in cards 1.1, 2.4, 5.2, and 2.3 (this session), all of which found no leaked PII on the surfaces they covered.
+  - [ ] Backup video exists — literal recorded media file; not a code-checkable claim.
+  - [ ] Critical provider failure has a fallback — no dedicated "demo contingency mode" exists; what exists instead is ordinary production error handling (try/catch around Stripe, Daily.co, and Lovable AI Gateway calls throughout `supabase/functions/`) that keeps the app from crashing on a provider outage, but there's no demo-specific fallback (e.g. an offline/mock mode) beyond the backup video itself.
 - **Linked files/routes:** N/A — environment/ops task, not a code-existence question. "No private data appears" overlaps privacy criteria from cards 1.1, 2.4, and 5.2.
 - **Dependencies/blockers:** Same as 8.1 — tied to "Record an offline backup video of the full live demo" in the Blocked list.
 - **Comments:** creation log only.
 - **Risk level:** P0-adjacent for the privacy criterion; otherwise operational.
-- **Implementation detail:** N/A.
-- **Verification detail:** No demo-account seeding script or fixture-data mechanism was located in this pass (not specifically searched for; flagged as a gap in this catalog rather than a confirmed absence).
-- **Evidence required:** Locate (or confirm the need to build) a deterministic demo-seed script/fixture set.
-- **Recommended action:** Sequence after Lists 1-5 stabilize; do not seed demo data against a still-changing schema.
+- **Verification performed 2026-08-20:** the earlier note in this card said a demo-seed/fixture mechanism "was not specifically searched for." Ran that search this pass: `find . -iname "*seed*"` and `find . -iname "*fixture*"` across the repo (excluding `node_modules`), plus a grep for `demo_account`/`DEMO_USER`/`demoMode` across `src/` and `supabase/`. Found two unrelated `seed-*` edge functions (`seed-atlas-locations`, `seed-icdb` — these seed reference/location data, not demo accounts) and one unrelated in-app "demo mode" (`ForYouFeed.tsx` — a hardcoded 4-card fallback shown to a *real* user when they run out of real swipe candidates, not a presentation/demo-account tool). **No demo-account-seeding or fixture-data infrastructure exists anywhere in this codebase.** This confirms, rather than just flags, that "data is deterministic" has no supporting mechanism today — whoever runs the demo will be working with whatever state the real account happens to be in at the time.
+- **Evidence required:** A decision on whether to build a lightweight demo-seed script before Aug 29, or accept using a real, carefully-curated account (this session's test account already has a rich, realistic Passport/credits/connections history that would demo well) as the de facto "demo account."
+- **Recommended action:** Given the short runway to Aug 29 and that a real, populated account already exists and works, building new seed infrastructure now is likely lower-value than: (a) picking one real account and treating it as the fixed demo account, (b) taking a data snapshot or screenshots of its current state as the "deterministic" reference, and (c) prioritizing the backup video and provider-outage rehearsal (both genuinely human tasks) over new seeding code this close to the deadline.
 
 #### 8.3 Prepare product narrative and visuals
 - **List:** List 8 — Demo, Documentation & Release
 - **URL:** https://trello.com/c/O6UhnaOI/60-prepare-product-narrative-and-visuals
-- **Status:** PARTIALLY_IMPLEMENTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 1/4 fully resolved, 3/4 now evidenced via 2.3/6.2 plus fresh narrative-copy check
 - **Owner:** Jeff — CDO
 - **Due date:** 29 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — prepare screenshots, landing-page polish, product terminology and visual consistency for the submission. Scope — finalize the visual/narrative package, ensuring Passport reads as the core product. Dependencies: None.
-- **Checklist 0/4, all unchecked:**
-  - [ ] Passport is clearly the core product.
-  - [ ] Verified Credits and Co-Signs are explained correctly.
-  - [ ] UI is consistent across the four core surfaces.
-  - [ ] No obsolete ThriveIN branding appears in user-facing surfaces.
-- **Linked files/routes:** overlaps card 2.3 (Review Passport as core product) and 6.2 (cross-product UX pass). "No obsolete ThriveIN branding" is directly checkable in `src/`.
-- **Dependencies/blockers:** Depends on 2.3 and 6.2 landing first.
+- **Checklist 1/4 resolved, 3/4 evidenced with real findings (2026-08-20):**
+  - [ ] **Passport is clearly the core product — evidenced via card 2.3: 4/6 confirmed, but 2 real contradicting-statistics bugs found (100% vs 0% Passport-strength meters; redundant Kreto Action Center suggestions). Not a clean pass yet.**
+  - [ ] **Verified Credits and Co-Signs are explained correctly — MOSTLY accurate in-app, 1 real overclaim found in landing copy.**
+  - [ ] **UI is consistent across the four core surfaces — evidenced via card 6.2: 1 confirmed, 1 real regression (stray pre-migration #9413D2 violet). Not a clean pass yet.**
+  - [x] No obsolete ThriveIN branding appears in user-facing surfaces.
+- **Linked files/routes:** overlaps card 2.3 (Review Passport as core product) and 6.2 (cross-product UX pass). `src/components/landing/CoreValueBlocks.tsx`, `src/components/passport/*` (Co-signs tab copy), `src/pages/CreditVerify.tsx`, `src/components/passport/PassportHero.tsx` ("How Passport works" AI tour).
+- **Dependencies/blockers:** Depended on 2.3 and 6.2 landing first — both now complete (this session).
 - **Comments:** creation log only.
 - **Risk level:** P1 — brand/narrative coherence for submission.
-- **Implementation detail:** A repo-wide search for "thrivein" (case-insensitive) in `src/` found 20 matching files, but the ones spot-checked (`PWAInstallPrompt.tsx`, `NewsletterPopup.tsx`, `AuthPrompt.tsx`) use it only in internal `localStorage`/`sessionStorage` key names (e.g. `'thrivein-pwa-prompt-dismissed'`), not user-visible text — so this specific criterion looks likely satisfied for user-facing surfaces, though the full 20-file list was not exhaustively reviewed in this pass.
-- **Verification detail:** **RESOLVED (2026-08-18, this pass)**: completed the full sweep across all 34 files a fresh `grep -ril thrivein src/` actually returned (the board's count of 20 was stale relative to the current tree). 30 of 34 were storage keys/config identifiers/a legitimately-defensive reserved-subdomain-slug entry — all safe. **4 were real user/SEO-visible leaks**, all in the Magazine feature: `SceneHero.tsx`'s fallback article subtitle ("Read the latest from ThriveIN Magazine"), `MagazineEditor.tsx`'s default `author_name` written to every new article record, and `MagazineArticlePage.tsx`/`Magazine.tsx`'s `<title>`, meta description, `og:site_name`, and JSON-LD structured-data fields — the exact kind of surface (browser tab title, social-share previews, search-result snippets) this acceptance criterion is about. All 4 files fixed to say "Kretopia Magazine"; `tsc`/`build`/`test` (68/68) all clean after the change.
-- **Evidence required:** none remaining for this criterion.
-- **Recommended action:** Check this box off — the specific acceptance criterion ("No obsolete ThriveIN branding appears in user-facing surfaces") is now genuinely satisfied, not just likely-satisfied from a sample.
+- **Verification detail (ThriveIN branding, resolved 2026-08-18):** completed the full sweep across all 34 files a fresh `grep -ril thrivein src/` actually returned (the board's count of 20 was stale relative to the current tree). 30 of 34 were storage keys/config identifiers/a legitimately-defensive reserved-subdomain-slug entry — all safe. **4 were real user/SEO-visible leaks**, all in the Magazine feature: `SceneHero.tsx`'s fallback article subtitle ("Read the latest from ThriveIN Magazine"), `MagazineEditor.tsx`'s default `author_name` written to every new article record, and `MagazineArticlePage.tsx`/`Magazine.tsx`'s `<title>`, meta description, `og:site_name`, and JSON-LD structured-data fields — the exact kind of surface (browser tab title, social-share previews, search-result snippets) this acceptance criterion is about. All 4 files fixed to say "Kretopia Magazine"; `tsc`/`build`/`test` (68/68) all clean after the change.
+- **Verification performed 2026-08-20 (remaining 3 items):**
+  1. **"Passport is clearly the core product"** — this is exactly what card 2.3 tested live this session. Result: 4/6 confirmed (one dominant surface, identity/credits/skills visible, clear share action, clean mobile layout) but 2 real bugs found — see 2.3 for full detail. Cannot check this box until Bug A (the 100%/0% contradiction) is fixed; it's a visible, flagship-page trust problem.
+  2. **"Verified Credits and Co-Signs are explained correctly"** — checked both the in-app explanations and the public landing narrative. **In-app: accurate.** The Co-signs tab's 4 trust-state sections each carry a correct, plain-language one-liner directly under their headers ("Verified — Confirmed via a known platform, collaborator vouching, or Kretopia's review process"; "Pending — Waiting on a collaborator to confirm"; "Self-claimed — Added by you. Ask a collaborator to co-sign it to build trust"; "Publicly Sourced — Kreto found this from public information and you confirmed it's yours"). The `/credit-verify` confirmation page itself clearly states what accepting does ("Your confirmation becomes part of Kretopia's verified creative record"). None of this copy makes a claim the system doesn't back up. **Landing narrative: one real overclaim.** `CoreValueBlocks.tsx`'s Pillar 1 body reads: *"Collaborators co-sign each credit and Kretopia verifies it against public records, giving every artist... an un-falsifiable, portable work history they actually own."* Two problems, both confirmed against the actual RPC logic reviewed in card 2.2: (a) "un-falsifiable" overstates the guarantee — the primary "Verified" path is 2 accepted peer co-signs with no cross-reference to any public record at all, so two colluding accounts could in principle satisfy it; (b) "Kretopia verifies it against public records" describes the separate "Publicly Sourced" pathway (YouTube/Spotify auto-discovery), not the peer-co-sign mechanism the same sentence just described — the copy conflates two genuinely different verification pathways into one claim. This is marketing copy, not a functional bug, but it's exactly the kind of claim a Trello-card criterion titled "explained correctly" exists to catch.
+  3. **"UI is consistent across the four core surfaces"** — this is precisely what card 6.2 tested this session (Home/Passport/Scout/Studio, matching the bottom-nav's four tabs). Result: 1 item confirmed, 1 real regression found (a stray pre-rebrand `#9413D2` violet in `BrandDots.tsx`, `moodGradient.ts`, `GuestPassDialog.tsx`, `EventShareKit.tsx` against the now-established `#FF2DA1` pink accent used everywhere else). See 6.2 for full detail. Cannot check this box until that's fixed.
+- **Evidence required:** Fix card 2.3's Bug A (Passport-strength contradiction) and card 6.2's stray-violet regression before checking those two boxes. Soften or correct the "un-falsifiable" / "verifies it against public records" landing copy in `CoreValueBlocks.tsx` to describe the real, two-pathway mechanism (peer co-sign vs. public-record auto-discovery) without overclaiming either one.
+- **Recommended action:** None of these three are release-blocking on their own, but all three touch the same "Passport as the flagship, trustworthy core product" narrative this card exists to protect — worth clearing before demo/submission screenshots are taken, since 2.3's Bug A in particular would be visible in any screen recording of the Passport page.
 
 #### 8.4 Final full regression
 - **List:** List 8 — Demo, Documentation & Release
 - **URL:** https://trello.com/c/aRgq4jUC/61-final-full-regression
-- **Status:** NOT_STARTED
+- **Status:** 🟡 PARTIALLY_VERIFIED — 4/6 confirmed, 2 blocked on the open card 2.2 P0
 - **Owner:** Noé — CTO
 - **Due date:** 30 Aug, 02:00
 - **Labels:** none
 - **Description:** Objective — run full typecheck, lint, build, test, browser, mobile, auth, payment, email, Passport, Scout (regression sweep). Scope — execute the complete pre-release regression suite across every P0 surface and document known limitations. Dependencies: None.
-- **Checklist 0/6, all unchecked:**
-  - [ ] No unresolved Critical security issue.
-  - [ ] No P0 regression.
-  - [ ] Build succeeds.
-  - [ ] Tests pass.
-  - [ ] Core user loop passes.
-  - [ ] Known limitations are documented.
-- **Linked files/routes:** `package.json` (`build`, `build:dev`, `dev` scripts confirmed present); `vitest.config.ts` exists. Only **6 test files** were found under `src/` (`*.test.ts(x)`/`*.spec.ts`) in this pass — thin coverage for a "Tests pass" gate on a codebase this large.
-- **Dependencies/blockers:** This card is explicitly the capstone gate for every P0 card in Lists 1-5 — by design it cannot be meaningfully started until those are done, and its first criterion duplicates card 1.1's "No unresolved Critical security issue."
+- **Checklist 4/6 confirmed, 2 blocked (2026-08-19):**
+  - [ ] **No unresolved Critical security issue — BLOCKED. One open P0: card 2.2's Co-Sign accept constraint bug (fix written, not yet applied).**
+  - [ ] **No P0 regression — same blocker as above; not a regression introduced this session, but a genuinely unresolved P0 defect discovered during this session's QA.**
+  - [x] Build succeeds.
+  - [x] Tests pass.
+  - [x] Core user loop passes — with the one known exception below.
+  - [x] Known limitations are documented — this document plus `SECURITY_RELEASE_GATE.md`, `EMAIL_RELEASE_AUDIT.md`, and the per-card sections throughout this catalog.
+- **Linked files/routes:** `package.json` (`build`, `build:dev`, `dev`, `test` scripts), `vitest.config.ts`, `SECURITY_RELEASE_GATE.md` §D (gate decision table).
+- **Dependencies/blockers:** Directly blocked by card 2.2 (P0, migration `20260819140000_fix_credits_peer_status_constraint.sql` written this session, not yet applied — pending the user pasting it into the Lovable Cloud SQL editor per standing protocol).
 - **Comments:** creation log only.
 - **Risk level:** P0 — final release gate.
-- **Implementation detail:** Build tooling exists and works in principle (`vite build` script, `vitest.config.ts`), but automated test coverage is thin (6 test files repo-wide), meaning "Tests pass" will mostly reflect typecheck/lint/build success rather than genuine behavioral regression coverage.
-- **Verification detail:** No evidence this regression pass has been run yet; 0/6 unchecked, and it logically cannot be meaningfully complete before Lists 1-5 are resolved.
-- **Evidence required:** An actual run log (`tsc`, `eslint`, `vite build`, `vitest run`) plus a manual core-loop walkthrough, dated close to 30 Aug.
-- **Recommended action:** Correctly sequenced last in the plan; flag the thin automated-test coverage as a real gap — recommend supplementing with the manual QA passes from Lists 1-5 rather than relying on `vitest` alone to catch regressions.
+- **Verification performed 2026-08-19:**
+  1. **Build succeeds — CONFIRMED.** `npm run build` completes cleanly (`✓ built in 13.81s`, PWA precache generated). Only pre-existing chunk-size warnings (`ThriveDesk`, `Discover`, `index` bundles >500kB), already noted as out-of-scope in `GLOBAL_UX_QA.md` Phase 11 — no new warnings.
+  2. **Tests pass — CONFIRMED.** `npm run test -- --run` → 68/68 passing, 6/6 files, 1.2s. Unchanged from the count recorded earlier in this engagement (`GLOBAL_UX_QA.md` recorded 62/62 at that point in the codebase's history; the 6-suite/68-test count here matches the most recent baseline).
+  3. **Typecheck — CONFIRMED clean.** `npx tsc --noEmit -p .` produced zero output (zero errors).
+  4. **Lint — no new issues.** `npx eslint .` → 10,359 problems (9,451 errors, 908 warnings), matching the exact baseline count already recorded in the Studio AI Create plan document from earlier in this engagement — confirms no lint regression from any change made this session.
+  5. **No unresolved Critical security issue — BLOCKED, not clear.** `SECURITY_RELEASE_GATE.md` §D shows every *pre-existing* critical RLS/auth finding closed and applied to production as of 2026-08-18. But this session's own QA (card 2.2, 2026-08-19) found a new, real P0: the `submit_credit_endorsement_by_token` RPC writes `verification_status = 'peer'` on Co-Sign accept, and the live `credits_verification_status_check` constraint has never allowed that value — every real Co-Sign completion fails with a Postgres constraint violation. A fix migration exists (`20260819140000_fix_credits_peer_status_constraint.sql`) but has not been applied. This is the one item genuinely holding this checklist item open.
+  6. **No P0 regression — BLOCKED for the same reason.** Not a regression caused by this session's code changes (this session made zero application-code changes, only QA + one unapplied migration), but a real, currently-live P0 defect in the core Co-Sign flow that must be resolved before this box can be checked.
+  7. **Core user loop passes — CONFIRMED, with one known exception.** Across this session's Lists 1-7 QA (18 cards, live browser + code-trace evidence throughout this document), every other core-loop stage — Search, Passport claim, credit confirmation, Scout opportunity view/apply, Studio project creation/completion, video calls, Kreto — verified working live. The Co-Sign *completion* step (accepting an endorsement) is the sole broken link, consistent with item 5 above.
+  8. **Known limitations documented — CONFIRMED.** This catalog (34 cards, all with dated evidence), `SECURITY_RELEASE_GATE.md`, and `EMAIL_RELEASE_AUDIT.md` collectively constitute exactly this documentation requirement.
+- **Recommended action:** Apply migration `20260819140000_fix_credits_peer_status_constraint.sql` (already written, awaiting the user's SQL-editor paste per this engagement's standing protocol), then re-run this checklist — items 1/2 should clear immediately once verified against the live database, at which point 8.4 becomes a full 6/6 pass.
 
 #### 8.5 CEO acceptance review
 - **List:** List 8 — Demo, Documentation & Release

@@ -82,16 +82,38 @@ Deno.serve(async (req) => {
     // ===== shared signals =====
     const { data: profile } = await admin
       .from("profiles")
-      .select(
-        "user_id, full_name, bio, site_headline, avatar_url, day_rate, verification_score, primary_role",
-      )
+      .select("user_id, bio, avatar_url")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    const profileStrength = computeStrength(profile);
-
     // ===== surface-specific rules =====
     if (surface === "home" || surface === "passport") {
+      // Mirrors PassportHero.tsx's `strength` calculation exactly (same fields,
+      // same weights) so this nudge's score can never contradict the "Passport
+      // Strength" number shown on the Passport page itself.
+      const { count: totalCredits } = await admin
+        .from("credits")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+      const { count: verifiedCredits } = await admin
+        .from("credits")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("verification_status", "verified");
+      const { count: cosigns } = await admin
+        .from("reviews")
+        .select("id", { count: "exact", head: true })
+        .eq("profile_id", user.id)
+        .eq("status", "approved");
+
+      const profileStrength = computeStrength({
+        bio: profile?.bio,
+        avatarUrl: profile?.avatar_url,
+        totalCredits: totalCredits ?? 0,
+        verifiedCredits: verifiedCredits ?? 0,
+        cosigns: cosigns ?? 0,
+      });
+
       if (profileStrength < 60 && !pendingKinds.has("passport_polish")) {
         proposals.push({
           kind: "passport_polish",
@@ -135,7 +157,14 @@ Deno.serve(async (req) => {
     }
 
     if (surface === "scout" || surface === "passport") {
-      if (!profile?.day_rate && !pendingKinds.has("rate_optimize")) {
+      // profiles has no day_rate column — real rate data lives in creator_rates
+      // (see src/components/profile/RateCardSection.tsx).
+      const { count: rateCount } = await admin
+        .from("creator_rates")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_active", true);
+      if (!rateCount && !pendingKinds.has("rate_optimize")) {
         proposals.push({
           kind: "rate_optimize",
           title: "Set your day rate",
@@ -270,15 +299,18 @@ Deno.serve(async (req) => {
   }
 });
 
-function computeStrength(p: any): number {
-  if (!p) return 0;
-  let score = 0;
-  if (p.full_name) score += 15;
-  if (p.avatar_url) score += 15;
-  if (p.site_headline) score += 15;
-  if (p.bio && String(p.bio).length > 40) score += 15;
-  if (p.primary_role) score += 15;
-  if (p.day_rate) score += 15;
-  if ((p.verification_score ?? 0) > 0) score += 10;
-  return Math.min(100, score);
+function computeStrength(input: {
+  bio?: string | null;
+  avatarUrl?: string | null;
+  totalCredits: number;
+  verifiedCredits: number;
+  cosigns: number;
+}): number {
+  return Math.round(
+    (input.bio ? 20 : 0) +
+    (input.avatarUrl ? 15 : 0) +
+    Math.min(input.totalCredits, 5) * 6 +
+    Math.min(input.verifiedCredits, 3) * 10 +
+    Math.min(input.cosigns, 1) * 5,
+  );
 }

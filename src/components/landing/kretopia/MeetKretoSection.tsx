@@ -102,7 +102,7 @@ export const MeetKretoSection = () => {
 
             <p
               className="mt-4 max-w-xl text-sm text-white/45"
-              style={{ fontFamily: "'Work Sans', sans-serif" }}
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               Not a generic chatbot. A context-aware career and production agent.
             </p>
@@ -126,7 +126,7 @@ export const MeetKretoSection = () => {
                     </p>
                     <p
                       className="text-[13px] leading-snug text-white/48"
-                      style={{ fontFamily: "'Work Sans', sans-serif" }}
+                      style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                     >
                       {body}
                     </p>
@@ -141,7 +141,7 @@ export const MeetKretoSection = () => {
 
             <p
               className="mt-4 max-w-xl text-xs leading-relaxed text-white/40"
-              style={{ fontFamily: "'Work Sans', sans-serif" }}
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               Everything Kreto produces is labelled AI-assisted, stays editable, can be
               removed, and only becomes part of your official record once you confirm it.
@@ -150,7 +150,7 @@ export const MeetKretoSection = () => {
             <Link
               to="/auth?next=/circle"
               className="group inline-flex items-center gap-2 mt-9 rounded-full px-6 py-3 text-sm font-semibold text-white"
-              style={{ backgroundColor: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
+              style={{ backgroundColor: ACCENT, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               Meet Kreto
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
@@ -190,7 +190,7 @@ export const MeetKretoSection = () => {
                   </p>
                   <p
                     className="text-[10px] uppercase tracking-[0.22em] text-white/35"
-                    style={{ fontFamily: "'Work Sans', sans-serif" }}
+                    style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                   >
                     Executive Producer
                   </p>
@@ -212,7 +212,7 @@ export const MeetKretoSection = () => {
                     exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
                     transition={{ duration: 0.45 }}
                     className="text-[15px] leading-relaxed text-white/85"
-                    style={{ fontFamily: "'Work Sans', sans-serif" }}
+                    style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                   >
                     {LINES[i]}
                   </motion.p>
@@ -225,7 +225,7 @@ export const MeetKretoSection = () => {
               >
                 <p
                   className="text-[10px] uppercase tracking-[0.24em] text-white/30 mb-3"
-                  style={{ fontFamily: "'Work Sans', sans-serif" }}
+                  style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                 >
                   Try asking
                 </p>
@@ -235,7 +235,7 @@ export const MeetKretoSection = () => {
                       key={p}
                       to={`/auth?next=${encodeURIComponent("/circle")}`}
                       className="rounded-full border border-white/12 px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white/90"
-                      style={{ fontFamily: "'Work Sans', sans-serif" }}
+                      style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                     >
                       {p}
                     </Link>
@@ -248,7 +248,7 @@ export const MeetKretoSection = () => {
               <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
                 <p
                   className="text-[10px] uppercase tracking-[0.24em] text-white/30 mb-1"
-                  style={{ fontFamily: "'Work Sans', sans-serif" }}
+                  style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                 >
                   How it works
                 </p>

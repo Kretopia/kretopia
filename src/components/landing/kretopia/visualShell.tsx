@@ -38,7 +38,7 @@ export const VisualCardShell = ({ icon: Icon, label, tag, children, footer }: Vi
           {label}
         </p>
         {tag && (
-          <p className="text-[10px] uppercase tracking-[0.22em] text-white/35" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+          <p className="text-[10px] uppercase tracking-[0.22em] text-white/35" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
             {tag}
           </p>
         )}

@@ -79,7 +79,7 @@ export const ChapterSection = ({
                 <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accent }} />
                 <span
                   className="text-[9px] font-medium uppercase tracking-[0.28em] text-white/85"
-                  style={{ fontFamily: "'Work Sans', sans-serif" }}
+                  style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                 >
                   {caption}
                 </span>
@@ -110,7 +110,7 @@ export const ChapterSection = ({
               </span>
               <span
                 className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/55"
-                style={{ fontFamily: "'Work Sans', sans-serif" }}
+                style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
               >
                 {kicker}
               </span>
@@ -126,7 +126,7 @@ export const ChapterSection = ({
 
             <p
               className="mt-7 max-w-md text-base sm:text-lg leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Work Sans', sans-serif" }}
+              style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               {body}
             </p>
@@ -137,11 +137,11 @@ export const ChapterSection = ({
                   <div key={c.label} className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
                     <p
                       className="text-[10px] font-bold uppercase tracking-[0.18em] mb-1"
-                      style={{ color: accent, fontFamily: "'Work Sans', sans-serif" }}
+                      style={{ color: accent, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                     >
                       {c.label}
                     </p>
-                    <p className="text-xs leading-snug text-white/55" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                    <p className="text-xs leading-snug text-white/55" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                       {c.body}
                     </p>
                   </div>
@@ -152,7 +152,7 @@ export const ChapterSection = ({
             {closingLine && (
               <p
                 className="mt-6 text-sm font-semibold italic"
-                style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Work Sans', sans-serif" }}
+                style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Satoshi', 'Inter', sans-serif" }}
               >
                 {closingLine}
               </p>
@@ -162,7 +162,7 @@ export const ChapterSection = ({
               to={href}
               onClick={() => analytics.ctaClick(`${kicker.toLowerCase()}_chapter_cta`, "landing_chapter")}
               className="group inline-flex items-center gap-2 mt-9 text-sm tracking-wide"
-              style={{ fontFamily: "'Work Sans', sans-serif", color: "rgba(255,255,255,0.85)" }}
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif", color: "rgba(255,255,255,0.85)" }}
             >
               <span className="border-b border-white/30 group-hover:border-white pb-0.5 transition-colors">
                 {ctaLabel ?? `Enter ${kicker}`}

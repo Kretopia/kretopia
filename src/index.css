@@ -882,12 +882,12 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 
 /* ══════════════════════════════════════════════════════════════════
    LANDING TYPOGRAPHY SCALE
-   One heading family (Satoshi), one body family (Work Sans), one
-   accent (#FF2DA1). Every landing section uses these so headings,
-   spacing and mobile behaviour stay identical across chapters.
+   One family (Satoshi) for everything — headings, eyebrows and body —
+   so no text ever renders in a visibly different typeface from the
+   hero title. Size is what differentiates the hierarchy, not family.
    ══════════════════════════════════════════════════════════════════ */
 .landing-eyebrow {
-  font-family: 'Work Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.32em;
@@ -919,7 +919,7 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 
 .landing-sub {
-  font-family: 'Work Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif;
   font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
   font-weight: 400;
   line-height: 1.65;

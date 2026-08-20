@@ -138,7 +138,7 @@ export const FeatureTutorial = ({ steps, label, activeStep, onStepChange }: Feat
       >
         <span
           className="text-[10px] font-medium tabular-nums"
-          style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Work Sans', sans-serif" }}
+          style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Satoshi', 'Inter', sans-serif" }}
         >
           {String(index + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}
         </span>
@@ -210,7 +210,7 @@ export const FeatureTutorial = ({ steps, label, activeStep, onStepChange }: Feat
                 <h3 className="text-base sm:text-lg font-semibold text-white" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                   {step.title}
                 </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-white/60" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                <p className="mt-1.5 text-sm leading-relaxed text-white/60" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                   {step.body}
                 </p>
               </div>

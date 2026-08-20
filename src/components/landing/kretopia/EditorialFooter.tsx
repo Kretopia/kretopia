@@ -18,7 +18,7 @@ export const EditorialFooter = () => {
             <BrandLogo size="md" showBeta linkToHome />
             <p
               className="mt-3 text-[10px] font-medium uppercase tracking-[0.32em] text-white/40"
-              style={{ fontFamily: "'Work Sans', sans-serif" }}
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               {BRAND.parentLine}
             </p>
@@ -26,7 +26,7 @@ export const EditorialFooter = () => {
 
           <div
             className="text-[11px] sm:text-center text-white/55 leading-relaxed"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             <span className="text-white">Kretopia</span> — the platform.{" "}
             <span className="block mt-1">
@@ -39,7 +39,7 @@ export const EditorialFooter = () => {
 
           <nav
             className="flex flex-wrap sm:justify-end gap-x-5 gap-y-2 text-[11px] text-white/50"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             <Link to="/about" className="hover:text-white transition-colors">About</Link>
             <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
@@ -52,13 +52,13 @@ export const EditorialFooter = () => {
         <div className="mt-12 pt-6 border-t border-white/[0.05] flex flex-wrap items-center justify-between gap-3">
           <p
             className="text-[10px] uppercase tracking-[0.28em] text-white/30"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             © {new Date().getFullYear()} Thrive Collective · All rights reserved
           </p>
           <p
             className="text-[10px] uppercase tracking-[0.28em] text-white/30"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             Made for creators · Worldwide
           </p>

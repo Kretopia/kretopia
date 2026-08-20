@@ -102,7 +102,7 @@ export const VerifiedCreditsChapterSection = () => {
                     <p className="text-sm font-semibold text-white" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                       {label}
                     </p>
-                    <p className="text-[13px] leading-snug text-white/48" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                    <p className="text-[13px] leading-snug text-white/48" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                       {body}
                     </p>
                   </div>
@@ -113,7 +113,7 @@ export const VerifiedCreditsChapterSection = () => {
             <Link
               to="/credits"
               className="group inline-flex items-center gap-2 mt-9 rounded-full px-6 py-3 text-sm font-semibold text-white"
-              style={{ backgroundColor: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
+              style={{ backgroundColor: ACCENT, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               Explore Verified Credits
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
@@ -148,14 +148,14 @@ export const VerifiedCreditsChapterSection = () => {
                   <p className="text-sm font-semibold text-white" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                     Example credit
                   </p>
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-white/35" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-white/35" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                     Illustrative — not live data
                   </p>
                 </div>
               </div>
 
               <div className="px-4 py-6 min-h-[168px] flex flex-col justify-center gap-4">
-                <p className="text-[15px] font-medium text-white/85" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                <p className="text-[15px] font-medium text-white/85" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                   "Coastline" — Documentary · Sound Design
                 </p>
 
@@ -181,7 +181,7 @@ export const VerifiedCreditsChapterSection = () => {
                       style={{ backgroundColor: ACCENT }}
                     >
                       <ShieldCheck className="h-4 w-4 text-white" aria-hidden />
-                      <span className="text-sm font-bold text-white" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                      <span className="text-sm font-bold text-white" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                         Passport Stamp
                       </span>
                     </motion.div>
@@ -208,7 +208,7 @@ export const VerifiedCreditsChapterSection = () => {
               <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
                 <p
                   className="text-[10px] uppercase tracking-[0.24em] text-white/30 mb-1"
-                  style={{ fontFamily: "'Work Sans', sans-serif" }}
+                  style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                 >
                   How it works
                 </p>
@@ -222,7 +222,7 @@ export const VerifiedCreditsChapterSection = () => {
               </div>
 
               <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-                <p className="text-[12px] leading-relaxed text-white/45" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                <p className="text-[12px] leading-relaxed text-white/45" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                   Every real credit on Kretopia moves through these same, honestly-labeled stages —
                   nothing is called "Verified" without evidence behind it.
                 </p>

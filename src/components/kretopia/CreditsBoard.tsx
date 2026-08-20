@@ -1,9 +1,15 @@
 import { useMemo, useState } from "react";
-import { ChevronRight, ShieldCheck, ImageIcon, Loader2, Info } from "lucide-react";
+import { ChevronRight, ShieldCheck, ImageIcon, Loader2, Info, Sparkles, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal } from "./Reveal";
 
-export type CreditsBoardGroup = "featured" | "other" | "recent";
+export type CreditsBoardGroup = string;
+
+export interface CreditsBoardFilter {
+  label: string;
+  value: "all" | CreditsBoardGroup;
+  hint: string;
+}
 
 export interface CreditsBoardRow {
   id: string;
@@ -15,10 +21,14 @@ export interface CreditsBoardRow {
   year?: number | null;
   imageUrl?: string | null;
   verified?: boolean;
+  /** Small badge for an AI-suggested (not yet confirmed) entry. */
+  isAI?: boolean;
+  /** Small badge for a result sourced from outside Kretopia. */
+  isExternal?: boolean;
   onClick: () => void;
 }
 
-const FILTERS: { label: string; value: "all" | CreditsBoardGroup; hint: string }[] = [
+const DEFAULT_FILTERS: CreditsBoardFilter[] = [
   { label: "All work", value: "all", hint: "Everything in the database, newest first." },
   { label: "Featured", value: "featured", hint: "Credits that carry artwork or media." },
   { label: "Other credits", value: "other", hint: "Credits still waiting on visuals." },
@@ -26,18 +36,24 @@ const FILTERS: { label: string; value: "all" | CreditsBoardGroup; hint: string }
 ];
 
 /**
- * One dashboard table replacing the Featured / Other / Recently added
- * carousels on Verified Credits. Same dark editorial surface as the rest of
- * the project — a scannable ledger instead of three scattered card rails.
+ * One dashboard table used for both the browse-mode ledger and search
+ * results on Verified Credits — a scannable table instead of scattered card
+ * carousels, so results never hide behind a drag-to-scroll rail. `groups`
+ * lets each caller define its own filter set (browse mode: Featured/Other/
+ * Recent; search mode: Projects/Creators/Web) over the same component.
  */
 export function CreditsBoard({
   rows,
   loading,
   className,
+  groups = DEFAULT_FILTERS,
+  title = "The credits board",
 }: {
   rows: CreditsBoardRow[];
   loading?: boolean;
   className?: string;
+  groups?: CreditsBoardFilter[];
+  title?: string;
 }) {
   const [filter, setFilter] = useState<"all" | CreditsBoardGroup>("all");
 
@@ -53,7 +69,7 @@ export function CreditsBoard({
     [rows, filter],
   );
 
-  const activeHint = FILTERS.find((f) => f.value === filter)?.hint;
+  const activeHint = groups.find((f) => f.value === filter)?.hint;
 
   return (
     <Reveal className={cn("w-full", className)}>
@@ -64,12 +80,12 @@ export function CreditsBoard({
         {/* Board header */}
         <div className="px-4 sm:px-5 pt-4 pb-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-sm font-semibold text-white">The credits board</h2>
+            <h2 className="text-sm font-semibold text-white">{title}</h2>
             <span className="text-[11px] text-white/40">{counts.all || 0} entries</span>
           </div>
 
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {FILTERS.map((f) => {
+            {groups.map((f) => {
               const active = filter === f.value;
               const count = counts[f.value] || 0;
               if (f.value !== "all" && count === 0) return null;
@@ -164,7 +180,7 @@ export function CreditsBoard({
 
                   <span className="hidden sm:block truncate text-[12px] text-white/55">{row.typeLabel || "—"}</span>
                   <span className="hidden sm:block text-[12px] text-white/45">{row.year || "—"}</span>
-                  <span className="hidden sm:flex items-center">
+                  <span className="hidden sm:flex items-center gap-1">
                     {row.verified ? (
                       <span
                         className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
@@ -172,6 +188,19 @@ export function CreditsBoard({
                       >
                         <ShieldCheck className="h-3 w-3" />
                         Verified
+                      </span>
+                    ) : row.isAI ? (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                        style={{ backgroundColor: "rgba(255,45,161,0.10)", color: "#FF2DA1" }}
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        AI found
+                      </span>
+                    ) : row.isExternal ? (
+                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-white/45" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
+                        <ExternalLink className="h-3 w-3" />
+                        Web
                       </span>
                     ) : (
                       <span className="text-[11px] text-white/30">Unverified</span>

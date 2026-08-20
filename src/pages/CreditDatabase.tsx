@@ -1,34 +1,22 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
-  Database, MapPin, Building2, CalendarDays, Sparkles,
+  Search, Film, ShieldCheck, Loader2, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  Play, Star, AlertCircle, RefreshCw,
+  Star, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
-import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
-import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
-import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
-import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
-import { deriveEvidenceState } from "@/lib/creditEvidence";
-import { SmartWidget } from "@/components/ui/smart-widget";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { CreditsBoard } from "@/components/kretopia/CreditsBoard";
 import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
 import { Reveal } from "@/components/kretopia/Reveal";
-import { Link } from "react-router-dom";
 import { Fingerprint, Handshake, FileCheck2 } from "lucide-react";
 
 const ACCENT = "#FF2DA1";
@@ -52,6 +40,13 @@ const CATEGORY_GROUPS = [
   { label: "Art & Design", value: "art", icon: Palette },
 ];
 
+const SEARCH_RESULT_GROUPS = [
+  { label: "All results", value: "all" as const, hint: "Everything that matched, newest first." },
+  { label: "Projects", value: "project", hint: "Real productions and AI-suggested matches from across the web." },
+  { label: "Creators", value: "creator", hint: "People on Kretopia with a credit matching your search." },
+  { label: "Discovered on the web", value: "web", hint: "Found outside Kretopia — not yet part of the database." },
+];
+
 const TYPE_TO_CATEGORY: Record<string, string> = {
   film: "film_tv", movie: "film_tv", tv: "film_tv", short_film: "film_tv", documentary: "film_tv", music_video: "film_tv", web_series: "film_tv",
   album: "music", single: "music", ep: "music", podcast: "music", audiobook: "music",
@@ -63,22 +58,6 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
   fashion_collection: "fashion", editorial_shoot: "fashion", runway: "fashion", beauty_campaign: "fashion",
 };
 
-// Cinematic placeholder gradients by category
-const CATEGORY_GRADIENTS: Record<string, string> = {
-  film_tv: "from-slate-900 via-primary to-slate-800",
-  music: "from-primary via-primary to-primary",
-  performing: "from-rose-950 via-red-900 to-pink-950",
-  events: "from-amber-950 via-orange-900 to-yellow-950",
-  digital: "from-primary via-teal-900 to-emerald-950",
-  commercial: "from-zinc-900 via-neutral-800 to-stone-900",
-  art: "from-fuchsia-950 via-pink-900 to-primary",
-  fashion: "from-rose-900 via-pink-800 to-fuchsia-900",
-};
-
-const CATEGORY_ICONS: Record<string, typeof Film> = {
-  film_tv: Film, music: Music, performing: Theater, events: Camera,
-  digital: Tv, commercial: Building2, art: Palette, fashion: Sparkles,
-};
 
 interface ICDBProject {
   id: string;
@@ -154,7 +133,6 @@ interface WebResult {
 }
 
 const CreditDatabase = () => {
-  const reducedMotion = useReducedMotion();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
@@ -163,6 +141,13 @@ const CreditDatabase = () => {
   const [webResults, setWebResults] = useState<WebResult[]>([]);
   const [profiles, setProfiles] = useState<Map<string, ProfileInfo>>(new Map());
   const [loading, setLoading] = useState(false);
+  // The DB-backed credit search resolves in well under a second; the edge
+  // function's AI + web-scrape enrichment is the slow part (it calls
+  // search-credits-web, the same multi-platform scraper behind the landing
+  // hero search). Tracking them separately means real, on-Kretopia results
+  // render the instant the fast query resolves instead of waiting on the
+  // slowest of the two.
+  const [webLoading, setWebLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [projectCount, setProjectCount] = useState(0);
   const [claimDialog, setClaimDialog] = useState<{ project: ICDBProject; role: ICDBProject['icdb_project_roles'] extends (infer T)[] | undefined ? T : never } | null>(null);
@@ -170,6 +155,7 @@ const CreditDatabase = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [trendingProjects, setTrendingProjects] = useState<ICDBProject[]>([]);
   const [recentCredits, setRecentCredits] = useState<UserCredit[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
   const [view, setView] = useState<"mine" | "explore">("mine");
@@ -222,6 +208,35 @@ const CreditDatabase = () => {
     })();
   }, []);
 
+  // Real per-category counts for the filter chips — one lightweight
+  // COUNT-only query per category (no row payload), run once on mount, so
+  // "Film & TV (128)" etc. reflects the actual database instead of sitting
+  // as static decoration.
+  useEffect(() => {
+    (async () => {
+      const nonAll = CATEGORY_GROUPS.filter((g) => g.value !== "all");
+      const results = await Promise.all(
+        nonAll.map(async (g) => {
+          const types = Object.entries(TYPE_TO_CATEGORY).filter(([, cat]) => cat === g.value).map(([type]) => type);
+          if (types.length === 0) return [g.value, 0] as const;
+          const { count } = await supabase
+            .from("credits")
+            .select("id", { count: "exact", head: true })
+            .in("credit_category", types);
+          return [g.value, count ?? 0] as const;
+        }),
+      );
+      const map: Record<string, number> = {};
+      let total = 0;
+      for (const [value, count] of results) {
+        map[value] = count;
+        total += count;
+      }
+      map.all = total;
+      setCategoryCounts(map);
+    })();
+  }, []);
+
   // Search
   const fetchResults = useCallback(async () => {
     if (!isResultsSearching) {
@@ -233,65 +248,68 @@ const CreditDatabase = () => {
       return;
     }
     setLoading(true);
+    setWebLoading(true);
     setSearchError(null);
-    try {
-      // Run edge function search and direct DB credit search in parallel
-      const edgeFnPromise = supabase.functions.invoke('search-icdb', {
-        body: { query: debouncedSearch, category: category !== 'all' ? category : undefined },
-      }).then(({ data, error }) => {
-        if (error) {
-          console.warn('search-icdb edge function failed, using DB fallback:', error);
-          return null;
-        }
-        return data;
-      }).catch((err) => {
-        console.warn('search-icdb invocation error:', err);
-        return null;
-      });
 
-      let creditQuery = supabase
-        .from('credits')
-        .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category, verification_url, verified_by_name, verified_by_user_id')
-        .or(`project_name.ilike.%${debouncedSearch}%,role.ilike.%${debouncedSearch}%,client_brand.ilike.%${debouncedSearch}%`)
-        .order('year', { ascending: false, nullsFirst: false })
-        .limit(20);
+    // The direct credits query and the search-icdb edge function (DB +
+    // AI supplement) are independent — render the fast one the instant it
+    // resolves rather than blocking on whichever is slower.
+    let creditQuery = supabase
+      .from('credits')
+      .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category, verification_url, verified_by_name, verified_by_user_id')
+      .or(`project_name.ilike.%${debouncedSearch}%,role.ilike.%${debouncedSearch}%,client_brand.ilike.%${debouncedSearch}%`)
+      .order('year', { ascending: false, nullsFirst: false })
+      .limit(20);
 
-      if (category !== 'all') {
-        const types = Object.entries(TYPE_TO_CATEGORY).filter(([, cat]) => cat === category).map(([type]) => type);
-        if (types.length > 0) {
-          creditQuery = creditQuery.or(`project_type.in.(${types.join(',')}),credit_category.in.(${types.join(',')})`);
-        }
+    if (category !== 'all') {
+      const types = Object.entries(TYPE_TO_CATEGORY).filter(([, cat]) => cat === category).map(([type]) => type);
+      if (types.length > 0) {
+        creditQuery = creditQuery.or(`project_type.in.(${types.join(',')}),credit_category.in.(${types.join(',')})`);
       }
-
-      const [edgeData, creditResult] = await Promise.all([edgeFnPromise, creditQuery]);
-
-      if (creditResult.error) throw creditResult.error;
-
-      // Set edge function results (projects, AI suggestions, web results)
-      setIcdbProjects(edgeData?.projects || []);
-      setAiSuggestions(edgeData?.suggestions || []);
-      setWebResults(edgeData?.webResults || []);
-      setProjectCount(edgeData?.total || 0);
-
-      // Set direct DB credit results
-      const creditData = creditResult.data || [];
-      const userIds = [...new Set(creditData.map(c => c.user_id))];
-      if (userIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, avatar_url, role')
-          .in('user_id', userIds);
-        const map = new Map<string, ProfileInfo>();
-        profileData?.forEach((p: any) => map.set(p.user_id, p));
-        setProfiles(map);
-      }
-      setUserCredits(creditData as UserCredit[]);
-    } catch (err) {
-      console.error('Error searching:', err);
-      setSearchError('Something went wrong searching the creative record.');
-    } finally {
-      setLoading(false);
     }
+
+    const creditFetch = (async () => {
+      try {
+        const { data, error } = await creditQuery;
+        if (error) throw error;
+        const creditData = data || [];
+        const userIds = [...new Set(creditData.map((c) => c.user_id))];
+        if (userIds.length > 0) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('user_id, full_name, avatar_url, role')
+            .in('user_id', userIds);
+          const map = new Map<string, ProfileInfo>();
+          profileData?.forEach((p: any) => map.set(p.user_id, p));
+          setProfiles(map);
+        }
+        setUserCredits(creditData as UserCredit[]);
+      } catch (err) {
+        console.error('Error searching credits:', err);
+        setSearchError('Something went wrong searching the creative record.');
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    const edgeFetch = supabase.functions.invoke('search-icdb', {
+      body: { query: debouncedSearch, category: category !== 'all' ? category : undefined },
+    }).then(({ data, error }) => {
+      if (error) {
+        console.warn('search-icdb edge function failed:', error);
+        return;
+      }
+      setIcdbProjects(data?.projects || []);
+      setAiSuggestions(data?.suggestions || []);
+      setWebResults(data?.webResults || []);
+      setProjectCount(data?.total || 0);
+    }).catch((err) => {
+      console.warn('search-icdb invocation error:', err);
+    }).finally(() => {
+      setWebLoading(false);
+    });
+
+    await Promise.all([creditFetch, edgeFetch]);
   }, [debouncedSearch, category, isResultsSearching]);
 
   useEffect(() => {
@@ -319,8 +337,6 @@ const CreditDatabase = () => {
   const formatType = (type: string) =>
     type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  const getCategoryForType = (type: string) => TYPE_TO_CATEGORY[type] || 'digital';
-
   const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0 || webResults.length > 0;
 
   const searchControls = (
@@ -338,6 +354,11 @@ const CreditDatabase = () => {
         {CATEGORY_GROUPS.map(g => {
           const Icon = g.icon;
           const isActive = category === g.value;
+          const countsLoaded = Object.keys(categoryCounts).length > 0;
+          const count = categoryCounts[g.value];
+          // Hide empty categories once real counts are in — a chip nobody's
+          // record matches isn't a useful filter. "All" always shows.
+          if (countsLoaded && g.value !== "all" && !count) return null;
           return (
             <button
               key={g.value}
@@ -351,6 +372,7 @@ const CreditDatabase = () => {
             >
               <Icon className="h-3 w-3" />
               {g.label}
+              {countsLoaded && <span className={isActive ? "text-white/70" : "text-white/35"}>{count ?? 0}</span>}
             </button>
           );
         })}
@@ -415,7 +437,7 @@ const CreditDatabase = () => {
             <div className="container mx-auto px-4">{searchControls}</div>
           </div>
         ) : (
-          <EditorialChapter index="I" kicker="The search" title="Start with a name." accentWord="Any name.">
+          <EditorialChapter index="I" kicker="The search" title="Start with a name." accentWord="Any name." align="center" tightenTop>
             <Reveal>{searchControls}</Reveal>
           </EditorialChapter>
         )}
@@ -442,114 +464,56 @@ const CreditDatabase = () => {
             </div>
           ) : isResultsSearching ? (
             hasResults ? (
-              <div className="py-4 space-y-6">
-                {/* Projects — poster grid */}
-                {(icdbProjects.length > 0 || aiSuggestions.length > 0) && (
-                  <section>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Database className="h-4 w-4 text-primary" />
-                      <h2 className="text-sm font-semibold">Projects</h2>
-                      <span className="text-[11px] text-muted-foreground">({icdbProjects.length + aiSuggestions.length})</span>
-                    </div>
-                    <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Projects">
-                      <CarouselContent className="-ml-3">
-                        {icdbProjects.map(project => (
-                          <CarouselItem key={project.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
-                            <PosterCard
-                              title={project.title}
-                              type={project.type}
-                              year={project.year}
-                              imageUrl={project.cover_image_url}
-                              isVerified={project.is_verified}
-                              roleCount={project.icdb_project_roles?.length || 0}
-                              claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
-                              clientBrand={project.client_brand}
-                              onClick={() => navigate(`/credits/project/${project.id}`)}
-                              formatType={formatType}
-                              getCategoryForType={getCategoryForType}
-                            />
-                          </CarouselItem>
-                        ))}
-                        {aiSuggestions.map((s, i) => (
-                          <CarouselItem key={`ai-${i}`} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
-                            <PosterCard
-                              title={s.title}
-                              type={s.type}
-                              year={s.year}
-                              isAI
-                              clientBrand={s.client_brand}
-                              formatType={formatType}
-                              getCategoryForType={getCategoryForType}
-                            />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous projects" />
-                      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next projects" />
-                    </Carousel>
-                  </section>
-                )}
-
-                {/* Creators */}
-                {userCredits.length > 0 && (
-                  <section>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Users className="h-4 w-4 text-primary" />
-                      <h2 className="text-sm font-semibold">Creators</h2>
-                    </div>
-                    <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Creators">
-                      <CarouselContent className="-ml-3">
-                        {userCredits.map(credit => {
-                          const profile = profiles.get(credit.user_id);
-                          return (
-                            <CarouselItem key={credit.id} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
-                              <CreditPosterCard
-                                credit={credit}
-                                profile={profile}
-                                onClick={() => navigate(`/profile/${credit.user_id}`)}
-                                formatType={formatType}
-                                getCategoryForType={getCategoryForType}
-                              />
-                            </CarouselItem>
-                          );
-                        })}
-                      </CarouselContent>
-                      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous creators" />
-                      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next creators" />
-                    </Carousel>
-                  </section>
-                )}
-
-                {/* Web discovered */}
-                {webResults.length > 0 && (
-                  <section>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Globe className="h-4 w-4 text-primary" />
-                      <h2 className="text-sm font-semibold">Discovered on the Web</h2>
-                    </div>
-                    <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full relative" aria-label="Discovered on the web">
-                      <CarouselContent className="-ml-3">
-                        {webResults.map((result, i) => (
-                          <CarouselItem key={`web-${i}`} className="pl-3 basis-[42%] sm:basis-[30%] md:basis-[22%]">
-                            <PosterCard
-                              title={result.title}
-                              type={result.type || 'project'}
-                              year={result.year}
-                              imageUrl={result.image_url}
-                              platform={result.platform}
-                              onClick={() => result.url && window.open(result.url, '_blank')}
-                              formatType={formatType}
-                              getCategoryForType={getCategoryForType}
-                              isExternal
-                            />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous web results" />
-                      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next web results" />
-                    </Carousel>
-                  </section>
-                )}
+              <div className="py-4">
+                <CreditsBoard
+                  title="Search results"
+                  groups={SEARCH_RESULT_GROUPS}
+                  rows={[
+                    ...icdbProjects.map((project) => ({
+                      id: project.id,
+                      group: "project",
+                      title: project.title,
+                      subtitle: project.client_brand,
+                      typeLabel: formatType(project.type),
+                      year: project.year,
+                      imageUrl: project.cover_image_url,
+                      verified: project.is_verified,
+                      onClick: () => navigate(`/credits/project/${project.id}`),
+                    })),
+                    ...aiSuggestions.map((s, i) => ({
+                      id: `ai-${i}`,
+                      group: "project",
+                      title: s.title,
+                      subtitle: s.client_brand,
+                      typeLabel: formatType(s.type),
+                      year: s.year,
+                      isAI: true,
+                      onClick: () => {},
+                    })),
+                    ...userCredits.map((credit) => ({
+                      id: credit.id,
+                      group: "creator",
+                      title: credit.project_name,
+                      subtitle: profiles.get(credit.user_id)?.full_name || credit.role,
+                      typeLabel: formatType(credit.credit_category || ""),
+                      year: credit.year,
+                      imageUrl: resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url),
+                      verified: credit.verification_status === "verified",
+                      onClick: () => navigate(`/profile/${credit.user_id}`),
+                    })),
+                    ...webResults.map((result, i) => ({
+                      id: `web-${i}`,
+                      group: "web",
+                      title: result.title,
+                      subtitle: result.platform,
+                      typeLabel: formatType(result.type || "project"),
+                      year: result.year,
+                      imageUrl: result.image_url,
+                      isExternal: true,
+                      onClick: () => result.url && window.open(result.url, "_blank"),
+                    })),
+                  ]}
+                />
               </div>
             ) : (
               <div className="text-center py-16">
@@ -670,230 +634,5 @@ const CreditDatabase = () => {
     </>
   );
 };
-
-/* ─── Poster Card (2:3 aspect ratio with cinematic placeholder) ─── */
-
-function PosterCard({
-  title, type, year, imageUrl, isVerified, roleCount, claimedCount,
-  clientBrand, isAI, isExternal, platform, onClick, formatType, getCategoryForType,
-}: {
-  title: string;
-  type: string;
-  year?: number | null;
-  imageUrl?: string | null;
-  isVerified?: boolean;
-  roleCount?: number;
-  claimedCount?: number;
-  clientBrand?: string | null;
-  isAI?: boolean;
-  isExternal?: boolean;
-  platform?: string;
-  onClick?: () => void;
-  formatType: (t: string) => string;
-  getCategoryForType: (t: string) => string;
-}) {
-  const cat = getCategoryForType(type);
-  const gradient = CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital;
-  const CatIcon = CATEGORY_ICONS[cat] || Globe;
-
-  return (
-    <SmartWidget className="rounded-xl" scanLine={false}>
-    <button
-      onClick={onClick}
-      className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/40 w-full"
-    >
-      {/* Poster artwork */}
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={title}
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-        ) : (
-          <CreditCoverPlaceholder
-            category={type}
-            title={title}
-            role={formatType(type)}
-            height="absolute inset-0"
-          />
-        )}
-
-        {/* Gradient overlay on bottom */}
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-        {/* Badges */}
-        <div className="absolute top-2 left-2 flex gap-1">
-          {isVerified && (
-            <span className="bg-green-500/90 text-white rounded-full p-0.5">
-              <ShieldCheck className="h-2.5 w-2.5" />
-            </span>
-          )}
-          {isAI && (
-            <span className="bg-primary/90 text-primary-foreground rounded-full px-1.5 py-0.5 text-[8px] font-semibold flex items-center gap-0.5">
-              <Sparkles className="h-2 w-2" /> AI
-            </span>
-          )}
-          {isExternal && (
-            <span className="bg-white/20 backdrop-blur-sm text-white rounded-full p-0.5">
-              <ExternalLink className="h-2.5 w-2.5" />
-            </span>
-          )}
-        </div>
-
-        {/* Role count */}
-        {roleCount != null && roleCount > 0 && (
-          <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white rounded-full px-1.5 py-0.5 text-[9px] flex items-center gap-0.5">
-            <Users className="h-2.5 w-2.5" />
-            {claimedCount}/{roleCount}
-          </div>
-        )}
-
-        {/* Bottom text overlay */}
-        <div className="absolute bottom-0 inset-x-0 p-2.5">
-          <h3 className="text-white font-semibold text-xs leading-tight line-clamp-2 mb-0.5 drop-shadow-md">
-            {title}
-          </h3>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge className="bg-white/15 text-white/90 border-0 text-[9px] h-4 font-normal backdrop-blur-sm">
-              {formatType(type)}
-            </Badge>
-            {year && <span className="text-white/70 text-[10px]">{year}</span>}
-            {platform && <span className="text-white/60 text-[9px]">{platform}</span>}
-          </div>
-          {clientBrand && (
-            <p className="text-white/50 text-[9px] mt-0.5 flex items-center gap-0.5 truncate">
-              <Building2 className="h-2 w-2" /> {clientBrand}
-            </p>
-          )}
-        </div>
-      </div>
-    </button>
-    </SmartWidget>
-  );
-}
-
-/* ─── Credit Poster Card (creator work with thumbnail) ─── */
-
-function CreditPosterCard({
-  credit, profile, onClick, formatType, getCategoryForType,
-}: {
-  credit: UserCredit;
-  profile?: ProfileInfo;
-  onClick: () => void;
-  formatType: (t: string) => string;
-  getCategoryForType: (t: string) => string;
-}) {
-  const cat = getCategoryForType(credit.credit_category || 'digital');
-  const gradient = CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital;
-  const CatIcon = CATEGORY_ICONS[cat] || Globe;
-  const resolvedThumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
-
-  return (
-    <SmartWidget className="rounded-xl" scanLine={false}>
-    <button
-      onClick={onClick}
-      className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 focus:outline-none w-full"
-    >
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl">
-        {resolvedThumb ? (
-          <img
-            src={resolvedThumb}
-            alt={credit.project_name}
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-        ) : (
-          <div className={cn("absolute inset-0 bg-gradient-to-br", gradient)}>
-            <div className="absolute inset-0 flex items-center justify-center opacity-10">
-              <CatIcon className="h-20 w-20" />
-            </div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-              <h3 className="text-white/80 font-black text-base leading-tight tracking-tight line-clamp-3 uppercase">
-                {credit.project_name}
-              </h3>
-              <p className="text-white/40 text-[9px] font-semibold uppercase tracking-[0.2em] mt-2">
-                {credit.role}
-              </p>
-            </div>
-          </div>
-        )}
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-        <div className="absolute top-2 left-2">
-          <EvidenceStateBadge state={deriveEvidenceState(credit)} iconOnly className="!bg-black/50 backdrop-blur-sm !border-white/20" />
-        </div>
-
-        {credit.primary_media_url && (
-          <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white rounded-full p-1">
-            <Play className="h-2.5 w-2.5" />
-          </div>
-        )}
-
-        <div className="absolute bottom-0 inset-x-0 p-2.5">
-          <h3 className="text-white font-semibold text-xs leading-tight line-clamp-2 mb-0.5 drop-shadow-md">
-            {credit.project_name}
-          </h3>
-          <p className="text-white/70 text-[10px] truncate">{credit.role}</p>
-          {profile && (
-            <div className="flex items-center gap-1 mt-1">
-              <Avatar className="h-4 w-4 border border-white/30">
-                <AvatarImage src={profile.avatar_url || ''} />
-                <AvatarFallback className="text-[6px] bg-white/20 text-white">
-                  {profile.full_name?.[0] || '?'}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-white/60 text-[9px] truncate">{profile.full_name}</span>
-            </div>
-          )}
-          {credit.year && <span className="text-white/50 text-[9px]">{credit.year}</span>}
-        </div>
-      </div>
-    </button>
-    </SmartWidget>
-  );
-}
-
-/* ─── Compact Credit Row (for credits without art) ─── */
-
-function CompactCreditRow({
-  credit, onClick, formatType, getCategoryForType,
-}: {
-  credit: UserCredit;
-  onClick: () => void;
-  formatType: (t: string) => string;
-  getCategoryForType: (t: string) => string;
-}) {
-  const cat = getCategoryForType(credit.credit_category || 'digital');
-  const CatIcon = CATEGORY_ICONS[cat] || Globe;
-
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/60 transition-colors text-left group"
-    >
-      <div className={cn(
-        "shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br",
-        CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital
-      )}>
-        <CatIcon className="h-4 w-4 text-white/70" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <h4 className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-          {credit.project_name}
-        </h4>
-        <p className="text-[11px] text-muted-foreground truncate">
-          {credit.role}
-          {credit.year ? ` · ${credit.year}` : ''}
-          {credit.platform ? ` · ${credit.platform}` : ''}
-        </p>
-      </div>
-      <EvidenceStateBadge state={deriveEvidenceState(credit)} className="shrink-0" />
-    </button>
-  );
-}
 
 export default CreditDatabase;

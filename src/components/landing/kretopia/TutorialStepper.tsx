@@ -15,6 +15,18 @@ import type { TutorialStep } from "./FeatureTutorial";
 const ACCENT = "#FF2DA1";
 const AUTOPLAY_INTERVAL_MS = 4500;
 
+// Rows cascade in top-to-bottom, one after another, the first time the list
+// scrolls into view — the paired visual (e.g. the search preview) sits
+// outside this component and never moves.
+const listVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12 } },
+};
+const rowVariants = {
+  hidden: { opacity: 0, y: -10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.2, 0.65, 0.3, 0.95] } },
+};
+
 interface TutorialStepperProps {
   steps: TutorialStep[];
   label: string;
@@ -68,7 +80,14 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange, autoPl
   };
 
   return (
-    <div aria-label={label} className="relative">
+    <motion.div
+      aria-label={label}
+      className="relative"
+      initial={reducedMotion ? false : "hidden"}
+      whileInView="show"
+      viewport={{ once: true, margin: "-60px" }}
+      variants={reducedMotion ? undefined : listVariants}
+    >
       {steps.map((step, i) => {
         const isActive = i === index;
         const isPast = i < index;
@@ -77,7 +96,7 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange, autoPl
         const panelId = `${label.replace(/\s+/g, "-").toLowerCase()}-panel-${i}`;
 
         return (
-          <div key={step.title} className="relative">
+          <motion.div key={step.title} className="relative" variants={reducedMotion ? undefined : rowVariants}>
             <button
               ref={(el) => { rowRefs.current[i] = el; }}
               type="button"
@@ -156,13 +175,13 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange, autoPl
                       transition={{ duration: 0.3, ease: [0.2, 0.65, 0.3, 0.95] }}
                       className="overflow-hidden"
                     >
-                      <p className="mt-2 pr-2 text-sm leading-relaxed text-white/60" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                      <p className="mt-2 pr-2 text-sm leading-relaxed text-white/60" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                         {step.body}
                       </p>
                       {!isLast && (
                         <span
                           className="mt-3 inline-flex items-center gap-1 text-xs font-medium pink-glow-breathe"
-                          style={{ color: ACCENT, fontFamily: "'Work Sans', sans-serif" }}
+                          style={{ color: ACCENT, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                         >
                           Next: {steps[i + 1].title}
                           <ChevronRight className="h-3 w-3" aria-hidden />
@@ -173,10 +192,10 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange, autoPl
                 </AnimatePresence>
               </div>
             </button>
-          </div>
+          </motion.div>
         );
       })}
-    </div>
+    </motion.div>
   );
 };
 

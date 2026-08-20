@@ -78,7 +78,7 @@ export const SearchTutorialSection = () => {
                 <Icon className="h-4 w-4" style={{ color: "#FF2DA1" }} aria-hidden />
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">{label}</span>
               </div>
-              <p className="text-sm text-white/55" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+              <p className="text-sm text-white/55" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                 {body}
               </p>
             </div>

@@ -83,7 +83,7 @@ export const ProductLoopSection = () => {
                   <Icon className="h-5 w-5" style={{ color: isActive ? ACCENT : "rgba(255,255,255,0.5)" }} aria-hidden />
                   <span
                     className="text-[10px] font-bold uppercase tracking-[0.14em]"
-                    style={{ color: isActive ? ACCENT : "rgba(255,255,255,0.7)", fontFamily: "'Work Sans', sans-serif" }}
+                    style={{ color: isActive ? ACCENT : "rgba(255,255,255,0.7)", fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                   >
                     {label}
                   </span>
@@ -124,11 +124,11 @@ export const ProductLoopSection = () => {
                 <div>
                   <p
                     className="text-[10px] font-bold uppercase tracking-[0.14em] mb-1"
-                    style={{ color: isActive ? ACCENT : "rgba(255,255,255,0.7)", fontFamily: "'Work Sans', sans-serif" }}
+                    style={{ color: isActive ? ACCENT : "rgba(255,255,255,0.7)", fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                   >
                     {label}
                   </p>
-                  <p className="text-xs text-white/55" style={{ fontFamily: "'Work Sans', sans-serif" }}>{body}</p>
+                  <p className="text-xs text-white/55" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>{body}</p>
                 </div>
               </button>
             );
@@ -137,7 +137,7 @@ export const ProductLoopSection = () => {
 
         {/* Active stage explanation — desktop only, mobile shows it inline per-card above */}
         <div className="hidden lg:block mt-6 min-h-[3.5rem]">
-          <p className="text-sm text-white/70 max-w-lg" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+          <p className="text-sm text-white/70 max-w-lg" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
             <span style={{ color: ACCENT, fontWeight: 700 }}>{STAGES[active].label}.</span>{" "}
             {STAGES[active].body}
           </p>

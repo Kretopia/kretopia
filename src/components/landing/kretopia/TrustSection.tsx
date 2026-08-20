@@ -63,11 +63,11 @@ export const TrustSection = () => {
                 >
                   <p
                     className="text-[10px] font-bold uppercase tracking-[0.16em] mb-1.5"
-                    style={{ color: isLast ? ACCENT : "rgba(255,255,255,0.7)", fontFamily: "'Work Sans', sans-serif" }}
+                    style={{ color: isLast ? ACCENT : "rgba(255,255,255,0.7)", fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                   >
                     {EVIDENCE_STATE_LABEL[state]}
                   </p>
-                  <p className="text-xs leading-snug text-white/50" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+                  <p className="text-xs leading-snug text-white/50" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
                     {EVIDENCE_STATE_DESCRIPTION[state]}
                   </p>
                 </div>
@@ -89,7 +89,7 @@ export const TrustSection = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-10 text-center"
         >
-          <p className="text-sm text-white/55" style={{ fontFamily: "'Work Sans', sans-serif" }}>
+          <p className="text-sm text-white/55" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
             The stronger the evidence, the stronger the record.
           </p>
           <p className="mt-2 text-lg font-semibold italic text-white/85">

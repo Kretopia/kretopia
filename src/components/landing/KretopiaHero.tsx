@@ -20,7 +20,10 @@ import { cn } from "@/lib/utils";
 import { analytics } from "@/lib/analytics";
 
 const ACCENT = "#FF2DA1";
-const EXAMPLE_SEARCHES = ["Maya Solano", "Event Producer in Bali", "Creative Director", "Sound Designer"];
+// Submitted through the same name-based web search as any real query — must
+// be plausible full names, not job titles, or the search returns nothing
+// useful and undersells the feature it's meant to demonstrate.
+const EXAMPLE_SEARCHES = ["Maya Solano", "Jordan Reyes", "Amara Osei", "Diego Fernandez"];
 
 /** Headline, split into words so each can resolve out of a blur on load. */
 const HEADLINE: { text: string; accent?: boolean }[][] = [
@@ -208,7 +211,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
               rather than replaced. */}
           <p
             className="mt-5 flex items-center justify-center gap-1.5 text-center text-sm text-white/55"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             <Sparkles className="h-3.5 w-3.5 shrink-0 pink-glow-breathe" style={{ color: ACCENT }} aria-hidden />
             Find your record, confirm your work and open your next opportunity.
@@ -218,7 +221,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             <span
               className="text-[11px] uppercase tracking-[0.18em] text-white/35"
-              style={{ fontFamily: "'Work Sans', sans-serif" }}
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               Try
             </span>
@@ -230,7 +233,7 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
                 whileTap={reducedMotion ? undefined : { scale: 0.97 }}
                 onClick={() => runExample(example)}
                 className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/55 transition-colors hover:border-white/35 hover:text-white/90"
-                style={{ fontFamily: "'Work Sans', sans-serif" }}
+                style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
               >
                 {example}
               </motion.button>
@@ -239,14 +242,14 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
 
           <p
             className="mt-5 text-center text-xs text-white/45"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             Free to claim. No card required.
           </p>
 
           <p
             className="mt-6 text-center text-[10px] font-semibold uppercase tracking-[0.28em] text-white/30"
-            style={{ fontFamily: "'Work Sans', sans-serif" }}
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             Kretopia. Where Creativity Lives.
           </p>

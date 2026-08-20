@@ -15,13 +15,15 @@ interface FeaturePageHeaderProps {
   tabs?: ReactNode;
   /** Feature key + tutorial steps -- omit to render the header with no tutorial trigger. */
   tutorial?: { featureKey: string; label: string; steps: TutorialStep[] };
+  /** Keep title + accent on a single line (auto-scaled to fit). Defaults to true. */
+  oneLine?: boolean;
 }
 
 /**
  * Shared cinematic page header. Same plate, scale and reveal motion as the
  * landing hero: one white line, one magenta line — never more than two.
  */
-export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs, tutorial }: FeaturePageHeaderProps) {
+export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs, tutorial, oneLine = true }: FeaturePageHeaderProps) {
   return (
     <div
       className="dark relative overflow-hidden pt-[env(safe-area-inset-top)]"
@@ -50,6 +52,7 @@ export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs,
         accentTitle={accentTitle}
         subtitle={subtitle}
         align="center"
+        oneLine={oneLine}
         cornerSlot={
           // The tutorial trigger floats in the header's corner instead of
           // sitting between the subtitle and the first card — no sandwich.

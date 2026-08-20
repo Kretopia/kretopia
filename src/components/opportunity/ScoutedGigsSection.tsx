@@ -18,6 +18,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
 import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { KretoAvatar } from "@/components/brand/KretoAvatar";
 
 interface ScoutedGig {
   id: string;
@@ -387,7 +388,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
 
       {scanning && (
         <Card className="p-3 border-energy/30 bg-energy/[0.04] flex items-center gap-3">
-          <Loader2 className="h-4 w-4 animate-spin text-energy shrink-0" />
+          <KretoAvatar size="xs" state="thinking" className="shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-semibold text-foreground">Searching gig boards, LinkedIn, Instagram and ATS pages…</p>
             <p className="text-[11px] text-muted-foreground">{scanElapsed}s elapsed — usually takes 20-40s</p>

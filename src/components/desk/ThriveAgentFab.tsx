@@ -14,6 +14,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { KretoAvatar } from "@/components/brand/KretoAvatar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -942,7 +943,7 @@ export const ThriveAgentFab = () => {
 
             {sending && messages[messages.length - 1]?.role === "user" && (
               <div className="mr-auto bg-accent/60 rounded-2xl px-3.5 py-2.5 text-sm text-muted-foreground inline-flex items-center gap-2">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <KretoAvatar size="xs" state="thinking" />
                 Thinking…
               </div>
             )}

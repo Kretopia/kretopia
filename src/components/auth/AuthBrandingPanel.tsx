@@ -42,8 +42,9 @@ export const AuthBrandingPanel = () => (
         home for creators — and Kreto, your AI Executive Producer, runs point.
       </p>
 
-      {/* Kreto whisper card */}
-      <div className="mb-8 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-3.5 max-w-md ai-ambient-breathe">
+      {/* Kreto whisper card — the avatar's own halo already breathes, so the
+          card wrapper doesn't need a second, uncoordinated pulse. */}
+      <div className="mb-8 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-3.5 max-w-md">
         <KretoAvatar size="sm" />
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF2DA1] mb-0.5">Kreto</p>

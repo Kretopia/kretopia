@@ -949,13 +949,13 @@ export const ThriveAgentFab = () => {
             )}
             {voiceBusy && (
               <div className="mr-auto bg-primary/10 border border-primary/30 rounded-2xl px-3.5 py-2.5 text-sm text-foreground inline-flex items-center gap-2">
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                <KretoAvatar size="xs" state="listening" />
                 Hearing you out…
               </div>
             )}
             {speaking && !voiceMuted && (
               <div className="mr-auto bg-accent/60 rounded-2xl px-3.5 py-2.5 text-xs text-muted-foreground inline-flex items-center gap-2">
-                <Volume2 className="h-3.5 w-3.5 text-primary animate-pulse" />
+                <KretoAvatar size="xs" state="speaking" />
                 Kreto is speaking…
                 <button
                   className="ml-1 underline text-primary"

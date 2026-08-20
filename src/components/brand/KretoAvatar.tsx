@@ -20,11 +20,25 @@ const SIZE: Record<Size, { box: string; halo: string; ring: string }> = {
   xl: { box: "h-64 w-64", halo: "h-[22rem] w-[22rem]", ring: "inset-[-40px]" },
 };
 
-/** "idle" is the default ambient breathing loop. "thinking" is a visibly
- *  faster, brighter pulse plus a spinning gradient rim — Kreto's own
- *  identity doubling as the "AI is actively working" indicator, replacing
- *  the generic Loader2 spinners used for this everywhere else in the app. */
-type AvatarState = "idle" | "thinking";
+/** "idle" is the default ambient breathing loop. The other three each read
+ *  as a visibly distinct kind of "active" so Kreto's own identity can stand
+ *  in for the generic Loader2/Volume2 icons used for these moments elsewhere:
+ *   - "thinking": fast, bright pulse + a spinning gradient rim (a loading
+ *     spinner folded into the avatar itself).
+ *   - "listening": a slower radar-style ripple — the halo expands and fades
+ *     outward, reading as "capturing/receiving" rather than "computing."
+ *   - "speaking": a quick double-pulse, evoking speech rhythm rather than a
+ *     single smooth breath. */
+type AvatarState = "idle" | "thinking" | "listening" | "speaking";
+
+const HALO_ANIMATE: Record<AvatarState, { scale: number[]; opacity: number[] }> = {
+  idle:      { scale: [1, 1.08, 1],          opacity: [0.45, 0.70, 0.45] },
+  thinking:  { scale: [1, 1.22, 1],          opacity: [0.55, 0.95, 0.55] },
+  listening: { scale: [1, 1.35, 1],          opacity: [0.60, 0.08, 0.60] },
+  speaking:  { scale: [1, 1.10, 1, 1.16, 1], opacity: [0.55, 0.85, 0.60, 0.90, 0.55] },
+};
+const HALO_DURATION: Record<AvatarState, number> = { idle: 4, thinking: 1.1, listening: 1.6, speaking: 0.9 };
+const HALO_STATIC_OPACITY: Record<AvatarState, number> = { idle: 0.5, thinking: 0.75, listening: 0.65, speaking: 0.7 };
 
 interface KretoAvatarProps {
   size?: Size;
@@ -44,25 +58,21 @@ export const KretoAvatar = ({
 
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
-      {/* Outer breathing halo — sunset gradient. Pulses faster and brighter
-          while thinking so the same avatar reads as "actively working." */}
+      {/* Outer breathing halo — sunset gradient. Shape/speed changes per state
+          so the same avatar reads as idle, thinking, listening, or speaking. */}
       {animated ? (
         <motion.span
           aria-hidden
           className={cn("absolute rounded-full blur-2xl", s.halo)}
           style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
-          animate={
-            thinking
-              ? { scale: [1, 1.22, 1], opacity: [0.55, 0.95, 0.55] }
-              : { scale: [1, 1.08, 1], opacity: [0.45, 0.7, 0.45] }
-          }
-          transition={{ duration: thinking ? 1.1 : 4, repeat: Infinity, ease: "easeInOut" }}
+          animate={HALO_ANIMATE[state]}
+          transition={{ duration: HALO_DURATION[state], repeat: Infinity, ease: "easeInOut" }}
         />
       ) : (
         <span
           aria-hidden
           className={cn("absolute rounded-full blur-2xl", s.halo)}
-          style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))", opacity: thinking ? 0.75 : 0.5 }}
+          style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))", opacity: HALO_STATIC_OPACITY[state] }}
         />
       )}
 

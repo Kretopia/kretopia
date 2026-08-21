@@ -63,7 +63,7 @@ export const ConversationListPanel = ({
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1 min-w-0">
             <p className="brand-eyebrow">Your inbox</p>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.03em]">Messages</h2>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em]">Messages</h1>
           </div>
           <QuickCallButton label="Start a call" className="rounded-full gap-2 shrink-0 mt-1" />
         </div>

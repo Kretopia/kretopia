@@ -58,7 +58,6 @@ import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
 import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
-import { PageHeader } from "@/components/ui/page-header";
 import { SectionCard } from "@/components/ui/section-card";
 import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
@@ -68,7 +67,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { KretoTip } from "@/components/agent/KretoTip";
-import { STUDIO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
+import { STUDIO_TUTORIAL, STUDIO_BRAND_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
 interface ProjectPersonRow {
   user_id: string;
@@ -199,40 +198,43 @@ const BrandWorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Hiring Dashboard | Kretopia</title>
-        <meta name="description" content="Manage your talent pipeline — post gigs, review applicants, and hire creators." />
+        <title>Studios | Kretopia</title>
+        <meta name="description" content="Your hiring command center — post gigs, review applicants, and hire creators." />
       </Helmet>
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">
-        <PageHeader
-          eyebrow="Hiring HQ"
-          title="Find, hire & manage talent"
-          subtitle="Your command center for creative recruitment."
-          icon={Building2}
-          size="sm"
-        />
+      <FeaturePageHeader
+        eyebrow="Hiring HQ"
+        title="Studios."
+        accentTitle="Your hiring command center."
+        subtitle="Post, review applicants, find talent and track every hire — all in one room, same as a creator's Studio."
+        tutorial={{ featureKey: "studio-brand", label: "How Studios works for Brands", steps: STUDIO_BRAND_TUTORIAL }}
+      />
 
+      {/* Wider on desktop, capped for readability — same treatment as the
+          creator Studios dashboard, so a Brand's Desk genuinely spans the
+          page as a real dashboard instead of a narrow single-column stack. */}
+      <div className="max-w-6xl mx-auto px-4 pt-4 pb-24 md:pb-12 space-y-5">
         <TodayStrip
           onVoice={() => setVoiceCmdOpen(true)}
           onCommandPalette={() => setPaletteOpen(true)}
           onWrapWeek={() => setWrapWeekOpen(true)}
         />
 
-        <div className="grid grid-cols-4 gap-2">
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
-            <p className="text-xl font-black tracking-tight">{stats.posted}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+          <Card className="p-3 md:p-4 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
+            <p className="text-xl md:text-2xl font-black tracking-tight">{stats.posted}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Posted</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
-            <p className="text-xl font-black tracking-tight text-energy">{stats.active}</p>
+          <Card className="p-3 md:p-4 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
+            <p className="text-xl md:text-2xl font-black tracking-tight text-energy">{stats.active}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Active</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all">
-            <p className="text-xl font-black tracking-tight">{stats.hired}</p>
+          <Card className="p-3 md:p-4 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all">
+            <p className="text-xl md:text-2xl font-black tracking-tight">{stats.hired}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Hired</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all">
-            <p className="text-xl font-black tracking-tight flex items-center justify-center gap-0.5">
+          <Card className="p-3 md:p-4 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all">
+            <p className="text-xl md:text-2xl font-black tracking-tight flex items-center justify-center gap-0.5">
               {stats.avgRating > 0 ? stats.avgRating.toFixed(1) : "—"}
               {stats.avgRating > 0 && <Star className="h-3 w-3 fill-amber-500 text-amber-500" />}
             </p>
@@ -240,95 +242,105 @@ const BrandWorkHome = () => {
           </Card>
         </div>
 
-        <Widget title="Active Listings" icon={Briefcase} action={{ label: "Manage", path: "/manage-opportunities" }}>
-          {activeOpps.length === 0 ? (
-            <div className="text-center py-4">
-              <p className="text-sm font-medium mb-1">Post your first opportunity</p>
-              <p className="text-xs text-muted-foreground mb-3">Attract top creative talent by posting a gig or job listing.</p>
-              <Button size="sm" onClick={() => navigate("/post-opportunity")} className="gap-1">
-                <Plus className="h-3 w-3" /> Post a Gig
+        {/* Two-column dashboard body on desktop — listings get the wide
+            column since they're the thing a Brand actually scans, Find
+            Talent + quick actions sit in a persistent side rail instead of
+            competing for the same vertical stack. */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="md:col-span-2 space-y-5">
+            <Widget title="Active Listings" icon={Briefcase} action={{ label: "Manage", path: "/manage-opportunities" }}>
+              {activeOpps.length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-sm font-medium mb-1">Post your first opportunity</p>
+                  <p className="text-xs text-muted-foreground mb-3">Attract top creative talent by posting a gig or job listing.</p>
+                  <Button size="sm" onClick={() => navigate("/post-opportunity")} className="gap-1">
+                    <Plus className="h-3 w-3" /> Post a Gig
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {activeOpps.slice(0, 5).map((opp) => (
+                    <div
+                      key={opp.id}
+                      className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-accent/30 cursor-pointer transition-all"
+                      onClick={() => navigate(`/opportunity/${opp.id}`)}
+                    >
+                      <Briefcase className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))] shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-sm font-medium truncate block">{opp.title}</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {applicantCounts[opp.id] > 0 && (
+                          <Badge variant="secondary" className="text-[10px] gap-0.5">
+                            <Users className="h-2.5 w-2.5" /> {applicantCounts[opp.id]}
+                          </Badge>
+                        )}
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Widget>
+
+            {closedOpps.length > 0 && (
+              <Widget title="Past Listings" icon={Clock} action={{ label: "All", path: "/manage-opportunities" }}>
+                <div className="space-y-2">
+                  {closedOpps.slice(0, 3).map((opp) => (
+                    <div
+                      key={opp.id}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all opacity-70"
+                      onClick={() => navigate(`/opportunity/${opp.id}`)}
+                    >
+                      <Briefcase className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="text-sm font-medium truncate flex-1">{opp.title}</span>
+                      <Badge variant="secondary" className="text-[10px] capitalize">{opp.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </Widget>
+            )}
+          </div>
+
+          <div className="space-y-5">
+            <Card
+              className="p-4 cursor-pointer hover:border-primary/30 transition-all bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10"
+              onClick={() => navigate("/talent-finder")}
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <UserSearch className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold">Find Talent</p>
+                  <p className="text-xs text-muted-foreground">Describe what you need — paid or barter — Smart Match finds them instantly</p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+              </div>
+            </Card>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/post-opportunity")}>
+                <Briefcase className="h-4 w-4" />
+                <span className="text-xs">Post a Gig</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/talent-finder")}>
+                <UserSearch className="h-4 w-4" />
+                <span className="text-xs">Find Talent</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/thrivepay")}>
+                <DollarSign className="h-4 w-4" />
+                <span className="text-xs">Payments</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/profile")}>
+                <Building2 className="h-4 w-4" />
+                <span className="text-xs">Company Page</span>
               </Button>
             </div>
-          ) : (
-            <div className="space-y-2">
-              {activeOpps.slice(0, 5).map((opp) => (
-                <div
-                  key={opp.id}
-                  className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-accent/30 cursor-pointer transition-all"
-                  onClick={() => navigate(`/opportunity/${opp.id}`)}
-                >
-                  <Briefcase className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))] shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <span className="text-sm font-medium truncate block">{opp.title}</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {applicantCounts[opp.id] > 0 && (
-                      <Badge variant="secondary" className="text-[10px] gap-0.5">
-                        <Users className="h-2.5 w-2.5" /> {applicantCounts[opp.id]}
-                      </Badge>
-                    )}
-                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Widget>
-
-        <Card 
-          className="p-4 cursor-pointer hover:border-primary/30 transition-all bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10"
-          onClick={() => navigate("/talent-finder")}
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <UserSearch className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold">Find Talent</p>
-              <p className="text-xs text-muted-foreground">Describe what you need — paid or barter — Smart Match finds them instantly</p>
-            </div>
-            <ArrowRight className="h-4 w-4 text-primary shrink-0" />
           </div>
-        </Card>
-
-        {closedOpps.length > 0 && (
-          <Widget title="Past Listings" icon={Clock} action={{ label: "All", path: "/manage-opportunities" }}>
-            <div className="space-y-2">
-              {closedOpps.slice(0, 3).map((opp) => (
-                <div
-                  key={opp.id}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all opacity-70"
-                  onClick={() => navigate(`/opportunity/${opp.id}`)}
-                >
-                  <Briefcase className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-medium truncate flex-1">{opp.title}</span>
-                  <Badge variant="secondary" className="text-[10px] capitalize">{opp.status}</Badge>
-                </div>
-              ))}
-            </div>
-          </Widget>
-        )}
-
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/post-opportunity")}>
-            <Briefcase className="h-4 w-4" />
-            <span className="text-xs">Post a Gig</span>
-          </Button>
-          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/talent-finder")}>
-            <UserSearch className="h-4 w-4" />
-            <span className="text-xs">Find Talent</span>
-          </Button>
-          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/thrivepay")}>
-            <DollarSign className="h-4 w-4" />
-            <span className="text-xs">Payments</span>
-          </Button>
-          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/profile")}>
-            <Building2 className="h-4 w-4" />
-            <span className="text-xs">Company Page</span>
-          </Button>
         </div>
       </div>
 

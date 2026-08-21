@@ -283,13 +283,6 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
         analytics.projectCreated(project.id);
       } catch { /* non-fatal */ }
 
-      // Get inviter profile for emails
-      const { data: userProfile } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("user_id", user.id)
-        .single();
-
       // Send invites
       for (const person of invited) {
         try {
@@ -307,9 +300,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
             await supabase.functions.invoke("send-project-invitation", {
               body: {
                 email: person.email || null,
-                projectTitle: title.trim(),
                 projectId: project.id,
-                inviterName: userProfile?.full_name || "A Kretopia user",
                 inviteeUserId: person.user_id,
               },
             }).catch(() => {});
@@ -325,9 +316,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
             await supabase.functions.invoke("send-project-invitation", {
               body: {
                 email: person.email,
-                projectTitle: title.trim(),
                 projectId: project.id,
-                inviterName: userProfile?.full_name || "A Kretopia user",
               },
             }).catch(() => {});
           }

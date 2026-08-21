@@ -28,6 +28,7 @@ type Gig = {
   type: string;
   barter_posting_deadline: string | null;
   application_deadline: string | null;
+  created_by: string;
 };
 
 async function aiAnalyzeGig(g: Gig): Promise<{
@@ -109,7 +110,7 @@ Deno.serve(async (req) => {
 
   const { data: gigs, error } = await supa
     .from("opportunities")
-    .select("id,title,description,duration,created_at,status,type,barter_posting_deadline,application_deadline")
+    .select("id,title,description,duration,created_at,status,type,barter_posting_deadline,application_deadline,created_by")
     .eq("status", "active")
     .order("created_at", { ascending: true })
     .limit(limit);
@@ -179,6 +180,21 @@ Deno.serve(async (req) => {
     if (!dryRun) {
       if (action === "closed_expired" || action === "closed_stale") {
         await supa.from("opportunities").update({ status: "closed", updated_at: new Date().toISOString() }).eq("id", g.id);
+        // Owner wasn't told a real state change happened to their post — silent
+        // AI-driven closures are exactly the failure mode Section 9 flags.
+        // Reopening is a one-click fix, not a request, so this is a notice,
+        // not a proposal awaiting approval.
+        if (g.created_by) {
+          await supa.from("notifications").insert({
+            user_id: g.created_by,
+            type: "gig_auto_closed",
+            category: "agent",
+            title: `Kreto closed "${g.title}"`,
+            message: `${reason} Reopen it anytime if this wasn't right.`,
+            action_url: `/opportunity/${g.id}`,
+            action_text: "Review",
+          }).catch(() => {});
+        }
       }
       await supa.from("gig_moderation_log").insert({
         opportunity_id: g.id,

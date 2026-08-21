@@ -8,12 +8,6 @@ import { checkForNewVersion } from "./lib/version-check";
 import { setupGlobalErrorLogging } from "./lib/errorLogger";
 import { clearAppServiceWorkerData, ensureAppServiceWorkerRegistered, isStandalonePWA } from "./lib/serviceWorker";
 import "./i18n";
-import "@fontsource/instrument-serif/400.css";
-import "@fontsource/instrument-serif/400-italic.css";
-import "@fontsource/work-sans/400.css";
-import "@fontsource/work-sans/500.css";
-import "@fontsource/work-sans/600.css";
-import "@fontsource/work-sans/700.css";
 import "./index.css";
 
 const isInIframe = (() => {

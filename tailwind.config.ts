@@ -21,11 +21,19 @@ export default {
       '2xl': '1536px',
     },
     extend: {
+      // All four tokens resolve to the same value on purpose — Satoshi is
+      // the one brand typeface (see --font-family-brand in src/index.css).
+      // `serif` previously pointed at Instrument Serif, a webfont that was
+      // never actually rendered (index.css's .font-serif rule
+      // force-overrides it with !important everywhere it's applied) — kept
+      // as a token for any existing `font-serif` class usage, but now
+      // honestly reflects what actually renders instead of advertising a
+      // font that isn't even loaded anymore.
       fontFamily: {
-        sans: ['Satoshi', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['Satoshi', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        body: ['Satoshi', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif: ['"Instrument Serif"', 'ui-serif', 'Georgia', 'serif'],
+        sans: ['var(--font-family-brand)'],
+        display: ['var(--font-family-brand)'],
+        body: ['var(--font-family-brand)'],
+        serif: ['var(--font-family-brand)'],
       },
       colors: {
         border: "hsl(var(--border))",

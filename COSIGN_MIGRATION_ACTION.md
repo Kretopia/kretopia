@@ -2,6 +2,8 @@
 
 **P0. Prepared for manual review and execution by the user. Not applied by Claude — no DB-write path exists for Claude in this environment (confirmed repeatedly across this engagement: the Supabase CLI on this machine is authenticated to 13 unrelated projects, not this one; Supabase MCP is unauthenticated).**
 
+**Status as of 2026-08-21, re-checked live: still NOT applied.** Re-ran the real functional test (the same live guest-confirm reproduction described below) against the exact same pending test endorsement (`credit_endorsements.id = 7d2e1458-ebfc-4ed5-9c74-78fdfc24438b`, token `d5c80fd4-...`) and got the identical `23514` constraint violation, byte-for-byte the same as the original reproduction — confirming the constraint still rejects `'peer'`. `verification_status` distribution also unchanged from the preflight baseline (406 total, `peer` still 0). See §Post-migration checks below — none of them pass yet.
+
 ## What this fixes
 
 Every real (non-self) Co-Sign endorsement accept has been hard-failing since 2026-05-03. `submit_credit_endorsement_by_token()` writes `verification_status = 'peer'` on a credit's first accepted endorsement — the intentional, already-shipped intermediate state (a credit needs 2 accepted endorsements to reach `'verified'`; `src/lib/creativeRecord.ts`, `StatusProgressCard.tsx`, `statusEngine.ts`, `ProductionPage.tsx`, and `CreatorEPK.tsx` all already read/render `'peer'`). But `credits_verification_status_check` (last touched 2026-04-18) never allowed `'peer'` as a value, so that `UPDATE` has always violated the check constraint and rolled back the whole RPC call.

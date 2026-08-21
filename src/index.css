@@ -149,8 +149,12 @@ All colors MUST be HSL.
      Lime/Neon vibe only applies when [data-vibe="neon"] is set explicitly.
      ============================================================ */
   .dark {
-    /* Kretopia v1 brand sheet — Midnight #0B0B10 canvas */
-    --background: 240 18% 5%;        /* #0B0B10  near-black canvas */
+    /* #05070D — the same cinematic surface FeaturePageHeader/
+       EditorialPageHero/landing already hardcode (31 files). Previously
+       this token was a close-but-different #0B0B10, creating a visible
+       seam at the exact boundary where a page's header ends and its
+       bg-background body begins. One token now, not two near-blacks. */
+    --background: 225 44.4444% 3.5294%; /* #05070D exactly — precise, not rounded, so it round-trips pixel-for-pixel */
     --foreground: 0 0% 100%;         /* #FFFFFF  primary text     */
 
     --card: 222 24% 9%;              /* #11141B  surface          */

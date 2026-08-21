@@ -30,6 +30,7 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { KretopiaHero } from "@/components/landing/KretopiaHero";
 import { ChapterProgressNav } from "@/components/landing/kretopia/ChapterProgressNav";
+import { ScrollToTopButton } from "@/components/landing/kretopia/ScrollToTopButton";
 
 const LandingBelowFold = lazy(
   () => import("@/components/landing/kretopia/LandingBelowFold"),
@@ -99,6 +100,7 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
       )}
 
       <ChapterProgressNav ready={showRest} />
+      <ScrollToTopButton />
     </div>
   );
 };

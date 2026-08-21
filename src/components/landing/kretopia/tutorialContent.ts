@@ -13,6 +13,7 @@ import {
   ClipboardList, Users2, Milestone, Banknote,
   DoorOpen, Video, UploadCloud, Share2,
   Lightbulb, ThumbsUp, CheckCircle2,
+  Briefcase, UserPlus, LineChart, Wallet, CreditCard, PiggyBank,
 } from "lucide-react";
 import type { TutorialStep } from "./FeatureTutorial";
 
@@ -78,4 +79,31 @@ export const MESSAGES_TUTORIAL: TutorialStep[] = [
   { icon: MessageCircle, title: "Choose a conversation", body: "Select a thread — the person's Passport context is right there alongside it." },
   { icon: Send, title: "Send a message", body: "Type and send — delivery and read state update in the thread." },
   { icon: Video, title: "Start a call safely", body: "When you're ready, start a call with one click — camera and mic access is requested only then." },
+];
+
+export const TALENT_FINDER_TUTORIAL: TutorialStep[] = [
+  { icon: Briefcase, title: "Describe what you need", body: "Role, skills, budget, timeline, location — the more detail in your brief, the sharper the match." },
+  { icon: SparklesIcon, title: "Kreto scores real creators", body: "Kreto ranks people from Kretopia's live creator network against your brief — not a static directory, run again any time for fresh results." },
+  { icon: ListChecks, title: "See why each one matched", body: "Every result shows the actual reasons it ranked — the skills, experience, or history that made it relevant." },
+  { icon: UserPlus, title: "Shortlist or message", body: "Shortlist the ones you like, or message them directly from the result — no cold outreach needed." },
+];
+
+/** For company/brand accounts specifically — mirrors STUDIO_TUTORIAL's shape
+ *  but framed around hiring and managing creators rather than a creator's
+ *  own project work. */
+export const STUDIO_BRAND_TUTORIAL: TutorialStep[] = [
+  { icon: Briefcase, title: "Post an opportunity", body: "Describe the role — paid or barter — and it goes live to creators across Kretopia." },
+  { icon: UserPlus, title: "Review applicants or search directly", body: "See who applied, or use Smart Talent Finder to search the creator network yourself." },
+  { icon: Milestone, title: "Hire and track the work", body: "Bring the creator into a Studio project — brief, files, and milestones all in one room." },
+  { icon: LineChart, title: "See your hiring activity", body: "Every posting, hire, and response lands here — your Brand Passport strength updates as you go." },
+];
+
+/** For company/brand accounts specifically — KrePay's payments framed
+ *  around paying the creators a brand hires, not "getting paid for
+ *  creative work" (the creator-facing framing on the rest of the page
+ *  this coexists with). */
+export const KREPAY_BRAND_TUTORIAL: TutorialStep[] = [
+  { icon: Wallet, title: "Fund your wallet", body: "Add funds once — pay any creator you hire from the same balance, no repeated card entry." },
+  { icon: CreditCard, title: "Pay against milestones", body: "Release payment as work is delivered and approved, tied to the same milestones as the project." },
+  { icon: PiggyBank, title: "Track spend and fees", body: "See exactly what you've paid, what's pending, and what Kretopia's fee actually costs — no surprises." },
 ];

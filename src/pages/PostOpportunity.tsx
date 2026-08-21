@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { CastingFieldsForm, type CastingFields } from "@/components/opportunity/CastingFieldsForm";
 import { PageTransition } from "@/components/PageTransition";
@@ -87,13 +88,40 @@ const PostOpportunity = () => {
   });
   const [casting, setCasting] = useState<CastingFields>(draft?.casting || {});
   const { toast } = useToast();
-  const { subscriptionInfo } = useAuth();
+  const navigate = useNavigate();
+  const { subscriptionInfo, user } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   // Auto-save draft on every form change
   useEffect(() => {
     saveDraft({ ...formData, casting });
   }, [formData, casting]);
+
+  // This page was built for anonymous, no-account visitors (email
+  // verification, re-typed company name) — but the app's own "Post a Gig"
+  // buttons (BrandWorkHome, Smart Talent Finder) send an ALREADY logged-in
+  // user here too. Pre-fill what the account already knows so a real user
+  // isn't asked to retype their own company name/email; the submit path
+  // below skips the email-verification step for them entirely. Guests
+  // (no user) get the exact same behavior as before, unchanged.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("company_name, full_name, company_logo_url, avatar_url")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!data) return;
+      setFormData((prev) => ({
+        ...prev,
+        company_name: prev.company_name || data.company_name || data.full_name || "",
+        email: prev.email || user.email || "",
+        logo_url: prev.logo_url || data.company_logo_url || data.avatar_url || "",
+      }));
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Warn before leaving page with data
   useEffect(() => {
@@ -183,6 +211,67 @@ const PostOpportunity = () => {
     if (logoFileInputRef.current) logoFileInputRef.current.value = "";
   };
 
+  // Authenticated users skip the guest email-verification round-trip
+  // entirely — the account is already verified, so the listing goes live
+  // immediately. Mirrors PostOpportunityDialog's insert (the other,
+  // already-shipped authenticated posting path): moderation check first,
+  // upload any image/logo to the user's own storage folder, then insert
+  // directly with created_by set and status already "active".
+  const submitAuthenticated = async () => {
+    const { data: moderation, error: moderationError } = await supabase.functions.invoke("moderate-opportunity", {
+      body: { title: formData.title, description: formData.description, compensation: formData.compensation },
+    });
+    if (moderationError) throw moderationError;
+    if (moderation?.flagged) {
+      throw new Error(moderation.reason || "Your post contains content that violates our guidelines.");
+    }
+
+    const uploadToPortfolio = async (file: File, label: string) => {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user!.id}/${label}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("portfolio").upload(path, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(path);
+      return publicUrl;
+    };
+
+    const uploadedImageUrl = imageFile ? await uploadToPortfolio(imageFile, "opportunity-cover") : null;
+    const uploadedLogoUrl = logoFile ? await uploadToPortfolio(logoFile, "opportunity-logo") : null;
+
+    const { data: newOpportunity, error: insertError } = await supabase
+      .from("opportunities")
+      .insert({
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        compensation: formData.compensation || null,
+        skills: formData.skills,
+        requirements: formData.requirements || null,
+        deliverables: formData.deliverables || null,
+        location: formData.location,
+        location_city: formData.location_city || null,
+        location_country: formData.location_country || null,
+        image_url: uploadedImageUrl || formData.image_url || null,
+        status: "active",
+        created_by: user!.id,
+        tags: formData.company_name ? [formData.company_name] : [],
+        ...(formData.type === "casting" ? casting : {}),
+      } as any)
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    if (newOpportunity) {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.opportunityCreate(newOpportunity.id);
+    }
+
+    clearDraft();
+    toast({ title: "Opportunity posted!", description: "Your listing is live on Kretopia right now." });
+    navigate(`/opportunity/${newOpportunity.id}`);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -199,7 +288,13 @@ const PostOpportunity = () => {
 
     setPosting(true);
     try {
-      // If user uploaded a file, convert to base64 for the edge function
+      if (user) {
+        await submitAuthenticated();
+        return;
+      }
+
+      // Guest path — unchanged: create a pending listing and email a
+      // verification link before it goes live.
       const fileToBase64 = (file: File) =>
         new Promise<string>((resolve) => {
           const reader = new FileReader();
@@ -269,7 +364,11 @@ const PostOpportunity = () => {
         oneLine
         title="Hire talent."
         accentTitle="Backed by proof."
-        subtitle="Post your opportunity and reach creatives whose work is already on the record. No account needed — just verify your email."
+        subtitle={
+          user
+            ? "Post your opportunity and reach creatives whose work is already on the record. Goes live immediately."
+            : "Post your opportunity and reach creatives whose work is already on the record. No account needed — just verify your email."
+        }
       />
 
       {/* I — The brief */}
@@ -639,13 +738,15 @@ const PostOpportunity = () => {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                   <Button type="submit" size="lg" className="flex-1 gap-2 h-12 text-base" disabled={posting}>
                     {posting ? (
-                      <><Loader2 className="h-5 w-5 animate-spin" /> Submitting...</>
+                      <><Loader2 className="h-5 w-5 animate-spin" /> {user ? "Posting..." : "Submitting..."}</>
                     ) : (
-                      <><CheckCircle2 className="h-5 w-5" /> Post Opportunity (Free)</>
+                      <><CheckCircle2 className="h-5 w-5" /> {user ? "Post Opportunity" : "Post Opportunity (Free)"}</>
                     )}
                   </Button>
                   <p className="text-xs text-white/45 max-w-sm text-center sm:text-left">
-                    We'll send a verification email. Your listing goes live once you confirm. No account needed.
+                    {user
+                      ? "Your listing goes live immediately — no email verification needed, you're already signed in."
+                      : "We'll send a verification email. Your listing goes live once you confirm. No account needed."}
                   </p>
                 </div>
               </div>

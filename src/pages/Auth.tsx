@@ -424,7 +424,12 @@ const Auth = () => {
       <AuthBrandingPanel />
 
       {/* Right column stays fixed in the viewport — only the form scrolls internally,
-          so loading a credit/profile from the landing search never shifts the page. */}
+          so loading a credit/profile from the landing search never shifts the page.
+          Top-aligned (no `my-auto`) so the heading sits at exactly the column's own
+          top padding — the same `pt-8 sm:pt-12` the left branding panel's logo uses,
+          so the two sides' top margins genuinely match instead of both being
+          independently vertically centered (which only coincidentally lines up,
+          and only when both columns' content happens to be the same height). */}
       <div className="relative flex w-full lg:w-1/2 items-start justify-center px-4 sm:px-6 py-8 sm:py-12 overflow-hidden lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
         {/* Ambient AI-glow behind the form — same language as the landing hero */}
         <div
@@ -436,13 +441,16 @@ const Auth = () => {
           initial={reducedMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] }}
-          className="relative w-full max-w-md my-auto"
+          className="relative w-full max-w-md"
         >
           <div className="mb-6 sm:mb-8 text-center">
             <div className="lg:hidden mb-4">
-              <BrandLogo size="lg" showBeta />
+              <BrandLogo size="lg" showBeta linkToHome />
             </div>
-            <h1 className="landing-h2 landing-glow">
+            <h1
+              className="landing-h2 landing-glow whitespace-nowrap"
+              style={{ fontSize: "clamp(1.375rem, 5.5vw, 1.875rem)" }}
+            >
               {isPasswordReset ? "Reset Your Password" : (
                 <>Welcome to <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>Kretopia</span></>
               )}

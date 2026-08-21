@@ -13,12 +13,17 @@ import { PageTransition } from "@/components/PageTransition";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { useToast } from "@/hooks/use-toast";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { TALENT_FINDER_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import {
-  Sparkles, ArrowLeft, MapPin, Star, Loader2,
+  Sparkles, MapPin, Star,
   Eye, UserPlus, MessageSquare, Zap, Send,
   FileText, CheckCircle2, RefreshCw, Crown, Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const ACCENT = "#FF2DA1";
 
 interface TalentMatch {
   user_id: string;
@@ -111,8 +116,8 @@ export default function TalentFinder() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 85) return "text-green-500 bg-green-500/10 border-green-500/20";
-    if (score >= 70) return "text-primary bg-primary/10 border-primary/20";
+    if (score >= 85) return "text-[#FF2DA1] bg-[#FF2DA1]/10 border-[#FF2DA1]/25";
+    if (score >= 70) return "text-[hsl(var(--signal-teal))] bg-[hsl(var(--signal-teal))]/10 border-[hsl(var(--signal-teal))]/25";
     return "text-amber-500 bg-amber-500/10 border-amber-500/20";
   };
 
@@ -129,23 +134,21 @@ export default function TalentFinder() {
         <meta name="description" content="Describe your project and instantly find the best creative talent — ranked by verified work." />
       </Helmet>
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Smart Talent Finder
-            </h1>
-            <p className="text-xs text-muted-foreground">Describe your project — paid or barter — instantly ranked creator matches</p>
+      <div className="min-h-screen bg-background pb-24">
+        <FeaturePageHeader
+          eyebrow="Hiring"
+          title="Smart Talent Finder."
+          accentTitle="Real matches, in real time."
+          subtitle="Describe what you need — Kreto searches Kretopia's live creator network and ranks real, verified people against your brief."
+          tutorial={{ featureKey: "talent-finder", label: "How Smart Talent Finder works", steps: TALENT_FINDER_TUTORIAL }}
+        />
+
+        <div className="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+          <div className="flex justify-end">
+            <Badge variant="secondary" className="gap-1 text-xs shrink-0">
+              <Crown className="h-3 w-3" style={{ color: ACCENT }} /> Pro feature
+            </Badge>
           </div>
-          <Badge variant="secondary" className="gap-1 text-xs shrink-0">
-            <Crown className="h-3 w-3 text-primary" /> Pro
-          </Badge>
-        </div>
 
         <FreeTierGate
           feature="aiApplicantRankings"
@@ -154,11 +157,14 @@ export default function TalentFinder() {
         >
           {/* Brief Input */}
           {!hasSearched || matches.length === 0 ? (
-            <Card className="overflow-hidden">
-              <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 p-5 space-y-4">
+            <Card className="overflow-hidden border-white/10">
+              <div
+                className="p-5 space-y-4"
+                style={{ background: "radial-gradient(120% 100% at 0% 0%, rgba(255,45,161,0.08), transparent 60%)" }}
+              >
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4 text-primary" />
+                    <Briefcase className="h-4 w-4" style={{ color: ACCENT }} />
                     What do you need?
                   </label>
                   <Textarea
@@ -174,19 +180,20 @@ export default function TalentFinder() {
                 </div>
 
                 <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                  <Zap className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                  <Zap className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: ACCENT }} />
                   <span>Include role, skills, budget, timeline, and location preferences for better matches</span>
                 </div>
 
                 <Button
                   onClick={handleFindTalent}
                   disabled={loading || brief.trim().length < 10}
-                  className="w-full gap-2"
+                  className="w-full gap-2 text-white hover:opacity-90"
+                  style={{ backgroundColor: ACCENT }}
                   size="lg"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
                       Finding top matches...
                     </>
                   ) : (
@@ -228,19 +235,16 @@ export default function TalentFinder() {
             </Card>
           )}
 
-          {/* Loading State */}
+          {/* Loading State — Kreto's own "thinking" presence, the same
+              avatar/halo used everywhere else the AI is actively working,
+              instead of a generic spinner. */}
           {loading && (
             <div className="space-y-3 py-4">
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="relative">
-                  <div className="h-16 w-16 rounded-full border-2 border-primary/20 flex items-center justify-center">
-                    <Sparkles className="h-7 w-7 text-primary animate-pulse" />
-                  </div>
-                  <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                </div>
+                <KretoAvatar size="md" state="thinking" />
                 <div>
-                  <p className="font-medium text-sm">Analyzing your brief...</p>
-                  <p className="text-xs text-muted-foreground">Scoring creators by skills, experience & fit</p>
+                  <p className="font-medium text-sm">Searching Kretopia's live creator network...</p>
+                  <p className="text-xs text-muted-foreground">Scoring real profiles by skills, experience & fit against your brief</p>
                 </div>
               </div>
             </div>
@@ -250,8 +254,9 @@ export default function TalentFinder() {
           {!loading && hasSearched && matches.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground font-medium">
-                  {matches.length} match{matches.length !== 1 ? "es" : ""} found
+                <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full ai-ambient-breathe" style={{ backgroundColor: ACCENT }} />
+                  {matches.length} match{matches.length !== 1 ? "es" : ""} found · live from Kretopia's creator network
                 </p>
                 <Button
                   variant="ghost"
@@ -293,14 +298,14 @@ export default function TalentFinder() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm font-semibold truncate">{talent.full_name}</span>
-                        <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" style={{ color: ACCENT }} />
                       </div>
                       {talent.role && (
                         <p className="text-xs text-muted-foreground truncate">{talent.role}</p>
                       )}
 
                       {/* AI headline */}
-                      <p className="text-xs text-primary/80 mt-1 italic line-clamp-1">"{talent.headline}"</p>
+                      <p className="text-xs mt-1 italic line-clamp-1" style={{ color: ACCENT, opacity: 0.85 }}>"{talent.headline}"</p>
 
                       {/* Match reasons */}
                       <div className="flex flex-wrap gap-1 mt-1.5">
@@ -353,10 +358,10 @@ export default function TalentFinder() {
               ))}
 
               {/* Post as Gig CTA */}
-              <Card className="p-4 border-dashed border-primary/30 bg-primary/5">
+              <Card className="p-4 border-dashed" style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.05)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-                    <FileText className="h-5 w-5 text-primary" />
+                  <div className="p-2 rounded-lg shrink-0" style={{ backgroundColor: "rgba(255,45,161,0.1)" }}>
+                    <FileText className="h-5 w-5" style={{ color: ACCENT }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">Want more applicants?</p>
@@ -387,6 +392,7 @@ export default function TalentFinder() {
             </div>
           )}
         </FreeTierGate>
+        </div>
       </div>
     </PageTransition>
   );

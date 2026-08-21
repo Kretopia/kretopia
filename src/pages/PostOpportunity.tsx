@@ -20,6 +20,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
 import { Reveal } from "@/components/kretopia/Reveal";
+import { SectionHeading } from "@/components/typography/Heading";
 
 const ACCENT = "#FF2DA1";
 
@@ -306,10 +307,9 @@ const PostOpportunity = () => {
               <div className="p-5 sm:p-8 space-y-8">
                 {/* Section: Company */}
                 <section className="space-y-5">
-                  <div className="flex items-center gap-2 text-white/90">
-                    <Building2 className="h-4 w-4" style={{ color: ACCENT }} />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider">Your Company</h3>
-                  </div>
+                  <SectionHeading as="h3" icon={<Building2 className="h-4 w-4" style={{ color: ACCENT }} />}>
+                    Your Company
+                  </SectionHeading>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2 md:col-span-1">
                       <Label htmlFor="company_name">Company Name *</Label>
@@ -388,10 +388,9 @@ const PostOpportunity = () => {
 
                 {/* Section: Opportunity */}
                 <section className="space-y-5">
-                  <div className="flex items-center gap-2 text-white/90">
-                    <Briefcase className="h-4 w-4" style={{ color: ACCENT }} />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider">Opportunity</h3>
-                  </div>
+                  <SectionHeading as="h3" icon={<Briefcase className="h-4 w-4" style={{ color: ACCENT }} />}>
+                    Opportunity
+                  </SectionHeading>
 
                   <div className="space-y-2">
                     <Label htmlFor="title">Title *</Label>
@@ -509,10 +508,9 @@ const PostOpportunity = () => {
 
                 {/* Section: Skills */}
                 <section className="space-y-5">
-                  <div className="flex items-center gap-2 text-white/90">
-                    <Zap className="h-4 w-4" style={{ color: ACCENT }} />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider">Required Skills</h3>
-                  </div>
+                  <SectionHeading as="h3" icon={<Zap className="h-4 w-4" style={{ color: ACCENT }} />}>
+                    Required Skills
+                  </SectionHeading>
                   <div className="space-y-2">
                     <Label htmlFor="skills-input">Add skills</Label>
                     <div className="flex gap-2">
@@ -544,10 +542,9 @@ const PostOpportunity = () => {
                   <>
                     <div className="h-px bg-white/10" />
                     <section className="space-y-5">
-                      <div className="flex items-center gap-2 text-white/90">
-                        <Users className="h-4 w-4" style={{ color: ACCENT }} />
-                        <h3 className="text-sm font-semibold uppercase tracking-wider">Casting Details</h3>
-                      </div>
+                      <SectionHeading as="h3" icon={<Users className="h-4 w-4" style={{ color: ACCENT }} />}>
+                        Casting Details
+                      </SectionHeading>
                       <CastingFieldsForm value={casting} onChange={setCasting} />
                     </section>
                   </>
@@ -557,10 +554,9 @@ const PostOpportunity = () => {
 
                 {/* Section: Cover Image */}
                 <section className="space-y-5">
-                  <div className="flex items-center gap-2 text-white/90">
-                    <Upload className="h-4 w-4" style={{ color: ACCENT }} />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider">Cover Image (optional)</h3>
-                  </div>
+                  <SectionHeading as="h3" icon={<Upload className="h-4 w-4" style={{ color: ACCENT }} />}>
+                    Cover Image (optional)
+                  </SectionHeading>
                   <input
                     ref={fileInputRef}
                     type="file"

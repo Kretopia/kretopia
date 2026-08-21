@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronRight, ShieldCheck, ImageIcon, Loader2, Info, Sparkles, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal } from "./Reveal";
+import { SmartCardTitle } from "@/components/typography/Heading";
 
 export type CreditsBoardGroup = string;
 
@@ -166,10 +167,7 @@ export function CreditsBoard({
                       )}
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-[13px] font-medium text-white">{row.title}</span>
-                      {row.subtitle && (
-                        <span className="block truncate text-[11px] text-white/45">{row.subtitle}</span>
-                      )}
+                      <SmartCardTitle as="h3" meta={row.subtitle}>{row.title}</SmartCardTitle>
                       {/* mobile meta line */}
                       <span className="sm:hidden block truncate text-[11px] text-white/35">
                         {[row.typeLabel, row.year].filter(Boolean).join(" · ")}

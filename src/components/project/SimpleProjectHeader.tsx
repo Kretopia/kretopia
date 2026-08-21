@@ -298,9 +298,13 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
       <>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-base font-semibold leading-tight line-clamp-2 break-words">
+            {/* Persistent topbar chrome, not the page's content heading —
+                StudioRoom's VibeHeader renders the real <h1> for this
+                project inside the "today" tab, so this compact repeat
+                sits one level below it instead of duplicating it. */}
+            <h2 className="text-sm sm:text-base font-semibold leading-tight line-clamp-2 break-words">
               {project.title}
-            </h1>
+            </h2>
             {/* Status dot only on mobile (saves room for the title) */}
             <div className="flex items-center gap-1.5 mt-0.5">
               <span

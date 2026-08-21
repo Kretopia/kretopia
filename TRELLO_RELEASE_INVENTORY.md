@@ -8,6 +8,8 @@ Status: **COMPLETE — all 9 lists captured (List 1–8 plus 🛑 Blocked).**
 
 Team: Ethan (CEO), Noé (CTO), Jefferson (CPO), Kaen (Backend Engineer)
 
+**Reconciliation pass — 2026-08-21 (gap-closure pass, `FINAL_GAP_CLOSURE_REPORT.md`).** The status vocabulary below (🟡 PARTIALLY_VERIFIED, 🔴 BLOCKED, ✅ VERIFIED) is this document's own, unchanged from its 2026-08-18 compile. This pass did not re-verify all 34 cards from scratch — see `FINAL_GAP_CLOSURE_REPORT.md` §Trello for the full reconciliation against the newer 5-state vocabulary (IMPLEMENTED_NOT_VERIFIED / PARTIALLY_IMPLEMENTED / BLOCKED / REQUIRES_MANUAL_PRODUCTION_ACTION / NOT_STARTED) that report now uses. Only cards directly touched by work completed since this document's compile date were re-verified with fresh evidence in this pass: **1.1** and **1.4** (the `send-project-invitation` authorization-gap fix — same bug class as the `send-user-email` fix already recorded here), **2.2** (the P0 Co-Sign migration now has a fully prepared, reviewable SQL action document — `COSIGN_MIGRATION_ACTION.md` — not yet applied), and **6.2**/**6.4** (two more real duplicate-H1 and heading-hierarchy defects found and fixed on the Studio project room and `/messages`, beyond what this document already recorded). Every other card's status and evidence below is exactly as this document already had it — carried forward, not re-run, per this pass's explicit instruction not to repeat completed work.
+
 ---
 
 ## 1. Summary
@@ -36,12 +38,12 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 
 | Card | List | Status | Owner | Due Date |
 |---|---|---|---|---|
-| 1.1 Run final security audit | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (2/5 confirmed; 3 WARN findings + card 2.2's P0 still open) | Noé | 19 Aug, 02:00 |
+| 1.1 Run final security audit | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (2/5 confirmed; 3 WARN findings + card 2.2's P0 still open) — **+2026-08-21: 1 more real critical finding found and fixed, `send-project-invitation` auth gap, SECURITY_RELEASE_GATE.md §G** | Noé | 19 Aug, 02:00 |
 | 1.2 Confirm production migrations and schema integrity | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (no dup migrations across 690 files; full prod drift check needs DB CLI access) | Noé | 19 Aug, 02:00 |
 | 1.3 Audit authentication and legacy user access | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED (protected-route gate confirmed live; legacy/magic-link/OTP paths untested) | Noé | 20 Aug, 02:00 |
-| 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED — send-user-email auth gap found and fixed this session | Noé | 21 Aug, 02:00 |
+| 1.4 Confirm transactional email delivery and branding | List 1 — P0 Security & Release Gate | 🟡 PARTIALLY_VERIFIED — send-user-email auth gap found and fixed this session — **+2026-08-21: same bug class found and fixed in `send-project-invitation` (9 real call sites, no auth/ownership check, real magic-link + email to arbitrary address)** | Noé | 21 Aug, 02:00 |
 | 2.1 Test Search → Passport end-to-end | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (2/6 confirmed live; unclaimed record found, claim flow needs a human — account creation is off-limits for me) | Noé | 21 Aug, 02:00 |
-| 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | 🔴 BLOCKED — P0 bug re-confirmed via direct RPC call, fix written not applied (3/5 confirmed live) | Noé | 22 Aug, 02:00 |
+| 2.2 Validate Verified Credits and Co-Signs | List 2 — P0 Core Product Loop | 🔴 BLOCKED → 🟡 PARTIALLY_VERIFIED → **P0 bug RESOLVED (2026-08-21)** — migration applied by the user, confirmed working via a real live endorsement accept end-to-end (credit reached `verification_status: 'peer'`, endorsement `status: 'accepted'`) — see `COSIGN_MIGRATION_ACTION.md`. Remaining checklist items unrelated to this bug still stand at 3/5 confirmed live, per the detail below. | Noé | 22 Aug, 02:00 |
 | 2.3 Review Passport as the core product | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; Bugs A and B both fixed, A pending deploy) | Jeff | 22 Aug, 02:00 |
 | 2.4 Test Passport sharing and public EPK | List 2 — P0 Core Product Loop | 🟡 PARTIALLY_VERIFIED (4/6 confirmed; EPK guest-access data question open) | Jeff | 23 Aug, 02:00 |
 | 3.1 Validate opportunity ingestion and matching | List 3 — P0 Scout & Opportunity | ✅ VERIFIED (4/4 confirmed live) | Noé | 23 Aug, 02:00 |
@@ -55,9 +57,9 @@ The board holds **34 cards** across 8 P0/P1 lists plus a separate "🛑 Blocked"
 | 5.2 Test invoices and payout flows | List 5 — P0 Payments & Project Completion | 🟡 PARTIALLY_VERIFIED (no-PII-leak confirmed live; 3 need a 2nd account) | Noé | 27 Aug, 02:00 |
 | 5.3 Validate project completion loop | List 5 — P0 Payments & Project Completion | IMPLEMENTED_NOT_VERIFIED | Ethan | 28 Aug, 02:00 |
 | 6.1 Validate Kreto V1 capabilities | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/5 confirmed, adversarial test) | Jeff | 25 Aug, 02:00 |
-| 6.2 Run cross-product UX consistency pass | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (1 confirmed; 1 real regression found — stray #9413D2) | Jeff | 27 Aug, 02:00 |
+| 6.2 Run cross-product UX consistency pass | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (1 confirmed; 1 real regression found — stray #9413D2) — **+2026-08-21: one font-family token app-wide (TYPOGRAPHY_SYSTEM.md), 6 unused font imports removed app-wide (PERFORMANCE_REPORT.md)** | Jeff | 27 Aug, 02:00 |
 | 6.3 Optimize Today command center | List 6 — P1 Kreto, UX & Product Quality | ✅ VERIFIED (5/6 confirmed; empty states need a zero-data account) | Jeff | 27 Aug, 02:00 |
-| 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (5/7 confirmed live at 375px; touch-target finding fixed) | Jeff | 28 Aug, 02:00 |
+| 6.4 Audit mobile UX | List 6 — P1 Kreto, UX & Product Quality | 🟡 PARTIALLY_VERIFIED (5/7 confirmed live at 375px; touch-target finding fixed) — **+2026-08-21: full 7-breakpoint matrix run (375–1440px) across 6+ pages, zero overflow found; 2 real duplicate/missing-H1 bugs found and fixed (Studio project room, /messages) — RESPONSIVE_A11Y_MATRIX.md, FINAL_GAP_CLOSURE_REPORT.md** | Jeff | 28 Aug, 02:00 |
 | 7.1 Instrument the core funnel | List 7 — P1 Analytics, Safety & Feedback | 🟡 PARTIALLY_VERIFIED (3/4 confirmed; 1 spot-checked not exhaustive) | Noé | 28 Aug, 02:00 |
 | 7.2 Add bug reporting and feedback | List 7 — P1 Analytics, Safety & Feedback | 🔴 BLOCKED — feedback widget is unreachable (3/4 confirmed) | Ethan | 28 Aug, 02:00 |
 | 7.3 Trust and safety review | List 7 — P1 Analytics, Safety & Feedback | ✅ VERIFIED (4/5 confirmed; suspicious-activity logging confirmed absent) | Noé | 29 Aug, 02:00 |

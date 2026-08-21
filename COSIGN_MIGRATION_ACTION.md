@@ -2,7 +2,12 @@
 
 **P0. Prepared for manual review and execution by the user. Not applied by Claude — no DB-write path exists for Claude in this environment (confirmed repeatedly across this engagement: the Supabase CLI on this machine is authenticated to 13 unrelated projects, not this one; Supabase MCP is unauthenticated).**
 
-**Status as of 2026-08-21, re-checked live: still NOT applied.** Re-ran the real functional test (the same live guest-confirm reproduction described below) against the exact same pending test endorsement (`credit_endorsements.id = 7d2e1458-ebfc-4ed5-9c74-78fdfc24438b`, token `d5c80fd4-...`) and got the identical `23514` constraint violation, byte-for-byte the same as the original reproduction — confirming the constraint still rejects `'peer'`. `verification_status` distribution also unchanged from the preflight baseline (406 total, `peer` still 0). See §Post-migration checks below — none of them pass yet.
+**Status as of 2026-08-21, re-checked live: APPLIED AND CONFIRMED WORKING.** Applied by the user via the Lovable Cloud SQL editor (not by Claude — no DB-write path exists for Claude in this environment, unchanged). Re-ran the exact same live guest-confirm functional test against the exact same pending test endorsement (`credit_endorsements.id = 7d2e1458-ebfc-4ed5-9c74-78fdfc24438b`, token `d5c80fd4-...`) that previously failed with the `23514` constraint violation — it now **succeeds**: `{"status":"accepted","success":true,"endorsement_count":1}`, no error. Verified end to end, not just the RPC's own response:
+- `credits.verification_status` for the target credit (`d851ee81-...`, "Le Mythe") is now `'peer'`, `updated_at` freshly timestamped to the moment of the test.
+- `credit_endorsements.status` for the request is now `'accepted'`, `responded_at` populated.
+- Aggregate distribution: `peer` count moved from 0 → 1, `pending_review` dropped by exactly 1 (263, was 264) — the credit's real state transition, not a coincidental unrelated change.
+
+All three real-world checks (constraint-effect via a live write, the credit row, the endorsement row) agree. See §Post-migration checks below for the full record.
 
 ## What this fixes
 
@@ -69,7 +74,7 @@ FROM pg_constraint
 WHERE conname = 'credits_verification_status_check';
 ```
 
-Expected: the `IN (...)` list now includes `'peer'`.
+Expected: the `IN (...)` list now includes `'peer'`. **Not independently re-run via SQL editor by Claude** (no DB-write/read path outside the app's own REST API) — but confirmed indirectly and conclusively via check §3 below, which could only succeed if this is true.
 
 ### 2. Confirm no existing row was affected
 
@@ -80,11 +85,16 @@ GROUP BY verification_status
 ORDER BY count(*) DESC;
 ```
 
-Expected: identical totals to the Preflight §2 baseline, `peer` still 0 (this migration doesn't create any `'peer'` rows itself — it only stops future legitimate ones from being rejected).
+**CONFIRMED 2026-08-21**, via the app's own REST API (equivalent read): counts before the functional test in §3 matched the preflight baseline exactly except for unrelated background activity (`auto_discovered` grew from 14→22 between checks — a separate auto-discovery job, not this migration; `peer` was still 0 immediately before the functional test). No existing row's status was altered by the migration itself.
 
-### 3. Live functional confirmation (requires a real accept action — not a read-only query)
+### 3. Live functional confirmation — DONE, 2026-08-21
 
-The only way to fully confirm the fix works is to actually accept one real endorsement through the product (as the credit owner or an authorized endorser) and re-run the query in step 2 immediately after — the `peer` count should increase by exactly 1, and no error should surface in the UI. This is a real user action, not something achievable from a read-only SQL check, and is the recommended final confirmation step before considering this closed.
+Accepted the real pending test endorsement (`token d5c80fd4-...`) via the exact same guest, no-account code path a real user would use (`submit_credit_endorsement_by_token`, called with the app's own client while unauthenticated). Result: `{"status":"accepted","success":true,"endorsement_count":1}` — previously this exact call returned `HTTP 400 / 23514`. Re-queried immediately after:
+- The credit's `verification_status`: `'peer'` (was `'pending_review'`... via `pending_review` count 264→263).
+- The endorsement's `status`: `'accepted'`, `responded_at` populated.
+- Aggregate `peer` count: 0 → 1.
+
+**Fix confirmed working end-to-end, not just at the constraint level.**
 
 ## Rollback considerations
 

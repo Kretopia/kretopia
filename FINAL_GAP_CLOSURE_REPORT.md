@@ -11,7 +11,7 @@ Compiled 2026-08-21 on branch `feature/activation-priority-plan`. Scope: the exp
 
 ## P0 — Co-Sign migration
 
-**Prepared, not applied**, per the explicit instruction. Full preflight checks, exact migration SQL, post-migration checks, and rollback considerations (including the real caveat that rollback fails safely — not silently — once any real `'peer'`-status row exists) are in [COSIGN_MIGRATION_ACTION.md](COSIGN_MIGRATION_ACTION.md). Real, live preflight numbers captured this pass: 406 total credits, 0 currently at `'peer'` status — the direct fingerprint of the bug (the accept path has been live and used, yet has never once succeeded).
+**Prepared by Claude, applied by the user, confirmed working by Claude — 2026-08-21.** Full preflight checks, exact migration SQL, post-migration checks, and rollback considerations are in [COSIGN_MIGRATION_ACTION.md](COSIGN_MIGRATION_ACTION.md), updated with the real post-migration evidence. Real, live preflight numbers captured earlier this pass: 406 total credits, 0 at `'peer'` status — the bug's fingerprint. **After the user applied the migration**, re-ran the exact same live functional test that originally reproduced the bug (a real guest confirm via `submit_credit_endorsement_by_token`, unauthenticated, against the same pending test endorsement): it now succeeds (`{"status":"accepted","success":true}`, previously `HTTP 400 / 23514`). Verified end-to-end, not just the RPC response — the target credit's `verification_status` is now `'peer'`, the endorsement's `status` is `'accepted'` with `responded_at` populated, and the aggregate `peer` count moved 0 → 1. **This P0 release blocker is now closed.**
 
 ## P1 — Sections 6/10/11 remaining scope; critical route verification
 
@@ -77,7 +77,7 @@ Real, live measurement via `PerformanceObserver({type: 'event', durationThreshol
 | 1.3 Audit authentication and legacy user access | PARTIALLY_IMPLEMENTED | Protected-route gate confirmed live; legacy/magic-link/OTP paths untested |
 | 1.4 Confirm transactional email delivery and branding | PARTIALLY_IMPLEMENTED | `send-user-email` gap fixed (earlier); `send-project-invitation` gap fixed (this pass), same class |
 | 2.1 Test Search → Passport end-to-end | PARTIALLY_IMPLEMENTED | 2/6 confirmed live; account-creation off-limits for Claude |
-| 2.2 Validate Verified Credits and Co-Signs | **REQUIRES_MANUAL_PRODUCTION_ACTION** | P0 bug re-confirmed; exact SQL action now fully prepared, `COSIGN_MIGRATION_ACTION.md` |
+| 2.2 Validate Verified Credits and Co-Signs | **VERIFIED (2026-08-21)** | P0 bug fixed — migration applied by the user, confirmed working via a real live endorsement accept (`COSIGN_MIGRATION_ACTION.md`); the other 2/5 checklist items from the original card (see `TRELLO_RELEASE_INVENTORY.md` §2.2) were never about this bug and remain as previously recorded |
 | 2.3 Review Passport as the core product | PARTIALLY_IMPLEMENTED | 4/6 confirmed; both found bugs fixed |
 | 2.4 Test Passport sharing and public EPK | PARTIALLY_IMPLEMENTED | 4/6 confirmed; EPK guest-access data question open |
 | 3.1 Validate opportunity ingestion and matching | VERIFIED | 4/4 confirmed live |
@@ -135,12 +135,11 @@ See the reconciliation table above and the dated addenda in `TRELLO_RELEASE_INVE
 
 ## Exact manual production actions required
 
-1. **Apply the Co-Sign migration** — the one item that actually blocks a real user-facing bug fix. Full preflight/migration/post-check/rollback SQL in [COSIGN_MIGRATION_ACTION.md](COSIGN_MIGRATION_ACTION.md), ready to review and run in the Lovable Cloud SQL editor.
-2. Nothing else from this pass requires a manual production step — the `/messages` H1 fix is a normal code push (already committed on this branch, auto-syncs via the existing Lovable Cloud pipeline like every other fix this engagement).
+**None remaining.** The one manual production action this whole engagement identified — applying the Co-Sign migration — was completed by the user on 2026-08-21 and confirmed working end-to-end (see P0 above and `COSIGN_MIGRATION_ACTION.md`). The `/messages` H1 fix and everything else in this pass is a normal code push, already committed, auto-syncing via the existing Lovable Cloud pipeline like every other fix this engagement.
 
 ## Release blockers
 
-1. **The Co-Sign migration is not applied** — the single hard release blocker for the Verified Credits/Co-Sign product loop (card 2.2), requiring the user's own manual action.
+1. ~~The Co-Sign migration is not applied~~ — **RESOLVED 2026-08-21.** Applied by the user, confirmed working via a real live functional test (not just a schema check). No longer a blocker.
 2. **124 of 135 routes remain individually unchecked** — release should not be described as covering "the whole app" without qualifying this.
 3. **6 dashboard components don't respect reduced motion** — a real, disclosed accessibility gap, not release-blocking on its own but not silently ignorable either.
 4. **Slow-network and true `prefers-reduced-motion` emulation were not achievable** with this session's tooling — genuine coverage gaps, not resolved.
@@ -148,8 +147,12 @@ See the reconciliation table above and the dated addenda in `TRELLO_RELEASE_INVE
 
 ## Final status
 
-**BLOCKED.**
+**BLOCKED** — but the P0 database blocker (§1 above) is now closed. What's left is not a database or code problem:
 
-Not `RELEASE_READY` — the Co-Sign migration (card 2.2, a P0 on the release-gate list) is unapplied and is a real, user-facing broken flow (every real endorsement accept has failed since 2026-05-03). Not simply `READY_FOR_MANUAL_PRODUCTION_STEP` either, because that status would imply the *only* remaining work is the one manual step — it isn't: 124 routes are unaudited, the reduced-motion gap on the Today dashboard is real and disclosed but unresolved, and several Trello cards (4.3, 4.4, 7.2, and the demo/narrative/CEO-review chain in List 8 and the Blocked list) have gaps that no further code-level work from this session can close (hardware access, an unreachable feature, and human review/rehearsal work respectively).
+- **124 of 135 routes are unaudited** — real work, not a manual production step.
+- **The reduced-motion gap on the Today dashboard** (6 components) is disclosed but unfixed.
+- **Cards 4.3/4.4** (VideoCall, SoundStages) need real physical hardware to finish verifying — not resolvable by more code review from this environment.
+- **Card 7.2** (feedback widget) is reported unreachable, not yet located.
+- **The demo/narrative/CEO-review chain** (List 8, the Blocked list) is human rehearsal and decision work, not something a code-focused pass can close.
 
-The one thing standing between this state and `READY_FOR_MANUAL_PRODUCTION_STEP` is narrow and specific: **apply the migration in `COSIGN_MIGRATION_ACTION.md`**. Once that's done and re-verified (per that document's own post-migration checks), the status for the Co-Sign flow specifically becomes clear; the broader release-readiness verdict still depends on the non-code items listed above, which are outside what this or any future code-focused pass can resolve.
+Not `RELEASE_READY`, because those items are real and open. Not `READY_FOR_MANUAL_PRODUCTION_STEP` either, because that status implies the *only* remaining work is a manual production action — it isn't anymore; the migration was that action, and it's done. The honest label for where this stands is still `BLOCKED`, but the nature of the blocker has shifted entirely: from "waiting on a database change" to "waiting on route-coverage work, an accessibility fix, hardware access, and human tasks outside engineering's control."

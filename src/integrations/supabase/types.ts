@@ -2802,10 +2802,13 @@ export type Database = {
           file_type: string | null
           file_url: string
           folder_id: string | null
+          generation_model: string | null
+          generation_prompt: string | null
           id: string
           media_type: string | null
           name: string
           project_id: string
+          source: string | null
           tags: string[] | null
           thumbnail_url: string | null
           updated_at: string
@@ -2819,10 +2822,13 @@ export type Database = {
           file_type?: string | null
           file_url: string
           folder_id?: string | null
+          generation_model?: string | null
+          generation_prompt?: string | null
           id?: string
           media_type?: string | null
           name: string
           project_id: string
+          source?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           updated_at?: string
@@ -2836,10 +2842,13 @@ export type Database = {
           file_type?: string | null
           file_url?: string
           folder_id?: string | null
+          generation_model?: string | null
+          generation_prompt?: string | null
           id?: string
           media_type?: string | null
           name?: string
           project_id?: string
+          source?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           updated_at?: string
@@ -16706,6 +16715,33 @@ export type Database = {
         }
         Relationships: []
       }
+      studio_ai_usage: {
+        Row: {
+          created_at: string
+          generation_count: number
+          id: string
+          updated_at: string
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          generation_count?: number
+          id?: string
+          updated_at?: string
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          generation_count?: number
+          id?: string
+          updated_at?: string
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       studio_entities: {
         Row: {
           aliases: string[]
@@ -17499,6 +17535,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      thrivefund_milestone_releases: {
+        Row: {
+          amount_cents: number | null
+          campaign_id: string
+          completed_at: string | null
+          created_at: string
+          currency: string | null
+          milestone_index: number
+          released_by: string
+          status: string
+          stripe_transfer_id: string | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          campaign_id: string
+          completed_at?: string | null
+          created_at?: string
+          currency?: string | null
+          milestone_index: number
+          released_by: string
+          status?: string
+          stripe_transfer_id?: string | null
+        }
+        Update: {
+          amount_cents?: number | null
+          campaign_id?: string
+          completed_at?: string | null
+          created_at?: string
+          currency?: string | null
+          milestone_index?: number
+          released_by?: string
+          status?: string
+          stripe_transfer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thrivefund_milestone_releases_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_entries: {
         Row: {
@@ -19464,6 +19544,14 @@ export type Database = {
           used: number
         }[]
       }
+      consume_studio_ai_generation: {
+        Args: { _daily_cap: number; _user_id: string }
+        Returns: {
+          allowed: boolean
+          cap: number
+          used: number
+        }[]
+      }
       consume_voice_seconds: { Args: { _seconds: number }; Returns: Json }
       create_bidirectional_connection: {
         Args: {
@@ -20284,6 +20372,10 @@ export type Database = {
         Returns: undefined
       }
       record_session_ping: { Args: never; Returns: undefined }
+      refund_studio_ai_generation: {
+        Args: { _usage_date: string; _user_id: string }
+        Returns: undefined
+      }
       register_guest_session: {
         Args: { _email?: string; _name?: string; _token: string }
         Returns: string

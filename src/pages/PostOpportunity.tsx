@@ -63,6 +63,11 @@ const PostOpportunity = () => {
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [rawImageUrl, setRawImageUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [showLogoCropDialog, setShowLogoCropDialog] = useState(false);
+  const [rawLogoUrl, setRawLogoUrl] = useState<string>("");
+  const logoFileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     company_name: draft?.company_name || "",
     email: draft?.email || "",
@@ -145,6 +150,38 @@ const PostOpportunity = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: "File too large", description: "Image must be under 5MB.", variant: "destructive" });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setRawLogoUrl(reader.result as string);
+        setShowLogoCropDialog(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLogoCropComplete = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], "logo.jpg", { type: "image/jpeg" });
+    setLogoFile(file);
+    setFormData({ ...formData, logo_url: "" });
+    const url = URL.createObjectURL(croppedBlob);
+    setLogoPreview(url);
+    setShowLogoCropDialog(false);
+  };
+
+  const clearLogo = () => {
+    setLogoFile(null);
+    setLogoPreview("");
+    setFormData({ ...formData, logo_url: "" });
+    if (logoFileInputRef.current) logoFileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -162,18 +199,17 @@ const PostOpportunity = () => {
     setPosting(true);
     try {
       // If user uploaded a file, convert to base64 for the edge function
-      let imageData = null;
-      if (imageFile) {
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve) => {
+      const fileToBase64 = (file: File) =>
+        new Promise<string>((resolve) => {
+          const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(imageFile);
+          reader.readAsDataURL(file);
         });
-        imageData = base64;
-      }
+      const imageData = imageFile ? await fileToBase64(imageFile) : null;
+      const logoData = logoFile ? await fileToBase64(logoFile) : null;
 
       const { data, error } = await supabase.functions.invoke("verify-guest-opportunity", {
-        body: { action: "send-verification", ...formData, ...(formData.type === "casting" ? casting : {}), image_data: imageData },
+        body: { action: "send-verification", ...formData, ...(formData.type === "casting" ? casting : {}), image_data: imageData, logo_data: logoData },
       });
 
       if (error) throw error;
@@ -299,14 +335,51 @@ const PostOpportunity = () => {
                       />
                     </div>
                     <div className="space-y-2 md:col-span-1">
-                      <Label htmlFor="logo_url">Logo URL (optional)</Label>
-                      <Input
-                        id="logo_url"
-                        value={formData.logo_url}
-                        onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                        placeholder="https://your-site.com/logo.png"
-                        maxLength={500}
+                      <Label htmlFor="logo_upload">Logo (optional)</Label>
+                      <input
+                        ref={logoFileInputRef}
+                        id="logo_upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoSelect}
+                        className="hidden"
                       />
+                      {logoPreview || formData.logo_url ? (
+                        <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-white/10 group">
+                          <img
+                            src={logoPreview || formData.logo_url}
+                            alt="Logo preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => logoFileInputRef.current?.click()}
+                              className="text-white/90 hover:text-white"
+                              aria-label="Replace logo"
+                            >
+                              <Upload className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={clearLogo}
+                              className="text-white/90 hover:text-white"
+                              aria-label="Remove logo"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => logoFileInputRef.current?.click()}
+                          className="w-full h-10 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center gap-1.5 text-white/50 hover:border-[rgba(255,45,161,0.5)] hover:text-white/80 transition-colors text-xs font-medium"
+                        >
+                          <Upload className="h-3.5 w-3.5" />
+                          Upload
+                        </button>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -616,6 +689,12 @@ const PostOpportunity = () => {
         open={showCropDialog}
         onClose={() => setShowCropDialog(false)}
         onCropComplete={handleCropComplete}
+      />
+      <ImageCropDialog
+        imageUrl={rawLogoUrl}
+        open={showLogoCropDialog}
+        onClose={() => setShowLogoCropDialog(false)}
+        onCropComplete={handleLogoCropComplete}
       />
     </div>
     </PageTransition>

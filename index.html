@@ -6,9 +6,16 @@
     <meta name="google-site-verification" content="xb0QM2nJG4Yx2mopQywL9_ZjtHw1SPvZpG6vhF2sA84" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Satoshi is the one brand typeface (see --font-family-brand in
+         src/index.css); Inter below is a technical fallback only, loaded
+         so the stack degrades gracefully if Fontshare is unreachable, not
+         used as an intentional second family anywhere. Instrument Serif
+         was previously loaded here too but is unused — .font-serif in
+         index.css force-overrides it to Satoshi everywhere it's applied,
+         so the webfont itself was pure dead weight on every page load. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#0B0B10" />

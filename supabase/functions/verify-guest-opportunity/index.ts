@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
     if (action === "send-verification") {
       // Create guest opportunity and send verification email
       const { email, company_name, logo_url, title, description, type, compensation, skills, requirements, deliverables, location, location_city, location_country, image_url,
+        image_data, logo_data,
         casting_gender, casting_min_height_cm, casting_max_height_cm, casting_age_min, casting_age_max, casting_categories, casting_fitting_date, casting_shoot_date, casting_usage_summary } = params;
 
       if (!email || !title || !description || !company_name) {
@@ -32,6 +33,35 @@ Deno.serve(async (req) => {
 
       // Generate verification token
       const token = crypto.randomUUID().replace(/-/g, "");
+
+      // If the guest uploaded a cover image and/or logo (cropped client-side,
+      // sent as a base64 data URL), upload it to storage now and use the
+      // resulting public URL instead of the empty/typed-in one. Previously
+      // image_data/logo_data were sent by the client but never destructured
+      // here, so an uploaded file was silently dropped and the opportunity
+      // was saved with no image at all.
+      const uploadDataUrl = async (dataUrl: string, pathPrefix: string): Promise<string | null> => {
+        const match = /^data:(image\/\w+);base64,(.+)$/.exec(dataUrl);
+        if (!match) return null;
+        const [, contentType, base64Data] = match;
+        const ext = contentType.split("/")[1] || "jpg";
+        const bytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+        const filePath = `${pathPrefix}/${token}-${Date.now()}.${ext}`;
+        const { error: uploadErr } = await adminClient.storage
+          .from("media")
+          .upload(filePath, bytes, { contentType, upsert: true });
+        if (uploadErr) {
+          console.error(`Failed to upload ${pathPrefix}:`, uploadErr);
+          return null;
+        }
+        const { data: urlData } = adminClient.storage.from("media").getPublicUrl(filePath);
+        return urlData.publicUrl;
+      };
+
+      const uploadedImageUrl = typeof image_data === "string" ? await uploadDataUrl(image_data, "guest-opportunities/covers") : null;
+      const uploadedLogoUrl = typeof logo_data === "string" ? await uploadDataUrl(logo_data, "guest-opportunities/logos") : null;
+      const finalImageUrl = uploadedImageUrl || image_url || null;
+      const finalLogoUrl = uploadedLogoUrl || logo_url || null;
 
       // Insert opportunity as pending (not active until verified)
       const { data: opp, error: oppError } = await adminClient
@@ -47,12 +77,12 @@ Deno.serve(async (req) => {
           location: location || "remote",
           location_city: location_city || null,
           location_country: location_country || null,
-          image_url: image_url || null,
+          image_url: finalImageUrl,
           status: "pending_verification",
           is_guest_post: true,
           guest_email: email,
           guest_company_name: company_name,
-          guest_logo_url: logo_url || null,
+          guest_logo_url: finalLogoUrl,
           verification_token: token,
           created_by: null, // guest post - no auth user
           casting_gender: casting_gender || null,

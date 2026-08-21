@@ -1,10 +1,19 @@
 /**
- * ClosingCTASection — Phase 13. Returns entirely to the hero's wedge
- * (search + claim) instead of ending on a feature list. The visual "search
- * field" here is a styled hand-off control, not a second search
- * implementation — clicking it scrolls back to the hero and focuses the
- * one real UnifiedSearchDropdown input, exactly like the Discovery
- * section's "Search Your Name" CTA. One source of truth for search.
+ * ClosingCTASection — Phase 13. The page's final conversion moment, not a
+ * feature list.
+ *
+ * The primary action is a direct `<Link to="/auth?tab=signup">` — the same
+ * destination every other signup CTA on this landing page already uses
+ * (ClaimYourCreditsSection, ForOrganisationsSection, ProductSectionThrive,
+ * etc.), styled with the same accent pill button. An earlier version put a
+ * decorative, non-functional search-field lookalike here that only scrolled
+ * back up to the hero and refocused the real search input — an extra,
+ * avoidable step (scroll up, re-locate the field, retype) between a
+ * convinced visitor and completing signup. Removed in favor of one clear
+ * button plus a short trust line answering the objections that actually
+ * block signup (cost, commitment, time), and a secondary "already have an
+ * account" path for returning visitors so the section isn't a dead end for
+ * them either.
  *
  * This is the landing page's one FixedProgressiveCard (Section 7 of the
  * overhaul) — the primary-CTA, step-10 moment of the storytelling
@@ -23,21 +32,16 @@
  * broken or blank headline — see useCreatorCount below.
  */
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { FixedProgressiveCard } from "@/components/landing/kretopia/FixedProgressiveCard";
 import { analytics } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 
 const ACCENT = "#FF2DA1";
 
-const scrollToHeroSearch = () => {
-  analytics.ctaClick("claim_your_creative_passport", "closing_cta");
-  const hero = document.getElementById("kretopia-hero");
-  hero?.scrollIntoView({ behavior: "smooth", block: "start" });
-  window.setTimeout(() => {
-    hero?.querySelector<HTMLInputElement>("input")?.focus();
-  }, 450);
-};
+const trackSignupClick = () => analytics.ctaClick("claim_your_creative_passport", "closing_cta");
+const trackSigninClick = () => analytics.ctaClick("closing_cta_signin", "closing_cta");
 
 /** Real, live creator count from public-stats (same source the rest of the
  *  app already trusts for stats). Null until loaded or if the fetch fails
@@ -87,31 +91,30 @@ export const ClosingCTASection = () => {
           </p>
         }
         keyValue={
-          <button
-            type="button"
-            onClick={scrollToHeroSearch}
-            className="group flex w-full max-w-lg mx-auto items-center gap-3 rounded-full border border-white/15 bg-white/[0.03] px-5 py-3.5 text-left transition-colors hover:border-white/30"
-          >
-            <Search className="h-4 w-4 shrink-0 text-white/40" aria-hidden />
-            <span className="text-sm text-white/45" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
-              Search your name or stage name
-            </span>
-          </button>
-        }
-        supportingItem={
-          <p className="text-xs text-white/45" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
-            Free to claim.
-          </p>
-        }
-        cta={
-          <button
-            type="button"
-            onClick={scrollToHeroSearch}
-            className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white"
+          <Link
+            to="/auth?tab=signup&intent=closing_cta"
+            onClick={trackSignupClick}
+            className="group inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02]"
             style={{ backgroundColor: ACCENT, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             Claim Your Creative Passport
-          </button>
+            <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </Link>
+        }
+        supportingItem={
+          <p className="text-xs text-white/45" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
+            Free forever · No credit card · 2-minute setup
+          </p>
+        }
+        cta={
+          <Link
+            to="/auth"
+            onClick={trackSigninClick}
+            className="text-xs font-medium text-white/40 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white/70"
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+          >
+            Already have an account? Sign in
+          </Link>
         }
       />
 

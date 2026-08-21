@@ -10,21 +10,31 @@
  * because the mapping is a pure function of scroll position, not a
  * one-shot animation state machine.
  *
- * The pin is computed in JS (position: fixed, toggled by scroll-position
- * math), not CSS `position: sticky`. The app's own shared shell
- * (App.tsx's root `<div className="h-full overflow-auto">`, present on
- * every route) gives every page an ancestor with `overflow: auto` above
- * this component — and per the CSS spec, ANY ancestor with an overflow
- * value other than `visible` becomes the containing block for
+ * The pin is computed in JS as a `transform: translateY()`, not CSS
+ * `position: sticky`. The app's own shared shell (App.tsx's root
+ * `<div className="h-full overflow-auto">`, present on every route)
+ * gives every page an ancestor with `overflow: auto` above this
+ * component — and per the CSS spec, ANY ancestor with an overflow value
+ * other than `visible` becomes the containing block for
  * `position: sticky`, regardless of whether that ancestor actually
  * scrolls. That silently breaks native sticky here: it un-pins early,
  * the card scrolls off mid-reveal, and the section's height reads as
- * broken/jumpy. `position: fixed` doesn't have this failure mode (only
- * a `transform`/`filter`/`perspective`/`contain` ancestor would break
- * it, and there isn't one here) so the pin is computed manually instead
- * — three phases (before/pinned/after) driven by real
- * getBoundingClientRect() measurements on scroll, exactly what native
- * sticky does internally.
+ * broken/jumpy.
+ *
+ * The pinned element's `position: absolute` never changes — it is
+ * always positioned relative to the same container, at the same width.
+ * An earlier version toggled between `position: absolute` (before/after
+ * phases) and `position: fixed` (pinned phase) to dodge the ancestor
+ * overflow problem; `fixed`'s `left/right: 0` resolves against the
+ * *viewport*, while `absolute`'s resolves against the *container* — so
+ * every phase change silently snapped the card's box between the
+ * container's (padded, narrower) width and the full viewport width,
+ * shifting it sideways at both transition points. That box-size jump on
+ * every pin/release is what read as the section moving unpredictably.
+ * Holding `position: absolute` constant and driving the three phases
+ * (before/pinned/after) purely through `translateY()` keeps the box
+ * geometry identical throughout — only its vertical offset changes, by
+ * one continuous formula, so there is nothing left to jump.
  *
  * Explicitly NOT:
  * - scroll-hijacking — nothing calls preventDefault() or sets scrollTop;
@@ -58,7 +68,15 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
  *  same rAF-scheduled handler is the same pattern the six content slots
  *  already use via Framer Motion's style={motionValue}, which measured
  *  zero layout shift; this follows it instead of fighting React for
- *  something that has to be synchronous with scroll. */
+ *  something that has to be synchronous with scroll.
+ *
+ *  The element's `position` never changes (always `absolute`, set once in
+ *  the JSX below) — only `transform: translateY()` moves it. Working out
+ *  the desired viewport-relative top for each phase and then converting
+ *  that into a translateY *relative to the element's untransformed
+ *  position* (`desiredTop - containerRect.top`) reproduces the identical
+ *  three phases as switching position types, but as one continuous
+ *  function with no box-geometry change to jump at the seams. */
 function usePin(containerRef: RefObject<HTMLElement>, pinnedRef: RefObject<HTMLElement>) {
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 640px)");
@@ -84,22 +102,18 @@ function usePin(containerRef: RefObject<HTMLElement>, pinnedRef: RefObject<HTMLE
       const containerRect = container.getBoundingClientRect();
 
       pinned.style.minHeight = `calc(100vh - ${top}px)`;
-      pinned.style.left = "0";
-      pinned.style.right = "0";
 
+      let desiredTop: number;
       if (containerRect.top > top) {
-        pinned.style.position = "absolute";
-        pinned.style.top = "0";
-        pinned.style.bottom = "";
+        desiredTop = containerRect.top; // before: untouched, no shift
       } else if (containerRect.bottom - pinnedHeight <= top) {
-        pinned.style.position = "absolute";
-        pinned.style.top = "";
-        pinned.style.bottom = "0";
+        desiredTop = containerRect.bottom - pinnedHeight; // after: pinned to container's bottom
       } else {
-        pinned.style.position = "fixed";
-        pinned.style.top = `${top}px`;
-        pinned.style.bottom = "";
+        desiredTop = top; // pinned: held at the viewport offset
       }
+
+      const translateY = desiredTop - containerRect.top;
+      pinned.style.transform = translateY ? `translateY(${translateY}px)` : "";
     };
 
     const onScroll = () => {
@@ -219,9 +233,10 @@ export function FixedProgressiveCard({
       className={cn("relative", className)}
       style={{ height: `${scrollSpan * 100}vh` }}
     >
-      {/* Initial paint before usePin's effect runs: absolute/top-0, the
-          same as the "before" phase — correct for anyone who hasn't
-          scrolled into the section yet, which is true on first paint. */}
+      {/* position/top/left/right are permanent — usePin only ever writes
+          `transform`. Before usePin's effect runs (first paint) there's no
+          transform yet, which is exactly the correct "before" phase for
+          anyone who hasn't scrolled into the section, true on first paint. */}
       <div
         ref={pinnedRef}
         className="flex flex-col justify-center overflow-hidden py-16"

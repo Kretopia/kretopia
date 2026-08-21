@@ -1,17 +1,15 @@
 import { useState, useEffect } from "react";
-import { badgeLabel } from "@/lib/badgeLabel";
-import { Building2, MapPin, Users, Star, Award, Gift, Globe, Briefcase, Edit, Share2, QrCode, MessageCircle, CreditCard, Settings, ChevronRight, ExternalLink, Calendar, Clock, Crown, Image as ImageIcon, UserPlus, TrendingUp, BarChart3 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Building2, MapPin, Users, Star, Award, Gift, Briefcase, Edit, Share2, QrCode, MessageCircle, Settings, ChevronRight, ExternalLink, Calendar, Clock, Image as ImageIcon, UserPlus, TrendingUp, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaveCompanyReviewDialog } from "./LeaveCompanyReviewDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import { FeatureLockedBanner } from "@/components/FeatureLockedBanner";
+import { BrandPassportHero } from "./BrandPassportHero";
 
 interface CompanyReview {
   id: string;
@@ -149,147 +147,36 @@ export const CompanyProfileView = ({
 
   return (
     <div className="min-h-screen pb-24 sm:pb-20 md:pb-6 bg-background">
-      <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl pt-4 sm:pt-6">
 
-        {/* === COVER + HERO === */}
-        <div className="relative mb-6">
-          {/* Cover Photo - Pro feature uses cover_image_url, fallback to gallery */}
-          <div className="h-40 sm:h-52 rounded-b-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 overflow-hidden">
-            {profile.cover_image_url ? (
-              <img
-                src={profile.cover_image_url}
-                alt="Cover"
-                className="w-full h-full object-cover"
-              />
-            ) : profile.company_images && Array.isArray(profile.company_images) && profile.company_images.length > 0 ? (
-              <img
-                src={(profile.company_images as string[])[0]}
-                alt="Cover"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Building2 className="h-16 w-16 text-primary/20" />
-              </div>
-            )}
-            {isOwnProfile && !isPro && !profile.cover_image_url && (
-              <div className="absolute top-3 right-3">
-                <Badge className="gap-1 bg-background/80 text-foreground backdrop-blur-sm border">
-                  <Crown className="h-3 w-3 text-primary" /> Pro Cover
-                </Badge>
-              </div>
-            )}
-          </div>
-
-          {/* Logo overlapping cover */}
-          <div className="absolute -bottom-10 left-6">
-            <Avatar className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl border-4 border-background shadow-lg">
-              <AvatarImage src={displayLogo} alt={displayName} className="object-cover rounded-2xl" />
-              <AvatarFallback className="rounded-2xl text-3xl bg-primary/10">
-                <Building2 className="h-10 w-10 text-primary" />
-              </AvatarFallback>
-            </Avatar>
-          </div>
+        {/* Brand Passport — the Brand-account equivalent of the creator's
+            Passport card (same HoloCard shell, same section grammar),
+            replacing the old plain cover+name+meta header. Own-profile only
+            in practice: CompanyProfileView is never mounted with
+            isOwnProfile=false today (ViewProfile.tsx doesn't render it for
+            other users' profiles), so there's no viewer-mode action set to
+            preserve here. */}
+        <div className="mb-6">
+          <BrandPassportHero
+            profile={profile}
+            stats={companyStats}
+            opportunities={opportunities}
+            teamMembers={teamMembers}
+            reviewCount={reviews.length}
+            onEdit={onEdit ?? (() => {})}
+            onShare={onShare ?? (() => {})}
+          />
         </div>
 
-        {/* Spacer for overlapping logo */}
-        <div className="h-12" />
-
-        {/* === NAME + META === */}
-        <div className="px-1 space-y-3 mb-6">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-bold">{displayName}</h1>
-                {profile.badge && (
-                  <Badge
-                    variant="default"
-                    className={cn("h-5 text-xs", profile.badge === 'odos' && "bg-green-500 hover:bg-green-600")}
-                  >
-                    {badgeLabel(profile.badge)}
-                  </Badge>
-                )}
-              </div>
-              {profile.company_industry && (
-                <p className="text-muted-foreground text-sm mt-0.5">{profile.company_industry}</p>
-              )}
-              {profile.company_tagline && (
-                <p className="text-sm mt-1 italic text-muted-foreground">"{profile.company_tagline}"</p>
-              )}
-            </div>
+        {!isOwnProfile && (
+          <div className="flex justify-end mb-4">
+            <LeaveCompanyReviewDialog
+              companyId={profile.user_id}
+              companyName={displayName}
+              onReviewSubmitted={onRefresh}
+            />
           </div>
-
-          {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            {profile.company_address && (
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" /> {profile.company_address}
-              </span>
-            )}
-            {profile.company_size && (
-              <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" /> {profile.company_size}
-              </span>
-            )}
-            {profile.website && (
-              <a href={profile.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
-                <Globe className="h-3.5 w-3.5" /> Website
-              </a>
-            )}
-          </div>
-
-          {/* Rating */}
-          {profile.average_rating > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${
-                      i < Math.floor(profile.average_rating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-muted"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="font-semibold text-sm">{profile.average_rating.toFixed(1)}</span>
-              <span className="text-muted-foreground text-sm">
-                ({profile.total_reviews} {profile.total_reviews === 1 ? "review" : "reviews"})
-              </span>
-            </div>
-          )}
-
-          {/* Action buttons */}
-          <div className="flex gap-2 flex-wrap pt-1">
-            {isOwnProfile ? (
-              <>
-                <Button variant="outline" size="sm" onClick={onEdit} className="gap-1.5 h-9 text-sm">
-                  <Edit className="h-4 w-4" /> Edit Profile
-                </Button>
-                 <Button variant="outline" size="sm" onClick={() => navigate('/thrivepay')} className="gap-1.5 h-9 text-sm">
-                   <CreditCard className="h-4 w-4" /> Payments
-                 </Button>
-                 <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
-                   <Share2 className="h-4 w-4" />
-                 </Button>
-               </>
-             ) : (
-               <>
-                 <LeaveCompanyReviewDialog
-                   companyId={profile.user_id}
-                   companyName={displayName}
-                   onReviewSubmitted={onRefresh}
-                 />
-                 <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
-                   <Share2 className="h-4 w-4" />
-                 </Button>
-               </>
-             )}
-          </div>
-        </div>
-
-        <Separator className="mb-4" />
+        )}
 
         {/* === TABBED CONTENT === */}
         <Tabs defaultValue="about" className="space-y-6">

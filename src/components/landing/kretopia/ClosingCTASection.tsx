@@ -12,10 +12,21 @@
  * revealed by scroll progress rather than a plain fade-in-on-view. The
  * eight chapters above it keep their existing whileInView treatment
  * deliberately; this pattern is reserved for the one true "landing" beat.
+ *
+ * The title is a live, real social-proof headline — the real creator
+ * count from the same public-stats edge function the app already uses
+ * for its own stats surfaces (no new backend). Fetched on mount (this
+ * section renders off-screen from the very start of the page, so by the
+ * time a visitor scrolls this far down the real number has almost
+ * always already loaded); the fallback copy carries no invented number
+ * and reads naturally on its own, so a slow network never shows a
+ * broken or blank headline — see useCreatorCount below.
  */
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { FixedProgressiveCard } from "@/components/landing/kretopia/FixedProgressiveCard";
 import { analytics } from "@/lib/analytics";
+import { supabase } from "@/integrations/supabase/client";
 
 const ACCENT = "#FF2DA1";
 
@@ -28,7 +39,33 @@ const scrollToHeroSearch = () => {
   }, 450);
 };
 
+/** Real, live creator count from public-stats (same source the rest of the
+ *  app already trusts for stats). Null until loaded or if the fetch fails
+ *  — callers must have a fallback that reads fine without a number. */
+function useCreatorCount() {
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    supabase.functions
+      .invoke("public-stats")
+      .then(({ data, error }) => {
+        if (cancelled || error) return;
+        const n = data?.stats?.creators;
+        if (typeof n === "number" && n > 0) setCount(n);
+      })
+      .catch(() => {
+        /* silent — the fallback copy carries no number, nothing to fix */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return count;
+}
+
 export const ClosingCTASection = () => {
+  const creatorCount = useCreatorCount();
+
   return (
     <section
       className="landing-section relative border-t border-white/[0.05]"
@@ -39,9 +76,9 @@ export const ClosingCTASection = () => {
         eyebrow={<p className="landing-eyebrow">Get started</p>}
         title={
           <h2 id="closing-cta-title" className="landing-h1 landing-glow">
-            Your work has a history.
+            {creatorCount ? `Join ${creatorCount}+ creatives` : "Join the creatives"}
             <br />
-            <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>Give it a future.</span>
+            <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>already proving their work.</span>
           </h2>
         }
         subtitle={

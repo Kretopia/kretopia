@@ -73,9 +73,28 @@ The five pages Section 8 is scoped to overhaul (Scout as reference) currently sp
 | Creative Circle (`CreativeCircle.tsx`) | `FeaturePageHeader` |
 | Admin Panel (`Admin.tsx`) | `FeaturePageHeader` |
 
-## 6. Findings
+## 6. Findings (as of the original 2026-08-18 audit)
 
 1. **No feature page reproduces the landing hero's actual signature animation.** The word-split blur-stagger reveal that makes the landing headline distinctive is landing-only. Every feature-page title instead gets a plainer single-block fade-up. This may be intentional (a one-time cinematic flourish for the landing page vs. a lighter, faster reveal for pages visited repeatedly, where re-running a 700ms-per-line stagger on every navigation could feel slow) — flagging it as a finding rather than a defect, since re-litigating "should feature pages also blur-stagger" is a product call, not something to silently decide as an audit.
-2. **Two components, not one, implement "the shared feature-page header."** `FeaturePageHeader` and `EditorialPageHero` have identical motion timing/easing but diverge in container width (1024px vs 1100px) and vertical padding (8px difference at the breakpoint checked), and duplicate their background-plate JSX independently. This is the literal gap the charter's "ensure every feature title uses the same shared component" is checking for — currently unmet.
-3. **The five Section-8 target pages are split 3/2 across the two components**, meaning the upcoming overhaul will by construction touch this exact seam — two of the five pages (Spotlight, Verified Credits) will need to either move onto `FeaturePageHeader` or have `EditorialPageHero` consolidated to share `FeaturePageHeader`'s underlying render logic.
-4. **Recommendation, deferred to Section 8 (not done in this audit pass):** extract the duplicated background-plate + eyebrow + title + subtitle markup into one internal primitive that both `FeaturePageHeader` and `EditorialPageHero` render, keeping `FeaturePageHeader`'s current spacing values as canonical (it has 14 consumers vs. 5, so normalizing the smaller component prevents drift for the larger, already-stable set) and preserving each component's distinct extras (tutorial trigger + tabs vs. align/oneLine + children). This is scoped as part of Section 8 rather than this audit because Section 8 already plans to touch Spotlight and Verified Credits directly — doing the consolidation there, verified against Scout live in the same pass, is lower-risk than a standalone refactor now that isn't paired with the visual QA those two pages need anyway.
+2. ~~**Two components, not one, implement "the shared feature-page header."**~~ **RESOLVED — see §7 below.**
+3. ~~**The five Section-8 target pages are split 3/2 across the two components...**~~ **RESOLVED — see §7 below.**
+4. ~~**Recommendation, deferred to Section 8...**~~ **DONE — see §7 below.**
+
+## 7. Update — 2026-08-21, consolidation confirmed complete
+
+Re-checked `EditorialPageHero.tsx` directly rather than trusting this audit's 3-day-old findings (per "verify before recommending from memory"). **Finding 2 is stale — the consolidation this audit recommended already happened**, sometime between 2026-08-18 and now, as part of other work on this branch:
+
+```tsx
+// EditorialPageHero.tsx — confirmed 2026-08-21
+import { CinematicHeaderPlate } from "@/components/features/CinematicHeaderPlate";
+// ...
+<CinematicHeaderPlate eyebrow={kicker} title={title} accentTitle={accentTitle}
+  subtitle={subtitle} align={align} oneLine={oneLine}
+  footer={children && <div>...</div>} />
+```
+
+`FeaturePageHeader.tsx` already wrapped `CinematicHeaderPlate` too (confirmed earlier this session, when it was extended with the `oneLine` prop). **Both components now render through the exact same underlying engine** — the "internal primitive" this audit's Finding 4 recommended extracting already exists as `src/components/features/CinematicHeaderPlate.tsx`, and both consumer components are thin wrappers supplying their own backdrop chrome (aurora/grid/grain) and distinct extras (tutorial trigger + tabs for `FeaturePageHeader`; `align`/`oneLine`/generic `children` for `EditorialPageHero`).
+
+**This is the `KretopiaAnimatedTitle` component the Global Overhaul brief (§4) asks for — reused, not rebuilt.** It already covers every one of the 18 pages currently on the shared header system (13 via `FeaturePageHeader`, 5 via `EditorialPageHero`, see `GLOBAL_UX_UI_INVENTORY.md`), with one animation engine, one easing curve (`cubic-bezier(0.2, 0.65, 0.3, 0.95)`), one reduced-motion behavior (`initial={reducedMotion ? false : {...}}`), and the same `oneLine` single-line-title behavior fixed earlier this session.
+
+**Finding 1 remains open, and is being kept that way deliberately, not by oversight.** `KretopiaHero.tsx`'s word-stagger-blur reveal stays landing-only. Per the Global Overhaul brief's own Section 8 guidance ("respect low-power devices," "users with vestibular sensitivities," "if any animation... repeats for more than five seconds, provide pause/stop... or remove it") and this audit's own original reasoning (a once-per-session flourish is a different cost/benefit than a per-navigation one on a page like Scout or Passport that a user opens dozens of times), forcing the elaborate reveal onto all 135 real pages would be a net UX regression, not an improvement — the "one animation engine" requirement is satisfied by `CinematicHeaderPlate` covering all *feature* pages consistently; the landing hero remains one deliberate, documented exception.

@@ -36,6 +36,7 @@ import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
 import { PaymentLinksSection } from "@/components/thrivepay/PaymentLinksSection";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { KretoTip } from "@/components/agent/KretoTip";
+import { KREPAY_BRAND_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import {
   DollarSign,
@@ -87,6 +88,7 @@ export default function ThrivePay() {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [isBrand, setIsBrand] = useState(false);
   const [connectStatus, setConnectStatus] = useState<string>("not_connected");
   const [balance, setBalance] = useState({ available: 0, pending: 0, currency: "usd" });
   const [accountId, setAccountId] = useState<string | null>(null);
@@ -142,6 +144,21 @@ export default function ThrivePay() {
       fetchWallet();
     }
   }, [user, searchParams]);
+
+  // Brand accounts pay creators rather than getting paid for their own
+  // creative work — the wallet/Stripe/invoicing mechanics underneath are
+  // identical either way (money in/out works the same regardless of
+  // account type), so this only swaps the header framing and tutorial,
+  // not any data-fetching or payment logic.
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("account_type")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setIsBrand(data?.account_type === "company"));
+  }, [user]);
 
   // --- Payment account / Connect logic ---
   const fetchAccountStatus = async () => {
@@ -278,9 +295,17 @@ export default function ThrivePay() {
       <FeaturePageHeader
         eyebrow="Your money, daily"
         title="KrePay."
-        accentTitle="Get paid, all in one place."
-        subtitle="Everything about getting paid for your creative work, without the spreadsheet."
-        tutorial={{ featureKey: "krepay", label: "How KrePay works", steps: KREPAY_TUTORIAL }}
+        accentTitle={isBrand ? "Pay creators, all in one place." : "Get paid, all in one place."}
+        subtitle={
+          isBrand
+            ? "Everything about paying the creators you hire, without the spreadsheet."
+            : "Everything about getting paid for your creative work, without the spreadsheet."
+        }
+        tutorial={
+          isBrand
+            ? { featureKey: "krepay-brand", label: "How KrePay works for Brands", steps: KREPAY_BRAND_TUTORIAL }
+            : { featureKey: "krepay", label: "How KrePay works", steps: KREPAY_TUTORIAL }
+        }
         tabs={
           <div className="flex items-center gap-2">
             {/* Top Up — primary lime CTA */}
@@ -412,15 +437,42 @@ export default function ThrivePay() {
           )}
         </div>
 
-        {/* ───── Single-scroll command center (no tabs) ───── */}
+        {/* ───── Command center: 3 tabbed panels instead of one long
+            scroll ─────
+            Everything above (identity strip, Kreto tip, wallet card,
+            proactive nudges, balance overview) is the always-visible
+            summary — the numbers a user needs at a glance stay on screen
+            regardless of which tab is open below. The 5 sections that used
+            to stack in one continuous scroll (Payment Links, Invoices &
+            Earnings, Recent Activity, Payouts, Fees) are grouped into 3
+            panels by the question they answer, switched by tab instead of
+            scrolled past: "Get Paid" (act now), "Activity" (what
+            happened), "Payouts & Fees" (how money leaves the platform to
+            you). Every section's own internal logic/handlers are
+            unchanged — this is a layout regrouping, not a rewrite. */}
+        <Tabs defaultValue="get-paid" className="space-y-4">
+          <TabsList className="w-full grid grid-cols-3 h-auto p-1">
+            <TabsTrigger value="get-paid" className="gap-1.5 py-2 text-xs sm:text-sm">
+              <Send className="h-3.5 w-3.5" /> Get Paid
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="gap-1.5 py-2 text-xs sm:text-sm">
+              <FileText className="h-3.5 w-3.5" /> Activity
+            </TabsTrigger>
+            <TabsTrigger value="payouts" className="gap-1.5 py-2 text-xs sm:text-sm">
+              <CreditCard className="h-3.5 w-3.5" /> Payouts & Fees
+            </TabsTrigger>
+          </TabsList>
 
-        {/* 1. Payment Links — share & get paid in seconds */}
-        <section className="mb-6">
-          <PaymentLinksSection />
-        </section>
+          {/* 1. Get Paid — Payment Links */}
+          <TabsContent value="get-paid" className="mt-0">
+            <section>
+              <PaymentLinksSection />
+            </section>
+          </TabsContent>
 
-        {/* 2. Invoices & Earnings */}
-        <section className="mb-6 space-y-3">
+          {/* 2. Activity — Invoices & Earnings + Recent Activity */}
+          <TabsContent value="activity" className="mt-0 space-y-6">
+        <section className="space-y-3">
           <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" /> Invoices & Earnings
           </h2>
@@ -433,8 +485,7 @@ export default function ThrivePay() {
           </FreeTierGate>
         </section>
 
-        {/* 3. Recent Activity */}
-        <section className="mb-6 space-y-3">
+        <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
               <Wallet className="h-5 w-5 text-primary" /> Recent Activity
@@ -485,9 +536,11 @@ export default function ThrivePay() {
             )}
           </div>
         </section>
+          </TabsContent>
 
-        {/* 4. Payouts — Stripe Connect */}
-        <section className="mb-6 space-y-3">
+          {/* 3. Payouts & Fees — Stripe Connect + fee rate */}
+          <TabsContent value="payouts" className="mt-0 space-y-6">
+        <section className="space-y-3">
           <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" /> Payouts to your bank
           </h2>
@@ -618,6 +671,8 @@ export default function ThrivePay() {
             <FeeCalculator subscriptionTier={subscriptionTier} />
           </div>
         </section>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Floating Snap Receipt button — opens camera immediately, AI fills the expense */}

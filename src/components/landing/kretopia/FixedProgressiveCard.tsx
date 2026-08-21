@@ -2,34 +2,128 @@
  * FixedProgressiveCard — Section 7 of the Global Typography, UX/UI and
  * AI-Powered Motion Overhaul.
  *
- * A bounded scroll region whose content stays pinned (`position: sticky`)
- * in the viewport while native scroll — not a timer, not an
- * IntersectionObserver "play once" trigger — deterministically drives a
- * top-to-bottom reveal of six fixed slots: eyebrow → title → subtitle →
- * key value → supporting item → CTA. Scrolling back up un-reveals it the
- * same way it revealed, because the mapping is a pure function of scroll
- * position, not a one-shot animation state machine.
+ * A bounded scroll region whose content stays pinned in the viewport
+ * while native scroll — not a timer, not an IntersectionObserver "play
+ * once" trigger — deterministically drives a top-to-bottom reveal of six
+ * fixed slots: eyebrow → title → subtitle → key value → supporting item
+ * → CTA. Scrolling back up un-reveals it the same way it revealed,
+ * because the mapping is a pure function of scroll position, not a
+ * one-shot animation state machine.
+ *
+ * The pin is computed in JS (position: fixed, toggled by scroll-position
+ * math), not CSS `position: sticky`. The app's own shared shell
+ * (App.tsx's root `<div className="h-full overflow-auto">`, present on
+ * every route) gives every page an ancestor with `overflow: auto` above
+ * this component — and per the CSS spec, ANY ancestor with an overflow
+ * value other than `visible` becomes the containing block for
+ * `position: sticky`, regardless of whether that ancestor actually
+ * scrolls. That silently breaks native sticky here: it un-pins early,
+ * the card scrolls off mid-reveal, and the section's height reads as
+ * broken/jumpy. `position: fixed` doesn't have this failure mode (only
+ * a `transform`/`filter`/`perspective`/`contain` ancestor would break
+ * it, and there isn't one here) so the pin is computed manually instead
+ * — three phases (before/pinned/after) driven by real
+ * getBoundingClientRect() measurements on scroll, exactly what native
+ * sticky does internally.
  *
  * Explicitly NOT:
  * - scroll-hijacking — nothing calls preventDefault() or sets scrollTop;
  *   the browser's own scroll is the only input.
  * - infinite scroll — the pinned region has a fixed, finite height
- *   (`scrollSpan` viewport-heights) and then releases like any sticky
- *   element.
+ *   (`scrollSpan` viewport-heights) and then releases for good.
  * - scroll-snapping — no scroll-snap-* CSS anywhere in this component or
  *   its scroll ancestors.
  *
  * Reduced motion / static fallback: under prefers-reduced-motion, skips
  * the scroll rig entirely and renders every slot visible immediately in
  * normal document flow (no pinning, no bounded-height spacer) — this is
- * also what a user gets if JS never runs a layout pass on the sticky
- * container (e.g. print, some crawlers), since sticky degrades to static
- * positioning and the motion values simply default to their end state.
+ * also what a user gets if JS never runs (e.g. print, some crawlers),
+ * since the motion values simply default to their end state and there's
+ * no CSS-only pin to fall back on.
  */
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+
+/** Real three-phase pin, measured against actual layout — the same thing
+ *  native `position: sticky` computes internally, done manually because
+ *  an ancestor's `overflow: auto` breaks sticky for this component.
+ *
+ *  Writes directly to the DOM via the ref instead of React state: routing
+ *  this through useState/re-render added a render-cycle of lag between
+ *  the real scroll position and the style update landing, which showed up
+ *  as real, measurable layout-shift entries (CLS ~0.5) — a visible jump —
+ *  even though the math was correct. Direct style mutation inside the
+ *  same rAF-scheduled handler is the same pattern the six content slots
+ *  already use via Framer Motion's style={motionValue}, which measured
+ *  zero layout shift; this follows it instead of fighting React for
+ *  something that has to be synchronous with scroll. */
+function usePin(containerRef: RefObject<HTMLElement>, pinnedRef: RefObject<HTMLElement>) {
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    let raf = 0;
+    // Only the container's own position changes on every scroll frame; the
+    // pinned element's height only changes on resize/content change, so it's
+    // measured there instead of on every scroll tick — one layout read per
+    // frame instead of two keeps this cheap enough to never register as a
+    // long task even under a fast, continuous scroll.
+    let pinnedHeight = 0;
+    let top = 64;
+
+    const remeasure = () => {
+      top = mq.matches ? 80 : 64;
+      pinnedHeight = pinnedRef.current?.getBoundingClientRect().height || pinnedRef.current?.offsetHeight || 0;
+    };
+
+    const apply = () => {
+      raf = 0;
+      const container = containerRef.current;
+      const pinned = pinnedRef.current;
+      if (!container || !pinned) return;
+      const containerRect = container.getBoundingClientRect();
+
+      pinned.style.minHeight = `calc(100vh - ${top}px)`;
+      pinned.style.left = "0";
+      pinned.style.right = "0";
+
+      if (containerRect.top > top) {
+        pinned.style.position = "absolute";
+        pinned.style.top = "0";
+        pinned.style.bottom = "";
+      } else if (containerRect.bottom - pinnedHeight <= top) {
+        pinned.style.position = "absolute";
+        pinned.style.top = "";
+        pinned.style.bottom = "0";
+      } else {
+        pinned.style.position = "fixed";
+        pinned.style.top = `${top}px`;
+        pinned.style.bottom = "";
+      }
+    };
+
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(apply);
+    };
+    const onResize = () => {
+      remeasure();
+      onScroll();
+    };
+
+    remeasure();
+    apply();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    mq.addEventListener?.("change", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      mq.removeEventListener?.("change", onResize);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [containerRef, pinnedRef]);
+}
 
 const EASE = [0.2, 0.65, 0.3, 0.95] as const;
 
@@ -65,7 +159,9 @@ export function FixedProgressiveCard({
   scrollSpan = 1.6,
 }: FixedProgressiveCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
+  usePin(containerRef, pinnedRef);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -123,9 +219,20 @@ export function FixedProgressiveCard({
       className={cn("relative", className)}
       style={{ height: `${scrollSpan * 100}vh` }}
     >
+      {/* Initial paint before usePin's effect runs: absolute/top-0, the
+          same as the "before" phase — correct for anyone who hasn't
+          scrolled into the section yet, which is true on first paint. */}
       <div
-        className="sticky top-16 sm:top-20 flex flex-col justify-center overflow-hidden py-16"
-        style={{ minHeight: "calc(100vh - 4rem)", transitionTimingFunction: `cubic-bezier(${EASE.join(",")})` }}
+        ref={pinnedRef}
+        className="flex flex-col justify-center overflow-hidden py-16"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          minHeight: "calc(100vh - 4rem)",
+          transitionTimingFunction: `cubic-bezier(${EASE.join(",")})`,
+        }}
       >
         {content}
       </div>

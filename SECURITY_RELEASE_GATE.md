@@ -4,6 +4,7 @@ Scan date: 2026-08-16 · Scanners: supabase linter, supabase_lov v3.2, connector
 Scan re-run: 2026-08-17 · Result: **1 error · 4 warnings** · Gate status: **NOT CLEARED** (original 2 findings fixed; 1 new critical-class finding open)
 Scan re-run: 2026-08-18 · Manual edge-function auth audit (full read of all 18 email-related functions plus `send-push-notification`) · **2 critical unauthenticated-relay findings fixed** (see §E). Full detail in `EMAIL_RELEASE_AUDIT.md`.
 Migration apply: 2026-08-18 · Both previously-written migrations (`20260817140000`, `20260818120000`) reviewed by the user and applied to production via the Lovable Cloud SQL editor · **verified by direct query against the live database** (see §F).
+Scan re-run: 2026-08-21 · Section 13 of the Global Typography/UX/UI/AI overhaul — RLS and authorization trace of every file that overhaul changed (`create-agent-proposal`, `gig-moderator`, `AutopilotProjectGuide`, `StudioRoom`), plus one function found along the way that wasn't in that diff at all · **1 new critical unauthenticated-content-spoofing finding fixed** (same bug class as EF-01/EF-02/`send-user-email` above). Full detail in §G.
 
 ---
 
@@ -20,6 +21,11 @@ Migration apply: 2026-08-18 · Both previously-written migrations (`202608171400
 | SSRF protection | PASS | `_shared/ssrf.ts` used by link/metadata fetchers |
 | Admin guard helper | PASS | `_shared/admin-guard.ts` (cron secret **or** `user_roles.role = 'admin'`), used by 9+ functions |
 | Payment amount/status trust | PASS | checkout amounts and status resolved server-side from `invoices` / Stripe webhooks, not from client body |
+| `projects` UPDATE ownership | PASS | `"Users can update accessible projects" USING (user_has_project_access(id, auth.uid()))` — security-definer, owner OR matched user OR accepted collaborator |
+| `milestones` client payment-field tampering | PASS | `REVOKE UPDATE (status, paid_at, paid_to, escrow_status) ON public.milestones FROM authenticated, anon` — a table-grant revocation, not just RLS; no client path can move a milestone into a paid/escrowed state after creation |
+| `project_tasks` INSERT ownership | PASS | `BEFORE INSERT` trigger force-sets `created_by = auth.uid()` server-side regardless of client input; `WITH CHECK (user_has_project_access(project_id, auth.uid()))` |
+| `project_collaborators` INSERT ownership | PASS | `WITH CHECK` requires inviter to be project owner or accepted collaborator |
+| `agent_proposals` client INSERT | PASS (by design) | no client INSERT policy at all — service_role only; `create-agent-proposal` (2026-08-21, see §G) is the one narrow, ownership-checked door for a client to request one |
 
 ## B. Fixed this pass
 
@@ -86,6 +92,24 @@ Both previously-written, not-yet-applied migrations were reviewed by the user an
 | `20260818120000_thrivefund_milestone_release_idempotency.sql` | Creates `public.thrivefund_milestone_releases` (composite PK on `campaign_id, milestone_index`) as a permanent duplicate-release guard for `thrivefund-release-milestone` | `information_schema.tables` confirms the table now exists |
 
 The `thrivefund-release-milestone` edge function code that depends on this table (commit `25fa0425`, insert-before-Stripe-call guard) was already pushed to `feature/activation-priority-plan` before the migration was applied, with an explicit deployment-order comment. Whether that code is currently deployed to the live edge function runtime was not independently re-verified in this pass — Lovable appears to auto-sync from this branch (its own activity feed shows the commit), but no test call was made against the live function.
+
+## G. Section 13 pass (2026-08-21 — overhaul diff review + one function found outside it)
+
+Reviewed every file the Global Typography/UX/UI/AI overhaul changed (`287a99f4`..`6c58882a`, 21 files) for the checklist: server-side authorization, ownership/role checks, RLS, no client secrets, no sensitive logs, safe status transitions, idempotency, audit events, no client-trusted payment state. Pure typography/motion/CSS files touch no data path and were skimmed, not deeply audited — none introduce a new read/write or route guard. `PostOpportunity.tsx`'s change is a pure heading-tag swap, confirmed via diff.
+
+**`create-agent-proposal`** (new) — requires auth, re-derives project ownership server-side via the service-role client rather than trusting the client, always inserts `status: 'pending'` (no path to forge `accepted`), `kind` checked against the DB enum, `title`/`proposal_body` bounded to 200/1000 chars. Not idempotent — a retried call creates a duplicate proposal; low severity (a dismissable advisory nudge, not financial or destructive), not fixed this pass.
+
+**`gig-moderator`** (modified) — added an owner-facing `notifications` insert when an AI/cron-driven closure fires (content derived from the gig's own public title/description, not another user's data); the function's existing `requireAdminOrCron` guard is untouched, still not client-callable.
+
+**`AutopilotProjectGuide.tsx`** (new) — writes to `projects`, `milestones`, `project_tasks`, `project_collaborators`. The component's own `isOwner`-gated UI is real but non-load-bearing; traced each write against the live RLS policy above (§A) and confirmed all four are independently enforced server-side — a bypassed UI gate still can't write to a project the caller doesn't own or collaborate on.
+
+**`send-project-invitation` — real, pre-existing finding, not part of the overhaul's diff.** `AutopilotProjectGuide.sendInvite()` calls this already-shipped function (also used by `CreateProjectWizard.tsx` and 8 other call sites). Reading it end-to-end found the same bug class as EF-01/EF-02/`send-user-email` above: it required a valid JWT (platform default, absent from `verify_jwt=false` in `supabase/config.toml`) but performed **zero check that the caller had any relationship to the `projectId` supplied** — any authenticated Kretopia account, not just the project's owner or a collaborator, could call it with an arbitrary real `projectId` and fully client-controlled `projectTitle`/`inviterName`, and it would still mint a real Supabase magic sign-in link, insert a real `guest_studio_tokens` row, and send a real branded email from `info@kretopia.com` to any address — with the two most trust-relevant strings in that email entirely attacker-chosen and unescaped in the HTML.
+
+Fixed using the exact `send-user-email` precedent from 2026-08-19: added the auth check (`Authorization` → `getUser()`) plus an authorization check via `user_has_project_access` (the same security-definer RPC already used in 9 other places in this codebase: `useProjectData.ts`, `import-analyze`, `create-video-room`, `create-video-guest-link`, `import-run`, `import-suggest`, `desk-agent`, `mint-video-token`, `desk-ai`) — 401/403/404 as appropriate; `projectTitle`/`inviterName` are no longer accepted from the client at all, the function now derives the real project title and the caller's own real `profiles.full_name` server-side; added `escapeHtml()` on every value still interpolated into the HTML; `projectId` validated as a well-formed UUID before use.
+
+`CreateProjectWizard.tsx` (2 call sites) and `AutopilotProjectGuide.tsx` (1 call site) updated to drop the now-ignored params and the client-side profile fetch that only existed to build them. The other 7 callers (`SimpleProjectChat.tsx`, `StartProjectDialog.tsx`, `InviteCollaboratorDialog.tsx`, `PendingInvitations.tsx`, `InviteToProjectDialog.tsx`, `StartProjectFromMatchDialog.tsx`, `OpportunityDashboard.tsx`, `ClientDetail.tsx`) were not individually edited — the extra fields are now silently ignored, harmless — but were checked structurally: every one inserts a `project_collaborators` row (gated by the identical owner-or-accepted-collaborator boundary) immediately around the call, meaning every legitimate caller already clears a boundary equal to or narrower than the new check.
+
+**Not tested live** — deliberately; verifying it would mean actually sending a real email, which stays off-limits regardless of severity. Confidence rests on matching an already-proven fix pattern in this exact codebase, reusing an RPC already exercised by 9 real call sites, and `npm run typecheck`/`build`/`test` passing clean (68/68 tests, no new errors). Not fixed: the other ~100 AI-calling edge functions weren't swept for the same gap — this one was found only because a new feature happened to call it.
 
 ## D. Gate decision
 

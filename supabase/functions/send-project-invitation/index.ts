@@ -13,12 +13,21 @@ const corsHeaders = {
 };
 
 const APP_URL = "https://www.thrivein.io";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Escapes user-controlled text before it's interpolated into the email HTML —
+// the two values below (project title, inviter name) are now DB-verified
+// rather than client-supplied, but this stays as defense-in-depth in case
+// either legitimately contains HTML-special characters (e.g. a project
+// titled "Q&A shoot").
+const escapeHtml = (value: unknown): string =>
+  String(value ?? "").replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string
+  ));
 
 interface InvitationRequest {
   email: string;
-  projectTitle: string;
   projectId: string;
-  inviterName: string;
   inviteeUserId?: string; // Optional, for existing users
 }
 
@@ -28,11 +37,32 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, projectTitle, projectId, inviterName, inviteeUserId }: InvitationRequest =
-      await req.json();
+    // Caller must be authenticated and must actually have access to the
+    // project they're inviting people into — previously anyone with any
+    // Kretopia account could call this with an arbitrary projectId and
+    // fully client-controlled projectTitle/inviterName, minting a real
+    // magic sign-in link and sending a real branded email to any address.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    if (!projectTitle || !projectId || !inviterName) {
-      throw new Error("Missing required fields");
+    const { email, projectId, inviteeUserId }: InvitationRequest = await req.json();
+
+    if (!projectId || typeof projectId !== "string" || !UUID_RE.test(projectId)) {
+      throw new Error("Missing or invalid projectId");
     }
     if (!email && !inviteeUserId) {
       throw new Error("Either email or inviteeUserId must be provided");
@@ -43,11 +73,38 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     // Look up the inviting user (creator) so we can attribute the guest token
+    // — also the DB-verified source of truth for the project title, and the
+    // same access boundary already enforced on project_collaborators INSERT
+    // (owner or accepted collaborator), checked here before anything fires.
     const { data: project } = await admin
       .from("projects")
-      .select("created_by")
+      .select("created_by, title")
       .eq("id", projectId)
       .maybeSingle();
+    if (!project) {
+      return new Response(JSON.stringify({ error: "Project not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: hasAccess } = await admin.rpc("user_has_project_access", {
+      project_id_param: projectId,
+      user_id_param: user.id,
+    });
+    if (!hasAccess) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const projectTitle = project.title || "a Kretopia workspace";
+    const { data: callerProfile } = await admin
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const inviterName = callerProfile?.full_name || "A Kretopia user";
 
     // Magic-link first: try to mint a one-tap sign-in link so the invitee lands
     // INSIDE the real Studio, already authenticated, with no password.
@@ -145,11 +202,11 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
           <div style="width:40px;height:40px;border-radius:50%;background:#5B6BF5;color:white;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-size:16px;">${initial}</div>
           <div>
-            <div style="font-size:13px;color:#94A3B8;">${inviterName} invited you to a workspace</div>
+            <div style="font-size:13px;color:#94A3B8;">${escapeHtml(inviterName)} invited you to a workspace</div>
           </div>
         </div>
 
-        <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#F8FAFC;line-height:1.2;">${projectTitle}</h1>
+        <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#F8FAFC;line-height:1.2;">${escapeHtml(projectTitle)}</h1>
         <p style="margin:0 0 24px 0;color:#94A3B8;font-size:14px;line-height:1.5;">
           Open the workspace to see the brief, drop files, leave notes, and chat with the team. One tap signs you in — no password required.
         </p>
@@ -166,7 +223,7 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
 
       <p style="margin:24px 0 0 0;color:#475569;font-size:11px;text-align:center;line-height:1.5;">
-        This invitation was sent by ${inviterName} via Kretopia. If you weren't expecting this, you can safely ignore this email.
+        This invitation was sent by ${escapeHtml(inviterName)} via Kretopia. If you weren't expecting this, you can safely ignore this email.
       </p>
     </div>
   </body>

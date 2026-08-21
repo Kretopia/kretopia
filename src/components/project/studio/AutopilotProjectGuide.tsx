@@ -175,18 +175,8 @@ export function AutopilotProjectGuide({ project, currentUserId, open, onOpenChan
         status: "pending",
       });
       if (error) throw error;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("user_id", currentUserId)
-        .single();
       await supabase.functions.invoke("send-project-invitation", {
-        body: {
-          email,
-          projectTitle: title || project.title,
-          projectId: project.id,
-          inviterName: profile?.full_name || "A Kretopia user",
-        },
+        body: { email, projectId: project.id },
       }).catch(() => {});
       setInviteInput("");
       await loadCollaborators();

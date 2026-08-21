@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -20,6 +21,7 @@ import { NextStepCard } from "./NextStepCard";
 import { SendInvoiceNudge } from "./SendInvoiceNudge";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import { ProactiveCards } from "./ProactiveCards";
+import { AutopilotProjectGuide } from "./AutopilotProjectGuide";
 import { BriefSection } from "./BriefSection";
 import { BriefDropZone } from "./BriefDropZone";
 import { ImportedSourcesCard } from "./ImportedSourcesCard";
@@ -120,6 +122,7 @@ export const StudioRoom = ({
   // Owner sees money normally; client sees a read-only "amount due / pay" view; collaborators don't see money.
   const showMoney = (perms.canSeeMoney && moneySignal.visible) || isClient;
   const showAITools = perms.canUseAI;
+  const [autopilotOpen, setAutopilotOpen] = useState(false);
   const showPrep = perms.isOwner; // Run-of-show / call sheets stay internal until shared
 
   // Identify current user from the people list for presence metadata
@@ -406,6 +409,33 @@ export const StudioRoom = ({
 
       {/* Proactive nudges — render once, responsive layout below */}
       {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
+
+      {/* Autopilot — guided (not autonomous) setup. Only the owner sees the
+          resume banner; anyone who wants it can still reopen intentionally. */}
+      {isOwner && !project.setup_completed && (
+        <div className="px-4 pt-3">
+          <button
+            type="button"
+            onClick={() => setAutopilotOpen(true)}
+            className="w-full flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors p-3 text-left"
+          >
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-primary text-primary-foreground shadow-[var(--shadow-glow)]">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold leading-tight text-foreground">Finish setting up with Autopilot</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Collaborators, milestones, an AI brief and starter tasks — you confirm every step.</p>
+            </div>
+          </button>
+        </div>
+      )}
+      <AutopilotProjectGuide
+        project={project}
+        currentUserId={currentUserId}
+        open={autopilotOpen}
+        onOpenChange={setAutopilotOpen}
+        onUpdated={onUpdated}
+      />
 
       {/* Mobile: original single-scroll order */}
       <div className="lg:hidden">

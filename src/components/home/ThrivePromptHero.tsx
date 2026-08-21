@@ -321,12 +321,16 @@ export function ThrivePromptHero() {
       <div aria-hidden className="absolute -bottom-24 -left-12 h-48 w-48 rounded-full bg-energy/10 blur-3xl" />
 
       <div className="relative">
-        {/* Editorial serif headline — mockup vibe */}
-        <h1 className="font-serif italic font-normal leading-[1.05] tracking-tight text-[28px] sm:text-[34px] text-foreground">
+        {/* Editorial serif headline — mockup vibe. h2, not h1: this card
+            always mounts directly below FeaturePageHeader's own h1 ("What
+            are we moving forward today?" via UnifiedHome.tsx), which
+            already owns the page's one <h1> — this was a real duplicate-H1
+            defect (two h1s with near-identical text) before this fix. */}
+        <h2 className="font-serif italic font-normal leading-[1.05] tracking-tight text-[28px] sm:text-[34px] text-foreground">
           What are we
           <br />
           <span className="text-[hsl(var(--signal-teal))] not-italic font-semibold">moving forward</span> today?
-        </h1>
+        </h2>
 
         {/* Composer */}
         <form

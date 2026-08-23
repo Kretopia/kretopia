@@ -274,19 +274,13 @@ export const AIProfileDiscoveryStep = ({
             avatar_url: unclaimedData.avatar_url || undefined,
             location: unclaimedData.location || undefined,
             professional_skills: unclaimedData.professional_skills || undefined,
-            verification_tier: "industry"
           })
           .eq("user_id", userId);
 
-        // Mark unclaimed as claimed
-        await supabase
-          .from("profiles")
-          .update({
-            is_claimed: true,
-            claimed_by: userId,
-            claimed_at: new Date().toISOString()
-          })
-          .eq("user_id", unclaimedMatch.user_id);
+        // Mark unclaimed as claimed + set industry tier (server-side)
+        await supabase.rpc("finalize_unclaimed_profile_claim" as any, {
+          p_unclaimed_user_id: unclaimedMatch.user_id,
+        });
       }
 
       // Determine if we have enough data to fast-track

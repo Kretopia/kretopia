@@ -97,3 +97,37 @@ Not startable while the backend key is live and no webhook signing secret is con
 **BLOCKED_STRIPE_LIVE_MODE** (payments track) — and Migration A is **awaiting explicit approval**.
 
 Remaining uncertainty: backup/PITR availability could not be confirmed from this session; the `profiles` write deny-list is derived from column semantics, not from an enumerated frontend write map (407 call sites).
+
+---
+
+## 5. EXECUTED — Migration A (approved 2026-08-23)
+
+Applied in five migrations:
+
+1. `wallet_privilege_hardening` — revoked client INSERT/UPDATE/DELETE on `wallets`, `creator_wallets`, `creator_wallet_balances`, `creator_payouts`, `creator_payout_methods`; dropped dead write policies (`Users can update their own wallet`, `own wallet update`, `own wallet upsert`, `own methods write`); `stripe_webhook_events` is now service-role only; `anon` lost SELECT on the creator wallet stack.
+2. `profiles write allow-list` — the column-level REVOKE was a no-op while the table-level UPDATE grant existed, so the table grant was revoked and re-issued as an explicit column allow-list. **124 of 177 columns writable**; 53 server-managed columns locked. `anon` lost all profile writes.
+3. `award_xp` / `spend_xp` (SECURITY DEFINER) — points are now awarded (≤500/award, always logged) and spent (atomic balance check) server-side. Closes the "spend XP → set `subscription_tier='pro'`" escalation. `profiles.role` was re-granted: it is the creative role text, not a permission.
+4. `finalize_unclaimed_profile_claim` — claiming an imported profile is server-verified; clients can no longer self-assign `badge='og'` or `verification_tier='industry'`.
+5. `set_age_verified_from_dob` trigger — `age_verified` derived from `date_of_birth`, never client-asserted.
+
+Client rewires: `WalletXPSection`, `StreakCard`, `CheckIn`, `DailyCheckIn`, `ConnectionRequestActions`, `lib/creditSystem`, `ClaimProfileDialog`, `AIProfileDiscoveryStep`, `FundNew`.
+
+### Verification matrix
+
+| Check | Result |
+|---|---|
+| `profiles` writable columns (authenticated) | 124 / 177 |
+| `subscription_tier`, `payment_verified`, `verification_score`, `badge`, `xp`, `storage_limit_bytes`, `is_claimed`, `age_verified` | read-only |
+| `bio`, `avatar_url`, `role`, `date_of_birth`, `current_streak`, `streak_freeze_count` | writable |
+| `anon` writes to `profiles` | none |
+| `wallets` / creator wallet stack, client UPDATE | revoked (SELECT only, self-scoped by RLS) |
+| `stripe_webhook_events` | service-role only |
+| `award_xp` / `spend_xp` / `finalize_unclaimed_profile_claim` EXECUTE | `authenticated` + `service_role` only (not `anon`) |
+| Typecheck | clean |
+
+Linter deltas after these migrations are the pre-existing project-wide `SECURITY DEFINER` function warnings (222/236) plus the three new functions — all intentionally callable by signed-in users and internally auth-scoped.
+
+## 6. Still blocked
+
+- **KrePay / Stripe:** `STRIPE_SECRET_KEY` is LIVE and no webhook signing secrets are set → `BLOCKED_STRIPE_LIVE_MODE`. Needs test-mode keys + `STRIPE_WALLET_WEBHOOK_SECRET` / `STRIPE_WEBHOOK_SECRET` before any payment, transfer or payout test.
+- **Notifications (Section 3):** `notifications` has no dedupe column/index and no canonical acceptance → Studio-creation pipeline is defined in the codebase.

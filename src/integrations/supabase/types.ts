@@ -19458,6 +19458,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      award_xp: {
+        Args: { p_amount: number; p_reason?: string; p_user_id: string }
+        Returns: number
+      }
       backfill_vouch_requests: { Args: never; Returns: Json }
       bump_streak: {
         Args: { _streak_type: string }
@@ -19620,6 +19624,10 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      finalize_unclaimed_profile_claim: {
+        Args: { p_unclaimed_user_id: string }
+        Returns: boolean
       }
       find_duplicate_account_candidates: {
         Args: { p_user_id: string }
@@ -20427,6 +20435,10 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      spend_xp: {
+        Args: { p_amount: number; p_purpose: string }
+        Returns: number
+      }
       submit_credit_endorsement_by_token: {
         Args: {
           _accepted: boolean

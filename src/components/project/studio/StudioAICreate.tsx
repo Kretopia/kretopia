@@ -235,7 +235,7 @@ export const StudioAICreate = ({ projectId, currentUserId, isPro }: StudioAICrea
 
   if (blocked && !isPro) {
     return (
-      <ProGate feature="AI Create" description="Upgrade to Pro for unlimited AI image and copy generation.">
+      <ProGate feature="AI Create" description="Upgrade to Pro for unlimited AI image and copy generation." isPro={isPro}>
         {content}
       </ProGate>
     );

@@ -211,8 +211,6 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
           professional_skills: profile.professional_skills,
           imported_data: profile.imported_data,
           imported_from_url: profile.imported_from_url,
-          badge: 'og', // Industry leaders get OG badge
-          verification_tier: 'industry' // Set industry verified tier
         })
         .eq('user_id', claimingUserId);
 
@@ -223,15 +221,10 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
         return;
       }
 
-      // Mark the original unclaimed profile as claimed
-      await supabase
-        .from('profiles')
-        .update({ 
-          is_claimed: true, 
-          claimed_at: new Date().toISOString(),
-          claimed_by: claimingUserId
-        })
-        .eq('user_id', profile.user_id);
+      // Mark the original unclaimed profile as claimed + set industry tier (server-side)
+      await supabase.rpc('finalize_unclaimed_profile_claim' as any, {
+        p_unclaimed_user_id: profile.user_id,
+      });
 
       // Transfer credits from unclaimed profile to new user
       await supabase

@@ -149,19 +149,12 @@ export default function CheckIn() {
 
       if (checkInError) throw checkInError;
 
-      // Update user's wallet
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("xp")
-        .eq("user_id", user.id)
-        .single();
-
-      await supabase
-        .from("profiles")
-        .update({
-          xp: (profile?.xp || 0) + location.points_per_visit,
-        })
-        .eq("user_id", user.id);
+      // Points are awarded server-side
+      await supabase.rpc("award_xp" as any, {
+        p_user_id: user.id,
+        p_amount: location.points_per_visit,
+        p_reason: "location_check_in",
+      });
 
       toast({
         title: "Check-in Successful!",

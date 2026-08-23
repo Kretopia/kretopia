@@ -298,6 +298,12 @@ Return ONLY valid JSON array:
     }
   }, [isPro, selectedOppId, applicants.length]);
 
+  // Email + push leg only — the in-app notification row is written
+  // server-side by the accept_application / notify_application_status RPCs
+  // (see 20260823150000_hire_loop_notification_fix.sql). A direct client
+  // insert here would just be silently rejected by notifications' RLS
+  // (INSERT requires auth.uid() = user_id), which is what broke this flow
+  // in the first place — skipInApp avoids re-attempting that dead path.
   const notifyApplicantStatusChange = async (
     applicantUserId: string,
     newStatus: 'accepted' | 'rejected' | 'shortlisted',
@@ -331,9 +337,9 @@ Return ONLY valid JSON array:
             status: newStatus,
           },
         },
-      }).catch(() => {});
+      }).catch((err) => console.error('[notifyApplicantStatusChange] email dispatch failed:', err));
 
-      // In-app + push
+      // Push only — in-app row already written server-side (see above).
       const { sendPushNotification } = await import('@/lib/pushNotifications');
       const titleMap = {
         accepted: "You're hired! 🎉",
@@ -351,112 +357,107 @@ Return ONLY valid JSON array:
         body: bodyMap[newStatus],
         type: 'opportunity',
         link: newStatus === 'accepted' && projectId ? `/desk/${projectId}` : `/opportunity/${gigId}`,
+        skipInApp: true,
       });
     } catch (err) {
       console.error('[notifyApplicantStatusChange] failed:', err);
     }
   };
 
+  // Guards against a double-click / retry firing accept_application twice
+  // client-side. The RPC itself is idempotent (defense in depth, not the
+  // primary guard — see HIRE_LOOP_AUDIT.md §7/§9 Stage 3).
+  const processingApplicationIds = useRef<Set<string>>(new Set());
+
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('applications')
-      .update({ status: newStatus })
-      .eq('id', applicationId);
+    if (processingApplicationIds.current.has(applicationId)) return;
+    processingApplicationIds.current.add(applicationId);
 
-    if (error) {
-      toast.error('Failed to update status');
-      return;
-    }
+    try {
+      const applicant = applicants.find(a => a.id === applicationId);
+      const opp = opportunities.find(o => o.id === selectedOppId);
 
-    setApplicants(prev => prev.map(a => 
-      a.id === applicationId ? { ...a, status: newStatus } : a
-    ));
-
-    const applicant = applicants.find(a => a.id === applicationId);
-    const opp = opportunities.find(o => o.id === selectedOppId);
-
-    if (newStatus === 'accepted') {
-      // Create a project workspace for the accepted applicant
-      if (applicant && opp && user) {
-        try {
-          const { data: project, error: projectError } = await supabase
-            .from('projects')
-            .insert({
-              title: opp.title,
-              description: `Project created from opportunity: ${opp.title}`,
-              created_by: user.id,
-              status: 'active' as const,
-            })
-            .select()
-            .single();
-
-          if (projectError) throw projectError;
-
-          // Invite the accepted applicant as a collaborator (two-step: insert then update to accepted)
-          const { data: collabData } = await supabase
-            .from('project_collaborators')
-            .insert({
-              project_id: project.id,
-              user_id: applicant.applicant_id,
-              email: null,
-              invited_by: user.id,
-              role: 'member',
-              status: 'pending',
-            })
-            .select()
-            .single();
-
-          if (collabData) {
-            await supabase
-              .from('project_collaborators')
-              .update({ status: 'accepted' })
-              .eq('id', collabData.id);
-          }
-
-          // Send project invitation notification
-          const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('user_id', user.id)
-            .single();
-
-          await supabase.functions.invoke('send-project-invitation', {
-            body: {
-              projectTitle: opp.title,
-              projectId: project.id,
-              inviterName: userProfile?.full_name || 'A Kretopia user',
-              inviteeUserId: applicant.applicant_id,
-            }
-          });
-
-          // Notify applicant of acceptance
-          await notifyApplicantStatusChange(applicant.applicant_id, 'accepted', opp.title, opp.id, project.id);
-
-          toast.success(`Application accepted! Project workspace "${opp.title}" created.`, {
-            action: {
-              label: 'Open Project',
-              onClick: () => navigate(`/desk/${project.id}`),
-            },
-          });
-          return;
-        } catch (err) {
-          console.error('Project creation error:', err);
-          // Still notify even if project creation failed
-          if (applicant && opp) {
-            await notifyApplicantStatusChange(applicant.applicant_id, 'accepted', opp.title, opp.id);
-          }
-          toast.success('Application accepted! (Project creation failed — you can create one manually)');
+      if (newStatus === 'accepted') {
+        if (!applicant || !opp || !user) {
+          toast.error('Failed to update status');
           return;
         }
+
+        // Atomic: applications.status -> accepted, Studio (projects) row,
+        // collaborator grant, and the applicant's in-app notification all
+        // happen together server-side, idempotently keyed off this
+        // application — see accept_application in the migration above.
+        const { data, error: acceptError } = await supabase.rpc('accept_application', {
+          _application_id: applicationId,
+        });
+
+        if (acceptError || !data || (data as { success?: boolean }).success !== true) {
+          console.error('[accept_application] failed:', acceptError || data);
+          toast.error('Failed to accept application');
+          return;
+        }
+
+        const projectId = (data as { project_id: string }).project_id;
+        setApplicants(prev => prev.map(a =>
+          a.id === applicationId ? { ...a, status: newStatus } : a
+        ));
+
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', user.id)
+          .single();
+
+        await supabase.functions.invoke('send-project-invitation', {
+          body: {
+            projectTitle: opp.title,
+            projectId,
+            inviterName: userProfile?.full_name || 'A Kretopia user',
+            inviteeUserId: applicant.applicant_id,
+          }
+        }).catch((err) => console.error('[accept] project invitation email failed:', err));
+
+        await notifyApplicantStatusChange(applicant.applicant_id, 'accepted', opp.title, opp.id, projectId);
+
+        toast.success(`Application accepted! Project workspace "${opp.title}" created.`, {
+          action: {
+            label: 'Open Project',
+            onClick: () => navigate(`/desk/${projectId}`),
+          },
+        });
+        return;
       }
-    }
 
-    // Notify on shortlist / reject
-    if ((newStatus === 'shortlisted' || newStatus === 'rejected') && applicant && opp) {
-      notifyApplicantStatusChange(applicant.applicant_id, newStatus, opp.title, opp.id);
-    }
+      if (newStatus === 'shortlisted' || newStatus === 'rejected') {
+        const { error } = await supabase
+          .from('applications')
+          .update({ status: newStatus })
+          .eq('id', applicationId);
 
-    toast.success(`Application ${newStatus}`);
+        if (error) {
+          toast.error('Failed to update status');
+          return;
+        }
+
+        setApplicants(prev => prev.map(a =>
+          a.id === applicationId ? { ...a, status: newStatus } : a
+        ));
+
+        if (applicant && opp) {
+          const { error: notifyError } = await supabase.rpc('notify_application_status', {
+            _application_id: applicationId,
+            _status: newStatus,
+          });
+          if (notifyError) console.error('[notify_application_status] failed:', notifyError);
+
+          notifyApplicantStatusChange(applicant.applicant_id, newStatus, opp.title, opp.id);
+        }
+
+        toast.success(`Application ${newStatus}`);
+      }
+    } finally {
+      processingApplicationIds.current.delete(applicationId);
+    }
   };
 
   const getMatchBadge = (score?: number) => {

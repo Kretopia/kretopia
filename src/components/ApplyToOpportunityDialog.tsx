@@ -89,7 +89,7 @@ export const ApplyToOpportunityDialog = ({
 
     const sanitizedCoverLetter = sanitizeInput(coverLetter);
 
-    const { error } = await supabase
+    const { data: newApplication, error } = await supabase
       .from('applications')
       .insert({
         opportunity_id: opportunityId,
@@ -97,7 +97,9 @@ export const ApplyToOpportunityDialog = ({
         cover_letter: sanitizedCoverLetter,
         portfolio_links: portfolioLinksArray,
         status: 'pending',
-      });
+      })
+      .select('id')
+      .single();
 
     setIsSubmitting(false);
 
@@ -159,11 +161,23 @@ export const ApplyToOpportunityDialog = ({
         },
       }).catch(() => {});
 
+      // In-app notification for the recruiter: a direct client insert here
+      // would be silently rejected by notifications' RLS (INSERT requires
+      // auth.uid() = user_id, and the caller is the applicant, not the
+      // recruiter) — route it through the validated RPC instead. See
+      // HIRE_LOOP_AUDIT.md §3 (same root cause as the accept-side fix) and
+      // 20260823150000_hire_loop_notification_fix.sql.
+      if (newApplication?.id) {
+        supabase.rpc('notify_new_application', { _application_id: newApplication.id })
+          .then(() => {}, (err) => console.error('[Apply] notify_new_application failed:', err));
+      }
+
       const { notifyOpportunity } = await import("@/lib/pushNotifications");
       await notifyOpportunity(
         opportunity.created_by,
         opportunity.title,
-        opportunityId
+        opportunityId,
+        /* skipInApp */ true
       );
     }
 

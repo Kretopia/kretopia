@@ -19426,6 +19426,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_application: {
+        Args: { _application_id: string }
+        Returns: Json
+      }
       admin_confirm_bank_transfer: {
         Args: { p_admin_notes?: string; p_transfer_id: string }
         Returns: Json
@@ -20329,6 +20333,14 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      notify_application_status: {
+        Args: { _application_id: string; _status: string }
+        Returns: Json
+      }
+      notify_new_application: {
+        Args: { _application_id: string }
+        Returns: Json
       }
       notify_scout_event: {
         Args: { _actor_name: string; _event: string; _opportunity_id: string }

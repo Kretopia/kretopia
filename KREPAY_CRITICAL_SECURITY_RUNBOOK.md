@@ -1,8 +1,12 @@
 # KrePay Critical Security Runbook
 
-**Status: `FIX_READY_FOR_MANUAL_APPLICATION`** (updated — see §11: live
-verification of the first migration found one column, plus one related
-new finding, requiring a second, prepared-not-applied migration)
+**Status: `CRITICAL_VULNERABILITY_ACTIVE`** (updated — see §12: after both
+migrations were applied and partially verified, a full re-check found
+**every one of the 8 target columns across all 3 tables reverted to
+UPDATE-able by both `authenticated` and `anon`** — including 5 columns
+independently confirmed locked in an earlier check. All fixes in this
+document are live in the repo but are **not currently in effect in
+production**.)
 
 Not `CRITICAL_VULNERABILITY_ACTIVE`-only, because a reviewed fix exists.
 Not `FIX_APPLIED_AND_VERIFIED`, because nothing has been applied or tested
@@ -475,14 +479,78 @@ Re-run §7's query 7.1 (extended to also check `table_name = 'profiles'`,
 `column_name IN ('stripe_account_id','stripe_account_status')`) after
 applying this to confirm closure.
 
+## 12. Full reversal — both findings active again
+
+Both migrations (`20260823160000`, `20260823170000`) were applied. The
+extended verification query, re-run after the follow-up:
+
+```sql
+SELECT grantee, table_name, column_name, privilege_type
+FROM information_schema.column_privileges
+WHERE table_schema = 'public'
+  AND (
+    (table_name = 'wallets' AND column_name IN ('balance', 'credits'))
+    OR (table_name = 'creator_wallets' AND column_name IN ('kyc_status', 'payouts_enabled', 'charges_enabled', 'stripe_account_id', 'requirements'))
+    OR (table_name = 'profiles' AND column_name IN ('stripe_account_id', 'stripe_account_status'))
+  )
+  AND privilege_type = 'UPDATE'
+  AND grantee IN ('authenticated', 'anon');
+```
+
+returned **18 rows — all 8 target columns, both `authenticated` and
+`anon`**, including `wallets.balance`/`credits` and
+`creator_wallets.kyc_status`/`payouts_enabled`/`charges_enabled`, which
+an earlier, narrower check had independently confirmed at zero rows.
+
+**Why this points to a re-applied broad grant, not a fresh individual
+attack**: the reversal is complete and uniform across three unrelated
+tables and both roles at once. A targeted attacker forging their own
+row's columns one at a time would not produce this pattern; a table-level
+or schema-wide `GRANT UPDATE ... TO authenticated, anon` issued *after*
+both migrations ran would, because a broader grant re-establishes
+`UPDATE` on every column of that table regardless of an earlier
+column-level `REVOKE` — `REVOKE` only removes privileges that exist at
+the moment it runs; it is not a standing rule that blocks future grants.
+
+**Checked and ruled out**: no `ALTER DEFAULT PRIVILEGES` or
+`GRANT ALL ON ALL TABLES` statement touching the `public` schema exists
+anywhere in this repo's tracked migration history (the only hits are
+scoped to the unrelated `net` extension schema,
+`20251020015856_...sql`). Whatever re-applied these grants did so
+**outside this repo's tracked SQL** — most likely either Supabase/Lovable
+Cloud's own project-level baseline privileges being reasserted by
+platform tooling (schema sync, a "push to database" action, or similar),
+or a manual `GRANT` run directly. This could not be confirmed further
+without either database audit-log access or direct confirmation from
+whoever/whatever else touched this project between the two verification
+checks.
+
+**Immediate stop-gap** (does not address root cause, may be reverted
+again by the same mechanism):
+
+```sql
+REVOKE UPDATE (balance, credits) ON public.wallets FROM authenticated, anon;
+REVOKE UPDATE (kyc_status, payouts_enabled, charges_enabled, stripe_account_id, requirements)
+  ON public.creator_wallets FROM authenticated, anon;
+REVOKE UPDATE (stripe_account_id, stripe_account_status) ON public.profiles FROM authenticated, anon;
+```
+
+Re-running this without finding and stopping whatever re-granted these
+privileges risks the identical silent reversal recurring. Before or
+immediately after re-applying: check Lovable's project activity/audit
+log for any schema-sync or "push to database" event between the two
+verification checks, and avoid making further changes through Lovable's
+visual schema editor or AI app-builder until the mechanism is identified
+— those are the most likely source of an out-of-band `GRANT`.
+
 ## Final status
 
-**`FIX_READY_FOR_MANUAL_APPLICATION`**
+**`CRITICAL_VULNERABILITY_ACTIVE`**
 
-The two original CRITICAL findings' *primary* exploit paths are closed
-by the applied first migration (confirmed live). A residual gap on
-`creator_wallets.stripe_account_id`, and a newly-found, more severe
-related gap on `profiles.stripe_account_id`/`stripe_account_status`,
-remain open pending the follow-up migration above. Nothing in this
-document should be read as "fully closed" until that follow-up is
-applied and re-verified.
+Both original findings, plus the `profiles.stripe_account_id` login-link
+path, are live in production right now, exactly as if neither migration
+had ever been applied. The fix is written, reviewed, and was briefly
+verified in effect — but is not currently protecting anything. Do not
+report either vulnerability as closed until the re-verification query in
+§12 returns zero rows **and** the cause of the reversal is understood
+well enough to be confident it won't recur silently.

@@ -1,8 +1,36 @@
 # KrePay Production Blockers
 
-Status: **`FIX_READY_FOR_MANUAL_APPLICATION`** — see
-`KREPAY_CRITICAL_SECURITY_RUNBOOK.md` for full detail. This doc is the
-short, action-oriented version.
+Status: **`CRITICAL_VULNERABILITY_ACTIVE`** — both migrations were
+applied, briefly verified in effect, then found fully reverted on
+re-check (all 8 target columns across `wallets`/`creator_wallets`/
+`profiles`, both `authenticated` and `anon`, writable again). See
+`KREPAY_CRITICAL_SECURITY_RUNBOOK.md` §12 for the full evidence and
+stop-gap SQL. This doc is the short, action-oriented version.
+
+## Active right now — most urgent item in this document
+
+Both prepared migrations were applied and briefly confirmed in effect,
+then a follow-up check found **all 8 target columns across all 3 tables
+had reverted to fully writable by both `authenticated` and `anon`** —
+identical to the pre-fix state. This looks like a broad `GRANT` was
+reapplied after both migrations ran (nothing this uniform matches a
+targeted attack), from outside this repo's tracked SQL — most likely
+Supabase/Lovable Cloud's own platform tooling (a schema sync or "push to
+database" action) rather than a committed migration. Not confirmed
+without database audit-log access.
+
+**Do before anything else**:
+1. Check Lovable's project activity log for a schema-sync/push event
+   between the two verification checks.
+2. Avoid further changes through Lovable's visual schema editor or AI
+   app-builder until the mechanism is identified — either could be the
+   trigger.
+3. Re-apply the three `REVOKE` statements in the runbook §12 as an
+   immediate stop-gap, understanding this may be silently reverted again
+   by the same unidentified mechanism.
+4. Re-run the verification query after re-applying, and again after some
+   time has passed, to check whether it holds or reverts again — a
+   single clean check is not sufficient evidence anymore.
 
 ## Blocking release right now
 

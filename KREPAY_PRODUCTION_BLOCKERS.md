@@ -29,19 +29,28 @@ short, action-oriented version.
 
 ## Exact manual action required
 
-Someone with Lovable Cloud SQL access must:
+**Update: `20260823160000_krepay_security_hardening.sql` has now been
+applied to production and live-verified.** Verification found it closed
+5 of 6 target columns correctly, but left one (`creator_wallets.stripe_account_id`)
+still writable, and surfaced a related, more severe finding on
+`profiles.stripe_account_id`/`stripe_account_status` (a real Stripe
+Express dashboard login-link account-takeover path — see runbook §11).
+A follow-up migration is prepared, **not yet applied**:
+`supabase/migrations/20260823170000_krepay_security_hardening_followup.sql`.
 
-1. Run the five read-only preflight queries in
-   `KREPAY_CRITICAL_SECURITY_RUNBOOK.md` §5 and save the output.
-2. Apply `20260823160000_krepay_security_hardening.sql` verbatim (§6).
-3. Run the three verification queries in §7.
-4. Run the negative-test matrix in `KREPAY_WALLET_NEGATIVE_TEST_MATRIX.md`.
-5. Only then may the release gate move past `FIX_READY_FOR_MANUAL_APPLICATION`.
+Someone with Lovable Cloud SQL access must still:
 
-This migration has **no dependency** on
+1. Apply `20260823170000_krepay_security_hardening_followup.sql` verbatim.
+2. Re-run query 7.1 (extended to also check `profiles.stripe_account_id`/
+   `stripe_account_status` and `creator_wallets.stripe_account_id`) and
+   confirm zero rows across the board.
+3. Run the negative-test matrix in `KREPAY_WALLET_NEGATIVE_TEST_MATRIX.md`.
+4. Only then may the release gate move past `FIX_READY_FOR_MANUAL_APPLICATION`.
+
+Neither migration has a dependency on
 `20260823150000_hire_loop_notification_fix.sql` (unrelated tables/
-functions, confirmed in the runbook §10) — it does not need to wait for
-that one and should be prioritized ahead of it given severity.
+functions, confirmed in the runbook §10) — none of this needs to wait
+for that one.
 
 ## Evidence needed to move the release gate to `FIX_APPLIED_AND_VERIFIED`
 

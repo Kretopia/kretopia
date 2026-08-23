@@ -1,6 +1,8 @@
 # KrePay Critical Security Runbook
 
-**Status: `FIX_READY_FOR_MANUAL_APPLICATION`**
+**Status: `FIX_READY_FOR_MANUAL_APPLICATION`** (updated — see §11: live
+verification of the first migration found one column, plus one related
+new finding, requiring a second, prepared-not-applied migration)
 
 Not `CRITICAL_VULNERABILITY_ACTIVE`-only, because a reviewed fix exists.
 Not `FIX_APPLIED_AND_VERIFIED`, because nothing has been applied or tested
@@ -408,13 +410,79 @@ let bundling these together delay closing the wallet vulnerabilities.
 
 ---
 
+## 11. Live verification results and a follow-up finding
+
+`20260823160000_krepay_security_hardening.sql` was applied to production
+during this checkpoint. Verification query 7.2 (`wallet_debit`/
+`wallet_credit` grants) came back exactly as expected —
+`service_role`-only, confirmed. Verification query 7.1 came back
+**partially** as expected:
+
+```
+column_name        grantee        privilege_type  table_name
+stripe_account_id   authenticated  UPDATE          creator_wallets
+stripe_account_id   authenticated  SELECT          creator_wallets
+```
+
+Five of the six target columns (`wallets.balance`, `wallets.credits`,
+`creator_wallets.kyc_status`, `.payouts_enabled`, `.charges_enabled`)
+correctly show **zero** rows — the REVOKE took effect for those.
+**`creator_wallets.stripe_account_id` still has a live `UPDATE` grant to
+`authenticated`**, despite being named in the same `REVOKE` statement as
+its four siblings. No other migration in this repo's history grants
+`UPDATE` on this column, so the cause isn't a later re-grant found by
+static search; it wasn't conclusively determined live either. Re-issuing
+the `REVOKE` for this one column is safe regardless of cause and is the
+first statement in the follow-up migration below.
+
+**Practical impact while this stays open**: `wallet-payout`'s own gate
+requires *both* `stripe_account_id` and `payouts_enabled` to be truthy
+(`index.ts:27-35`). `payouts_enabled` is now correctly locked, so this
+column alone does not currently let an attacker pass that specific gate
+— finding #2's primary exploit path (§2) is closed. This remains a real,
+unintended gap relative to the migration's own design and needed closing
+regardless of that mitigating factor.
+
+**While investigating why, a related, more severe finding turned up**:
+`public.profiles.stripe_account_id` / `stripe_account_status` — an
+*older*, separate Connect-tracking mechanism that pre-dates
+`creator_wallets` — have the identical unrestricted-`UPDATE` gap
+(`"Users can update own profile" USING (auth.uid()=user_id)`, no
+`WITH CHECK`, no column restriction, `20250930073034_...sql:63-65`), and
+are still read live by three edge functions: `get-connect-balance`,
+`check-connect-status`, and — most severely — `create-connect-login-link`,
+which turns `profiles.stripe_account_id` directly into a real
+`stripe.accounts.createLoginLink()` call. **Forging this column to a real
+Stripe Connect account ID and requesting a login link would hand the
+caller a live Stripe Express dashboard session for an account they don't
+own** — this is more severe than either original finding, since it
+reaches actual account takeover of a third party's Stripe-hosted
+dashboard, not just an internal ledger or a gate this app's own backend
+controls. Confirmed safe to close: the only legitimate write path is
+`create-connect-account/index.ts`'s `service_role` client (unaffected by
+the fix), and no client-side code writes either column (grep of `src/`:
+zero hits beyond generated type definitions).
+
+**Follow-up migration** (prepared, not applied):
+`supabase/migrations/20260823170000_krepay_security_hardening_followup.sql`
+
+```sql
+REVOKE UPDATE (stripe_account_id) ON public.creator_wallets FROM authenticated, anon;
+REVOKE UPDATE (stripe_account_id, stripe_account_status) ON public.profiles FROM authenticated, anon;
+```
+
+Re-run §7's query 7.1 (extended to also check `table_name = 'profiles'`,
+`column_name IN ('stripe_account_id','stripe_account_status')`) after
+applying this to confirm closure.
+
 ## Final status
 
 **`FIX_READY_FOR_MANUAL_APPLICATION`**
 
-The vulnerabilities are **not** fixed. They remain live in whatever
-database backs this application's production environment until a human
-with Lovable Cloud SQL access runs the procedure in §6 and confirms it
-with §7 and the negative test matrix. Nothing in this document should be
-read as "the vulnerability is closed" — it is a runbook for closing it,
-not a record that it has been.
+The two original CRITICAL findings' *primary* exploit paths are closed
+by the applied first migration (confirmed live). A residual gap on
+`creator_wallets.stripe_account_id`, and a newly-found, more severe
+related gap on `profiles.stripe_account_id`/`stripe_account_status`,
+remain open pending the follow-up migration above. Nothing in this
+document should be read as "fully closed" until that follow-up is
+applied and re-verified.

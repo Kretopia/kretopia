@@ -358,6 +358,58 @@ Return ONLY valid JSON array:
   };
 
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
+    const applicant = applicants.find(a => a.id === applicationId);
+    const opp = opportunities.find(o => o.id === selectedOppId);
+
+    // Canonical acceptance: one atomic server-side step
+    // (authorize -> create Studio -> grant access -> single deduped notification)
+    if (newStatus === 'accepted') {
+      const { data, error } = await supabase.rpc('accept_application_and_create_studio', {
+        _application_id: applicationId,
+      });
+      const result = data as
+        | { success: boolean; error?: string; project_id?: string; studio_created?: boolean }
+        | null;
+
+      if (error || !result?.success) {
+        toast.error(
+          result?.error === 'not_authorized'
+            ? "You can't accept applicants on this opportunity"
+            : 'Failed to accept applicant — nothing was changed. Try again.',
+        );
+        return;
+      }
+
+      setApplicants(prev =>
+        prev.map(a => (a.id === applicationId ? { ...a, status: newStatus } : a)),
+      );
+
+      // Side-channels (email + push) are best-effort and only fire on the
+      // first successful acceptance, so retries never double-notify.
+      if (result.studio_created && applicant && opp) {
+        notifyApplicantStatusChange(
+          applicant.applicant_id,
+          'accepted',
+          opp.title,
+          opp.id,
+          result.project_id,
+        ).catch(() => {});
+      }
+
+      toast.success(
+        result.studio_created
+          ? `Application accepted! Studio "${opp?.title ?? ''}" created.`
+          : 'Already accepted — opening the existing Studio.',
+        {
+          action: {
+            label: 'Open Studio',
+            onClick: () => navigate(`/desk/${result.project_id}`),
+          },
+        },
+      );
+      return;
+    }
+
     const { error } = await supabase
       .from('applications')
       .update({ status: newStatus })
@@ -372,88 +424,9 @@ Return ONLY valid JSON array:
       a.id === applicationId ? { ...a, status: newStatus } : a
     ));
 
-    const applicant = applicants.find(a => a.id === applicationId);
-    const opp = opportunities.find(o => o.id === selectedOppId);
-
-    if (newStatus === 'accepted') {
-      // Create a project workspace for the accepted applicant
-      if (applicant && opp && user) {
-        try {
-          const { data: project, error: projectError } = await supabase
-            .from('projects')
-            .insert({
-              title: opp.title,
-              description: `Project created from opportunity: ${opp.title}`,
-              created_by: user.id,
-              status: 'active' as const,
-            })
-            .select()
-            .single();
-
-          if (projectError) throw projectError;
-
-          // Invite the accepted applicant as a collaborator (two-step: insert then update to accepted)
-          const { data: collabData } = await supabase
-            .from('project_collaborators')
-            .insert({
-              project_id: project.id,
-              user_id: applicant.applicant_id,
-              email: null,
-              invited_by: user.id,
-              role: 'member',
-              status: 'pending',
-            })
-            .select()
-            .single();
-
-          if (collabData) {
-            await supabase
-              .from('project_collaborators')
-              .update({ status: 'accepted' })
-              .eq('id', collabData.id);
-          }
-
-          // Send project invitation notification
-          const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('user_id', user.id)
-            .single();
-
-          await supabase.functions.invoke('send-project-invitation', {
-            body: {
-              projectTitle: opp.title,
-              projectId: project.id,
-              inviterName: userProfile?.full_name || 'A Kretopia user',
-              inviteeUserId: applicant.applicant_id,
-            }
-          });
-
-          // Notify applicant of acceptance
-          await notifyApplicantStatusChange(applicant.applicant_id, 'accepted', opp.title, opp.id, project.id);
-
-          toast.success(`Application accepted! Project workspace "${opp.title}" created.`, {
-            action: {
-              label: 'Open Project',
-              onClick: () => navigate(`/desk/${project.id}`),
-            },
-          });
-          return;
-        } catch (err) {
-          console.error('Project creation error:', err);
-          // Still notify even if project creation failed
-          if (applicant && opp) {
-            await notifyApplicantStatusChange(applicant.applicant_id, 'accepted', opp.title, opp.id);
-          }
-          toast.success('Application accepted! (Project creation failed — you can create one manually)');
-          return;
-        }
-      }
-    }
-
     // Notify on shortlist / reject
     if ((newStatus === 'shortlisted' || newStatus === 'rejected') && applicant && opp) {
-      notifyApplicantStatusChange(applicant.applicant_id, newStatus, opp.title, opp.id);
+      notifyApplicantStatusChange(applicant.applicant_id, newStatus, opp.title, opp.id).catch(() => {});
     }
 
     toast.success(`Application ${newStatus}`);

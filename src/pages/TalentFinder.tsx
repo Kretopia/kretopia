@@ -143,7 +143,16 @@ export default function TalentFinder() {
           tutorial={{ featureKey: "talent-finder", label: "How Smart Talent Finder works", steps: TALENT_FINDER_TUTORIAL }}
         />
 
-        <div className="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+        {/* max-w-4xl, not the max-w-2xl this carried before — same class of
+            fix as BrandWorkHome/CompanyProfileView (both moved to max-w-6xl
+            earlier today): 672px read as a cramped column with ~384px of
+            dead margin on each side at a 1440px viewport. This page is a
+            single-column search/results list rather than a multi-column
+            dashboard grid, so it doesn't need the full max-w-6xl those
+            pages got — max-w-4xl gives real breathing room to the result
+            cards (name, score, match reasons, actions) without leaving
+            them looking sparse in an oversized row. */}
+        <div className="max-w-4xl mx-auto px-4 pt-6 space-y-4">
           <div className="flex justify-end">
             <Badge variant="secondary" className="gap-1 text-xs shrink-0">
               <Crown className="h-3 w-3" style={{ color: ACCENT }} /> Pro feature

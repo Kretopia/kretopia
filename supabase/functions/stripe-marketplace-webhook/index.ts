@@ -58,6 +58,22 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Event-ID deduplication: a replayed/retried event must never mutate state twice.
+    const { error: dupErr } = await supabaseAdmin.from("stripe_webhook_events").insert({
+      event_id: event.id,
+      type: event.type,
+      payload: event as unknown as Record<string, unknown>,
+    });
+    if (dupErr && (dupErr as { code?: string }).code === "23505") {
+      logStep("Duplicate event ignored", { id: event.id });
+      return new Response(JSON.stringify({ received: true, idempotent_event: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
+
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const kind = session.metadata?.kind;

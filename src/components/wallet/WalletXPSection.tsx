@@ -59,11 +59,14 @@ export function WalletXPSection() {
     }
   };
 
-  const deductXP = async (amount: number) => {
+  const deductXP = async (amount: number, purpose: string) => {
     if (!user) return;
-    const newXP = userXP - amount;
-    await supabase.from("profiles").update({ xp: newXP }).eq("user_id", user.id);
-    setUserXP(newXP);
+    const { error } = await supabase.rpc("spend_xp" as any, { p_amount: amount, p_purpose: purpose });
+    if (error) {
+      toast({ title: "Not enough Thrive Points", description: error.message, variant: "destructive" });
+      throw error;
+    }
+    setUserXP((prev) => prev - amount);
   };
 
   const recordActivity = async (type: string, xpCost: number, description: string) => {
@@ -99,63 +102,46 @@ export function WalletXPSection() {
   // Actions
   const buyStreakFreeze = async () => {
     if (!user) return;
-    await supabase.from("profiles")
-      .update({ xp: userXP - 500, streak_freeze_count: freezeCount + 1 })
-      .eq("user_id", user.id);
-    await recordActivity("streak_freeze_purchased", 500, "Purchased Streak Freeze");
+    await deductXP(500, "streak_freeze");
+    setFreezeCount((prev) => prev + 1);
   };
 
   const buyProfileBoost = async () => {
-    await deductXP(1000);
-    await recordActivity("profile_boost_purchased", 1000, "Purchased 24h Profile Boost");
+    await deductXP(1000, "profile_boost");
   };
 
   const buyDoubleXP = async () => {
-    await deductXP(750);
-    await recordActivity("double_xp_purchased", 750, "Purchased 2x XP for 24 hours");
+    await deductXP(750, "double_xp");
   };
 
   const buyProTrial = async () => {
     if (!user) return;
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 3);
-    await supabase.from("profiles").update({
-      xp: userXP - 2500,
-      subscription_tier: "pro",
-      subscription_status: "trialing",
-      subscription_end_date: trialEnd.toISOString(),
-    }).eq("user_id", user.id);
-    await recordActivity("pro_trial_purchased", 2500, "Purchased 3-Day Pro Trial");
+    await deductXP(2500, "pro_trial");
   };
 
   const buyExtraWorkCredits = async () => {
-    await deductXP(400);
+    await deductXP(400, "extra_work_credits");
     addBonusUses("workCredits", 5);
-    await recordActivity("extra_work_credits_purchased", 400, "Purchased +5 Work Credits");
   };
 
   const buyExtraAIBriefs = async () => {
-    await deductXP(800);
+    await deductXP(800, "extra_briefs");
     addBonusUses("aiBriefs", 5);
-    await recordActivity("extra_briefs_purchased", 800, "Purchased +5 Smart Briefs");
   };
 
   const buyExtraInvoices = async () => {
-    await deductXP(300);
+    await deductXP(300, "extra_invoices");
     addBonusUses("invoices", 3);
-    await recordActivity("extra_invoices_purchased", 300, "Purchased +3 Invoices");
   };
 
   const buyPriorityGig = async () => {
-    await deductXP(1500);
+    await deductXP(1500, "priority_gig");
     addBonusUses("priority_gig", 1);
-    await recordActivity("priority_gig_purchased", 1500, "Purchased Priority Gig Listing (24h)");
   };
 
   const buyAnalyticsReport = async () => {
-    await deductXP(2000);
+    await deductXP(2000, "analytics_report");
     addBonusUses("analytics_report", 1);
-    await recordActivity("analytics_report_purchased", 2000, "Purchased Full Analytics Report");
   };
 
   // Gift XP
@@ -187,13 +173,9 @@ export function WalletXPSection() {
     }
     setSendingGift(true);
     try {
-      await supabase.from("profiles").update({ xp: userXP - 150 }).eq("user_id", user.id);
-      const { data: rp } = await supabase.from("profiles").select("xp").eq("user_id", recipient.user_id).single();
-      if (rp) await supabase.from("profiles").update({ xp: (rp.xp || 0) + 100 }).eq("user_id", recipient.user_id);
-      await supabase.from("xp_activities").insert([
-        { user_id: user.id, activity_type: "gift_xp_sent", xp_earned: -150, description: `Gifted 100 TP to ${recipient.full_name}` },
-        { user_id: recipient.user_id, activity_type: "gift_xp_received", xp_earned: 100, description: `Received 100 TP gift` },
-      ]);
+      const { error: spendError } = await supabase.rpc("spend_xp" as any, { p_amount: 150, p_purpose: "gift_xp_sent" });
+      if (spendError) throw spendError;
+      await supabase.rpc("award_xp" as any, { p_user_id: recipient.user_id, p_amount: 100, p_reason: "gift_xp_received" });
       toast({ title: "Gift Sent! 🎁", description: `You sent 100 Thrive Points to ${recipient.full_name}` });
       setGiftDialogOpen(false);
       setSearchQuery("");

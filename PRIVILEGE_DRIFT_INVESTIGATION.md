@@ -223,3 +223,15 @@ cannot rule out. Both must be checked live before either explanation is
 treated as settled.
 
 **Status: `PRIVILEGE_DRIFT_UNDER_INVESTIGATION`.**
+
+**Update**: the `pg_default_acl` and `information_schema.role_table_grants`
+queries that would confirm or rule out the table-level-grant hypothesis
+for `wallets`/`profiles` specifically have not been run — this session
+subsequently lost the ability to hand over further ad hoc queries and
+receive results mid-conversation in the same way, and is now
+`BLOCKED_LOVABLE_CLOUD_ACCESS` (see `LOVABLE_CLOUD_ACCESS_REPORT.md`).
+The confirmation query remains exactly as specified in
+`WALLET_ACCESS_REMEDIATION_PLAN.md` Step 0 — nothing about the
+investigation's conclusion has changed, only its next step is now
+gated on restored access or a manual run via the Lovable Cloud SQL
+editor.

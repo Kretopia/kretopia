@@ -96,11 +96,16 @@ const DailyCheckIn = () => {
         .update({
           current_streak: newStreak,
           last_checkin_date: today,
-          total_xp: (xpEarned || 0) + bonusXP,
         } as any)
         .eq("user_id", user.id);
 
       if (error) throw error;
+
+      await supabase.rpc("award_xp" as any, {
+        p_user_id: user.id,
+        p_amount: bonusXP,
+        p_reason: "daily_check_in",
+      });
 
       setStreak(newStreak);
       setTodayChecked(true);

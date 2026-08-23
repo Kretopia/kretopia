@@ -489,12 +489,12 @@ const AppContent = () => {
             <Route path="/rewards" element={<Navigate to="/" replace />} />
             <Route path="/rewards-shop" element={<Navigate to="/" replace />} />
             
-            {/* Credit Database & Discover - Public browsable */}
-            <Route path="/credits" element={<CreditDatabase />} />
-            <Route path="/credits/mine" element={<MyStamps />} />
+            {/* Credits — personal dashboard (auth-gated); public discovery lives at /search */}
+            <Route path="/credits" element={<CreditsDashboard />} />
+            <Route path="/credits/mine" element={<Navigate to="/credits" replace />} />
             <Route path="/credits/hub" element={<Navigate to="/credits" replace />} />
             <Route path="/credits/project/:projectId" element={<ICDBProjectPage />} />
-            <Route path="/credits/discover" element={<Navigate to="/credits" replace />} />
+            <Route path="/credits/discover" element={<Navigate to="/search" replace />} />
             <Route path="/verify-credit" element={<BrandVerify />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/directory" element={<Navigate to="/search" replace />} />

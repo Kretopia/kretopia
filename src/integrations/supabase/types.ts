@@ -19458,6 +19458,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      award_xp: {
+        Args: { p_amount: number; p_reason?: string; p_user_id: string }
+        Returns: number
+      }
       backfill_vouch_requests: { Args: never; Returns: Json }
       bump_streak: {
         Args: { _streak_type: string }
@@ -20427,6 +20431,10 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      spend_xp: {
+        Args: { p_amount: number; p_purpose: string }
+        Returns: number
+      }
       submit_credit_endorsement_by_token: {
         Args: {
           _accepted: boolean

@@ -141,7 +141,10 @@ export default function CompanyOnboarding() {
     }
 
     toast({ title: "Welcome to Kretopia!", description: "Your company page is ready." });
-    navigate("/work");
+    // "/work" isn't a real route (App.tsx only defines "/desk" for
+    // WorkHome/BrandWorkHome) — every brand finishing onboarding was
+    // landing on CatchAllRedirect instead of their actual dashboard.
+    navigate("/desk");
     setLoading(false);
   };
 

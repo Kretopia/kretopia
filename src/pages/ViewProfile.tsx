@@ -71,6 +71,10 @@ interface Profile {
   bio: string;
   location: string;
   avatar_url: string;
+  account_type?: string;
+  company_name?: string;
+  company_industry?: string;
+  company_logo_url?: string;
   verification_tier?: string;
   verification_status?: string;
   achievement_badges?: string[];
@@ -158,7 +162,21 @@ const ViewProfile = () => {
 
       if (profileError) throw profileError;
       if (!profileData) return;
-      setProfile(profileData);
+      // Company accounts store their identity under company_name/
+      // company_industry/company_logo_url rather than full_name/role/
+      // avatar_url — this page only ever rendered the latter, so viewing
+      // any brand's profile through here showed a blank name and role
+      // instead of the company's identity. Normalize once here rather
+      // than special-casing every render site below.
+      const normalized = profileData.account_type === "company"
+        ? {
+            ...profileData,
+            full_name: profileData.company_name || profileData.full_name,
+            role: profileData.company_industry || profileData.role,
+            avatar_url: profileData.company_logo_url || profileData.avatar_url,
+          }
+        : profileData;
+      setProfile(normalized);
 
       // Fetch portfolio items (credits with source=portfolio)
       const { data: portfolioData } = await supabase

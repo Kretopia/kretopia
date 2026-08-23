@@ -13,7 +13,7 @@ import type { TutorialStep } from "./FeatureTutorial";
 interface FeatureTutorialPanelProps {
   steps: TutorialStep[];
   label: string;
-  visual: ComponentType<{ activeStep: number }>;
+  visual: ComponentType<{ activeStep: number; inView: boolean }>;
   reverse?: boolean;
 }
 
@@ -35,7 +35,7 @@ export const FeatureTutorialPanel = ({ steps, label, visual: Visual, reverse }: 
     >
       <div className={`grid lg:grid-cols-12 gap-8 lg:gap-14 items-start ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
         <div className="lg:col-span-5">
-          <Visual activeStep={activeStep} />
+          <Visual activeStep={activeStep} inView={inView} />
         </div>
         <div className="lg:col-span-7">
           <TutorialStepper steps={steps} label={label} activeStep={activeStep} onStepChange={setActiveStep} autoPlay={inView} />

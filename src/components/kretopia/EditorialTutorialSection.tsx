@@ -20,7 +20,7 @@ interface EditorialTutorialSectionProps {
   body?: string;
   steps: TutorialStep[];
   label: string;
-  visual: ComponentType<{ activeStep: number }>;
+  visual: ComponentType<{ activeStep: number; inView: boolean }>;
   reverse?: boolean;
   id?: string;
 }

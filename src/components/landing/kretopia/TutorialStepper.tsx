@@ -79,10 +79,24 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange, autoPl
     }
   };
 
+  // Switching the active step changes THAT row's own height (collapsed
+  // rows render no detail block at all; the active one adds a body
+  // paragraph + "Next:" pill) — with nothing reserving space for that,
+  // every click changed the whole list's height and pushed everything
+  // below it (rest of the section, the next chapter) up or down. Floor
+  // the list at the height it would be with every row collapsed plus one
+  // row's worth of expansion, so the active row can move *within* that
+  // reserved space freely but the page around it never has to. Same
+  // "min-h floor, not a hard clamp" technique FeatureTutorial already
+  // uses for its own single-card layout (min-h-[184px]) — sized here per
+  // instance since the roadmap's total height depends on step count.
+  const minListHeight = steps.length * 88 + 120;
+
   return (
     <motion.div
       aria-label={label}
       className="relative"
+      style={{ minHeight: `${minListHeight}px` }}
       initial={reducedMotion ? false : "hidden"}
       whileInView="show"
       viewport={{ once: true, margin: "-60px" }}

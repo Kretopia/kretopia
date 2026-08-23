@@ -147,7 +147,15 @@ export const CompanyProfileView = ({
 
   return (
     <div className="min-h-screen pb-24 sm:pb-20 md:pb-6 bg-background">
-      <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl pt-4 sm:pt-6">
+      {/* max-w-6xl, not the Tailwind `container` class this used to carry —
+          this project's own `container` config (tailwind.config.ts) only
+          sets a max-width at the 2xl (1400px) breakpoint, so below that it
+          was effectively just `width:100%` and the real cap was the
+          separate `max-w-3xl` sitting right next to it: a 768px-wide
+          column on any screen, centered with a wide margin on BOTH sides
+          rather than using the page. Same fix, same target width, as
+          BrandWorkHome's own "spans the whole page" pass earlier today. */}
+      <div className="mx-auto px-3 sm:px-4 md:px-6 max-w-6xl pt-4 sm:pt-6">
 
         {/* Brand Passport — the Brand-account equivalent of the creator's
             Passport card (same HoloCard shell, same section grammar),

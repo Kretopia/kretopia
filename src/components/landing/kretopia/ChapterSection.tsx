@@ -25,7 +25,7 @@ export interface ChapterProps {
   /** Interactive tutorial steps, rendered as a full-width panel below the image/text grid. */
   tutorialSteps?: TutorialStep[];
   /** Step-reactive visual preview paired with tutorialSteps in the panel. */
-  tutorialVisual?: ComponentType<{ activeStep: number }>;
+  tutorialVisual?: ComponentType<{ activeStep: number; inView: boolean }>;
   /** Overrides the default "Enter {kicker}" link text. */
   ctaLabel?: string;
   /** Optional compact concept grid rendered between body copy and the CTA. */
@@ -101,33 +101,29 @@ export const ChapterSection = ({
             transition={{ duration: 0.9, delay: 0.15 }}
             className="lg:col-span-5"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <span
-                className="font-serif italic text-2xl pink-glow-breathe"
-                style={{ color: accent }}
-              >
-                {index}.
-              </span>
-              <span
-                className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/55"
-                style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-              >
-                {kicker}
+            {/* Same eyebrow → h2 → body hierarchy as the hero and every
+                other landing-* section (Search, Verified Credits, Kreto) —
+                this chapter template previously built its own bespoke
+                font-serif title/kicker treatment instead, the one real
+                typeface break from the hero's Satoshi/Inter system. The
+                chapter index ("II.") folds into the eyebrow line itself
+                rather than sitting apart in a different font, with the
+                same breathing accent dot AuthBrandingPanel's eyebrow pill
+                uses — one small "AI-aware" presence signal, reused rather
+                than invented per-section. */}
+            <div className="flex items-center gap-2 mb-6">
+              <span className="h-1.5 w-1.5 rounded-full ai-ambient-breathe" style={{ backgroundColor: accent }} />
+              <span className="landing-eyebrow" style={{ color: accent }}>
+                {index}. {kicker}
               </span>
             </div>
 
-            <h2
-              className="font-serif font-normal text-white leading-[0.98] tracking-[-0.02em]"
-              style={{ fontSize: "clamp(2rem, 4.6vw, 4rem)" }}
-            >
+            <h2 className="landing-h2 landing-glow">
               {title}
               <span className="pink-glow-breathe" style={{ color: accent }}>.</span>
             </h2>
 
-            <p
-              className="mt-7 max-w-md text-base sm:text-lg leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-            >
+            <p className="landing-sub mt-7 max-w-md">
               {body}
             </p>
 

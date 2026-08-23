@@ -42,10 +42,10 @@ export const ForOrganisationsSection = () => {
           className="max-w-2xl"
         >
           <p className="landing-eyebrow mb-4">Hiring creative talent?</p>
-          <h2 id="for-orgs-title" className="text-2xl sm:text-3xl font-black tracking-[-0.02em] text-white">
+          <h2 id="for-orgs-title" className="landing-h2 landing-glow">
             Find people through the work they've actually done.
           </h2>
-          <p className="mt-4 text-sm sm:text-base text-white/55 max-w-xl" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
+          <p className="landing-sub mt-4 max-w-xl">
             Kretopia helps hotels, agencies, festivals, production companies, brands and creative teams discover talent through verified creative context, not just profiles and follower counts.
           </p>
         </motion.div>

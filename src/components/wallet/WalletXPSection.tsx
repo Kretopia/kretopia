@@ -59,24 +59,15 @@ export function WalletXPSection() {
     }
   };
 
-  const deductXP = async (amount: number, purpose: string) => {
-    if (!user) return;
+  const deductXP = async (amount: number, purpose: string): Promise<boolean> => {
+    if (!user) return false;
     const { error } = await supabase.rpc("spend_xp" as any, { p_amount: amount, p_purpose: purpose });
     if (error) {
       toast({ title: "Not enough Thrive Points", description: error.message, variant: "destructive" });
-      throw error;
+      return false;
     }
     setUserXP((prev) => prev - amount);
-  };
-
-  const recordActivity = async (type: string, xpCost: number, description: string) => {
-    if (!user) return;
-    await supabase.from("xp_activities").insert({
-      user_id: user.id,
-      activity_type: type,
-      xp_earned: -xpCost,
-      description,
-    });
+    return true;
   };
 
   const getMonthKey = () => {
@@ -102,8 +93,7 @@ export function WalletXPSection() {
   // Actions
   const buyStreakFreeze = async () => {
     if (!user) return;
-    await deductXP(500, "streak_freeze");
-    setFreezeCount((prev) => prev + 1);
+    if (await deductXP(500, "streak_freeze")) setFreezeCount((prev) => prev + 1);
   };
 
   const buyProfileBoost = async () => {
@@ -120,28 +110,23 @@ export function WalletXPSection() {
   };
 
   const buyExtraWorkCredits = async () => {
-    await deductXP(400, "extra_work_credits");
-    addBonusUses("workCredits", 5);
+    if (await deductXP(400, "extra_work_credits")) addBonusUses("workCredits", 5);
   };
 
   const buyExtraAIBriefs = async () => {
-    await deductXP(800, "extra_briefs");
-    addBonusUses("aiBriefs", 5);
+    if (await deductXP(800, "extra_briefs")) addBonusUses("aiBriefs", 5);
   };
 
   const buyExtraInvoices = async () => {
-    await deductXP(300, "extra_invoices");
-    addBonusUses("invoices", 3);
+    if (await deductXP(300, "extra_invoices")) addBonusUses("invoices", 3);
   };
 
   const buyPriorityGig = async () => {
-    await deductXP(1500, "priority_gig");
-    addBonusUses("priority_gig", 1);
+    if (await deductXP(1500, "priority_gig")) addBonusUses("priority_gig", 1);
   };
 
   const buyAnalyticsReport = async () => {
-    await deductXP(2000, "analytics_report");
-    addBonusUses("analytics_report", 1);
+    if (await deductXP(2000, "analytics_report")) addBonusUses("analytics_report", 1);
   };
 
   // Gift XP

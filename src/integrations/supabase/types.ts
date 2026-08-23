@@ -19625,6 +19625,10 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      finalize_unclaimed_profile_claim: {
+        Args: { p_unclaimed_user_id: string }
+        Returns: boolean
+      }
       find_duplicate_account_candidates: {
         Args: { p_user_id: string }
         Returns: {

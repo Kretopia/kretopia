@@ -545,6 +545,7 @@ export type Database = {
           opportunity_id: string
           portfolio_links: string[] | null
           status: string | null
+          studio_project_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -559,6 +560,7 @@ export type Database = {
           opportunity_id: string
           portfolio_links?: string[] | null
           status?: string | null
+          studio_project_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -573,6 +575,7 @@ export type Database = {
           opportunity_id?: string
           portfolio_links?: string[] | null
           status?: string | null
+          studio_project_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -581,6 +584,13 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_studio_project_id_fkey"
+            columns: ["studio_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -10587,6 +10597,7 @@ export type Database = {
           action_url: string | null
           category: string | null
           created_at: string | null
+          dedupe_key: string | null
           id: string
           image_url: string | null
           link: string | null
@@ -10602,6 +10613,7 @@ export type Database = {
           action_url?: string | null
           category?: string | null
           created_at?: string | null
+          dedupe_key?: string | null
           id?: string
           image_url?: string | null
           link?: string | null
@@ -10617,6 +10629,7 @@ export type Database = {
           action_url?: string | null
           category?: string | null
           created_at?: string | null
+          dedupe_key?: string | null
           id?: string
           image_url?: string | null
           link?: string | null
@@ -19429,6 +19442,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_application_and_create_studio: {
+        Args: { _application_id: string }
+        Returns: Json
+      }
       admin_confirm_bank_transfer: {
         Args: { p_admin_notes?: string; p_transfer_id: string }
         Returns: Json

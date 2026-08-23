@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,14 @@ export function WalletPayoutSheet({ open, onOpenChange, currency, availableCents
   const { toast } = useToast();
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
+  // Stable across retries of the same submit attempt so Stripe's own
+  // idempotency dedup can catch a double-click/retry; regenerated when the
+  // sheet closes so the next cash-out gets a fresh key.
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
+
+  useEffect(() => {
+    if (!open) idempotencyKeyRef.current = crypto.randomUUID();
+  }, [open]);
 
   const fmt = (c: number) => new Intl.NumberFormat("en-US", { style: "currency", currency }).format(c / 100);
 
@@ -32,7 +40,7 @@ export function WalletPayoutSheet({ open, onOpenChange, currency, availableCents
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("wallet-payout", {
-        body: { amount_cents: cents, currency, method: "standard" },
+        body: { amount_cents: cents, currency, method: "standard", idempotencyKey: idempotencyKeyRef.current },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);

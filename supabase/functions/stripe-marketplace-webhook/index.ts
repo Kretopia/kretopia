@@ -58,6 +58,22 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Idempotency by Stripe event ID — mirrors stripe-wallet-webhook and
+    // guest-wallet-webhook. Without this, a redelivered checkout.session.completed
+    // re-increments payment_links.use_count (KREPAY_PAYMENT_AUDIT.md finding #3),
+    // prematurely disabling single_use/max_uses links after one real payment.
+    const { error: dupErr } = await supabaseAdmin.from("stripe_webhook_events").insert({
+      event_id: event.id,
+      type: event.type,
+      payload: event as unknown as Record<string, unknown>,
+    });
+    if (dupErr && dupErr.code === "23505") {
+      logStep("Duplicate event, already processed", { id: event.id });
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const kind = session.metadata?.kind;

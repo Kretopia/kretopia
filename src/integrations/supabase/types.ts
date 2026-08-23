@@ -18266,6 +18266,7 @@ export type Database = {
           currency: string
           description: string | null
           id: string
+          idempotency_key: string | null
           recipient_id: string
           sender_id: string
           status: string
@@ -18276,6 +18277,7 @@ export type Database = {
           currency?: string
           description?: string | null
           id?: string
+          idempotency_key?: string | null
           recipient_id: string
           sender_id: string
           status?: string
@@ -18286,6 +18288,7 @@ export type Database = {
           currency?: string
           description?: string | null
           id?: string
+          idempotency_key?: string | null
           recipient_id?: string
           sender_id?: string
           status?: string

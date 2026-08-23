@@ -35,7 +35,7 @@ export const TrustSection = () => {
           <h2 id="trust-section-title" className="landing-h2 landing-glow">
             Don't just claim the work.
             <br />
-            <span className="italic" style={{ color: ACCENT }}>Prove it.</span>
+            <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>Prove it.</span>
           </h2>
           <p className="landing-sub mt-5">
             Creative work is collaborative. Kretopia lets collaborators, clients and organizations strengthen your credits by confirming the work they experienced with you.

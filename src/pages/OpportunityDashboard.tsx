@@ -351,6 +351,8 @@ Return ONLY valid JSON array:
         body: bodyMap[newStatus],
         type: 'opportunity',
         link: newStatus === 'accepted' && projectId ? `/desk/${projectId}` : `/opportunity/${gigId}`,
+        // The acceptance RPC already wrote the deduped in-app row.
+        skipInApp: newStatus === 'accepted',
       });
     } catch (err) {
       console.error('[notifyApplicantStatusChange] failed:', err);

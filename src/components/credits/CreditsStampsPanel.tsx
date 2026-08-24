@@ -19,7 +19,7 @@ function statusChip(c: MyCredit) {
   if (!c.url && !c.primary_media_url) {
     return { icon: FileWarning, label: "Needs evidence", cls: "text-amber-300 border-amber-400/25 bg-amber-400/10" };
   }
-  return { icon: Clock3, label: "Pending co-sign", cls: "text-white/60 border-white/12 bg-white/[0.03]" };
+  return { icon: Clock3, label: "Pending co-sign", cls: "text-muted-foreground border-border bg-muted/30" };
 }
 
 /**
@@ -39,7 +39,7 @@ export function CreditsStampsPanel({ credits, loading, query, index }: Props) {
         <button
           type="button"
           onClick={() => navigate("/profile?add=credit")}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-xs font-semibold text-white/80 transition-colors hover:border-white/30 hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground"
         >
           <Plus className="h-3.5 w-3.5" aria-hidden />
           Add credit
@@ -68,23 +68,23 @@ export function CreditsStampsPanel({ credits, loading, query, index }: Props) {
             const img = resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url);
             return (
               <li key={c.id}>
-                <div className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.02] p-3 transition-colors hover:border-white/18">
+                <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 transition-colors hover:border-primary/40">
                   {img ? (
                     <img src={img} alt="" loading="lazy" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
                   ) : (
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-xs font-semibold text-white/40">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-muted/30 text-xs font-semibold text-muted-foreground">
                       {(c.project_name || "?").slice(0, 2).toUpperCase()}
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-sm font-semibold text-white">{c.project_name}</h3>
-                    <p className="truncate text-xs text-white/50">
+                    <h3 className="truncate text-sm font-semibold text-foreground">{c.project_name}</h3>
+                    <p className="truncate text-xs text-muted-foreground">
                       {[c.role, c.client_brand, c.year].filter(Boolean).join(" · ")}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
                     {c.endorsement_count > 0 && (
-                      <span className="hidden items-center gap-1 rounded-full border border-white/12 px-2 py-1 text-[10px] font-medium text-white/55 sm:inline-flex">
+                      <span className="hidden items-center gap-1 rounded-full border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground sm:inline-flex">
                         <Handshake className="h-3 w-3" aria-hidden />
                         {c.endorsement_count}
                       </span>
@@ -95,7 +95,7 @@ export function CreditsStampsPanel({ credits, loading, query, index }: Props) {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`Open evidence for ${c.project_name}`}
-                        className="rounded-full border border-white/12 p-1.5 text-white/55 transition-colors hover:text-white"
+                        className="rounded-full border border-border p-1.5 text-muted-foreground transition-colors hover:text-foreground"
                       >
                         <Link2 className="h-3.5 w-3.5" />
                       </a>

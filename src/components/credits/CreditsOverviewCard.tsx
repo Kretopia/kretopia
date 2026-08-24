@@ -42,7 +42,7 @@ export function CreditsOverviewCard({ overview, completeness, nextAction, loadin
       initial={reduced ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reduced ? 0 : 0.5, ease: [0.2, 0.65, 0.3, 0.95] }}
-      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-[0_0_60px_-25px_rgba(255,45,161,0.7)] sm:p-6"
+      className="relative overflow-hidden rounded-2xl border border-border bg-muted/30 p-5 shadow-[0_0_60px_-25px_rgba(255,45,161,0.7)] sm:p-6"
     >
       <span
         aria-hidden
@@ -55,10 +55,10 @@ export function CreditsOverviewCard({ overview, completeness, nextAction, loadin
 
       <div className="relative flex flex-wrap items-center justify-between gap-5">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Your record</p>
-          <p className="mt-1 flex items-end gap-2 text-5xl font-bold leading-none tracking-tight text-white">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Your record</p>
+          <p className="mt-1 flex items-end gap-2 text-5xl font-bold leading-none tracking-tight text-foreground">
             {loading ? "—" : <AnimatedNumber value={overview?.total_credits ?? 0} />}
-            <span className="pb-1 text-sm font-medium text-white/50">credits</span>
+            <span className="pb-1 text-sm font-medium text-muted-foreground">credits</span>
           </p>
         </div>
 
@@ -88,10 +88,10 @@ export function CreditsOverviewCard({ overview, completeness, nextAction, loadin
             </defs>
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-lg font-bold leading-none text-white">
+            <span className="text-lg font-bold leading-none text-foreground">
               <AnimatedNumber value={ring} />%
             </span>
-            <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/40">
+            <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Complete
             </span>
           </div>
@@ -106,7 +106,7 @@ export function CreditsOverviewCard({ overview, completeness, nextAction, loadin
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: reduced ? 0 : 0.4, delay: reduced ? 0 : 0.1 + i * 0.06 }}
             whileHover={reduced ? undefined : { y: -3 }}
-            className="group relative overflow-hidden rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 transition-colors hover:border-white/20"
+            className="group relative overflow-hidden rounded-xl border border-border bg-muted/30 px-3 py-2.5 transition-colors hover:border-primary/40"
             style={{ boxShadow: `inset 0 0 0 0 rgba(${STAT_TINT[s.label]},0)` }}
           >
             <span
@@ -114,11 +114,11 @@ export function CreditsOverviewCard({ overview, completeness, nextAction, loadin
               className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
               style={{ background: `radial-gradient(90% 90% at 50% 100%, rgba(${STAT_TINT[s.label]},0.16), transparent 70%)` }}
             />
-            <dt className="relative flex items-center gap-1.5 text-[11px] font-medium text-white/50">
+            <dt className="relative flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
               <s.icon className="h-3.5 w-3.5" aria-hidden style={{ color: `rgb(${STAT_TINT[s.label]})` }} />
               {s.label}
             </dt>
-            <dd className="relative mt-1 text-2xl font-semibold text-white">
+            <dd className="relative mt-1 text-2xl font-semibold text-foreground">
               {loading ? "—" : <AnimatedNumber value={s.value} />}
             </dd>
           </motion.div>
@@ -130,7 +130,7 @@ export function CreditsOverviewCard({ overview, completeness, nextAction, loadin
           type="button"
           onClick={nextAction.onClick}
           className={cn(
-            "group relative mt-5 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform",
+            "group relative mt-5 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full px-5 py-2.5 text-sm font-semibold text-foreground transition-transform",
             "hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70",
           )}
           style={{ backgroundColor: ACCENT, boxShadow: "0 12px 40px -14px rgba(255,45,161,0.9)" }}

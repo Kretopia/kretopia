@@ -39,9 +39,9 @@ export function resolveStripeSecretKey(): string {
   const mode = getStripeMode();
 
   if (mode === "test") {
-    const key = Deno.env.get("STRIPE_SECRET_KEY_TEST");
+    const key = Deno.env.get("STRIPE_SECRET_KEY_TEST") ?? Deno.env.get("STRIPE_TEST_API_KEY");
     if (!key) {
-      throw new Error("STRIPE_MODE=test but STRIPE_SECRET_KEY_TEST is not configured");
+      throw new Error("STRIPE_MODE=test but STRIPE_SECRET_KEY_TEST / STRIPE_TEST_API_KEY is not configured");
     }
     if (isLiveKey(key)) {
       throw new Error("Refusing to use a live Stripe key while STRIPE_MODE=test");
@@ -76,7 +76,7 @@ export function assertEventMatchesMode(livemode: boolean): void {
 export function stripeModeDiagnostics() {
   return {
     mode: getStripeMode(),
-    has_test_key: Boolean(Deno.env.get("STRIPE_SECRET_KEY_TEST")),
+    has_test_key: Boolean(Deno.env.get("STRIPE_SECRET_KEY_TEST") ?? Deno.env.get("STRIPE_TEST_API_KEY")),
     has_live_key: Boolean(Deno.env.get("STRIPE_SECRET_KEY_LIVE") ?? Deno.env.get("STRIPE_SECRET_KEY")),
     has_wallet_webhook_secret: Boolean(Deno.env.get("STRIPE_WALLET_WEBHOOK_SECRET")),
     has_marketplace_webhook_secret: Boolean(Deno.env.get("STRIPE_MARKETPLACE_WEBHOOK_SECRET")),

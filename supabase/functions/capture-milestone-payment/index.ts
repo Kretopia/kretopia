@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { assertCanReleaseMilestone, EscrowAuthError, loadMilestoneForIntent } from "../_shared/escrowAuth.ts";
 import { syncProjectStatusIfAllMilestonesPaid } from "../_shared/milestoneProjectSync.ts";
+import { resolveStripeSecretKey } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -51,7 +52,7 @@ serve(async (req) => {
 
     logStep("Request received", { paymentIntentId, action, milestoneId });
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new Stripe(resolveStripeSecretKey() || "", {
       apiVersion: "2025-08-27.basil",
     });
 

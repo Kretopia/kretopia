@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { resolveStripeSecretKey } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,7 +39,7 @@ serve(async (req) => {
       .eq("user_id", invoice.issued_by)
       .maybeSingle();
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(resolveStripeSecretKey()!, { apiVersion: "2025-08-27.basil" });
     const origin = req.headers.get("origin") || "https://www.thrivein.io";
 
     const params: Stripe.Checkout.SessionCreateParams = {

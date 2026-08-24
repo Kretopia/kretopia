@@ -91,12 +91,19 @@ export function PaymentRequestsReview({ projectId, currentUserId, isOwner, colla
   const approve = async (req: PaymentRequest) => {
     setBusyId(req.id);
     try {
-      // 1. Promote milestone to 'approved'
-      const { error: upErr } = await supabase
-        .from("milestones")
-        .update({ status: "approved" })
-        .eq("id", req.id);
-      if (upErr) throw upErr;
+      // 1. Promote milestone to 'approved' — routed through a validated RPC
+      // (see MilestoneBoard.tsx for why status can't be a direct client
+      // write); the RPC enforces owner-only for 'approved' specifically,
+      // same as this component's own isOwner gate above, now backed
+      // server-side instead of only in the UI.
+      const { data: upData, error: upRpcErr } = await supabase.rpc('update_milestone_workflow_status', {
+        _milestone_id: req.id,
+        _status: 'approved',
+      });
+      const upResult = upData as { success?: boolean; error?: string } | null;
+      if (upRpcErr || (upResult && upResult.success !== true)) {
+        throw upRpcErr || new Error(upResult?.error || 'Failed to approve');
+      }
 
       // 2. Auto-draft invoice from milestone
       const { data: { user } } = await supabase.auth.getUser();

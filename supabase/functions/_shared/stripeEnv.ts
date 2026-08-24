@@ -76,7 +76,7 @@ export function assertEventMatchesMode(livemode: boolean): void {
 export function stripeModeDiagnostics() {
   return {
     mode: getStripeMode(),
-    has_test_key: Boolean(Deno.env.get("STRIPE_SECRET_KEY_TEST")),
+    has_test_key: Boolean(Deno.env.get("STRIPE_SECRET_KEY_TEST") ?? Deno.env.get("STRIPE_TEST_API_KEY")),
     has_live_key: Boolean(Deno.env.get("STRIPE_SECRET_KEY_LIVE") ?? Deno.env.get("STRIPE_SECRET_KEY")),
     has_wallet_webhook_secret: Boolean(Deno.env.get("STRIPE_WALLET_WEBHOOK_SECRET")),
     has_marketplace_webhook_secret: Boolean(Deno.env.get("STRIPE_MARKETPLACE_WEBHOOK_SECRET")),

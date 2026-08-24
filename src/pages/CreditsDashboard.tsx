@@ -13,7 +13,8 @@ import { CreditsHireMePanel, type HireMeProfile } from "@/components/credits/Cre
 import { CreditsActivityTimeline } from "@/components/credits/CreditsActivityTimeline";
 import { CreditsAIInsights } from "@/components/credits/CreditsAIInsights";
 import { CreditsErrorState } from "@/components/credits/CreditsPrimitives";
-import { CreditsAtmosphere } from "@/components/credits/CreditsAtmosphere";
+import { CreditsSectionNav } from "@/components/credits/CreditsSectionNav";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { CreditsFullRecord } from "@/components/credits/CreditsFullRecord";
 
 type OwnProfile = IdentityProfile & HireMeProfile;

@@ -1,12 +1,29 @@
 # KrePay Wallet Negative Test Matrix
 
-Run every scenario below **after** applying
-`20260823160000_krepay_security_hardening.sql` (§6-7 of
-`KREPAY_CRITICAL_SECURITY_RUNBOOK.md`) against a non-production database
-first if at all possible. Not run this session — no database access.
-Every "Expected" result describes the **post-fix** behavior; if any test
-instead succeeds the way "Before fix" describes, the migration did not
-take effect and the vulnerability is still open.
+**Update 2026-08-24: the "owner" persona rows below (A1, A2, A4, B1-B3,
+plus 4 `profiles` columns not previously in this matrix —
+`stripe_account_status`, `subscription_tier`, `verification_score`, and
+the already-listed `stripe_account_id` covered under a different
+section) are now executed, not hypothetical** — real HTTP requests
+through the anon key + a real authenticated test-user JWT, against the
+fix as it actually landed (table-level `REVOKE` across 6 tables +
+`profiles` column allow-list, via the merge described in
+`PRIVILEGE_DRIFT_INVESTIGATION.md`, not the original narrower migration
+this file was first written against). Full request/response detail:
+`WALLET_CLIENT_PATH_VERIFICATION_REPORT.md`. Every executed row passed.
+**B4 (`charges_enabled`) and B5 (`requirements`) were not tested** —
+still hypothetical, matching the grant-layer check's confirmation but
+not a real-request one.
+
+**Not executed**: the ordinary-user (non-owner), creator, payer, admin,
+and anonymous persona rows below — those need additional test identities
+this session doesn't have (a second test account, and one with an admin
+role). They remain the original hypothetical matrix, still worth running
+if a second test identity becomes available; nothing about the owner-row
+results implies these would also pass — a broken cross-user check is a
+different bug class from a broken owner-self check, and both were real
+historical bugs in this exact codebase (see `HIRE_LOOP_AUDIT.md` for an
+example of the former).
 
 ## Personas
 
@@ -25,10 +42,10 @@ take effect and the vulnerability is still open.
 
 | # | Persona | Request | Before fix | Expected after fix |
 |---|---|---|---|---|
-| A1 | Ordinary user | `PATCH /rest/v1/wallets?user_id=eq.<own-id>` body `{"balance": 999999}` | 200, balance forged | **403/empty result** — `balance` REVOKEd from `authenticated` |
-| A2 | Owner (same as A1 — "owner" *is* the attacker for this table) | Same as A1 | 200 | **403/empty result** |
+| A1 | Ordinary user | `PATCH /rest/v1/wallets?user_id=eq.<own-id>` body `{"balance": 999999}` | 200, balance forged | **EXECUTED, PASS** — real HTTP 403 `42501 permission denied for table wallets`, see `WALLET_CLIENT_PATH_VERIFICATION_REPORT.md` test #1 |
+| A2 | Owner (same as A1 — "owner" *is* the attacker for this table) | Same as A1 | 200 | **EXECUTED, PASS** — same request, same result, tested as the owner (this is what A1 actually tested) |
 | A3 | Ordinary user | `PATCH /rest/v1/wallets?user_id=eq.<someone-else's-id>` body `{"balance": 999999}` | Already denied — RLS `USING (auth.uid()=user_id)` blocks cross-user rows regardless of this fix | Still denied (unchanged, not part of this fix) |
-| A4 | Ordinary user | `PATCH /rest/v1/wallets?user_id=eq.<own-id>` body `{"credits": 999999}` | 200, credits forged | **403/empty result** |
+| A4 | Ordinary user | `PATCH /rest/v1/wallets?user_id=eq.<own-id>` body `{"credits": 999999}` | 200, credits forged | **EXECUTED, PASS** — real HTTP 403, test #2 |
 | A5 | Admin | `PATCH /rest/v1/wallets?user_id=eq.<own-id>` body `{"balance": 999999}` | 200 | **403/empty result** — no admin-specific RLS bypass exists on this table; admin has no special standing here and shouldn't |
 | A6 | Anonymous | Same as A1, no auth header | Already denied (`USING (auth.uid()=user_id)` evaluates false with no session) | Still denied (unchanged) |
 | A7 | Owner | `PATCH /rest/v1/wallets?user_id=eq.<own-id>` body `{"updated_at": "2020-01-01"}` | 200 | **Still 200** — `updated_at` was intentionally left writable; not a security-sensitive column. Confirm this is still true post-fix (it should be — only `balance`/`credits` were revoked) |
@@ -37,9 +54,9 @@ take effect and the vulnerability is still open.
 
 | # | Persona | Request | Before fix | Expected after fix |
 |---|---|---|---|---|
-| B1 | Creator (owner of the row) | `PATCH /rest/v1/creator_wallets?user_id=eq.<own-id>` body `{"payouts_enabled": true}` | 200, gate bypassed | **403/empty result** |
-| B2 | Creator | Same, body `{"kyc_status": "verified"}` | 200 | **403/empty result** |
-| B3 | Creator | Same, body `{"stripe_account_id": "acct_fake123"}` | 200 | **403/empty result** |
+| B1 | Creator (owner of the row) | `PATCH /rest/v1/creator_wallets?user_id=eq.<own-id>` body `{"payouts_enabled": true}` | 200, gate bypassed | **EXECUTED, PASS** — real HTTP 403, test #3 |
+| B2 | Creator | Same, body `{"kyc_status": "verified"}` | 200 | **EXECUTED, PASS** — real HTTP 403, test #4 |
+| B3 | Creator | Same, body `{"stripe_account_id": "acct_fake123"}` | 200 | **EXECUTED, PASS** — real HTTP 403, test #5 |
 | B4 | Creator | Same, body `{"charges_enabled": true}` | 200 | **403/empty result** |
 | B5 | Creator | Same, body `{"requirements": {}}` | 200 | **403/empty result** |
 | B6 | Creator | Same, body `{"country": "US"}` | 200 | **Still 200 — intentional.** Confirm this legitimate self-service field remains writable |

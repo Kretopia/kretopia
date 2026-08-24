@@ -34,7 +34,7 @@ serve(async (req) => {
 
     const { data: wallet } = await admin
       .from("creator_wallets")
-      .select("stripe_account_id")
+      .select("stripe_account_id, payouts_enabled")
       .eq("user_id", invoice.issued_by)
       .maybeSingle();
 
@@ -56,11 +56,15 @@ serve(async (req) => {
       cancel_url: `${origin}/pay/invoice/${invoice_id}?status=cancelled`,
       metadata: { kind: "invoice", invoice_id, recipient_user_id: invoice.issued_by },
     };
-    if (wallet?.stripe_account_id) {
+    // See create-payment-link-checkout for why payouts_enabled must be checked
+    // alongside stripe_account_id before attempting a destination charge.
+    if (wallet?.stripe_account_id && wallet?.payouts_enabled) {
       params.payment_intent_data = {
         transfer_data: { destination: wallet.stripe_account_id },
         on_behalf_of: wallet.stripe_account_id,
       };
+    } else if (wallet?.stripe_account_id && !wallet?.payouts_enabled) {
+      throw new Error("This creator hasn't finished setting up payouts yet — please try again later.");
     }
 
     const session = await stripe.checkout.sessions.create(params);

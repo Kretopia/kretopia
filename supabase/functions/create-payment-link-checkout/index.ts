@@ -77,13 +77,20 @@ serve(async (req) => {
       },
     };
 
-    // Route funds to recipient's Connect account when available (destination charge)
-    if (wallet?.stripe_account_id) {
+    // Route funds to recipient's Connect account when available (destination charge).
+    // A stripe_account_id alone only means Connect onboarding was started — Stripe
+    // doesn't grant the `transfers` capability a destination charge requires until
+    // the account is fully verified (payouts_enabled). Using transfer_data against
+    // an account that isn't there yet fails at Stripe with a capability error the
+    // payer sees mid-checkout; check readiness first and fail clearly instead.
+    if (wallet?.stripe_account_id && wallet?.payouts_enabled) {
       // 5% platform fee for free tier; settled by webhook later if needed
       sessionParams.payment_intent_data = {
         transfer_data: { destination: wallet.stripe_account_id },
         on_behalf_of: wallet.stripe_account_id,
       };
+    } else if (wallet?.stripe_account_id && !wallet?.payouts_enabled) {
+      throw new Error("This creator hasn't finished setting up payouts yet — please try again later.");
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);

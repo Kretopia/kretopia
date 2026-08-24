@@ -575,23 +575,20 @@ const ProfileContent = () => {
           </button>
         </div>
 
+        {/* Bridge to Credits — the full record (Stamps, Book Me, Skills,
+            Co-signs, Reviews) now lives in the Credits dashboard. */}
+        {profile && (
+          <PassportCreditsCta
+            verified={(credits || []).filter((c: any) => c.verification_status === 'verified').length}
+            total={credits?.length || 0}
+            cosigns={(reviews || []).filter((r: any) => r.status === 'approved').length}
+          />
+        )}
+
         </section>
         {/* /Identity */}
-
-        {/* Hire Me section — rates, availability, work-with-me */}
-        <section id="hire" className="scroll-mt-20 mt-6">
-          <ProfileContentSections
-            profile={profile}
-            portfolioItems={portfolioItems}
-            reviews={reviews}
-            industryStats={industryStats}
-            credits={credits}
-            userTier={userTier}
-            hasAdvancedProfile={hasAdvancedProfile}
-            onRefresh={fetchData}
-          />
-        </section>
       </div>
+
 
       {/* Kreto builds the Passport — shown right after a batch credit confirm */}
       <Dialog open={!!builderCredits} onOpenChange={(open) => !open && setBuilderCredits(null)}>

@@ -20369,6 +20369,14 @@ export type Database = {
           verified_credits: number
         }[]
       }
+      notify_application_status: {
+        Args: { _application_id: string; _status: string }
+        Returns: Json
+      }
+      notify_new_application: {
+        Args: { _application_id: string }
+        Returns: Json
+      }
       notify_scout_event: {
         Args: { _actor_name: string; _event: string; _opportunity_id: string }
         Returns: undefined

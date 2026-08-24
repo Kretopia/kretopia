@@ -20358,6 +20358,17 @@ export type Database = {
         }
         Returns: number
       }
+      my_credits_overview: {
+        Args: never
+        Returns: {
+          endorsements_received: number
+          last_credit_at: string
+          missing_evidence: number
+          pending_credits: number
+          total_credits: number
+          verified_credits: number
+        }[]
+      }
       notify_application_status: {
         Args: { _application_id: string; _status: string }
         Returns: Json
@@ -20452,6 +20463,26 @@ export type Database = {
           p_referred_by?: string
         }
         Returns: string
+      }
+      search_my_credits: {
+        Args: { p_limit?: number; p_query?: string }
+        Returns: {
+          client_brand: string
+          created_at: string
+          credit_category: string
+          endorsement_count: number
+          id: string
+          location: string
+          platform: string
+          primary_media_url: string
+          project_name: string
+          project_type: string
+          role: string
+          thumbnail_url: string
+          url: string
+          verification_status: string
+          year: number
+        }[]
       }
       seed_new_user_experience: { Args: { p_user_id: string }; Returns: Json }
       send_opportunity_alerts: {

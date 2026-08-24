@@ -67,9 +67,10 @@ serve(async (req) => {
       type: event.type,
       payload: event as unknown as Record<string, unknown>,
     });
-    if (dupErr && dupErr.code === "23505") {
-      logStep("Duplicate event, already processed", { id: event.id });
-      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+    if (dupErr && (dupErr as { code?: string }).code === "23505") {
+      logStep("Duplicate event ignored", { id: event.id });
+      return new Response(JSON.stringify({ received: true, idempotent_event: true }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

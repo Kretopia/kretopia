@@ -1,11 +1,14 @@
 # Wallet Security Verification Report
 
-**Status: verification pending.** This report exists to state clearly
-that neither of the two CRITICAL findings (KP-01 `wallets.balance`/
-`credits` forgery, KP-02 `creator_wallets.payouts_enabled` bypass) — nor
-the two related findings found while investigating them
-(`creator_wallets.stripe_account_id`, `profiles.stripe_account_id`/
-`stripe_account_status`) — can currently be stated as closed.
+**Status: `FIX_APPLIED_AND_VERIFIED`** (updated 2026-08-24, post-merge).
+All four findings — KP-01 (`wallets.balance`/`credits` forgery), KP-02
+(`creator_wallets.payouts_enabled` bypass), and the two related findings
+found while investigating them (`creator_wallets.stripe_account_id`,
+`profiles.stripe_account_id`/`stripe_account_status`) — are confirmed
+closed by a live query against the actual fix now in place (see
+§"Verification result" below). This supersedes every earlier status in
+this document; the timeline below is kept for the record, not because
+anything in it is still the live state.
 
 ## Timeline of what's actually known
 
@@ -100,9 +103,54 @@ direct-`PATCH` path is precisely what the ineffective `REVOKE` was meant
 to close — it only means the exploit surface stayed exactly what it was
 before any of this session's fixes, not worse.
 
+## Update 2026-08-24 — actually verified this time
+
+Everything above this section describes the state through the second
+silent reversal. Since then: a merge with a parallel Lovable AI session
+(`gpt-engineer-app[bot]`) replaced this session's column-level-only
+migrations with a materially more complete fix — table-level `REVOKE`
+(not column-level) plus RLS policy drops on `wallets`, `creator_wallets`,
+and three sibling tables (`creator_wallet_balances`, `creator_payouts`,
+`creator_payout_methods`) this session hadn't covered, plus a full
+`profiles` column allow-list built from a live `information_schema`
+query rather than the partial, deferred list this session's own
+remediation plan had left incomplete. Full account in
+`PRIVILEGE_DRIFT_INVESTIGATION.md` and the merge commits on
+`feature/activation-priority-plan`.
+
+A verification query using `has_table_privilege`/`has_column_privilege`
+— the actual Postgres functions that govern access decisions, not a
+derived `information_schema` view — was run against the live database
+covering all 6 relevant tables plus the RPC execute grants. All 20
+checks returned exactly the expected value, no exceptions:
+
+| Check | Result |
+|---|---|
+| `wallets` UPDATE, `authenticated`/`anon` | `false` / `false` |
+| `creator_wallets` SELECT `authenticated` / `anon` | `true` / `false` |
+| `creator_wallets` UPDATE `authenticated` | `false` |
+| `creator_wallet_balances`/`creator_payouts`/`creator_payout_methods` UPDATE `authenticated` | `false` (all three) |
+| `profiles.stripe_account_id`/`.stripe_account_status`/`.payment_verified`/`.stripe_customer_id`/`.verification_status` UPDATE `authenticated` | `false` (all five) |
+| `profiles.full_name`/`.role` UPDATE `authenticated` | `true` / `true` (intentional) |
+| `profiles` INSERT/UPDATE `anon` | `false` / `false` |
+| `wallet_debit` EXECUTE `service_role` / `authenticated` | `true` / `false` |
+| `accept_application_and_create_studio` EXECUTE `authenticated` | `true` (intentional) |
+
 ## Status
 
-**Verification pending.** Do not report either original finding, or
-either of the two related findings, as closed until the query in this
-report's §"What would actually confirm this is fixed" (1) has been run
-and its actual result reviewed.
+**`FIX_APPLIED_AND_VERIFIED`.** All four findings (KP-01, KP-02,
+`creator_wallets.stripe_account_id`, `profiles.stripe_account_id`/
+`stripe_account_status`) are closed, confirmed by direct query against
+live effective privileges, not by a reported-successful statement alone
+— the specific gap that produced the two earlier false "fixed"
+conclusions in this document.
+
+**Not yet done, and worth doing before treating this as permanently
+settled**: an actual negative-test `PATCH` request per
+`KREPAY_WALLET_NEGATIVE_TEST_MATRIX.md` (this verification is
+grant-layer, which is what governs the outcome, but a real request is
+the only check with zero dependency on correctly interpreting Postgres
+ACL semantics), and a time-delayed re-check — given this exact privilege
+set reverted twice before without an active adversary, purely from two
+AI agents applying uncoordinated fixes to the same tables, confirming it
+holds after some elapsed time is still worth the five minutes it takes.

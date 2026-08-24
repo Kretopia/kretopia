@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,11 @@ export function WalletTransferDialog({ open, onOpenChange, walletBalance, onTran
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
+  // Stable across retries of the same submit attempt (e.g. a slow
+  // response the user gives up on and retries) so the server can dedupe;
+  // regenerated whenever the dialog closes, so the next transfer gets a
+  // fresh key rather than reusing a completed one.
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     if (!open) {
@@ -38,6 +43,7 @@ export function WalletTransferDialog({ open, onOpenChange, walletBalance, onTran
       setSearchResults([]);
       setSelectedRecipient(null);
       setError("");
+      idempotencyKeyRef.current = crypto.randomUUID();
     }
   }, [open]);
 
@@ -91,6 +97,7 @@ export function WalletTransferDialog({ open, onOpenChange, walletBalance, onTran
           amount: Number(amount),
           currency,
           description: description || undefined,
+          idempotencyKey: idempotencyKeyRef.current,
         },
       });
 

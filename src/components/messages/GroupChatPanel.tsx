@@ -231,7 +231,7 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
   const memberList = Object.values(members);
 
   return (
-    <div className="flex-1 flex flex-col bg-background pb-20 lg:pb-0">
+    <div className="flex-1 flex flex-col bg-background pb-20 lg:pb-24">
       {/* Header */}
       <div className="p-3 sm:p-4 border-b border-border flex items-center gap-2.5 sm:gap-3 bg-card">
         <Button variant="ghost" size="icon" className="md:hidden h-9 w-9" onClick={onBack}>

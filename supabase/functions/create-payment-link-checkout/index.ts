@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { resolveStripeSecretKey } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,7 +50,7 @@ serve(async (req) => {
       .eq("user_id", link.user_id)
       .maybeSingle();
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(resolveStripeSecretKey(), { apiVersion: "2025-08-27.basil" });
 
     const origin = req.headers.get("origin") || "https://www.thrivein.io";
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -77,13 +78,20 @@ serve(async (req) => {
       },
     };
 
-    // Route funds to recipient's Connect account when available (destination charge)
-    if (wallet?.stripe_account_id) {
+    // Route funds to recipient's Connect account when available (destination charge).
+    // A stripe_account_id alone only means Connect onboarding was started — Stripe
+    // doesn't grant the `transfers` capability a destination charge requires until
+    // the account is fully verified (payouts_enabled). Using transfer_data against
+    // an account that isn't there yet fails at Stripe with a capability error the
+    // payer sees mid-checkout; check readiness first and fail clearly instead.
+    if (wallet?.stripe_account_id && wallet?.payouts_enabled) {
       // 5% platform fee for free tier; settled by webhook later if needed
       sessionParams.payment_intent_data = {
         transfer_data: { destination: wallet.stripe_account_id },
         on_behalf_of: wallet.stripe_account_id,
       };
+    } else if (wallet?.stripe_account_id && !wallet?.payouts_enabled) {
+      throw new Error("This creator hasn't finished setting up payouts yet — please try again later.");
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);

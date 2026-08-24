@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { resolveStripeSecretKey } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +20,7 @@ serve(async (req) => {
     const user = auth?.user;
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { amount_cents, currency, method = "standard" } = await req.json();
+    const { amount_cents, currency, method = "standard", idempotencyKey } = await req.json();
     if (!amount_cents || amount_cents <= 0 || !currency) {
       return new Response(JSON.stringify({ error: "Invalid amount or currency" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -41,15 +42,23 @@ serve(async (req) => {
       .eq("is_default", true)
       .maybeSingle();
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(resolveStripeSecretKey(), { apiVersion: "2025-08-27.basil" });
 
+    // Idempotency: a double-click or client retry after a slow response
+    // must not create two real payouts. Falls back to a server-generated
+    // key (still correct per-request, just not retry-safe) if the client
+    // didn't supply one — Stripe's own idempotency dedup is keyed on this
+    // value for ~24h. See KREPAY_PAYMENT_AUDIT.md finding #5.
     const payout = await stripe.payouts.create({
       amount: Math.round(amount_cents),
       currency: currency.toLowerCase(),
       method: method === "instant" ? "instant" : "standard",
       ...(defaultMethod?.stripe_external_account_id ? { destination: defaultMethod.stripe_external_account_id } : {}),
       metadata: { thrivein_user_id: user.id },
-    }, { stripeAccount: wallet.stripe_account_id });
+    }, {
+      stripeAccount: wallet.stripe_account_id,
+      idempotencyKey: typeof idempotencyKey === "string" && idempotencyKey ? idempotencyKey : crypto.randomUUID(),
+    });
 
     const { data: row } = await admin.from("creator_payouts").insert({
       user_id: user.id,

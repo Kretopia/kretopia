@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { resolveStripeSecretKey, assertEventMatchesMode } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,7 +12,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
+  const stripe = new Stripe(resolveStripeSecretKey(), {
     apiVersion: "2025-08-27.basil",
   });
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
@@ -25,6 +26,7 @@ serve(async (req) => {
       throw new Error("Missing webhook signature or secret");
     }
     event = await stripe.webhooks.constructEventAsync(rawBody, signature, webhookSecret);
+    assertEventMatchesMode(event.livemode);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[guest-wallet-webhook] signature error:", msg);

@@ -21,8 +21,16 @@ interface SendPushNotificationParams {
 export async function sendPushNotification(params: SendPushNotificationParams) {
   const { userId, title, body, type, link, icon, data, skipInApp } = params;
 
+  let inAppError: unknown = null;
+
   try {
-    // Create in-app notification (skip if a DB trigger handles it)
+    // Create in-app notification (skip if a DB trigger/RPC already handles
+    // it — most cross-user cases now do, see the SECURITY DEFINER RPCs in
+    // 20260823150000_hire_loop_notification_fix.sql). A direct client
+    // insert only succeeds when userId is the caller's own id; notifying a
+    // *different* user this way is silently rejected by RLS — still worth
+    // attempting the push leg below even when this fails, so track rather
+    // than bail.
     if (!skipInApp) {
       const { error: notifError } = await supabase
         .from("notifications")
@@ -41,6 +49,7 @@ export async function sendPushNotification(params: SendPushNotificationParams) {
 
       if (notifError) {
         console.error("Error creating notification:", notifError);
+        inAppError = notifError;
       }
     }
 
@@ -64,6 +73,9 @@ export async function sendPushNotification(params: SendPushNotificationParams) {
       console.error("Error sending push notification:", pushError);
     }
 
+    if (inAppError) {
+      return { success: false, error: inAppError };
+    }
     return { success: true };
   } catch (error) {
     console.error("Error in sendPushNotification:", error);
@@ -111,13 +123,19 @@ export async function notifyMessage(receiverId: string, senderName: string, mess
 /**
  * Send opportunity notification
  */
-export async function notifyOpportunity(userId: string, opportunityTitle: string, opportunityId: string) {
+export async function notifyOpportunity(
+  userId: string,
+  opportunityTitle: string,
+  opportunityId: string,
+  skipInApp?: boolean,
+) {
   await sendPushNotification({
     userId,
     title: "New Application Received!",
     body: `Someone applied to: ${opportunityTitle}`,
     type: "opportunity",
     link: `/opportunity-dashboard?opportunity=${opportunityId}`,
+    skipInApp,
   });
 }
 

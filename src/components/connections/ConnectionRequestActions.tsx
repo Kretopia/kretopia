@@ -45,15 +45,10 @@ export const ConnectionRequestActions = ({
         connection_status: 'accepted'
       });
 
-      // Award XP to both users
-      const [{ data: accepterProfile }, { data: requesterProfile }] = await Promise.all([
-        supabase.from('profiles').select('xp').eq('user_id', user.id).single(),
-        supabase.from('profiles').select('xp').eq('user_id', connectionUserId).single()
-      ]);
-
+      // Award XP to both users (server-side)
       await Promise.all([
-        supabase.from('profiles').update({ xp: (accepterProfile?.xp || 0) + 20 }).eq('user_id', user.id),
-        supabase.from('profiles').update({ xp: (requesterProfile?.xp || 0) + 20 }).eq('user_id', connectionUserId)
+        supabase.rpc('award_xp' as any, { p_user_id: user.id, p_amount: 20, p_reason: 'connection_accepted' }),
+        supabase.rpc('award_xp' as any, { p_user_id: connectionUserId, p_amount: 20, p_reason: 'connection_accepted' })
       ]);
 
       onStatusChange('accepted');

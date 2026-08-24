@@ -34,6 +34,10 @@ import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards"
 import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
 import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
 import { PaymentLinksSection } from "@/components/thrivepay/PaymentLinksSection";
+import { KrePayAIInsights } from "@/components/thrivepay/KrePayAIInsights";
+import { FinancialSummaryPanel } from "@/components/thrivepay/FinancialSummaryPanel";
+import { TransactionDetailDrawer, type TransactionDetail } from "@/components/thrivepay/TransactionDetailDrawer";
+import { TrustControlsCard } from "@/components/thrivepay/TrustControlsCard";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { KretoTip } from "@/components/agent/KretoTip";
 import { KREPAY_BRAND_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
@@ -101,6 +105,7 @@ export default function ThrivePay() {
   const [topUpDialogOpen, setTopUpDialogOpen] = useState(false);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetail | null>(null);
 
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -255,7 +260,7 @@ export default function ThrivePay() {
 
     const { data: transactions } = await supabase
       .from("transactions")
-      .select("id, type, amount, description, created_at")
+      .select("id, type, amount, description, created_at, status, related_project_id")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(15);
@@ -397,6 +402,12 @@ export default function ThrivePay() {
           <WeeklyMoneyInsights />
         </div>
 
+        {/* AI assistance — the one genuinely LLM-backed surface on this
+            page; see KrePayAIInsights for what it does and doesn't do. */}
+        <div className="mb-4 sm:mb-6">
+          <KrePayAIInsights />
+        </div>
+
         <WalletTopUpDialog open={topUpDialogOpen} onOpenChange={setTopUpDialogOpen} />
         <WalletTransferDialog
           open={transferDialogOpen}
@@ -406,35 +417,14 @@ export default function ThrivePay() {
         />
 
         {/* Balance Overview */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 mb-4 sm:mb-6">
-          <Card className="bg-gradient-to-br from-primary via-primary/90 to-accent border-0 col-span-2 sm:col-span-1">
-            <CardContent className="p-3 sm:p-4">
-              <p className="text-xs text-primary-foreground/80 mb-0.5">Wallet Balance</p>
-              <p className="text-2xl sm:text-3xl font-bold text-primary-foreground">${walletBalance.toFixed(2)}</p>
-            </CardContent>
-          </Card>
-          {connectStatus === "active" && (
-            <>
-              <Card>
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <p className="text-xs text-muted-foreground">Available</p>
-                    <DollarSign className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                  <p className="text-2xl sm:text-3xl font-bold text-green-500">${balance.available.toFixed(2)}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <p className="text-xs text-muted-foreground">Pending</p>
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                  <p className="text-2xl sm:text-3xl font-bold">${balance.pending.toFixed(2)}</p>
-                </CardContent>
-              </Card>
-            </>
-          )}
+        <div className="mb-4 sm:mb-6">
+          <FinancialSummaryPanel
+            walletBalance={walletBalance}
+            connectAvailable={balance.available}
+            connectPending={balance.pending}
+            connectActive={connectStatus === "active"}
+            currency={balance.currency}
+          />
         </div>
 
         {/* ───── Command center: 3 tabbed panels instead of one long
@@ -513,7 +503,14 @@ export default function ThrivePay() {
               recentTransactions.map((tx) => {
                 const isIn = tx.type.includes("earned") || tx.type.includes("received");
                 return (
-                  <Card key={tx.id} className="hover:bg-accent/5 transition-smooth">
+                  <Card
+                    key={tx.id}
+                    className="hover:bg-accent/5 transition-smooth cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedTransaction(tx as TransactionDetail)}
+                    onKeyDown={(e) => e.key === "Enter" && setSelectedTransaction(tx as TransactionDetail)}
+                  >
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -648,6 +645,14 @@ export default function ThrivePay() {
           )}
         </section>
 
+        {/* Trust & controls */}
+        <section className="space-y-3">
+          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" /> Trust & security
+          </h2>
+          <TrustControlsCard />
+        </section>
+
         {/* 5. Fees */}
         <section className="mb-6 space-y-3">
           <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
@@ -674,6 +679,11 @@ export default function ThrivePay() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <TransactionDetailDrawer
+        transaction={selectedTransaction}
+        onOpenChange={(open) => !open && setSelectedTransaction(null)}
+      />
 
       {/* Floating Snap Receipt button — opens camera immediately, AI fills the expense */}
       <SnapReceiptFAB />

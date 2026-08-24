@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { syncProjectStatusIfAllMilestonesPaid } from "../_shared/milestoneProjectSync.ts";
+import { resolveStripeSecretKey, assertEventMatchesMode } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 
@@ -46,6 +47,7 @@ serve(async (req) => {
         undefined,
         Stripe.createSubtleCryptoProvider()
       );
+      assertEventMatchesMode(event.livemode);
     } catch (err) {
       logStep("Signature verification failed", { error: String(err) });
       return new Response("Invalid signature", { status: 400 });
@@ -57,6 +59,23 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Idempotency by Stripe event ID — mirrors stripe-wallet-webhook and
+    // guest-wallet-webhook. Without this, a redelivered checkout.session.completed
+    // re-increments payment_links.use_count (KREPAY_PAYMENT_AUDIT.md finding #3),
+    // prematurely disabling single_use/max_uses links after one real payment.
+    const { error: dupErr } = await supabaseAdmin.from("stripe_webhook_events").insert({
+      event_id: event.id,
+      type: event.type,
+      payload: event as unknown as Record<string, unknown>,
+    });
+    if (dupErr && (dupErr as { code?: string }).code === "23505") {
+      logStep("Duplicate event ignored", { id: event.id });
+      return new Response(JSON.stringify({ received: true, idempotent_event: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;

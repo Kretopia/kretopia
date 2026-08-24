@@ -39,13 +39,10 @@ export function StreakCard({ streakCount, longestStreak, freezeCount, onUpdate }
         return;
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          xp: profile.xp - 500,
-          streak_freeze_count: freezeCount + 1 
-        })
-        .eq('user_id', user.id);
+      const { error } = await supabase.rpc('spend_xp' as any, {
+        p_amount: 500,
+        p_purpose: 'streak_freeze',
+      });
 
       if (error) throw error;
 

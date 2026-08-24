@@ -37,7 +37,7 @@ serve(async (req) => {
       throw new Error("User not authenticated");
     }
 
-    const { recipientId, amount, currency = "USD", description } = await req.json();
+    const { recipientId, amount, currency = "USD", description, idempotencyKey } = await req.json();
 
     if (!recipientId || !amount || amount <= 0) {
       throw new Error("Missing or invalid recipient/amount");
@@ -48,6 +48,48 @@ serve(async (req) => {
     }
 
     logStep("Transfer request", { senderId: user.id, recipientId, amount, currency });
+
+    // Idempotency: reserve the transfer row (with a unique key) BEFORE
+    // moving any money, mirroring the reserve-then-act pattern already
+    // proven correct in thrivefund_milestone_releases. A double-click or
+    // client retry after a slow response reuses the same key — if the
+    // reservation insert conflicts, this is a known retry of a transfer
+    // already in flight or completed, so return that result instead of
+    // debiting twice. See KREPAY_PAYMENT_AUDIT.md finding #5.
+    let reservedTransferId: string | null = null;
+    if (typeof idempotencyKey === "string" && idempotencyKey) {
+      const { data: reserved, error: reserveError } = await supabaseAdmin
+        .from("wallet_transfers")
+        .insert({
+          sender_id: user.id,
+          recipient_id: recipientId,
+          amount,
+          currency: currency.toUpperCase(),
+          description: description || null,
+          status: "pending",
+          idempotency_key: idempotencyKey,
+        })
+        .select("id")
+        .single();
+
+      if (reserveError) {
+        if (reserveError.code === "23505") {
+          const { data: existing } = await supabaseAdmin
+            .from("wallet_transfers")
+            .select("status, amount, currency")
+            .eq("idempotency_key", idempotencyKey)
+            .maybeSingle();
+          logStep("Duplicate transfer request, returning existing result", { idempotencyKey, status: existing?.status });
+          return new Response(JSON.stringify({
+            success: true,
+            alreadyProcessed: true,
+            amount: existing?.amount ?? amount,
+          }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
+        }
+        throw reserveError;
+      }
+      reservedTransferId = reserved.id;
+    }
 
     // Check transfer limits
     const { data: limitCheck, error: limitError } = await supabaseAdmin
@@ -78,6 +120,9 @@ serve(async (req) => {
       .rpc("wallet_debit", { p_user_id: user.id, p_amount: amount });
 
     if (debitError || newSenderBalance === null) {
+      if (reservedTransferId) {
+        await supabaseAdmin.from("wallet_transfers").update({ status: "failed" }).eq("id", reservedTransferId);
+      }
       throw new Error("Insufficient balance");
     }
 
@@ -88,21 +133,34 @@ serve(async (req) => {
     if (creditError) {
       // Roll the debit back so funds are never lost
       await supabaseAdmin.rpc("wallet_credit", { p_user_id: user.id, p_amount: amount });
+      if (reservedTransferId) {
+        await supabaseAdmin.from("wallet_transfers").update({ status: "failed" }).eq("id", reservedTransferId);
+      }
       throw new Error("Transfer failed");
     }
 
-
-    // Record transfer
-    await supabaseAdmin
-      .from("wallet_transfers")
-      .insert({
-        sender_id: user.id,
-        recipient_id: recipientId,
-        amount,
-        currency: currency.toUpperCase(),
-        description: description || `Transfer to ${recipient.full_name}`,
-        status: "completed",
-      });
+    // Record transfer: finalize the reservation made above, or insert
+    // fresh if the client didn't supply an idempotency key.
+    if (reservedTransferId) {
+      await supabaseAdmin
+        .from("wallet_transfers")
+        .update({
+          status: "completed",
+          description: description || `Transfer to ${recipient.full_name}`,
+        })
+        .eq("id", reservedTransferId);
+    } else {
+      await supabaseAdmin
+        .from("wallet_transfers")
+        .insert({
+          sender_id: user.id,
+          recipient_id: recipientId,
+          amount,
+          currency: currency.toUpperCase(),
+          description: description || `Transfer to ${recipient.full_name}`,
+          status: "completed",
+        });
+    }
 
     // Get sender name for notifications
     const { data: senderProfile } = await supabaseAdmin

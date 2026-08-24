@@ -26,7 +26,7 @@ import { ProfileDashboardDrawer } from "@/components/profile/ProfileDashboardDra
 
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
-import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
+import { PassportCreditsCta } from "@/components/passport/PassportCreditsCta";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
 import { DiscoveriesInbox } from "@/components/profile/DiscoveriesInbox";
@@ -541,7 +541,7 @@ const ProfileContent = () => {
                 <KretoActionCenter
                   credits={credits || []}
                   standing={standing}
-                  onReviewCredits={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
+                  onReviewCredits={() => navigate('/credits')}
                 />
               </div>
             </>

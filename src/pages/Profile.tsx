@@ -26,7 +26,7 @@ import { ProfileDashboardDrawer } from "@/components/profile/ProfileDashboardDra
 
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
-import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
+import { PassportCreditsCta } from "@/components/passport/PassportCreditsCta";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
 import { DiscoveriesInbox } from "@/components/profile/DiscoveriesInbox";
@@ -443,7 +443,7 @@ const ProfileContent = () => {
               </button>
               <button
                 type="button"
-                onClick={() => { document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' }); setJustRevealed(null); }}
+                onClick={() => { navigate('/credits'); setJustRevealed(null); }}
                 className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
               >
                 Review credit evidence
@@ -541,7 +541,7 @@ const ProfileContent = () => {
                 <KretoActionCenter
                   credits={credits || []}
                   standing={standing}
-                  onReviewCredits={() => document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' })}
+                  onReviewCredits={() => navigate('/credits')}
                 />
               </div>
             </>
@@ -575,23 +575,20 @@ const ProfileContent = () => {
           </button>
         </div>
 
+        {/* Bridge to Credits — the full record (Stamps, Book Me, Skills,
+            Co-signs, Reviews) now lives in the Credits dashboard. */}
+        {profile && (
+          <PassportCreditsCta
+            verified={(credits || []).filter((c: any) => c.verification_status === 'verified').length}
+            total={credits?.length || 0}
+            cosigns={(reviews || []).filter((r: any) => r.status === 'approved').length}
+          />
+        )}
+
         </section>
         {/* /Identity */}
-
-        {/* Hire Me section — rates, availability, work-with-me */}
-        <section id="hire" className="scroll-mt-20 mt-6">
-          <ProfileContentSections
-            profile={profile}
-            portfolioItems={portfolioItems}
-            reviews={reviews}
-            industryStats={industryStats}
-            credits={credits}
-            userTier={userTier}
-            hasAdvancedProfile={hasAdvancedProfile}
-            onRefresh={fetchData}
-          />
-        </section>
       </div>
+
 
       {/* Kreto builds the Passport — shown right after a batch credit confirm */}
       <Dialog open={!!builderCredits} onOpenChange={(open) => !open && setBuilderCredits(null)}>

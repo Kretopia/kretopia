@@ -120,6 +120,19 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
+        "credits-drift": {
+          "0%, 100%": { transform: "translate3d(0,0,0) scale(1)" },
+          "50%": { transform: "translate3d(0,26px,0) scale(1.08)" },
+        },
+        "credits-drift-slow": {
+          "0%, 100%": { transform: "translate3d(0,0,0) scale(1.05)" },
+          "50%": { transform: "translate3d(-24px,-18px,0) scale(1)" },
+        },
+        "credits-scan": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(900%)" },
+        },
+
         gradient: {
           "0%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
@@ -213,6 +226,10 @@ export default {
         },
       },
       animation: {
+        "credits-drift": "credits-drift 14s ease-in-out infinite",
+        "credits-drift-slow": "credits-drift-slow 20s ease-in-out infinite",
+        "credits-scan": "credits-scan 9s linear infinite",
+
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",

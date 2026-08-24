@@ -121,23 +121,16 @@ export default function CreditsDashboard() {
         <meta name="robots" content="noindex" />
       </Helmet>
 
-      <div className="dark relative min-h-screen bg-background pb-24" style={{ backgroundColor: "#05070D" }}>
-        <CreditsAtmosphere />
-        <main className="container relative mx-auto max-w-3xl px-4 pt-8">
-          <header className="mb-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Creative Passport</p>
-            <h1 className="mt-1.5 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              <span
-                className="bg-clip-text text-transparent"
-                style={{ backgroundImage: "linear-gradient(100deg,#FFFFFF 20%,#FF2DA1 55%,#17D9D4 90%)" }}
-              >
-                Credits
-              </span>
-            </h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/55 sm:text-base">
-              Your professional identity and the verified creative work behind it — in one private place.
-            </p>
-          </header>
+      <div className="accent-passport relative min-h-screen bg-background pb-24">
+        <FeaturePageHeader
+          eyebrow="Credits"
+          title="Credits."
+          accentTitle="Your record, verified."
+          subtitle="Your professional identity and the verified creative work behind it — in one private place."
+        />
+
+        <main className="container relative mx-auto max-w-3xl px-4 pt-6">
+          <CreditsSectionNav />
 
           <div className="mb-5">
             <PersonalCreditsSearch
@@ -147,6 +140,7 @@ export default function CreditsDashboard() {
               resultCount={credits.length}
             />
           </div>
+
 
           {error === "auth" ? (
             <CreditsErrorState

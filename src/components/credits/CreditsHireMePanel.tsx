@@ -52,7 +52,7 @@ export function CreditsHireMePanel({ profile, index }: { profile: HireMeProfile 
             <button
               type="button"
               onClick={() => navigate("/profile/edit#hire")}
-              className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-background transition-opacity hover:opacity-90"
+              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
               Set it up
             </button>

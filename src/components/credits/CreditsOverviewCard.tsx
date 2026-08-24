@@ -131,7 +131,7 @@ export function CreditsOverviewCard({ overview, completeness, nextAction, loadin
           onClick={nextAction.onClick}
           className={cn(
             "group relative mt-5 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full px-5 py-2.5 text-sm font-semibold text-foreground transition-transform",
-            "hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70",
+            "hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           )}
           style={{ backgroundColor: ACCENT, boxShadow: "0 12px 40px -14px rgba(255,45,161,0.9)" }}
         >

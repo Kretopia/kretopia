@@ -9,7 +9,7 @@ import { Lock } from "lucide-react";
  */
 export function CreditsPermissionState() {
   return (
-    <div className="dark min-h-screen bg-background" style={{ backgroundColor: "#05070D" }}>
+    <div className="min-h-screen bg-background">
       <main className="container mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-4 text-center">
         <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-muted/30">
           <Lock className="h-5 w-5 text-muted-foreground" aria-hidden />
@@ -22,7 +22,7 @@ export function CreditsPermissionState() {
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <Link
             to="/auth?redirect=/credits"
-            className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90"
+            className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             Sign in
           </Link>

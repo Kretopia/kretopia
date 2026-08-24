@@ -204,7 +204,7 @@ export function CreditsAIInsights({
                         type="button"
                         onClick={() => accept(i)}
                         disabled={saving === i.id}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                       >
                         <Check className="h-3.5 w-3.5" aria-hidden />
                         {canEdit ? "Accept and save" : "Mark as done"}

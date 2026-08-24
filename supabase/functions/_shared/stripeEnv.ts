@@ -39,9 +39,9 @@ export function resolveStripeSecretKey(): string {
   const mode = getStripeMode();
 
   if (mode === "test") {
-    const key = Deno.env.get("STRIPE_SECRET_KEY_TEST");
+    const key = Deno.env.get("STRIPE_SECRET_KEY_TEST") ?? Deno.env.get("STRIPE_TEST_API_KEY");
     if (!key) {
-      throw new Error("STRIPE_MODE=test but STRIPE_SECRET_KEY_TEST is not configured");
+      throw new Error("STRIPE_MODE=test but STRIPE_SECRET_KEY_TEST / STRIPE_TEST_API_KEY is not configured");
     }
     if (isLiveKey(key)) {
       throw new Error("Refusing to use a live Stripe key while STRIPE_MODE=test");

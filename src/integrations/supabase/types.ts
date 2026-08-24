@@ -545,6 +545,7 @@ export type Database = {
           opportunity_id: string
           portfolio_links: string[] | null
           status: string | null
+          studio_project_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -559,6 +560,7 @@ export type Database = {
           opportunity_id: string
           portfolio_links?: string[] | null
           status?: string | null
+          studio_project_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -573,6 +575,7 @@ export type Database = {
           opportunity_id?: string
           portfolio_links?: string[] | null
           status?: string | null
+          studio_project_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -581,6 +584,13 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_studio_project_id_fkey"
+            columns: ["studio_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -10587,6 +10597,7 @@ export type Database = {
           action_url: string | null
           category: string | null
           created_at: string | null
+          dedupe_key: string | null
           id: string
           image_url: string | null
           link: string | null
@@ -10602,6 +10613,7 @@ export type Database = {
           action_url?: string | null
           category?: string | null
           created_at?: string | null
+          dedupe_key?: string | null
           id?: string
           image_url?: string | null
           link?: string | null
@@ -10617,6 +10629,7 @@ export type Database = {
           action_url?: string | null
           category?: string | null
           created_at?: string | null
+          dedupe_key?: string | null
           id?: string
           image_url?: string | null
           link?: string | null
@@ -18266,6 +18279,7 @@ export type Database = {
           currency: string
           description: string | null
           id: string
+          idempotency_key: string | null
           recipient_id: string
           sender_id: string
           status: string
@@ -18276,6 +18290,7 @@ export type Database = {
           currency?: string
           description?: string | null
           id?: string
+          idempotency_key?: string | null
           recipient_id: string
           sender_id: string
           status?: string
@@ -18286,6 +18301,7 @@ export type Database = {
           currency?: string
           description?: string | null
           id?: string
+          idempotency_key?: string | null
           recipient_id?: string
           sender_id?: string
           status?: string
@@ -19426,7 +19442,7 @@ export type Database = {
       }
     }
     Functions: {
-      accept_application: {
+      accept_application_and_create_studio: {
         Args: { _application_id: string }
         Returns: Json
       }
@@ -19458,6 +19474,10 @@ export type Database = {
       award_founding_member_badge: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      award_xp: {
+        Args: { p_amount: number; p_reason?: string; p_user_id: string }
+        Returns: number
       }
       backfill_vouch_requests: { Args: never; Returns: Json }
       bump_streak: {
@@ -19621,6 +19641,10 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      finalize_unclaimed_profile_claim: {
+        Args: { p_unclaimed_user_id: string }
+        Returns: boolean
       }
       find_duplicate_account_candidates: {
         Args: { p_user_id: string }
@@ -20436,6 +20460,10 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      spend_xp: {
+        Args: { p_amount: number; p_purpose: string }
+        Returns: number
+      }
       submit_credit_endorsement_by_token: {
         Args: {
           _accepted: boolean

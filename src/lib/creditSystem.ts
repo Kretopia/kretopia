@@ -22,19 +22,12 @@ export const awardXP = async (
   description: string
 ) => {
   try {
-    // Update XP on profile directly
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('xp')
-      .eq('user_id', userId)
-      .single();
-
-    if (profile) {
-      await supabase
-        .from('profiles')
-        .update({ xp: (profile.xp || 0) + amount })
-        .eq('user_id', userId);
-    }
+    // Points are awarded server-side (capped + logged)
+    await supabase.rpc('award_xp' as any, {
+      p_user_id: userId,
+      p_amount: amount,
+      p_reason: type,
+    });
 
     // Record XP activity
     await supabase

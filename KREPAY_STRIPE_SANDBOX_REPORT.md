@@ -1,66 +1,60 @@
-# KrePay Stripe Sandbox Report
+# KrePay — Stripe Sandbox Payment Matrix
 
-## Status: BLOCKED — not run
+Project: Kretopia · ref `kwmcocsitwssrtzkdojh` · 2026-08-23/24
 
-Per the task's own rule 0: *"If the environment cannot conclusively prove
-Stripe test mode: stop the payment test; document the blocker; do not
-guess."* That condition is met, so none of the 15 test scenarios requested
-(successful payment, declined card, cancelled checkout, duplicate click,
-retry after timeout, duplicate webhook, invalid signature, wrong amount,
-wrong currency, unauthorized payer, unauthorized project/milestone,
-refresh after payment, session expiry, refund, dispute/failure state) were
-attempted. No Stripe API call of any kind was made this session.
+**Status: NOT EXECUTED — BLOCKED_STRIPE_LIVE_MODE.**
 
-## Why
+Per the task's own safety gate: no payment object was created because
+the backend Stripe secret key could not be independently confirmed as
+test mode — the repo's own record (`EMAIL_STRIPE_SANDBOX_QA.md`,
+2026-08-18) has the user directly confirming live mode in a prior
+session. No code path can prove key mode either way (`STRIPE_SECRET_KEY`
+is always read from env, never hardcoded, in every payment function).
 
-`STRIPE_SECRET_KEY` is read from the environment in every payment edge
-function (`Deno.env.get("STRIPE_SECRET_KEY")`) — never hardcoded, so its
-value cannot be read from source, and this session has no Supabase CLI/
-dashboard access to inspect the actual secret or check the Stripe
-dashboard's key list directly.
+## Matrix status
 
-However, this repo already contains a dated record answering the question:
-`EMAIL_STRIPE_SANDBOX_QA.md` (2026-08-18) documents a prior session asking
-the user directly whether the key is test or live, and recording the
-answer verbatim: **"Confirmed: live mode."** That session, for the same
-reason, also skipped Stripe testing.
+| # | Case | Status |
+|---|---|---|
+| 1 | Successful payment | BLOCKED |
+| 2 | Declined card | BLOCKED |
+| 3 | Canceled checkout | BLOCKED |
+| 4 | Duplicate click | BLOCKED |
+| 5 | Timeout + retry | BLOCKED |
+| 6 | Duplicate webhook | BLOCKED (code path reviewed — see below) |
+| 7 | Invalid webhook signature | BLOCKED (code path reviewed) |
+| 8 | Wrong amount | BLOCKED |
+| 9 | Wrong currency | BLOCKED |
+| 10 | Unauthorized payer | BLOCKED |
+| 11 | Unauthorized milestone | BLOCKED |
+| 12 | Refresh after payment | BLOCKED |
+| 13 | Expired session | BLOCKED |
+| 14 | Processing state | BLOCKED |
+| 15 | Refund | BLOCKED |
 
-Given a live-mode account, every one of the 15 scenarios above would move
-real money, create a real Stripe object, or (for the declined-card/invalid-
-signature/duplicate-webhook cases) still exercise live endpoints in ways
-that could have side effects (e.g. a real webhook delivery retry against a
-live-mode signing secret). None of that is something to do without an
-explicit, current re-confirmation.
+## Static review performed instead (IMPLEMENTED, not sandbox-tested)
 
-## What would unblock this
+- `stripe-wallet-webhook`, `stripe-marketplace-webhook`, `guest-wallet-webhook`
+  all read `await req.text()` (raw body) **before** any parsing and call
+  `stripe.webhooks.constructEventAsync(rawBody, signature, secret)` before
+  touching state. No handler calls `req.json()` first. No parse-and-re-stringify.
+- **All three** webhook handlers now dedupe by Stripe event ID via an
+  insert into `stripe_webhook_events` and a 200-on-`23505` no-op —
+  confirmed by direct grep of each function's current source
+  (`stripe-wallet-webhook/index.ts`, `guest-wallet-webhook/index.ts:71`,
+  `stripe-marketplace-webhook/index.ts:65`). `stripe-marketplace-webhook`
+  didn't have this originally — it was added in this branch's
+  `fix(krepay): close two critical wallet RLS holes, harden webhook +
+  payouts` commit; the other two already had it.
+- Missing signature → 400; bad signature → 400; missing secret → 500.
+- Milestone releases already carry a permanent idempotency table
+  (`20260818120000_thrivefund_milestone_release_idempotency.sql`).
 
-One of:
+## Gaps to close once test keys land
 
-1. A test-mode Stripe secret key (`sk_test_...`) set as `STRIPE_SECRET_KEY`
-   in the relevant Supabase project's function secrets, confirmed via the
-   Stripe dashboard (Developers → API keys) or `supabase secrets list`
-   cross-referenced against what was pasted in — and matching test-mode
-   webhook signing secrets for `STRIPE_WALLET_WEBHOOK_SECRET`,
-   `STRIPE_MARKETPLACE_WEBHOOK_SECRET`, and `STRIPE_WEBHOOK_SECRET`.
-2. Explicit, current confirmation from the user that the key is in fact
-   test mode today (the 2026-08-18 record could be stale — accounts and
-   keys can change) — even then, the three webhook endpoints would still
-   need to be independently confirmed as registered against that same
-   test-mode account with matching secrets, since a misconfigured endpoint
-   fails silently in this codebase (no error surfaces anywhere if a
-   webhook simply never fires).
+- No automated signature tests exist. Add Deno tests for: valid
+  signature, invalid signature, wrong endpoint secret, altered body,
+  duplicate event ID, replay, out-of-order, malformed payload.
 
-## What was done instead
-
-The static-code security audit (`KREPAY_PAYMENT_AUDIT.md`) and the
-resulting hardening (RLS migration, webhook dedup, dead-endpoint removal,
-idempotency keys — see the `fix(krepay)` commit) did not require any live
-API call and were completed. That work closes real vulnerabilities
-regardless of Stripe mode; it is not a substitute for the sandbox test
-matrix above, which specifically verifies end-to-end behavior against
-Stripe's actual API and webhook delivery — something no amount of static
-reading can confirm.
-
-## Test totals
-
-0 of 15 scenarios run. 0 Stripe objects created. 0 webhooks triggered.
+These are intentionally **not** implemented blind while the active key
+may be live — changing money paths without a sandbox to verify them
+against would violate the gate.

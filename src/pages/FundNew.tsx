@@ -187,7 +187,7 @@ const FundNew = () => {
     }
     setSavingDob(true);
     try {
-      const { error } = await supabase.from("profiles").update({ date_of_birth: dob, age_verified: true }).eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update({ date_of_birth: dob }).eq("user_id", user.id);
       if (error) throw error;
       setProfile((p) => ({ ...(p ?? {}), date_of_birth: dob, age_verified: true }));
       toast.success("Age verified");

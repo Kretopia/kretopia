@@ -26,6 +26,7 @@ serve(async (req) => {
       throw new Error("Missing webhook signature or secret");
     }
     event = await stripe.webhooks.constructEventAsync(rawBody, signature, webhookSecret);
+    assertEventMatchesMode(event.livemode);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[guest-wallet-webhook] signature error:", msg);

@@ -47,6 +47,7 @@ serve(async (req) => {
         undefined,
         Stripe.createSubtleCryptoProvider()
       );
+      assertEventMatchesMode(event.livemode);
     } catch (err) {
       logStep("Signature verification failed", { error: String(err) });
       return new Response("Invalid signature", { status: 400 });

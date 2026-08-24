@@ -31,8 +31,11 @@ serve(async (req) => {
   let event: Stripe.Event;
   try {
     event = await stripe.webhooks.constructEventAsync(body, sig, secret);
+    // Cross-mode guard: a live event must never be processed by a test
+    // deployment and vice versa, even if a signing secret is misfiled.
+    assertEventMatchesMode(event.livemode);
   } catch (err) {
-    log("signature failed", err instanceof Error ? err.message : err);
+    log("signature/mode check failed", err instanceof Error ? err.message : err);
     return new Response("bad sig", { status: 400 });
   }
 

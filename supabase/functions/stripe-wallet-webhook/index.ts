@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { resolveStripeSecretKey, assertEventMatchesMode } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,7 +14,7 @@ const log = (s: string, d?: unknown) => console.log(`[stripe-wallet-webhook] ${s
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
+  const stripe = new Stripe(resolveStripeSecretKey(), { apiVersion: "2025-08-27.basil" });
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const secret = Deno.env.get("STRIPE_WALLET_WEBHOOK_SECRET");
   const sig = req.headers.get("stripe-signature");
@@ -30,8 +31,11 @@ serve(async (req) => {
   let event: Stripe.Event;
   try {
     event = await stripe.webhooks.constructEventAsync(body, sig, secret);
+    // Cross-mode guard: a live event must never be processed by a test
+    // deployment and vice versa, even if a signing secret is misfiled.
+    assertEventMatchesMode(event.livemode);
   } catch (err) {
-    log("signature failed", err instanceof Error ? err.message : err);
+    log("signature/mode check failed", err instanceof Error ? err.message : err);
     return new Response("bad sig", { status: 400 });
   }
 

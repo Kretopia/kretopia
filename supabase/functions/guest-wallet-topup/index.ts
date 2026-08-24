@@ -77,7 +77,7 @@ serve(async (req) => {
       .single();
     if (topupError) throw topupError;
 
-    const stripe = new Stripe(resolveStripeSecretKey()!, {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

@@ -81,7 +81,7 @@ serve(async (req) => {
 
     logStep("Eligible milestones", { payable: payable.length, capturable: capturable.length });
 
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

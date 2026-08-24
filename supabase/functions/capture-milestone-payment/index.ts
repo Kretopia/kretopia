@@ -52,7 +52,7 @@ serve(async (req) => {
 
     logStep("Request received", { paymentIntentId, action, milestoneId });
 
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

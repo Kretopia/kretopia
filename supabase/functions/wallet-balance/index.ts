@@ -36,7 +36,7 @@ serve(async (req) => {
 
     if (wallet?.stripe_account_id) {
       try {
-        const stripe = new Stripe(resolveStripeSecretKey()!, { apiVersion: "2025-08-27.basil" });
+        const stripe = new Stripe(resolveStripeSecretKey(), { apiVersion: "2025-08-27.basil" });
         const bal = await stripe.balance.retrieve({ stripeAccount: wallet.stripe_account_id });
         const map = new Map<string, { available_cents: number; pending_cents: number }>();
         for (const b of bal.available ?? []) {

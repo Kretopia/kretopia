@@ -74,7 +74,7 @@ serve(async (req) => {
       .single();
     if (!creator?.stripe_account_id) throw new Error("Creator has no payout account");
 
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

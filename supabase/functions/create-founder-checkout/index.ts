@@ -65,7 +65,7 @@ serve(async (req) => {
       throw new Error("Sorry, all Founder Circle spots have been claimed!");
     }
 
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

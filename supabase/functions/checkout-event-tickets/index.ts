@@ -133,7 +133,7 @@ serve(async (req) => {
       .single();
     if (orderErr) throw new Error(orderErr.message);
 
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

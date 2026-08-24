@@ -108,7 +108,7 @@ serve(async (req) => {
       throw new Error("Circle owner has not set up payment receiving. They need to connect their ThrivePay account first.");
     }
 
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

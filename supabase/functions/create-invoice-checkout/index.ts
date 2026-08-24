@@ -39,7 +39,7 @@ serve(async (req) => {
       .eq("user_id", invoice.issued_by)
       .maybeSingle();
 
-    const stripe = new Stripe(resolveStripeSecretKey()!, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(resolveStripeSecretKey(), { apiVersion: "2025-08-27.basil" });
     const origin = req.headers.get("origin") || "https://www.thrivein.io";
 
     const params: Stripe.Checkout.SessionCreateParams = {

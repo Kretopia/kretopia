@@ -45,7 +45,7 @@ serve(async (req) => {
     // user could join any paid Circle for free. Retrieve and verify the
     // real Stripe session before granting access, same pattern as
     // verify-founder-payment / wallet-topup-confirm.
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

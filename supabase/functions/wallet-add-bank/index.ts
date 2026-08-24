@@ -37,7 +37,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const stripe = new Stripe(resolveStripeSecretKey()!, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(resolveStripeSecretKey(), { apiVersion: "2025-08-27.basil" });
 
     // Load or create wallet + Connect account
     const { data: wallet } = await admin

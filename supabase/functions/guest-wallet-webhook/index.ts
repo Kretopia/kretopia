@@ -12,7 +12,7 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const stripe = new Stripe(resolveStripeSecretKey()!, {
+  const stripe = new Stripe(resolveStripeSecretKey(), {
     apiVersion: "2025-08-27.basil",
   });
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");

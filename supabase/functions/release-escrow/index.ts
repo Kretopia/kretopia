@@ -63,7 +63,7 @@ serve(async (req) => {
       throw new Error("Order is not in escrow");
     }
 
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

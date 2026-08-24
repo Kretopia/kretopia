@@ -14,7 +14,7 @@ const log = (s: string, d?: unknown) => console.log(`[stripe-wallet-webhook] ${s
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const stripe = new Stripe(resolveStripeSecretKey()!, { apiVersion: "2025-08-27.basil" });
+  const stripe = new Stripe(resolveStripeSecretKey(), { apiVersion: "2025-08-27.basil" });
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const secret = Deno.env.get("STRIPE_WALLET_WEBHOOK_SECRET");
   const sig = req.headers.get("stripe-signature");

@@ -42,7 +42,7 @@ serve(async (req) => {
       .eq("is_default", true)
       .maybeSingle();
 
-    const stripe = new Stripe(resolveStripeSecretKey()!, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(resolveStripeSecretKey(), { apiVersion: "2025-08-27.basil" });
 
     // Idempotency: a double-click or client retry after a slow response
     // must not create two real payouts. Falls back to a server-generated

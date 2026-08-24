@@ -95,7 +95,7 @@ serve(async (req) => {
       throw new Error("Event host has not set up payment receiving. They need to connect their payment account first.");
     }
 
-    const stripe = new Stripe(resolveStripeSecretKey() || "", {
+    const stripe = new Stripe(resolveStripeSecretKey(), {
       apiVersion: "2025-08-27.basil",
     });
 

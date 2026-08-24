@@ -60,7 +60,7 @@ serve(async (req) => {
 
     // Verify payment with Stripe
     if (topup.payment_gateway === "stripe" && topup.gateway_session_id) {
-      const stripe = new Stripe(resolveStripeSecretKey() || "", {
+      const stripe = new Stripe(resolveStripeSecretKey(), {
         apiVersion: "2025-08-27.basil",
       });
 

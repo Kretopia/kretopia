@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { syncProjectStatusIfAllMilestonesPaid } from "../_shared/milestoneProjectSync.ts";
-import { resolveStripeSecretKey } from "../_shared/stripeEnv.ts";
+import { resolveStripeSecretKey, assertEventMatchesMode } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -36,7 +36,7 @@ export function PassportCreditsCta({
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
         style={{
           background:
-            "radial-gradient(120% 120% at 0% 0%, hsl(var(--signal-teal)/0.14), transparent 55%), radial-gradient(120% 120% at 100% 100%, hsl(var(--signal-magenta)/0.12), transparent 55%)",
+            "radial-gradient(120% 120% at 0% 0%, hsl(var(--signal-teal)/0.14), transparent 55%), radial-gradient(120% 120% at 100% 100%, hsl(var(--primary)/0.12), transparent 55%)",
         }}
       />
       <div className="relative flex items-center gap-3">

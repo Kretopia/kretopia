@@ -20510,6 +20510,10 @@ export type Database = {
         Args: { p_memory_id: string }
         Returns: undefined
       }
+      update_milestone_workflow_status: {
+        Args: { _milestone_id: string; _status: string }
+        Returns: Json
+      }
       update_my_location: {
         Args: { lat: number; lon: number }
         Returns: boolean

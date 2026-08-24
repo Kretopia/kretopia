@@ -128,10 +128,18 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
   };
 
   const handleStatusChange = async (milestoneId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('milestones')
-      .update({ status: newStatus })
-      .eq('id', milestoneId);
+    // Routed through a validated RPC rather than a direct client UPDATE —
+    // status is one of the columns a raw write must never reach directly
+    // (it's how a milestone could be self-attested 'paid'), so every
+    // non-payment transition goes through update_milestone_workflow_status,
+    // which hard-rejects 'paid' and checks real project authorization
+    // server-side instead of trusting this component's own state.
+    const { data, error: rpcError } = await supabase.rpc('update_milestone_workflow_status', {
+      _milestone_id: milestoneId,
+      _status: newStatus,
+    });
+    const result = data as { success?: boolean; error?: string } | null;
+    const error = rpcError || (result && result.success !== true ? new Error(result.error || 'Update failed') : null);
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

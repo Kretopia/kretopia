@@ -45,14 +45,14 @@ export function CreditsActivityTimeline({
           body="Adding a credit, attaching evidence or receiving a co-sign will show up here with a timestamp."
         />
       ) : (
-        <ol className="relative space-y-3 border-l border-white/10 pl-5">
+        <ol className="relative space-y-3 border-l border-border pl-5">
           {events.map((e) => (
             <li key={`${e.id}-${e.text}`} className="relative">
-              <span className="absolute -left-[27px] flex h-4 w-4 items-center justify-center rounded-full border border-white/15 bg-[#05070D]">
-                <e.icon className="h-2.5 w-2.5 text-white/60" aria-hidden />
+              <span className="absolute -left-[27px] flex h-4 w-4 items-center justify-center rounded-full border border-border bg-background">
+                <e.icon className="h-2.5 w-2.5 text-muted-foreground" aria-hidden />
               </span>
-              <p className="text-sm text-white/85">{e.text}</p>
-              <p className="text-[11px] text-white/40">
+              <p className="text-sm text-foreground">{e.text}</p>
+              <p className="text-[11px] text-muted-foreground">
                 {e.meta ? `${e.meta} · ` : ""}
                 <time dateTime={e.at}>{new Date(e.at).toLocaleDateString()}</time>
               </p>

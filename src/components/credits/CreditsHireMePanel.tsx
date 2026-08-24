@@ -36,7 +36,7 @@ export function CreditsHireMePanel({ profile, index }: { profile: HireMeProfile 
         <button
           type="button"
           onClick={() => navigate("/profile/edit#hire")}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-xs font-semibold text-white/80 transition-colors hover:border-white/30 hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground"
         >
           <Pencil className="h-3.5 w-3.5" aria-hidden />
           Edit
@@ -52,7 +52,7 @@ export function CreditsHireMePanel({ profile, index }: { profile: HireMeProfile 
             <button
               type="button"
               onClick={() => navigate("/profile/edit#hire")}
-              className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#05070D] transition-opacity hover:opacity-90"
+              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
               Set it up
             </button>
@@ -61,34 +61,34 @@ export function CreditsHireMePanel({ profile, index }: { profile: HireMeProfile 
       ) : (
         <div className="space-y-4">
           {profile?.site_headline && (
-            <p className="text-sm leading-relaxed text-white/70">{profile.site_headline}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{profile.site_headline}</p>
           )}
 
           <dl className="grid gap-2.5 sm:grid-cols-3">
-            <div className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5">
-              <dt className="flex items-center gap-1.5 text-[11px] font-medium text-white/50">
+            <div className="rounded-xl border border-border bg-muted/30 px-3 py-2.5">
+              <dt className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
                 <CircleDot className="h-3.5 w-3.5" aria-hidden />
                 Availability
               </dt>
-              <dd className="mt-1 text-sm font-semibold text-white">
+              <dd className="mt-1 text-sm font-semibold text-foreground">
                 {profile?.availability_status || "Not set"}
               </dd>
             </div>
-            <div className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5">
-              <dt className="flex items-center gap-1.5 text-[11px] font-medium text-white/50">
+            <div className="rounded-xl border border-border bg-muted/30 px-3 py-2.5">
+              <dt className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
                 <Briefcase className="h-3.5 w-3.5" aria-hidden />
                 Open to
               </dt>
-              <dd className="mt-1 text-sm font-semibold text-white">
+              <dd className="mt-1 text-sm font-semibold text-foreground">
                 {profile?.collab_intent || "Not set"}
               </dd>
             </div>
-            <div className="rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5">
-              <dt className="flex items-center gap-1.5 text-[11px] font-medium text-white/50">
+            <div className="rounded-xl border border-border bg-muted/30 px-3 py-2.5">
+              <dt className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
                 <Coins className="h-3.5 w-3.5" aria-hidden />
                 Rate
               </dt>
-              <dd className="mt-1 text-sm font-semibold text-white">
+              <dd className="mt-1 text-sm font-semibold text-foreground">
                 {profile?.hourly_rate
                   ? `${currency} ${profile.hourly_rate}/hr`
                   : profile?.project_rate
@@ -99,7 +99,7 @@ export function CreditsHireMePanel({ profile, index }: { profile: HireMeProfile 
           </dl>
 
           {profile?.availability_note && (
-            <p className="text-xs leading-relaxed text-white/45">{profile.availability_note}</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">{profile.availability_note}</p>
           )}
 
           {Array.isArray(profile?.skills) && profile!.skills!.length > 0 && (
@@ -107,7 +107,7 @@ export function CreditsHireMePanel({ profile, index }: { profile: HireMeProfile 
               {profile!.skills!.slice(0, 10).map((s) => (
                 <li
                   key={s}
-                  className="rounded-full border border-white/10 bg-white/[0.02] px-2.5 py-1 text-[11px] font-medium text-white/60"
+                  className="rounded-full border border-border bg-muted/30 px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
                 >
                   {s}
                 </li>

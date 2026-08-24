@@ -117,33 +117,33 @@ export function CreditsAIInsights({
           type="button"
           onClick={() => run()}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-xs font-semibold text-white/80 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
         >
           <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden />
           Refresh
         </button>
       }
     >
-      <div className="mb-3 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
-        <span className="inline-flex items-center gap-1 rounded-full border border-white/12 px-2 py-0.5">
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5">
           <Sparkles className="h-3 w-3" aria-hidden />
           Kreto-generated
         </span>
         {generatedAt && (
-          <time dateTime={generatedAt} className="normal-case tracking-normal text-white/35">
+          <time dateTime={generatedAt} className="normal-case tracking-normal text-muted-foreground">
             {new Date(generatedAt).toLocaleString()}
           </time>
         )}
         {scope.length > 0 && (
-          <span className="normal-case tracking-normal text-white/35">Read: {scope.join(", ")}</span>
+          <span className="normal-case tracking-normal text-muted-foreground">Read: {scope.join(", ")}</span>
         )}
       </div>
 
       {loading ? (
         <div className="space-y-2.5" aria-busy="true" aria-live="polite">
           <span className="sr-only">Kreto is reading your record…</span>
-          <div className="h-16 animate-pulse rounded-xl bg-white/[0.04]" />
-          <div className="h-16 animate-pulse rounded-xl bg-white/[0.04]" />
+          <div className="h-16 animate-pulse rounded-xl bg-muted/30" />
+          <div className="h-16 animate-pulse rounded-xl bg-muted/30" />
         </div>
       ) : degraded ? (
         <CreditsEmptyState
@@ -152,7 +152,7 @@ export function CreditsAIInsights({
         />
       ) : (
         <>
-          {summary && <p className="mb-4 text-sm leading-relaxed text-white/70">{summary}</p>}
+          {summary && <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{summary}</p>}
           {insights.length === 0 ? (
             <CreditsEmptyState
               title="Nothing to suggest yet"
@@ -163,29 +163,29 @@ export function CreditsAIInsights({
               {insights.map((i) => {
                 const canEdit = WRITABLE_FIELDS.includes(i.target_field as any) && i.draft !== null;
                 return (
-                  <li key={i.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                    <h3 className="text-sm font-semibold text-white">{i.title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-white/65">{i.body}</p>
+                  <li key={i.id} className="rounded-xl border border-border bg-muted/30 p-4">
+                    <h3 className="text-sm font-semibold text-foreground">{i.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{i.body}</p>
 
                     <button
                       type="button"
                       onClick={() => setExpanded((p) => ({ ...p, [i.id]: !p[i.id] }))}
                       aria-expanded={!!expanded[i.id]}
-                      className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/50 transition-colors hover:text-white/80"
+                      className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground/80"
                     >
                       <Info className="h-3 w-3" aria-hidden />
                       Why Kreto says this
                     </button>
                     {expanded[i.id] && (
-                      <div className="mt-2 rounded-lg border border-white/8 bg-white/[0.02] p-3 text-xs leading-relaxed text-white/55">
+                      <div className="mt-2 rounded-lg border border-border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
                         <p>{i.reason}</p>
-                        <p className="mt-1.5 text-white/40">{CONFIDENCE_COPY[i.confidence]}</p>
+                        <p className="mt-1.5 text-muted-foreground">{CONFIDENCE_COPY[i.confidence]}</p>
                       </div>
                     )}
 
                     {canEdit && (
                       <div className="mt-3">
-                        <label htmlFor={`draft-${i.id}`} className="mb-1 block text-[11px] font-medium text-white/45">
+                        <label htmlFor={`draft-${i.id}`} className="mb-1 block text-[11px] font-medium text-muted-foreground">
                           Editable draft for your {i.target_field.replace(/_/g, " ")}
                         </label>
                         <textarea
@@ -194,7 +194,7 @@ export function CreditsAIInsights({
                           maxLength={600}
                           rows={3}
                           onChange={(e) => setEditing((p) => ({ ...p, [i.id]: e.target.value }))}
-                          className="w-full rounded-lg border border-white/12 bg-white/[0.03] p-3 text-sm text-white focus:border-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                          className="w-full rounded-lg border border-border bg-muted/30 p-3 text-sm text-foreground focus:border-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                       </div>
                     )}
@@ -204,13 +204,13 @@ export function CreditsAIInsights({
                         type="button"
                         onClick={() => accept(i)}
                         disabled={saving === i.id}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-[#05070D] transition-opacity hover:opacity-90 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                       >
                         <Check className="h-3.5 w-3.5" aria-hidden />
                         {canEdit ? "Accept and save" : "Mark as done"}
                       </button>
                       {canEdit && (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-white/40">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                           <Pencil className="h-3 w-3" aria-hidden />
                           Edit before saving — nothing is written until you accept
                         </span>
@@ -218,7 +218,7 @@ export function CreditsAIInsights({
                       <button
                         type="button"
                         onClick={() => dismiss(i.id)}
-                        className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-white/60 transition-colors hover:text-white"
+                        className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
                       >
                         <X className="h-3.5 w-3.5" aria-hidden />
                         Dismiss

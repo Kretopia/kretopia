@@ -14,12 +14,12 @@ const ICON: Record<EvidenceState, LucideIcon> = {
 
 /** Restrained, accent-gated by tier — only "organization_confirmed" gets the full #FF2DA1 fill. */
 const TONE: Record<EvidenceState, string> = {
-  claimed: "text-white/55 bg-white/[0.06] border-white/15",
-  publicly_sourced: "text-white/65 bg-white/[0.06] border-white/15",
-  evidence_backed: "text-white/80 bg-[#FF2DA1]/10 border-[#FF2DA1]/25",
-  co_signed: "text-white bg-[#FF2DA1]/15 border-[#FF2DA1]/35",
-  organization_confirmed: "text-white bg-[#FF2DA1] border-[#FF2DA1]",
-  pending_review: "text-white/50 bg-white/[0.04] border-white/10 border-dashed",
+  claimed: "text-muted-foreground bg-muted/30 border-border",
+  publicly_sourced: "text-muted-foreground bg-muted/30 border-border",
+  evidence_backed: "text-foreground bg-[#FF2DA1]/10 border-[#FF2DA1]/25",
+  co_signed: "text-foreground bg-[#FF2DA1]/15 border-[#FF2DA1]/35",
+  organization_confirmed: "text-foreground bg-[#FF2DA1] border-[#FF2DA1]",
+  pending_review: "text-muted-foreground bg-muted/30 border-border border-dashed",
 };
 
 interface EvidenceStateBadgeProps {

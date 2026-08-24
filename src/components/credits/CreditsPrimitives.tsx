@@ -40,21 +40,22 @@ export function DashboardPanel({
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: reduced ? 0 : 0.45, ease: EASE, delay: reduced ? 0 : Math.min(index * 0.06, 0.24) }}
       className={cn(
-        "group/panel relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] p-5 backdrop-saturate-150 transition-colors duration-300 hover:border-white/20 sm:p-6",
+        "group/panel relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-colors duration-300 hover:border-[hsl(var(--accent-passport))]/30 sm:p-6",
         className,
       )}
     >
       <span
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-60"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(255,45,161,0.7), rgba(23,217,212,0.7), transparent)" }}
+        style={{ background: "linear-gradient(90deg, transparent, hsl(var(--accent-passport)/0.7), transparent)" }}
       />
+
       <header className="relative mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           {eyebrow && (
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">{eyebrow}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{eyebrow}</p>
           )}
-          <h2 id={id ? `${id}-heading` : undefined} className="text-lg font-semibold tracking-tight text-white">
+          <h2 id={id ? `${id}-heading` : undefined} className="text-lg font-semibold tracking-tight text-foreground">
             {title}
           </h2>
         </div>
@@ -78,10 +79,10 @@ export function CreditsEmptyState({
   icon?: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-white/12 bg-white/[0.015] px-5 py-8 text-center">
-      {icon && <div className="mb-3 flex justify-center text-white/35">{icon}</div>}
-      <h3 className="text-sm font-semibold text-white">{title}</h3>
-      <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-white/55">{body}</p>
+    <div className="rounded-xl border border-dashed border-border bg-muted/30 px-5 py-8 text-center">
+      {icon && <div className="mb-3 flex justify-center text-muted-foreground">{icon}</div>}
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted-foreground">{body}</p>
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>
   );
@@ -92,7 +93,7 @@ export function CreditsPanelSkeleton({ rows = 3 }: { rows?: number }) {
     <div className="space-y-2.5" aria-busy="true" aria-live="polite">
       <span className="sr-only">Loading your credits…</span>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="h-14 animate-pulse rounded-xl bg-white/[0.04]" />
+        <div key={i} className="h-14 animate-pulse rounded-xl bg-muted/30" />
       ))}
     </div>
   );
@@ -101,12 +102,12 @@ export function CreditsPanelSkeleton({ rows = 3 }: { rows?: number }) {
 export function CreditsErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-6 text-center">
-      <p className="text-sm font-medium text-white">{message}</p>
+      <p className="text-sm font-medium text-foreground">{message}</p>
       {onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 rounded-full border border-white/15 px-4 py-1.5 text-xs font-semibold text-white/80 transition-colors hover:border-white/30 hover:text-white"
+          className="mt-3 rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground"
         >
           Try again
         </button>

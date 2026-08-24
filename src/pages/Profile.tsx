@@ -443,7 +443,7 @@ const ProfileContent = () => {
               </button>
               <button
                 type="button"
-                onClick={() => { document.getElementById('hire')?.scrollIntoView({ behavior: 'smooth' }); setJustRevealed(null); }}
+                onClick={() => { navigate('/credits'); setJustRevealed(null); }}
                 className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
               >
                 Review credit evidence

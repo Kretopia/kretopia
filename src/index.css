@@ -1031,51 +1031,88 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   .ai-scan-line { display: none; }
 }
 
-/* Primary guest CTA ("Get Started") — flat #FF2DA1 regardless of light/
-   dark theme (the brand accent is a hard requirement here, not a themed
-   token), a restrained hover/focus glow, and one slow light-sweep per
-   cycle rather than a continuous shimmer. Transform/opacity only so it
-   costs nothing to composite and never shifts layout. */
-.cta-primary {
+/* Smart CTA — pink → grey linear gradient, replacing every flat pink
+   call-to-action across the app in one place: this class, the Button
+   component's hero/lime and gradient variants (button.tsx), and the
+   handful of call sites that applied bg-energy/gradient-primary
+   directly. Deliberately hardcodes #FF2DA1 rather than hsl(var(--energy))
+   -- the brand pink is a hard requirement here regardless of theme or
+   "vibe" (the lime vibe theme reassigns --energy to lime green; this
+   button must not follow it), same rationale the class this replaced
+   already documented.
+
+   At rest both ends of the gradient are visible (pink → slate grey,
+   135deg). On hover the gradient sweeps toward its pink end, the button
+   lifts slightly and gains a pink glow, and one light sheen sweeps
+   across it -- transform/opacity/background-position only, so it's
+   cheap to composite. The sheen triggers on hover, not continuously, so
+   a page with several of these doesn't become a wall of looping
+   animation (the class this replaced looped every 6s, always). */
+.btn-pink-gradient {
   position: relative;
   overflow: hidden;
-  background-color: #FF2DA1;
+  isolation: isolate;
+  background-image: linear-gradient(135deg, #FF2DA1 0%, #FF2DA1 42%, #8b8f9b 78%, #52565f 100%);
+  background-size: 220% 220%;
+  background-position: 85% 85%;
   color: #fff;
+  border: none;
   text-decoration: none;
   box-shadow: 0 0 0 0 rgba(255, 45, 161, 0);
-  transition: box-shadow 0.25s ease, transform 0.15s ease;
+  transition: background-position 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.25s ease,
+              box-shadow 0.35s ease;
 }
-.cta-primary:hover,
-.cta-primary:focus,
-.cta-primary:active {
+.btn-pink-gradient > * {
+  position: relative;
+  z-index: 1;
+}
+.btn-pink-gradient:hover,
+.btn-pink-gradient:focus,
+.btn-pink-gradient:active {
   text-decoration: none;
+  color: #fff;
 }
-.cta-primary:hover {
-  background-color: #FF2DA1;
-  box-shadow: 0 0 22px rgba(255, 45, 161, 0.45);
+.btn-pink-gradient:hover {
+  background-position: 10% 10%;
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 0 24px rgba(255, 45, 161, 0.4), 0 14px 28px -10px rgba(255, 45, 161, 0.45);
 }
-.cta-primary:focus-visible {
-  box-shadow: 0 0 0 3px rgba(255, 45, 161, 0.4), 0 0 22px rgba(255, 45, 161, 0.45);
+.btn-pink-gradient:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 45, 161, 0.4), 0 0 24px rgba(255, 45, 161, 0.4);
 }
-.cta-primary:active {
-  transform: scale(0.97);
+.btn-pink-gradient:active {
+  transform: translateY(0) scale(0.97);
 }
-.cta-primary::after {
+.btn-pink-gradient:disabled,
+.btn-pink-gradient[disabled] {
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.btn-pink-gradient::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.4) 50%, transparent 58%);
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.45) 50%, transparent 58%);
   transform: translateX(-130%);
-  animation: cta-primary-sweep 6s ease-in-out infinite;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
-@keyframes cta-primary-sweep {
-  0% { transform: translateX(-130%); }
-  18% { transform: translateX(130%); }
-  100% { transform: translateX(130%); }
+.btn-pink-gradient:hover::after {
+  transform: translateX(130%);
 }
 @media (prefers-reduced-motion: reduce) {
-  .cta-primary::after { animation: none; display: none; }
+  .btn-pink-gradient {
+    transition: box-shadow 0.2s ease;
+  }
+  .btn-pink-gradient:hover {
+    transform: none;
+  }
+  .btn-pink-gradient::after {
+    display: none;
+  }
 }
 
 /* Shared vertical rhythm + horizontal padding for landing sections. */

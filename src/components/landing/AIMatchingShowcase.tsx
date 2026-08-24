@@ -84,7 +84,7 @@ export const AIMatchingShowcase = () => {
                   <button className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-muted hover:bg-destructive/20 transition-colors flex items-center justify-center group border-2 border-transparent hover:border-destructive active:scale-95">
                     <X className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground group-hover:text-destructive transition-colors" />
                   </button>
-                  <button className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-energy hover:shadow-glow-lime transition-all flex items-center justify-center group scale-105 sm:scale-110 active:scale-100 shadow-glow-lime">
+                  <button className="btn-pink-gradient h-16 w-16 sm:h-20 sm:w-20 rounded-full flex items-center justify-center group scale-105 sm:scale-110 active:scale-100">
                     <Heart className="h-8 w-8 sm:h-10 sm:w-10 text-energy-foreground fill-energy-foreground" />
                   </button>
                   <button className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-muted hover:bg-accent/20 transition-colors flex items-center justify-center group border-2 border-transparent hover:border-accent active:scale-95">
@@ -128,7 +128,7 @@ export const AIMatchingShowcase = () => {
         {/* CTA */}
         <div className="text-center px-4">
           <Link to="/auth" className="inline-block w-full sm:w-auto">
-            <Button size="xl" className="w-full sm:w-auto bg-energy text-energy-foreground hover:bg-energy/90 shadow-glow-lime hover:scale-[1.02] transition-all font-bold">
+            <Button size="xl" className="btn-pink-gradient w-full sm:w-auto text-energy-foreground font-bold">
               <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Find Collaborators Near You
             </Button>

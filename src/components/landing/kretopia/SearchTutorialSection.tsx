@@ -95,8 +95,7 @@ export const SearchTutorialSection = () => {
           <button
             type="button"
             onClick={scrollToHeroSearch}
-            className="rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
-            style={{ backgroundColor: "#FF2DA1" }}
+            className="btn-pink-gradient rounded-full px-5 py-2.5 text-sm font-semibold text-white"
           >
             Search Your Name
           </button>

@@ -237,7 +237,7 @@ export function ProfileLaunchScreen({
             <button
               type="button"
               onClick={handleCopy}
-              className="cta-primary w-full inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold"
+              className="btn-pink-gradient w-full inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? "Copied — paste anywhere" : "Copy profile link"}

@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const HERO_LIME_CLASSES =
-  "bg-energy text-energy-foreground font-black uppercase tracking-wider hover:scale-[1.03] shadow-glow-lime";
+  "btn-pink-gradient text-energy-foreground font-black uppercase tracking-wider";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-all duration-200 ease-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
@@ -18,9 +18,14 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-sm",
         ghost: "hover:bg-muted text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Solid accent CTA — flattened from a violet→magenta gradient in
-        // the design system reset (gradient-primary is now a flat color).
-        gradient: "gradient-primary text-primary-foreground font-bold hover:opacity-95 hover:scale-[1.02] shadow-glow",
+        // Smart accent CTA — pink → grey linear gradient with a hover
+        // sweep/lift/glow, shared with the hero/lime variant below (see
+        // .btn-pink-gradient in index.css). Previously a theme-dependent
+        // flat gradient-primary fill (near-black in light mode, pink only
+        // in dark mode) -- now a consistent brand-pink gradient in every
+        // theme, since this is meant to be a strong CTA regardless of
+        // light/dark/vibe.
+        gradient: "btn-pink-gradient text-energy-foreground font-bold",
         // Hero / Lime — identical loudest-CTA treatment (signature accent,
         // #FF2DA1) kept as two variant names for call-site readability.
         // Shared string so the two can't drift apart.

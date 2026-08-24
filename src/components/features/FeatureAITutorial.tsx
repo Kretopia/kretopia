@@ -128,7 +128,7 @@ export function FeatureAITutorial({
             <button
               type="button"
               onClick={dismiss}
-              className="cta-primary mt-6 w-full rounded-full px-5 py-2.5 text-sm font-semibold"
+              className="btn-pink-gradient mt-6 w-full rounded-full px-5 py-2.5 text-sm font-semibold"
             >
               Got it
             </button>

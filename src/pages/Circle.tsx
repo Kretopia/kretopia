@@ -241,7 +241,7 @@ export default function Circle() {
           <button
             type="button"
             onClick={() => setShowInvite(true)}
-            className="mt-6 w-full text-left rounded-2xl border border-[hsl(var(--signal-teal))]/30 bg-gradient-to-br from-[hsl(var(--signal-teal))]/10 to-transparent p-4 transition-colors hover:border-[hsl(var(--signal-teal))]/60"
+            className="btn-glass btn-glass-outline mt-6 w-full text-left rounded-2xl p-4"
           >
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] flex items-center justify-center shrink-0">

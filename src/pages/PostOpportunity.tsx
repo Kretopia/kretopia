@@ -340,7 +340,7 @@ const PostOpportunity = () => {
           <CardContent>
             <p className="text-sm text-muted-foreground">
               Didn't get it? Check your spam folder or{" "}
-              <button onClick={() => setStep("form")} className="text-primary underline">
+              <button onClick={() => setStep("form")} className="text-white underline hover:text-[#FF2DA1] transition-colors">
                 try again
               </button>
               .
@@ -473,7 +473,7 @@ const PostOpportunity = () => {
                         <button
                           type="button"
                           onClick={() => logoFileInputRef.current?.click()}
-                          className="w-full h-10 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center gap-1.5 text-white/50 hover:border-[rgba(255,45,161,0.5)] hover:text-white/80 transition-colors text-xs font-medium"
+                          className="w-full h-10 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center gap-1.5 text-white/50 hover:border-[#FF2DA1]/50 hover:text-white transition-colors text-xs font-medium"
                         >
                           <Upload className="h-3.5 w-3.5" />
                           Upload
@@ -709,7 +709,7 @@ const PostOpportunity = () => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full h-40 sm:h-52 border-2 border-dashed border-white/15 rounded-xl flex flex-col items-center justify-center gap-2 text-white/50 hover:border-[rgba(255,45,161,0.5)] hover:text-white/80 transition-colors"
+                      className="w-full h-40 sm:h-52 border-2 border-dashed border-white/15 rounded-xl flex flex-col items-center justify-center gap-2 text-white/50 hover:border-[#FF2DA1]/50 hover:text-white transition-colors"
                     >
                       <Upload className="h-7 w-7" />
                       <span className="text-sm font-medium">Click to upload an image</span>

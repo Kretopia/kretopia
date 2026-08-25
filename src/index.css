@@ -1127,10 +1127,25 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   cursor: not-allowed;
 }
 
-/* The scintillating border itself: an animated gradient ring, clipped
-   to a 1px band around the button via padding + mask-composite so
-   only the border area is visible, not a filled overlay. Idle and
-   invisible until hover.
+/* Registered as an animatable custom property so the browser can
+   smoothly tween the conic-gradient's start angle below -- without
+   this, animating a custom property used inside conic-gradient(from
+   var(...)) would just snap between values instead of sweeping. */
+@property --btn-glass-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* The scintillating border itself: a conic gradient (one bright arc,
+   the rest transparent) clipped to a 1px band around the button via
+   padding + mask-composite, so only the border ring is visible, not a
+   filled overlay. Rotating the gradient's OWN start angle (not the
+   element -- rotating the element would rotate the mask/border-radius
+   shape too, and desync it from the button's actual corners on
+   anything that isn't a perfect square) makes the bright arc genuinely
+   travel around the full perimeter -- one lap, not a side-to-side
+   sweep. Idle and invisible until hover.
 
    Plays ONCE per hover, not on a loop: animation-iteration-count: 1
    (not infinite), and CSS restarts an animation whenever the rule that
@@ -1138,7 +1153,7 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
    hover-in, but never repeats while the pointer just sits there. The
    real border-color (set on .btn-glass:hover itself, further down)
    stays solid pink for the whole hover independently of this pass, so
-   the button doesn't go dark once the single sweep finishes -- only the
+   the button doesn't go dark once the single lap finishes -- only the
    traveling light stops repeating. */
 .btn-glass::before {
   content: "";
@@ -1147,30 +1162,32 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   z-index: 1;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(90deg,
-    transparent, transparent,
-    rgba(var(--btn-glass-accent), 0.95),
-    transparent, transparent);
-  background-size: 300% 100%;
-  background-position: -100% 0;
+  /* Narrower arc (12deg, was 23deg) and capped opacity (0.8, was fully
+     opaque) per feedback -- a finer, quieter line rather than a bold
+     flash. The solid border-color change on .btn-glass:hover is still
+     the primary hover cue; this lap is a subtle accent on top of it,
+     not the main signal. */
+  background: conic-gradient(from var(--btn-glass-angle),
+    transparent 0deg,
+    transparent 300deg,
+    rgba(var(--btn-glass-accent), 0.8) 337deg,
+    transparent 353deg);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.2s ease;
   pointer-events: none;
 }
 .btn-glass:hover::before {
   opacity: 1;
-  /* Shortened again to a single, brisk flash per user feedback -- 0.9s
-     read as a glide; 0.5s plus a narrower bright band (stripe width
-     trimmed in the gradient itself, below) reads as one quick sparkle. */
-  animation: btn-glass-shimmer 0.5s ease-out 1;
+  /* Faster lap per feedback: 0.6s -> 0.3s. */
+  animation: btn-glass-shimmer 0.3s linear 1;
   animation-fill-mode: forwards;
 }
 @keyframes btn-glass-shimmer {
-  0% { background-position: -100% 0; }
-  100% { background-position: 200% 0; }
+  from { --btn-glass-angle: 0deg; }
+  to { --btn-glass-angle: 360deg; }
 }
 @media (prefers-reduced-motion: reduce) {
   .btn-glass:hover { transform: none; }

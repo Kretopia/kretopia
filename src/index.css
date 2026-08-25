@@ -1155,35 +1155,71 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
    stays solid pink for the whole hover independently of this pass, so
    the button doesn't go dark once the single lap finishes -- only the
    traveling light stops repeating. */
+/* TRAVELING LIGHT — full lap, constant speed.
+   The old implementation rotated a conic-gradient's start angle. On a
+   wide (non-square) button that maps ANGLE to PERIMETER unevenly: a
+   fixed-degree arc becomes a huge blob near the middle of the long
+   edges and appears to stall there -- the "gros point parasite" the
+   design review flagged. Replaced with a comet element riding the
+   button's actual border-box path via offset-path, so the highlight
+   keeps a constant physical length and a constant speed all the way
+   around the perimeter, with no stall and no blob. */
 .btn-glass::before {
   content: "";
   position: absolute;
-  inset: 0;
+  left: 0;
+  top: 0;
+  width: 34%;
+  min-width: 44px;
+  max-width: 120px;
+  height: 2px;
+  margin: 0;
   z-index: 1;
-  border-radius: inherit;
-  padding: 1px;
-  /* Narrower arc (12deg, was 23deg) and capped opacity (0.8, was fully
-     opaque) per feedback -- a finer, quieter line rather than a bold
-     flash. The solid border-color change on .btn-glass:hover is still
-     the primary hover cue; this lap is a subtle accent on top of it,
-     not the main signal. */
-  background: conic-gradient(from var(--btn-glass-angle),
-    transparent 0deg,
-    transparent 300deg,
-    rgba(var(--btn-glass-accent), 0.8) 337deg,
-    transparent 353deg);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(var(--btn-glass-accent), 0) 0%,
+    rgba(var(--btn-glass-accent), 0.85) 55%,
+    rgba(var(--btn-glass-accent), 0) 100%);
+  box-shadow: 0 0 10px rgba(var(--btn-glass-accent), 0.55);
+  offset-path: border-box;
+  offset-rotate: auto;
+  offset-anchor: 50% 50%;
+  offset-distance: 0%;
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
 }
 .btn-glass:hover::before {
   opacity: 1;
-  /* Faster lap per feedback: 0.6s -> 0.3s. */
-  animation: btn-glass-shimmer 0.3s linear 1;
-  animation-fill-mode: forwards;
+  /* One uninterrupted lap per hover-in. */
+  animation: btn-glass-lap 0.75s linear 1;
+}
+@keyframes btn-glass-lap {
+  from { offset-distance: 0%; opacity: 1; }
+  85%  { opacity: 1; }
+  to   { offset-distance: 100%; opacity: 0; }
+}
+
+/* Fallback for engines without offset-path: border-box — keep the old
+   masked conic ring rather than dropping the cue entirely. */
+@supports not (offset-path: border-box) {
+  .btn-glass::before {
+    inset: 0;
+    left: auto; top: auto;
+    width: auto; height: auto; max-width: none; min-width: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--btn-glass-angle),
+      transparent 0deg,
+      transparent 300deg,
+      rgba(var(--btn-glass-accent), 0.8) 337deg,
+      transparent 353deg);
+    box-shadow: none;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  .btn-glass:hover::before { animation: btn-glass-shimmer 0.45s linear 1; animation-fill-mode: forwards; }
 }
 @keyframes btn-glass-shimmer {
   from { --btn-glass-angle: 0deg; }
@@ -1191,8 +1227,9 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 @media (prefers-reduced-motion: reduce) {
   .btn-glass:hover { transform: none; }
-  .btn-glass:hover::before { animation: none; opacity: 0.7; background-position: 50% 0; }
+  .btn-glass:hover::before { animation: none; opacity: 0; }
 }
+
 
 /* Accent modifiers -- same mechanics above, different signature color. */
 .btn-glass-primary {

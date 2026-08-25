@@ -1259,3 +1259,44 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 @media (min-width: 1024px) {
   .landing-section { padding-left: 3rem; padding-right: 3rem; }
 }
+
+/* ── NAVBAR ROLLBACK ────────────────────────────────────────────────
+   The glass-card + pink shimmer-border CTA system (f66b8e3) was meant
+   for CTA buttons, not navbar chrome. Buttons rendered inside the top
+   navbar opt out of it and go back to the plain shadcn treatment they
+   had before that sweep. Scoped strictly to [data-nav-chrome] so every
+   Studio / Landing CTA keeps the new system. */
+[data-nav-chrome] .btn-glass,
+.nav-btn-plain {
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+[data-nav-chrome] .btn-glass:hover,
+.nav-btn-plain:hover {
+  transform: none;
+  box-shadow: none;
+  background-image: none;
+}
+[data-nav-chrome] .btn-glass::before,
+[data-nav-chrome] .btn-glass::after,
+.nav-btn-plain::before,
+.nav-btn-plain::after {
+  display: none !important;
+  content: none !important;
+}
+[data-nav-chrome] .btn-glass,
+[data-nav-chrome] .btn-glass:hover,
+[data-nav-chrome] .btn-glass:focus,
+[data-nav-chrome] .btn-glass:active {
+  color: inherit !important;
+}
+[data-nav-chrome] .btn-glass-outline {
+  border-color: hsl(var(--border));
+}
+[data-nav-chrome] .btn-glass-ghost:hover,
+[data-nav-chrome] .btn-glass-outline:hover {
+  background-color: hsl(var(--accent) / 0.6);
+}

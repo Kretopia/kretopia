@@ -170,6 +170,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   return (
     <nav
+      data-nav-chrome
+
       className={cn(
         "sticky top-0 z-50 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none",
         isDarkChromeRoute

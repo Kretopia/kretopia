@@ -19506,6 +19506,10 @@ export type Database = {
         Args: { _event_id: string; _user_id: string }
         Returns: boolean
       }
+      can_see_milestone_money: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_view_curated_stage: {
         Args: { _email?: string; _stage_id: string; _user_id: string }
         Returns: boolean
@@ -19857,6 +19861,10 @@ export type Database = {
           status: string
         }[]
       }
+      get_milestone_financials: {
+        Args: { _milestone_id: string }
+        Returns: Json
+      }
       get_mutual_connections: {
         Args: { user1_id: string; user2_id: string }
         Returns: {
@@ -20081,6 +20089,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_project_financials: { Args: { _project_id: string }; Returns: Json }
       get_project_for_guest: {
         Args: { _token: string }
         Returns: {
@@ -20094,6 +20103,17 @@ export type Database = {
           workspace_type: string
         }[]
       }
+      get_project_milestone_financials: {
+        Args: { _project_id: string }
+        Returns: {
+          amount: number
+          escrow_status: string
+          milestone_id: string
+          paid_at: string
+          paid_to: string
+          payment_intent_id: string
+        }[]
+      }
       get_project_people: {
         Args: { _project_id: string }
         Returns: {
@@ -20104,6 +20124,10 @@ export type Database = {
           role: string
           user_id: string
         }[]
+      }
+      get_project_role: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: string
       }
       get_public_creator_showcase: {
         Args: { _limit?: number; _viewer_id?: string }

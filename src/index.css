@@ -1074,7 +1074,10 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   --btn-glass-border: rgba(255, 255, 255, 0.14);
   position: relative;
   isolation: isolate;
-  overflow: visible;
+  /* Clipped so the sheen can never spill past the button's own shape --
+     this is what used to produce the stray pink segment hanging off the
+     corners of wide CTAs. */
+  overflow: hidden;
   color: #fff;
   background-image: linear-gradient(180deg, var(--btn-glass-bg-1), var(--btn-glass-bg-2));
   border: 1px solid var(--btn-glass-border);

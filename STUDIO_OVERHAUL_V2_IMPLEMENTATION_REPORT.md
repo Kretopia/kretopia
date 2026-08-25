@@ -12,35 +12,47 @@ copy, button-system audit, responsive/accessibility, performance,
 release gate) are folded in as sections below rather than thin
 stand-alone files repeating this report's content.
 
-## 0. Headline finding — read this first
+## 0. Headline finding — now resolved, history kept for the record
 
 Verifying the money-visibility work (§6) against the live database
-found that **`20260825100000_studio_role_based_money_rls.sql`, prepared
-earlier in this session, has never been applied.** Confirmed directly,
-not assumed — a REST call to `can_see_milestone_money`, `get_project_role`,
-`get_project_financials`, and `get_project_milestone_financials` against
-the live Supabase project returned `404 PGRST202` ("function ... not
-found in the schema cache") for all four, while an older function
-(`user_has_project_access`) resolved fine. This means:
+originally found that `20260825100000_studio_role_based_money_rls.sql`
+had never been applied (all four of its RPCs 404'd). **This is now
+fixed and confirmed live.**
 
-- The role-based money visibility work in this Phase 2 pass (§6) is
-  code-complete and fails safely (closed, not open — no crash, money
-  just stays hidden for non-owner viewers) but has **no live effect**
-  until that migration is applied.
-- The finding-1 security fix from earlier this session, which that
-  migration was written for, is **also not live** — meaning the
-  column-level `REVOKE`s it was meant to apply haven't happened either.
-- Nothing here is new risk introduced by this pass; it's a pre-existing
-  gap this pass's verification step surfaced. Flagged, not fixed —
-  applying it remains the user's manual step per this engagement's
-  standing rule.
+Applying it live surfaced a real bug in the migration itself: the
+cleanup step that normalizes legacy `project_collaborators.role` values
+before adding a `CHECK` constraint only accounted for two values found
+by grepping INSERT/UPDATE call sites (`'collaborator'`, `'commenter'`).
+The live table also had 4 rows with `role = 'collaborator'` (same value,
+just missed on the first pass due to a transaction-rollback masking the
+first cleanup attempt) and, more interestingly, 3 rows with
+`role = 'owner'` — a value nothing in this migration's design expects
+to be stored (owner-ness is derived from `projects.created_by`, never
+from this column). The migration's cleanup step is now a catch-all
+(normalize anything outside the 4 allowed values to `'guest'`, the most
+restrictive tier — safe regardless of what the value turns out to be),
+and — because the SQL editor runs the whole file as one transaction, so
+a later failing statement was silently rolling back the earlier cleanup
+too — the cleanup was re-run as its own standalone, separately-committed
+statement before re-applying the full file.
 
-**Action needed from you**: apply `20260825100000_studio_role_based_money_rls.sql`
-(and, if not already applied, `20260824100000_milestones_privilege_hardening.sql`
-and `20260825110000_close_public_recap_rls_gap.sql`, prepared earlier
-this session and not independently re-checked here) via the Lovable
-Cloud SQL editor, then re-run the postflight queries in each migration's
-own header comment.
+Re-verified live, twice: via direct REST calls to all four RPCs
+(`200` instead of `404`), and in the actual browser — reloaded `/desk`
+as the test account and confirmed the "Needs an invoice"/"Awaiting
+payment" tiles and the per-row pay label are showing again, correctly,
+because `get_project_role` reports this account as `"collaborator"` on
+its one Project and `collaborator` is in `can_see_milestone_money`'s
+allowed set.
+
+**Still outstanding, and worth your attention now**: the migration's
+own header comment warns it should not be applied without also
+deploying the fixed `redeem-project-guest-link` Edge Function in the
+same release — that function still writes `role: 'collaborator'`/
+`'commenter'` for guest-link redemptions, which will now hard-fail
+(`500`) against the constraint that's live. See §7 below and
+[`STUDIO_DROPZONE_SECURITY_AND_AI_REPORT.md`](STUDIO_DROPZONE_SECURITY_AND_AI_REPORT.md)
+for the full list of Edge Function changes prepared this session that
+still need deploying.
 
 ## 1. Competing creation flow — retired
 
@@ -144,17 +156,29 @@ this session), **not deployed** — these are Edge Functions; deployment
 is the user's manual step, same standing rule as every other function
 change this session. Not live-tested for the same reason.
 
+**Now higher priority than before**: `redeem-project-guest-link`'s
+fixed version (writes `role: 'guest'` unconditionally for all three
+guest-link tiers, from earlier finding-1 work) is also undeployed, and
+the `project_collaborators_role_check` constraint from §0 is now live
+in production. Until that specific function is redeployed, any guest
+link redeemed through the *current* deployed version will hard-fail
+with a `500` (the insert will violate the constraint) instead of
+silently creating a bad row the way it used to. Not a new problem this
+pass created, but the live migration in §0 changed its failure mode
+from "silent data quality issue" to "user-facing error," which makes
+deploying this specific function more urgent than the other two.
+
 ## 8. Role-aware financial visibility
 
 Full detail: [`STUDIO_ROLE_VISIBILITY_REPORT.md`](STUDIO_ROLE_VISIBILITY_REPORT.md).
 
 **Status**: implemented, typechecked, unit-tested (2 new cases in
-`StudioProjectsDashboard.test.tsx`), **blocked live** by §0 — the RPC
-it depends on isn't deployed yet, so it currently fails closed (hides
-money) for every non-owner-fast-path row rather than actually checking
-role. Not a regression (previously it showed money to everyone
-unconditionally in `StudioCardsGrid`, and via an unwired flag in
-`StudioProjectsDashboard`) — but not the finished feature either.
+`StudioProjectsDashboard.test.tsx`), and **now confirmed live** — see
+§0. Not yet tested against an actual client/guest-role account (only a
+`collaborator`-role account was available this session); the
+owner-only and collaborator-visible paths are both confirmed, the
+hidden path is only confirmed by reading the RPC's SQL, not by a live
+negative test.
 
 ## 9. Canonical Landing Page CTA reuse
 
@@ -241,12 +265,23 @@ subscriptions were added.
   §0's role confusion note); Drop Zone and any second-account role path
   not reachable in this session.
 
-**Final status: `BLOCKED_ROLE_VISIBILITY`** — every other piece
-(creation-flow consolidation, six-phase display model, project-switching
-fix, Project Navigator, New Room guided experience, Drop Zone review
-gate + branding, AI auth code) is implemented, typechecked, and either
-browser-verified or honestly marked as not-live-testable-this-session.
-The one piece that is code-complete but **confirmed non-functional live**
-is role-aware money visibility, because its underlying migration isn't
-applied. That's the accurate single blocker for this pass as a whole —
-not `STUDIO_RELEASE_READY`, and not a blanket claim that nothing works.
+**Final status: `STUDIO_READY_FOR_SANDBOX`** — `BLOCKED_ROLE_VISIBILITY`
+is resolved: the migration is applied and role-aware money visibility
+is confirmed live, both via direct RPC calls and in the real browser.
+Every other piece from this pass (creation-flow consolidation,
+six-phase display model, project-switching fix, Project Navigator, New
+Room guided experience, Drop Zone review gate + branding, AI auth code)
+is implemented, typechecked, and either browser-verified or honestly
+marked as not-live-testable this session.
+
+Not `STUDIO_RELEASE_READY` yet, specifically because:
+- Three Edge Function changes (`extract-brief`, `elevate-brief`,
+  `thrive-ai-chat`) are prepared but not deployed, so their security
+  fixes have no live effect.
+- `redeem-project-guest-link`'s fix is also undeployed, and — as of
+  this session's migration going live — guest-link redemption is now
+  actively broken (hard `500`) until it is. See §7.
+- Client/guest-role negative tests for money visibility haven't been
+  run against a real second identity.
+- Drop Zone's review gate hasn't been exercised in a live browser
+  session (owner-only, no owned test Project available this session).

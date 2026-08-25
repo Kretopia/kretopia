@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { extractTextFromFile } from "@/lib/extractBriefDocument";
+import { extractTextFromFile, compressImage, fileToBase64 } from "@/lib/extractBriefDocument";
 import { StudioComingAliveLoader } from "@/components/onboarding/claim-flow/StudioComingAliveLoader";
 
 interface BriefDropZoneProps {
@@ -97,47 +97,6 @@ export const BriefDropZone = ({
     if (invErr) throw invErr;
     if (data?.error) throw new Error(String(data.error));
     return data ?? { facts: 0, entities: 0 };
-  };
-
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => {
-        const result = String(r.result || "");
-        const idx = result.indexOf(",");
-        resolve(idx >= 0 ? result.slice(idx + 1) : result);
-      };
-      r.onerror = () => reject(r.error || new Error("read failed"));
-      r.readAsDataURL(file);
-    });
-
-  // Compress an image to <= ~1280px on the longest side, JPEG, to keep payload small.
-  const compressImage = async (file: File): Promise<{ base64: string; mime: string }> => {
-    if (file.size <= 900 * 1024 && file.type === "image/jpeg") {
-      return { base64: await fileToBase64(file), mime: "image/jpeg" };
-    }
-    const url = URL.createObjectURL(file);
-    try {
-      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const i = new Image();
-        i.onload = () => resolve(i);
-        i.onerror = reject;
-        i.src = url;
-      });
-      const maxSide = 1280;
-      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-      const w = Math.round(img.width * scale);
-      const h = Math.round(img.height * scale);
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-      return { base64: dataUrl.split(",")[1] ?? "", mime: "image/jpeg" };
-    } finally {
-      URL.revokeObjectURL(url);
-    }
   };
 
   const ingestFile = async (file: File | null) => {

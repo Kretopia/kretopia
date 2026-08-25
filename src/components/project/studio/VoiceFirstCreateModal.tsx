@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceConfigs";
+import { compressImage } from "@/lib/extractBriefDocument";
 
 
 const ACCENT = "#FF2DA1";
@@ -264,6 +265,26 @@ export const VoiceFirstCreateModal = ({
     setMode("thinking");
   };
 
+  /** supabase-js's functions.invoke() error only ever says "Edge Function
+   * returned a non-2xx status code" -- the function's own real error
+   * message lives in the response body, on err.context (the raw Response),
+   * which invoke() never reads for you. Without this, every failure here
+   * -- a rate limit, a bad file, credits exhausted -- looked identical and
+   * meaningless to the user ("an Edge Function error"), regardless of the
+   * actual cause. */
+  const describeFunctionError = async (err: any, fallback: string): Promise<string> => {
+    try {
+      const ctx = err?.context;
+      if (ctx && typeof ctx.json === "function") {
+        const body = await (typeof ctx.clone === "function" ? ctx.clone() : ctx).json().catch(() => null);
+        const msg = body?.error || body?.message;
+        if (typeof msg === "string" && msg.trim()) return msg;
+      }
+    } catch { /* fall through to fallback */ }
+    const generic = err?.message === "Edge Function returned a non-2xx status code";
+    return !generic && err?.message ? err.message : fallback;
+  };
+
   const blobToBase64 = (blob: Blob) =>
     new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -295,7 +316,7 @@ export const VoiceFirstCreateModal = ({
       console.error(err);
       toast({
         title: "Couldn't process that",
-        description: err.message ?? "Try typing it instead.",
+        description: await describeFunctionError(err, "Try typing it instead."),
         variant: "destructive",
       });
       setShowText(true);
@@ -327,7 +348,12 @@ export const VoiceFirstCreateModal = ({
       setMode("review");
     } catch (err: any) {
       console.error(err);
-      // Don't block — let them proceed with raw text
+      // Don't block — let them proceed with raw text, but say why Kreto
+      // couldn't elevate it instead of failing silently.
+      const reason = await describeFunctionError(err, "");
+      if (reason) {
+        toast({ title: "Kreto couldn't expand that", description: reason });
+      }
       setBrief({
         project: {
           title: trimmed.slice(0, 60),
@@ -343,15 +369,30 @@ export const VoiceFirstCreateModal = ({
    * already supports source="doc" (base64 PDF/image, Gemini multimodal),
    * it just wasn't wired up in this modal before now. */
   const processFile = async (file: File) => {
+    if (file.size > 25 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Max 25 MB — try a smaller export or a photo instead of the original file.",
+        variant: "destructive",
+      });
+      return;
+    }
     setUploadingFile(true);
     setMode("thinking");
     try {
-      const data_base64 = await blobToBase64(file);
+      // Images go through the same compress-before-send step BriefDropZone
+      // already uses (resize to <=1280px, re-encode as JPEG) -- an
+      // uncompressed phone photo can be 10-20MB, which is a real, silent
+      // cause of intermittent upload failures.
+      const isImage = file.type.startsWith("image/");
+      const { base64: data_base64, mime: mime_type } = isImage
+        ? await compressImage(file)
+        : { base64: await blobToBase64(file), mime: file.type || "application/pdf" };
       const { data, error } = await supabase.functions.invoke("extract-brief", {
         body: {
           source: "doc",
           data_base64,
-          mime_type: file.type || "application/pdf",
+          mime_type,
           workspace_type: workspaceType,
         },
       });
@@ -368,7 +409,7 @@ export const VoiceFirstCreateModal = ({
       console.error(err);
       toast({
         title: "Couldn't read that file",
-        description: err.message ?? "Try pasting the brief as text instead.",
+        description: await describeFunctionError(err, "Try pasting the brief as text instead."),
         variant: "destructive",
       });
       setMode("prompt");
@@ -405,7 +446,7 @@ export const VoiceFirstCreateModal = ({
       console.error(err);
       toast({
         title: "Couldn't read that link",
-        description: err.message ?? "Make sure the Google Sheet is shared as \"Anyone with the link.\"",
+        description: await describeFunctionError(err, "Make sure the Google Sheet is shared as \"Anyone with the link.\""),
         variant: "destructive",
       });
       setMode("prompt");

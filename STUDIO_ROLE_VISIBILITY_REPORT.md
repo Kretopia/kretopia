@@ -47,23 +47,34 @@ finding-1's work earlier this session — this pass wires the frontend
 dashboard up to actually respect it, it doesn't change the mapping
 itself.
 
-## Blocked: not live yet
+## Update: migration applied, feature confirmed live
 
-Confirmed via direct REST calls against the live Supabase project (see
-implementation report §0) that `can_see_milestone_money` currently
-returns `404 PGRST202` — the migration that defines it
-(`20260825100000_studio_role_based_money_rls.sql`) has not been
-applied. Until it is:
+The migration failed twice on first application
+(`project_collaborators_role_check` violated by pre-existing rows with
+`role = 'collaborator'` and `role = 'owner'` — neither anticipated by
+the original grep-based audit; see the migration file's own updated
+header comment for the fix). Once the cleanup `UPDATE` was run and
+committed as its own statement (isolating it from the constraint-add
+statement's transaction) and the full migration re-applied, all four
+RPCs (`can_see_milestone_money`, `get_project_role`,
+`get_project_financials`, `get_project_milestone_financials`) resolved
+`200` against the live project.
 
-- Every non-owned project's `moneyVisible()` resolves to `false` (the
-  RPC call fails, caught, defaults closed) — money is hidden more
-  aggressively than the final design intends, not less. No leak; just
-  an incomplete feature.
-- Owned projects are unaffected (resolved locally, no RPC involved).
+Re-verified live in the browser, not just via REST: reloaded `/desk`
+as the same test account (role `"collaborator"` on its one Project, per
+`get_project_role`) — the "Needs an invoice"/"Awaiting payment" tiles
+and the row-level "No invoice" pay label are showing again, correctly,
+because `collaborator` is in `can_see_milestone_money`'s allowed set.
+This is the real, correct end-state, not the fail-closed default this
+report originally documented.
 
-This is the single most important remaining blocker from this entire
-Phase 2 pass — see the implementation report's §0 for the full
-discovery and what applying the migration would unblock.
+**Not yet re-tested**: the actual client/guest-hidden case (a second
+account with a non-money role on the same Project) — this test session
+still only has one identity's access to verify against. The
+fail-closed default (§ above, now historical) at least demonstrated the
+hidden path works when the RPC is unreachable; the RPC's own role
+branching (`client`/`guest` → `false`) hasn't been exercised live yet,
+only read from its SQL definition.
 
 ## Tests
 
@@ -75,7 +86,7 @@ not one this pass closed) — verified by code read instead.
 
 ## What would close this out
 
-1. Apply the migration (§0 of the implementation report).
+1. ~~Apply the migration~~ — done.
 2. Real two-account test: an owner and a client/guest-role collaborator
    on the same Project, both viewing `/desk` — the owner's dashboard row
    for that Project shows the pay dot, the collaborator's does not.
@@ -83,4 +94,5 @@ not one this pass closed) — verified by code read instead.
    counts on the collaborator's dashboard don't include Projects they
    can't see money on.
 
-None of these three have been run.
+Items 2 and 3 still need a second real identity with a client/guest
+role to test against — not available in this session.

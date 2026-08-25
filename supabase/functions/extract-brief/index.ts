@@ -159,6 +159,12 @@ async function callGemini(parts: unknown[], systemPrompt: string, apiKey: string
   );
 
   if (!res.ok) {
+    // Friendlier copy for the two AI-gateway failure modes a user can
+    // actually do something about -- everything else stays a generic
+    // "AI gateway error N: ..." (still real, just not actionable by the
+    // user). Same two cases scope-guardian already special-cases.
+    if (res.status === 429) throw new Error("Rate limited. Please try again in a moment.");
+    if (res.status === 402) throw new Error("AI credits exhausted. Please add funds in Settings.");
     const text = await res.text();
     throw new Error(`AI gateway error ${res.status}: ${text}`);
   }

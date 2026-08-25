@@ -43,7 +43,7 @@ export default function FoundingMember() {
       <div className="max-w-2xl mx-auto px-4 pt-4">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-2"
+          className="inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-[#FF2DA1] transition-colors mb-2"
         >
           <ArrowLeft className="h-4 w-4" />
           Back

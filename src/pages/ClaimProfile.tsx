@@ -330,7 +330,7 @@ export default function ClaimProfile() {
                   Already have an account?{' '}
                   <button 
                     onClick={() => navigate(`/auth?redirect=/claim/${claimToken}`)}
-                    className="text-primary hover:underline"
+                    className="text-white hover:text-[#FF2DA1] hover:underline transition-colors"
                   >
                     Sign in
                   </button>

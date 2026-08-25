@@ -527,7 +527,7 @@ const CreatorWorkHome = () => {
         <button
           type="button"
           onClick={() => setVoiceCmdOpen(true)}
-          className="group inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-card/60 pl-1.5 pr-4 py-1.5 transition-all hover:border-primary/40 hover:bg-card"
+          className="btn-glass btn-glass-outline group inline-flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5"
         >
           <span
             className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white"
@@ -552,7 +552,7 @@ const CreatorWorkHome = () => {
         <button
           type="button"
           onClick={() => setShowCreateProject(true)}
-          className="group w-full rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6 text-left transition-all hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10"
+          className="btn-glass btn-glass-primary group w-full rounded-2xl p-5 sm:p-6 text-left"
         >
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">

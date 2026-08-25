@@ -267,7 +267,7 @@ const ProductionPage = () => {
               } else {
                 navigate('/');
               }
-            }} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors">
+            }} className="flex items-center gap-1 text-xs text-white/60 hover:text-[#FF2DA1] mb-4 transition-colors">
               <ArrowLeft className="h-3.5 w-3.5" /> Back
             </button>
 
@@ -414,7 +414,7 @@ const ProductionPage = () => {
                     {isOwner && (
                       <button
                         onClick={() => setEndorseCredit({ id: r.id, project_name: projectName, role: r.role, year: production?.year ?? undefined })}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/10 hover:bg-primary/20 border-t border-primary/20 text-xs font-semibold text-primary transition-colors"
+                        className="btn-glass btn-glass-outline w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-semibold"
                       >
                         <UserPlus className="h-3.5 w-3.5" />
                         {isVerified ? "Add collaborator/client vouch" : "Get this credit verified — ask someone"}
@@ -491,11 +491,11 @@ const ProductionPage = () => {
                                 ) : (
                                   <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
                                 )}
-                                <button onClick={() => navigate(`/profile/${claimed.user_id}`)} className="text-[10px] text-primary hover:underline">View</button>
+                                <button onClick={() => navigate(`/profile/${claimed.user_id}`)} className="text-[10px] text-white hover:text-[#FF2DA1] hover:underline transition-colors">View</button>
                                 {user?.id === claimed.user_id && (
                                   <button
                                     onClick={() => setEndorseCredit({ id: claimed.id, project_name: projectName, role: claimed.role, year: production?.year ?? undefined })}
-                                    className="text-[10px] font-semibold text-primary hover:underline"
+                                    className="text-[10px] font-semibold text-white hover:text-[#FF2DA1] hover:underline transition-colors"
                                   >
                                     Verify
                                   </button>
@@ -504,7 +504,7 @@ const ProductionPage = () => {
                             ) : (
                               <button
                                 onClick={() => handleClaim(role.role)}
-                                className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 shrink-0 px-2 py-1 rounded-md border border-primary/20 hover:bg-primary/5 transition-colors"
+                                className="btn-glass btn-glass-outline flex items-center gap-1 text-[10px] font-semibold shrink-0 px-2 py-1 rounded-md"
                               >
                                 <UserPlus className="h-3 w-3" /> Claim
                               </button>
@@ -541,7 +541,7 @@ const ProductionPage = () => {
             ) : (
               <button
                 onClick={() => setAddingRole(true)}
-                className="w-full py-3 rounded-xl border border-dashed border-primary/30 text-xs font-semibold text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl border-2 border-dashed border-white/15 text-xs font-semibold text-white/70 hover:border-[#FF2DA1]/50 hover:text-white transition-colors flex items-center justify-center gap-2"
               >
                 <Plus className="h-3.5 w-3.5" /> Worked on this? Add your role
               </button>

@@ -293,7 +293,7 @@ const ProjectsList = () => {
             {filtersActive && (
               <button
                 onClick={() => { setQuery(""); setStatusFilter("all"); setPayFilter("all"); setFolderFilter("all"); }}
-                className="shrink-0 h-7 px-2.5 rounded-full text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                className="shrink-0 h-7 px-2.5 rounded-full text-[11px] font-semibold text-white/60 hover:text-[#FF2DA1] transition-colors"
               >
                 Clear
               </button>

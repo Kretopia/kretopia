@@ -124,7 +124,7 @@ const MeetupManage = () => {
         <div className="relative container mx-auto max-w-6xl px-4 pt-4 pb-5 sm:pt-7 sm:pb-8">
           <button
             onClick={() => navigate("/meetup")}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-energy transition mb-3 uppercase tracking-wider font-bold"
+            className="inline-flex items-center gap-1 text-xs text-white/60 hover:text-[#FF2DA1] transition mb-3 uppercase tracking-wider font-bold"
           >
             <ArrowLeft className="h-3 w-3" /> Back to Events
           </button>
@@ -168,7 +168,7 @@ const MeetupManage = () => {
             <div className="lg:hidden">
               <Sheet open={pickerOpen} onOpenChange={setPickerOpen}>
                 <SheetTrigger asChild>
-                  <button className="w-full flex items-center gap-3 p-3 rounded-lg border border-energy/40 bg-energy/[0.04]">
+                  <button className="btn-glass btn-glass-outline w-full flex items-center gap-3 p-3 rounded-lg">
                     <div className="shrink-0 w-10 h-10 rounded bg-gradient-to-br from-primary/20 to-energy/10 overflow-hidden flex items-center justify-center">
                       {selected?.cover_image_url ? (
                         <img src={selected.cover_image_url} alt="" className="w-full h-full object-cover" />
@@ -370,7 +370,7 @@ const Stat = ({ label, value }: { label: string; value: number | string }) => (
 const QuickAction = ({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) => (
   <button
     onClick={onClick}
-    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 bg-card/60 hover:border-energy/50 hover:bg-energy/5 transition text-[11px] font-bold"
+    className="btn-glass btn-glass-outline shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold"
   >
     <Icon className="h-3.5 w-3.5 text-energy" /> {label}
   </button>

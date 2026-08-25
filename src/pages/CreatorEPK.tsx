@@ -554,7 +554,7 @@ const CreatorEPK = () => {
                 <button
                   type="button"
                   onClick={() => setBioExpanded((v) => !v)}
-                  className="mt-2 text-xs font-semibold text-primary hover:underline"
+                  className="mt-2 text-xs font-semibold text-white hover:text-[#FF2DA1] hover:underline transition-colors"
                 >
                   {bioExpanded ? "Show less" : "Read more"}
                 </button>

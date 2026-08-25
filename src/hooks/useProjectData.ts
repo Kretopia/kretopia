@@ -54,7 +54,7 @@ export function useProjectData(projectId: string | undefined) {
   const fetchProjects = useCallback(async () => {
     const { data } = await supabase
       .from("projects")
-      .select("id, title, status, updated_at")
+      .select("id, title, status, updated_at, deadline, workspace_type")
       .order("updated_at", { ascending: false });
     setProjects(data || []);
   }, []);

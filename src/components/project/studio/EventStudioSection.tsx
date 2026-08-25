@@ -25,10 +25,12 @@ interface Props {
   currentUserId: string;
 }
 
+// White = done/resolved, pink = at risk (needs a look), gray = plain
+// planned — no red/amber/green traffic light, per the app's palette.
 const STATUS_TONE: Record<string, string> = {
   planned: "bg-muted text-muted-foreground",
-  done: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  at_risk: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  done: "bg-white/10 text-white",
+  at_risk: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]",
 };
 
 /**

@@ -61,22 +61,22 @@ interface Approval {
 
 const SHOT_STATUS_TONE: Record<string, string> = {
   planned: "bg-muted text-muted-foreground",
-  shot: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  skipped: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  shot: "bg-white/15 text-white font-semibold",
+  skipped: "bg-muted text-muted-foreground",
 };
 
 const POST_STATUS_TONE: Record<string, string> = {
   idea: "bg-muted text-muted-foreground",
   drafted: "bg-primary/15 text-primary",
   scheduled: "bg-energy/15 text-foreground",
-  published: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  published: "bg-white/15 text-white font-semibold",
 };
 
 const APPROVAL_TONE: Record<string, string> = {
-  pending: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  approved: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  pending: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]",
+  approved: "bg-white/15 text-white font-semibold",
   changes_requested: "bg-primary/15 text-primary",
-  rejected: "bg-destructive/15 text-destructive",
+  rejected: "bg-muted text-muted-foreground",
 };
 
 export function ContentStudioSection({ project, currentUserId }: Props) {
@@ -306,7 +306,7 @@ export function ContentStudioSection({ project, currentUserId }: Props) {
           <TabsTrigger value="approvals" className="text-[11px]">
             <CheckSquare className="h-3 w-3 mr-1" />Approve
             {approvals.filter((a) => a.status === "pending").length > 0 && (
-              <span className="ml-1 text-[9px] bg-amber-500/20 text-amber-600 px-1 rounded">
+              <span className="ml-1 text-[9px] bg-[hsl(var(--energy)/0.2)] text-[hsl(var(--energy))] px-1 rounded">
                 {approvals.filter((a) => a.status === "pending").length}
               </span>
             )}

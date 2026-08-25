@@ -34,13 +34,13 @@ const TALENT_STATUSES = ["invited", "confirmed", "declined", "cancelled"];
 
 const STATUS_TONE: Record<string, string> = {
   lead: "bg-muted text-muted-foreground",
-  quoted: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  booked: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  quoted: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]",
+  booked: "bg-white/15 text-white font-semibold",
   paid: "bg-primary/15 text-primary",
   invited: "bg-muted text-muted-foreground",
-  confirmed: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  declined: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
-  cancelled: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
+  confirmed: "bg-white/15 text-white font-semibold",
+  declined: "bg-muted text-muted-foreground",
+  cancelled: "bg-muted text-muted-foreground",
 };
 
 interface Props {
@@ -204,7 +204,7 @@ export function EventCrmSection({ project, currentUserId, kind }: Props) {
                 </div>
                 <button
                   onClick={() => remove(r)}
-                  className="text-muted-foreground/60 hover:text-rose-500 p-1"
+                  className="text-muted-foreground/60 hover:text-destructive p-1"
                   aria-label="Remove"
                 >
                   <Trash2 className="h-3.5 w-3.5" />

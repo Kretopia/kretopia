@@ -28,18 +28,20 @@ interface ChecklistItem {
   id: string; title: string; due_date: string | null; done: boolean; order_index: number;
 }
 
+// A 5-stage pipeline, not a traffic light: gray (not started) -> white
+// (in motion) -> increasing pink intensity -> solid white (final/done).
 const TRACK_STATUS_TONE: Record<string, string> = {
   idea: "bg-muted text-muted-foreground",
   recorded: "bg-primary/15 text-primary",
-  mixed: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  mastered: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  final: "bg-emerald-600/20 text-emerald-700 dark:text-emerald-300",
+  mixed: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]",
+  mastered: "bg-[hsl(var(--energy)/0.25)] text-[hsl(var(--energy))] font-semibold",
+  final: "bg-white/15 text-white font-semibold",
 };
 
 const SPLIT_TONE: Record<string, string> = {
-  pending: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  agreed: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  declined: "bg-destructive/15 text-destructive",
+  pending: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]",
+  agreed: "bg-white/10 text-white",
+  declined: "bg-muted text-muted-foreground",
 };
 
 export function MusicStudioSection({ project, currentUserId }: Props) {
@@ -353,7 +355,7 @@ export function MusicStudioSection({ project, currentUserId }: Props) {
             </Button>
             <Badge
               variant="outline"
-              className={`text-[10px] shrink-0 ${totalReleaseSplit === 100 ? "text-emerald-600 border-emerald-500/40" : totalReleaseSplit > 100 ? "text-destructive border-destructive/40" : ""}`}
+              className={`text-[10px] shrink-0 ${totalReleaseSplit === 100 ? "text-white border-white/30" : totalReleaseSplit > 100 ? "text-destructive border-destructive/40" : ""}`}
             >
               Release: {totalReleaseSplit.toFixed(1)}%
             </Badge>

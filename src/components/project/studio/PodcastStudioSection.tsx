@@ -32,7 +32,7 @@ const STATUS_TONE: Record<string, string> = {
   planned: "bg-muted text-muted-foreground",
   scheduled: "bg-primary/15 text-primary",
   recorded: "bg-energy/15 text-foreground",
-  published: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  published: "bg-white/15 text-white font-semibold",
 };
 
 /**

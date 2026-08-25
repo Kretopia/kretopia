@@ -150,7 +150,12 @@ export const StudioRoom = ({
     if (!onPinStage) return;
     const currentIdx = PROJECT_FLOW_STAGES.findIndex((s) => s.id === flow.currentStageId);
     if (currentIdx < 0 || currentIdx >= PROJECT_FLOW_STAGES.length - 1) return;
-    const nextStage = PROJECT_FLOW_STAGES[currentIdx + 1];
+    // Advance to the first stage that belongs to a *different* phase, so the
+    // phase rail actually moves (Build = tasks+work, Commit = agreement+payment).
+    const currentPhase = stageToPhase(flow.currentStageId);
+    const nextStage =
+      PROJECT_FLOW_STAGES.slice(currentIdx + 1).find((s) => stageToPhase(s.id) !== currentPhase) ??
+      PROJECT_FLOW_STAGES[currentIdx + 1];
     const nextPhaseLabel = STUDIO_PHASES.find((p) => p.id === stageToPhase(nextStage.id))?.label ?? nextStage.label;
 
     onPinStage(nextStage.id);

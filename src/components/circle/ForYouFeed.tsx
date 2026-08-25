@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { notifyUser } from "@/lib/notifyUser";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -204,25 +205,25 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             .single();
 
           // Notify the other user about the match
-          await supabase.from('notifications').insert({
-            user_id: currentCreator.user_id,
+          await notifyUser({
+            userId: currentCreator.user_id,
             type: 'match',
             title: "It's a Match!",
             message: `You and ${myProfile?.full_name || 'a creator'} both want to connect!`,
             link: `/messages?user=${user!.id}`,
-            action_url: `/messages?user=${user!.id}`,
-            action_text: 'Send Message',
+            actionUrl: `/messages?user=${user!.id}`,
+            actionText: 'Send Message',
           });
 
           // Notify current user about the match
-          await supabase.from('notifications').insert({
-            user_id: user!.id,
+          await notifyUser({
+            userId: user!.id,
             type: 'match',
             title: "It's a Match!",
             message: `You and ${currentCreator.full_name} both want to connect!`,
             link: `/messages?user=${currentCreator.user_id}`,
-            action_url: `/messages?user=${currentCreator.user_id}`,
-            action_text: 'Send Message',
+            actionUrl: `/messages?user=${currentCreator.user_id}`,
+            actionText: 'Send Message',
           });
 
           // Trigger the match celebration

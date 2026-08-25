@@ -124,7 +124,7 @@ serve(async (req) => {
     const { data: users } = await supabase
       .from("profiles")
       .select("user_id")
-      .gte("last_seen_at", since)
+      .gte("last_active_date", since.slice(0, 10))
       .limit(500);
 
     let count = 0;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { notifyUser } from "@/lib/notifyUser";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -300,14 +301,14 @@ const ViewProfile = () => {
         }
         
         // Create notification for the other user
-        await supabase.from('notifications').insert({
-          user_id: userId,
+        await notifyUser({
+          userId,
           title: isGated ? 'Filtered Connection Request' : 'New Connection Request',
           message: `${user.user_metadata?.full_name || 'Someone'} wants to connect with you`,
           type: 'connection',
           link: `/profile/${user.id}`,
-          action_url: `/profile/${user.id}`,
-          action_text: 'View Profile'
+          actionUrl: `/profile/${user.id}`,
+          actionText: 'View Profile',
         });
       }
     } catch (error) {

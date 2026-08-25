@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { notifyUser } from "@/lib/notifyUser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -269,16 +270,16 @@ export function StartProjectDialog({
       }
 
       // Create in-app notification for the collaborator
-      await supabase.from('notifications').insert({
-        user_id: collaborator.id,
+      await notifyUser({
+        userId: collaborator.id,
         title: "New Project Created",
         message: `${userProfile?.full_name || 'Someone'} started a project with you: ${validationResult.data.title}`,
         type: 'project_invite',
         category: 'collaboration',
         priority: 'high',
         link: `/desk/${project.id}`,
-        action_url: `/desk/${project.id}`,
-        action_text: 'Open Project',
+        actionUrl: `/desk/${project.id}`,
+        actionText: 'Open Project',
       });
 
       // Try to send email notification

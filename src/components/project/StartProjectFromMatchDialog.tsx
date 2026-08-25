@@ -274,16 +274,16 @@ export function StartProjectFromMatchDialog({
 
       if (!inviteError) {
         // Always send in-app notification regardless of email availability
-        await supabase.from('notifications').insert({
-          user_id: matchedUser.id,
+        await notifyUser({
+          userId: matchedUser.id,
           title: "New Project Invitation",
           message: `${userProfile?.full_name || 'Someone'} invited you to collaborate on ${validationResult.data.title}`,
           type: 'project_invite',
           category: 'collaboration',
           priority: 'high',
           link: `/desk/${project.id}`,
-          action_url: `/desk/${project.id}`,
-          action_text: 'Open Project',
+          actionUrl: `/desk/${project.id}`,
+          actionText: 'Open Project',
         });
 
         // Send email notification if we have their email

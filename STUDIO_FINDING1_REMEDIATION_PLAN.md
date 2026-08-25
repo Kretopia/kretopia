@@ -270,38 +270,40 @@ Do not report this migration as applied/verified until tests 1–6 have
 actually been run against the live post-migration database with real
 output recorded — not assumed from reading the SQL.
 
-## 7. Frontend consumers — checklist, not yet updated
+## 7. Frontend consumers — reviewed individually, now implemented
 
-Grepped for real reads of the now-revoked columns (not the broad,
-false-positive-prone `.amount` pattern used in the initial audit pass).
-**None of these files have been changed in this plan.** Applying the
-migration without updating them will make their current raw
-`.select()` calls silently stop returning the financial fields for
-*everyone*, including legitimately authorized owners/creatives — a
-functional regression, not a security fix, if shipped without this
-follow-up.
+Each of the 12 files below was read in full before touching anything,
+per the "understand before you touch it" principle this section
+originally deferred on. The result was better than expected: most of
+these files receive `project`/`milestones` as props flowing down from
+one single fetch point (`useProjectData.ts`), not independent queries —
+fixing that one hook, plus three components with their own independent
+fetches, covers all 12. Verified: typecheck (0 errors), test (83/83),
+build (clean) after every change below.
 
-| File | Confirmed reads | Needs |
+| File | What was actually found | Change made |
 |---|---|---|
-| `src/components/project/MilestoneBoard.tsx` | `paid_to`, `escrow_status`, `.amount` | Switch financial-field reads to `get_project_milestone_financials` (batch) |
-| `src/components/project/finance/FinanceHub.tsx` | `paid_to`, `escrow_status`, `.amount` | Same |
-| `src/components/project/studio/MilestoneStrip.tsx` | `.amount` | Same |
-| `src/components/project/PaymentDispute.tsx` | `paid_to`, `escrow_status` | Verify usage, likely same fix |
-| `src/components/project/PaymentVerification.tsx` | `paid_to`, `escrow_status`, `.amount` | Verify usage, likely same fix |
-| `src/components/project/ScopeGuardian.tsx` | `paid_to`, `escrow_status` | Verify — this is the milestone-generation tool; check whether it reads existing amounts or only writes new ones |
-| `src/components/project/studio/AutopilotProjectGuide.tsx` | `paid_to`, `escrow_status`, `.amount` | Verify usage |
-| `src/components/project/InvoiceGenerator.tsx` | `.amount` | Verify whether this is `milestones.amount` or an unrelated invoice-line amount before changing anything |
-| `src/components/project/ProjectTemplates.tsx` | `.amount` | Verify — likely template-defined milestone amounts, not live data; may not need the RPC at all |
-| `src/components/project/finance/AgentFinanceSummary.tsx` | `client_price`/`creative_payout`/`margin_*` | Switch to `get_project_financials` — owner-only, matches this component's existing owner-gated rendering |
-| `src/components/project/studio/MoneySection.tsx` | `client_price`/`creative_payout`/`margin_*` | Same |
-| `src/hooks/useProjectMoneySignal.ts` | `client_price`/`creative_payout`/`margin_*` | Same |
+| `src/hooks/useProjectData.ts` | **The real chokepoint.** Both `milestones` (line ~138) and `projects` (line ~104) are fetched here with `select("*")` and passed down as props to `ThriveDesk.tsx` → `StudioRoom`/`DeskTabContent` → every other component in this table. | Added `get_project_milestone_financials(project_id)` (batch RPC) and `get_project_financials(project_id)` calls alongside the existing selects, merged into the milestone rows / project object by id. Unauthorized viewers get milestone rows with `amount`/`paid_to`/`paid_at`/`escrow_status`/`payment_intent_id` left `undefined` rather than faked as `0`/`null`. |
+| `src/components/project/MilestoneBoard.tsx` | Receives `milestones` as a **prop** — no independent fetch. Its own arithmetic (`Number(milestone.amount)` in 3 places, including the aggregate `totalAmount`/`paidAmount` sums) had no `|| 0` guard — one milestone with `amount === undefined` would have turned every total on the page into `NaN`. | Fixed automatically by the `useProjectData.ts` change for authorized viewers. Added `|| 0` fallbacks to the two aggregate sums and the batch-pay total, and a `milestone.amount == null ? "—" : ...` guard on the one per-card amount display that isn't already gated behind the owner-only action buttons (those two — "Approve & Release $X", "Pay Now $X" — are only ever rendered for `userRole === 'client'`, i.e. the real owner in `useProjectData`'s inverted-naming role, who is unconditionally authorized under `can_see_milestone_money`, so they were left as-is). |
+| `src/components/project/finance/FinanceHub.tsx` | Also receives `milestones`/`project` as **props**. Its aggregate `totals` useMemo was already defensively written (`Number(m.amount \|\| 0)` throughout) — only the "unbilled milestones" nudge button's inline `${Number(m.amount).toFixed(0)}` was missing the fallback. | Fixed automatically for authorized viewers; added the one missing `\|\| 0` guard. |
+| `src/components/project/studio/MilestoneStrip.tsx` | **Independent fetch** (`select("id, title, amount, status, due_date")`), not derived from `useProjectData`. Renders via `Intl.NumberFormat.format()`, which is not `undefined`-safe. | Added the batch RPC call alongside its own select, merged `amount` in by milestone id, changed the `amount` type to `number \| undefined`, and guarded the render (`m.amount === undefined ? "—" : fmt(...)`). Also converted its card button to the app-wide `.btn-glass` system while in the file (unrelated design-system consistency pass, not part of this security fix). |
+| `src/components/project/PaymentDispute.tsx` | **Dead code** — zero importers anywhere in `src/`, confirmed by grep. Its `paymentIntentId`/`payment_intent_id` reference is a prop being *written* into a new `payment_disputes` row, not a read of `milestones.payment_intent_id`. | No change — nothing to fix in unreachable code. |
+| `src/components/project/PaymentVerification.tsx` | **Dead code** — zero importers, same pattern as `ActivityTimeline.tsx`/`MobileProjectHub.tsx`/`ProjectNotes.tsx` from the original audit. Does read `milestone.amount`/`paid_to`/`escrow_status` via `select("*")`, which would break if this were ever wired up post-migration. | No change — flagged here for whoever eventually reaches for this component: it will need the same RPC treatment as `MilestoneStrip.tsx` before being mounted anywhere. |
+| `src/components/project/ScopeGuardian.tsx` | The original checklist's grep hit was a **false positive** — its only `escrow_status` reference is `escrow_status: 'none'` inside an `INSERT` when creating new milestones from an AI-generated schedule, not a `SELECT` of existing data. This migration only revokes `SELECT`, not `INSERT`. | No change needed. |
+| `src/components/project/studio/AutopilotProjectGuide.tsx` | Has its own `loadMilestones()` fetch (`select("id, title, amount, status")`), but tracing its render path confirmed it's **effectively owner-only in practice**: `StudioRoom.tsx`'s only trigger for opening this dialog is wrapped in `{isOwner && !project.setup_completed && (...)}` (`StudioRoom.tsx:415`) — nothing else ever sets `autopilotOpen = true`. The owner is unconditionally authorized under `can_see_milestone_money`. | No change needed. |
+| `src/components/project/InvoiceGenerator.tsx` | The original checklist's grep hit was a **false positive** — every `.amount` reference here is an `invoices`-table or line-item `amount` (a completely different table/concept), not `milestones.amount`. | No change needed. |
+| `src/components/project/ProjectTemplates.tsx` | Also a **false positive** — `milestone.amount` here is a field on a static, predefined *template* object (`selectedTemplate.milestones`), being inserted as the starting value for brand-new milestones, not a read of the live `milestones` table. | No change needed. |
+| `src/components/project/finance/AgentFinanceSummary.tsx` | Receives `project` as a prop; already used `project?.client_price ?? null` / `project?.creative_payout ?? null` throughout — nullish coalescing already treats `undefined` the same as `null`. | No change needed — already safe by its own pre-existing defensive coding. |
+| `src/components/project/studio/MoneySection.tsx` | Same pattern — `project.client_price ?? project.creative_payout ?? null`, already `undefined`-safe. | No change needed. |
+| `src/hooks/useProjectMoneySignal.ts` | Receives `project` as a parameter; only does truthy checks (`!!(project?.budget \|\| project?.client_price \|\| project?.creative_payout)`) — no arithmetic, no `undefined`/`NaN` risk. A non-owner will now see `hasBudget` computed from `budget`/`deal_type` alone when the owner-only fields are hidden, which is a minor, correct-direction (fails closed, not open) visibility change, not a bug. | No change needed. |
 
-**This plan deliberately does not implement these 12 file changes.**
-Each needs to be read individually to confirm exactly what it does with
-the financial fields before being rewritten — the same "understand
-before you touch it" principle the audit itself was built on. Doing
-this properly is a real, separate follow-up pass, not a batch
-find-and-replace, given this is financial-data-handling code.
+**Net result: 4 of 12 files needed real changes** (`useProjectData.ts`
+plus 3 consumers with their own independent fetches or missing
+arithmetic guards); the other 8 turned out to be dead code, false
+positives from the original broad grep, or already-defensive code that
+started working correctly the moment the central hook was fixed. This
+validates the original caution about not batch-rewriting all 12 blind —
+most of them didn't need it.
 
 ## 8. Deliberately out of scope for this specific fix
 
@@ -330,8 +332,11 @@ find-and-replace, given this is financial-data-handling code.
 ## Final status
 
 `BLOCKED_MIGRATION_NOT_APPLIED`. Nothing in §3–§4 has been applied or
-deployed. §7's frontend checklist is unimplemented by design — read
-individually before touching, not batch-guessed. Do not apply the SQL
-without deploying the Edge Function change in the same release (§4),
-and do not consider finding 1 closed until the negative tests in §6
-have actually been run against the live database and passed.
+deployed. §7's frontend checklist is now fully reviewed and implemented
+(4 of 12 files needed real changes; verified clean typecheck/test/build)
+— the codebase is ready for the migration to be applied without
+breaking legitimate owner/creative reads. Do not apply the SQL without
+deploying the Edge Function change in the same release (§4), and do not
+consider finding 1 closed until the negative tests in §6 have actually
+been run against the live database and passed — code readiness is not
+the same as verified enforcement.

@@ -18,7 +18,9 @@ interface Milestone {
   id: string;
   title: string;
   description: string | null;
-  amount: number;
+  // undefined when the viewer isn't authorized to see this milestone's
+  // money -- see get_project_milestone_financials / useProjectData.ts.
+  amount: number | undefined;
   status: string;
   due_date: string | null;
   paid_to: string | null;
@@ -407,8 +409,13 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
     }
   };
 
-  const totalAmount = milestones.reduce((sum, m) => sum + Number(m.amount), 0);
-  const paidAmount = milestones.filter(m => m.status === 'paid').reduce((sum, m) => sum + Number(m.amount), 0);
+  // Number(m.amount || 0), not Number(m.amount): amount is undefined for
+  // any milestone this viewer isn't authorized to see the money for (a
+  // role='client'/'guest' collaborator -- see get_project_milestone_financials
+  // and useProjectData.ts) -- without the fallback, Number(undefined) is
+  // NaN and poisons every total on the page, not just that one milestone.
+  const totalAmount = milestones.reduce((sum, m) => sum + Number(m.amount || 0), 0);
+  const paidAmount = milestones.filter(m => m.status === 'paid').reduce((sum, m) => sum + Number(m.amount || 0), 0);
   const pendingAmount = totalAmount - paidAmount;
 
   return (
@@ -458,7 +465,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
                 ) : (
                   <Users className="h-4 w-4" />
                 )}
-                Pay All ({batchPayableMilestones.length}) — ${batchPayableMilestones.reduce((s, m) => s + Number(m.amount), 0).toFixed(2)}
+                Pay All ({batchPayableMilestones.length}) — ${batchPayableMilestones.reduce((s, m) => s + Number(m.amount || 0), 0).toFixed(2)}
               </Button>
             )}
 
@@ -618,7 +625,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
                     <div className="flex gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <DollarSign className="h-3 w-3" />
-                        ${Number(milestone.amount).toFixed(2)}
+                        {milestone.amount == null ? "—" : `$${Number(milestone.amount).toFixed(2)}`}
                       </span>
                       {milestone.due_date && (
                         <span className="flex items-center gap-1">

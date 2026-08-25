@@ -30,7 +30,7 @@ const STATUS_DOT: Record<string, string> = {
   active: "bg-[hsl(var(--energy))]",
   planning: "bg-muted-foreground/50",
   wrapping: "bg-primary",
-  completed: "bg-emerald-500",
+  completed: "bg-white",
   archived: "bg-muted-foreground/30",
 };
 
@@ -138,7 +138,7 @@ export function WorkspaceSidebar({ projects, activeProjectId, onClose, onProject
                     <span
                       className={cn(
                         "inline-flex items-center gap-1 text-[10px] shrink-0",
-                        overdue ? "text-destructive" : "text-muted-foreground"
+                        overdue ? "text-[hsl(var(--energy))] font-semibold" : "text-muted-foreground"
                       )}
                     >
                       <Calendar className="h-2.5 w-2.5" />

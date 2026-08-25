@@ -241,7 +241,7 @@ export const SuggestFoldersDialog = ({ userId, open, onOpenChange, onApplied }: 
                               {off ? (
                                 <X className="h-3 w-3 shrink-0" />
                               ) : (
-                                <Check className="h-3 w-3 shrink-0 text-emerald-600" />
+                                <Check className="h-3 w-3 shrink-0 text-[hsl(var(--energy))]" />
                               )}
                             </button>
                           );

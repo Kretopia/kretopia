@@ -3,21 +3,25 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { cn } from "@/lib/utils";
 import type { StudioFolder } from "./StudioFoldersBar";
 
+// Same six keys as StudioFoldersBar.tsx's COLOR_TINT, kept in sync —
+// shades of brand pink + neutral gray, no rainbow. "magenta"/"yellow"
+// used to reference --signal-magenta/--signal-yellow, which don't exist
+// anywhere in index.css, so those two were silently invisible before.
 const COLOR_INK: Record<string, string> = {
-  teal: "text-[hsl(var(--signal-teal))]",
-  magenta: "text-[hsl(var(--signal-magenta))]",
-  yellow: "text-[hsl(var(--signal-yellow))]",
-  green: "text-emerald-500",
-  blue: "text-violet-500",
-  purple: "text-violet-500",
+  teal: "text-[hsl(327_100%_59%)]",
+  magenta: "text-[hsl(327_85%_50%)]",
+  yellow: "text-[hsl(240_8%_60%)]",
+  green: "text-[hsl(327_60%_68%)]",
+  blue: "text-[hsl(240_6%_40%)]",
+  purple: "text-[hsl(327_45%_75%)]",
 };
 const COLOR_BG: Record<string, string> = {
-  teal: "bg-[hsl(var(--signal-teal))]/10",
-  magenta: "bg-[hsl(var(--signal-magenta))]/10",
-  yellow: "bg-[hsl(var(--signal-yellow))]/10",
-  green: "bg-emerald-500/10",
-  blue: "bg-violet-500/10",
-  purple: "bg-violet-500/10",
+  teal: "bg-[hsl(327_100%_59%)]/10",
+  magenta: "bg-[hsl(327_85%_50%)]/10",
+  yellow: "bg-[hsl(240_8%_60%)]/10",
+  green: "bg-[hsl(327_60%_68%)]/10",
+  blue: "bg-[hsl(240_6%_40%)]/10",
+  purple: "bg-[hsl(327_45%_75%)]/10",
 };
 
 interface Props {
@@ -76,7 +80,7 @@ export const MoveToFolderSheet = ({
                 No folder
               </span>
             </span>
-            {!currentFolderId && <Check className="h-4 w-4 text-emerald-600" />}
+            {!currentFolderId && <Check className="h-4 w-4 text-[hsl(var(--energy))]" />}
           </button>
 
           {folders.map((f) => {
@@ -103,7 +107,7 @@ export const MoveToFolderSheet = ({
                 <span className="flex-1 min-w-0">
                   <span className="block text-[14px] font-semibold truncate">{f.name}</span>
                 </span>
-                {active && <Check className="h-4 w-4 text-emerald-600" />}
+                {active && <Check className="h-4 w-4 text-[hsl(var(--energy))]" />}
               </button>
             );
           })}

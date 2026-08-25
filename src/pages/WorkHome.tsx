@@ -371,6 +371,12 @@ const CreatorWorkHome = () => {
   const [invoicesByProject, setInvoicesByProject] = useState<
     Record<string, "paid" | "invoiced" | "unsent">
   >({});
+  // Per-project role check for the dashboard's money signals (pay dot,
+  // "needs an invoice" tile, etc). This list mixes Projects the viewer
+  // owns with ones they're only a collaborator/client/guest on, so a
+  // single global flag can't gate it correctly -- see
+  // STUDIO_ROLE_VISIBILITY_REPORT.md.
+  const [moneyVisibleByProject, setMoneyVisibleByProject] = useState<Record<string, boolean>>({});
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
@@ -470,6 +476,33 @@ const CreatorWorkHome = () => {
         }
       }
       setRecentCollaborators(people.slice(0, 10));
+    })();
+    return () => { cancelled = true; };
+  }, [user, projects]);
+
+  // Per-project money visibility. Owner rows are known locally (no RPC
+  // needed); everything else goes through can_see_milestone_money, the
+  // same role check the single-Project page (useProjectData) already
+  // relies on -- owner/creative/collaborator see money, client/guest don't.
+  useEffect(() => {
+    if (!user || projects.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const owned: Record<string, boolean> = {};
+      const toCheck = projects.filter((p) => {
+        if (p.created_by === user.id) { owned[p.id] = true; return false; }
+        return true;
+      }).slice(0, 100);
+      const results = await Promise.all(
+        toCheck.map((p) =>
+          supabase
+            .rpc("can_see_milestone_money" as any, { _project_id: p.id, _user_id: user.id })
+            .then(({ data }) => [p.id, !!data] as const, () => [p.id, false] as const)
+        )
+      );
+      if (cancelled) return;
+      const checked = Object.fromEntries(results);
+      setMoneyVisibleByProject({ ...owned, ...checked });
     })();
     return () => { cancelled = true; };
   }, [user, projects]);
@@ -585,6 +618,7 @@ const CreatorWorkHome = () => {
                 <StudioCardsGrid
                   projects={visibleProjects as any}
                   invoicesByProject={invoicesByProject}
+                  moneyVisibleByProject={moneyVisibleByProject}
                   onNewProject={() => setShowCreateProject(true)}
                   folders={folders}
                   onMoveToFolder={moveProject}
@@ -615,6 +649,7 @@ const CreatorWorkHome = () => {
               <StudioProjectsDashboard
                 projects={(hasFolders ? unfiledProjects : projects) as any}
                 invoicesByProject={invoicesByProject}
+                moneyVisibleByProject={moneyVisibleByProject}
                 onCreate={() => setShowCreateProject(true)}
                 folders={folders}
                 onMoveToFolder={moveProject}

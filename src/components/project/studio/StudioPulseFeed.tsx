@@ -120,10 +120,10 @@ export const StudioPulseFeed = ({ projectId, currentUserId }: Props) => {
           Drop Zone
         </p>
         <h2 className="text-lg font-black leading-none tracking-tight">
-          Land it here — Copilot files it
+          Feed the Kretopia Brain
         </h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          Links · images · voice notes · thoughts. It scatters to Moodboard, Tasks, Pad or Vault.
+          Links · images · voice notes · thoughts. Kreto sorts it to Moodboard, Tasks, Pad or Vault.
         </p>
       </header>
 

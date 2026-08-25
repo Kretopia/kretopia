@@ -23,8 +23,16 @@ interface StudioProjectsDashboardProps {
   projects: StudioProject[];
   /** Invoice state per project. Owner-scoped: only pass this when the viewer may see money. */
   invoicesByProject?: Record<string, PayState>;
-  /** Hides every money signal (summary tile, pay dot, wrap hints). */
+  /** Global fallback used only when moneyVisibleByProject isn't provided
+   * (existing callers that haven't opted into per-row role checks). */
   canSeeMoney?: boolean;
+  /** Per-project role check (from can_see_milestone_money): owner/creative/
+   * collaborator see money, client/guest don't. This list mixes Projects
+   * across different roles for the same viewer, so a single global
+   * canSeeMoney flag can't correctly gate it -- when this map is provided,
+   * an id missing from it is treated as NOT visible (fail closed), not as
+   * visible by default. */
+  moneyVisibleByProject?: Record<string, boolean>;
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
@@ -46,6 +54,7 @@ export const StudioProjectsDashboard = ({
   projects,
   invoicesByProject = {},
   canSeeMoney = true,
+  moneyVisibleByProject,
   loading = false,
   error = null,
   onRetry,
@@ -60,15 +69,23 @@ export const StudioProjectsDashboard = ({
   const [moveTarget, setMoveTarget] = useState<StudioProject | null>(null);
 
   const pay = (id: string): PayState => invoicesByProject[id] ?? "unsent";
+  // Per-project gate: prefer the role-checked map when the caller opted
+  // in; otherwise fall back to the single global flag for every row.
+  const moneyVisible = (id: string): boolean =>
+    moneyVisibleByProject ? (moneyVisibleByProject[id] ?? false) : canSeeMoney;
+  const anyMoneyVisible = moneyVisibleByProject
+    ? Object.values(moneyVisibleByProject).some(Boolean)
+    : canSeeMoney;
 
   const counts = useMemo(() => {
     const active = projects.filter((p) => !isDelivered(p.status)).length;
     const delivered = projects.filter((p) => isDelivered(p.status)).length;
-    const needsInvoice = projects.filter((p) => isDelivered(p.status) && pay(p.id) === "unsent").length;
-    const awaitingPayment = projects.filter((p) => pay(p.id) === "invoiced").length;
+    const moneyProjects = projects.filter((p) => moneyVisible(p.id));
+    const needsInvoice = moneyProjects.filter((p) => isDelivered(p.status) && pay(p.id) === "unsent").length;
+    const awaitingPayment = moneyProjects.filter((p) => pay(p.id) === "invoiced").length;
     return { active, delivered, needsInvoice, awaitingPayment };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projects, invoicesByProject]);
+  }, [projects, invoicesByProject, moneyVisibleByProject, canSeeMoney]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -101,7 +118,7 @@ export const StudioProjectsDashboard = ({
       if (p.status === "planning") return "Add the first tasks";
       return "Open the work feed";
     }
-    if (!canSeeMoney) return "Review the delivery";
+    if (!moneyVisible(p.id)) return "Review the delivery";
     const state = pay(p.id);
     if (state === "unsent") return "Draft the invoice";
     if (state === "invoiced") return "Chase the payment";
@@ -166,7 +183,7 @@ export const StudioProjectsDashboard = ({
 
       {/* Summary strip — clicking a tile filters the list below. */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {TILES.filter((t) => canSeeMoney || !t.money).map((t) => {
+        {TILES.filter((t) => anyMoneyVisible || !t.money).map((t) => {
           const active = filter === t.key;
           return (
             <button
@@ -256,7 +273,7 @@ export const StudioProjectsDashboard = ({
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                     <span>Updated {formatDistanceToNowStrict(new Date(p.updated_at))} ago</span>
-                    {canSeeMoney && (
+                    {moneyVisible(p.id) && (
                       <span className="inline-flex items-center gap-1.5">
                         <span className={cn("h-1.5 w-1.5 rounded-full", PAY_DOT[state])} aria-hidden />
                         {PAY_LABEL[state]}

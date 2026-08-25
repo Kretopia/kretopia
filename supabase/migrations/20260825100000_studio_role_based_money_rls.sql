@@ -53,10 +53,22 @@
 -- immediately. Run the preflight query in
 -- STUDIO_FINDING1_REMEDIATION_PLAN.md §Preflight-2 first to see
 -- exactly how many rows this touches before running it live.
+--
+-- CORRECTED after a live apply attempt failed
+-- (project_collaborators_role_check violated by some row): the live
+-- table has at least one role value that is neither one of the 4
+-- allowed values nor one of the 2 legacy values named above --
+-- something this migration's own grep of INSERT/UPDATE call sites
+-- didn't catch (a value written by hand, by an older code path, or
+-- imported data). Rather than chase down every possible stray value by
+-- hand, this is now a catch-all: normalize ANYTHING not already valid
+-- down to 'guest', the most restrictive tier -- fails closed (under-
+-- grants money visibility, never over-grants it) for whatever the
+-- unknown value turns out to be.
 -- ------------------------------------------------------------
 UPDATE public.project_collaborators
   SET role = 'guest'
-  WHERE role IN ('collaborator', 'commenter');
+  WHERE role IS NULL OR role NOT IN ('member', 'client', 'creative', 'guest');
 
 ALTER TABLE public.project_collaborators
   ADD CONSTRAINT project_collaborators_role_check

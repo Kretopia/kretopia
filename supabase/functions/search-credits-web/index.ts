@@ -379,7 +379,7 @@ serve(async (req) => {
     if (FIRECRAWL_API_KEY) {
       try {
         const queries = buildSearchQueries(trimmedQuery, creatorQuery);
-        const queryResults = await Promise.all(queries.map((q) => firecrawlSearch(FIRECRAWL_API_KEY, q, 5)));
+        const queryResults = await firecrawlSearchAll(FIRECRAWL_API_KEY, queries, 5);
 
         const uniqueResults = new Map<string, FirecrawlResult>();
         for (const batch of queryResults) {

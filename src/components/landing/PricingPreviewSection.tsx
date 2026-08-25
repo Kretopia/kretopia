@@ -114,10 +114,8 @@ export const PricingPreviewSection = () => {
               </ul>
               <button
                 onClick={() => navigate(user ? tier.authedLink : tier.guestLink)}
-                className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-black uppercase tracking-wider transition-all ${
-                  tier.popular
-                    ? "bg-energy text-energy-foreground hover:scale-[1.02] shadow-glow-lime"
-                    : "border border-border bg-card/60 text-foreground hover:border-primary/50"
+                className={`btn-glass w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-black uppercase tracking-wider ${
+                  tier.popular ? "btn-glass-hero btn-glass-primary" : "btn-glass-neutral"
                 }`}
               >
                 {tier.cta}
@@ -130,7 +128,7 @@ export const PricingPreviewSection = () => {
         <div className="mt-8 text-center">
           <button
             onClick={() => navigate(user ? "/subscription" : "/auth?tab=signup&redirect=/subscription")}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-energy transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white hover:text-[#FF2DA1] transition-colors"
           >
             <Crown className="h-3.5 w-3.5" />
             View all plans including Brand tiers & Founder Circle

@@ -89,7 +89,7 @@ export const LiveGigsStrip = () => {
             <button
               type="button"
               onClick={() => scrollBy(-1)}
-              className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-card/60 hover:bg-card text-foreground transition-colors"
+              className="btn-glass btn-glass-outline hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-full"
               aria-label="Previous gig"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -97,7 +97,7 @@ export const LiveGigsStrip = () => {
             <button
               type="button"
               onClick={() => scrollBy(1)}
-              className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-card/60 hover:bg-card text-foreground transition-colors"
+              className="btn-glass btn-glass-outline hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-full"
               aria-label="Next gig"
             >
               <ChevronRight className="h-4 w-4" />

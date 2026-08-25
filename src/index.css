@@ -1162,7 +1162,10 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 .btn-glass:hover::before {
   opacity: 1;
-  animation: btn-glass-shimmer 0.9s ease-out 1;
+  /* Shortened again to a single, brisk flash per user feedback -- 0.9s
+     read as a glide; 0.5s plus a narrower bright band (stripe width
+     trimmed in the gradient itself, below) reads as one quick sparkle. */
+  animation: btn-glass-shimmer 0.5s ease-out 1;
   animation-fill-mode: forwards;
 }
 @keyframes btn-glass-shimmer {

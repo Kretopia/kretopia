@@ -89,7 +89,7 @@ export const OAuthQuickButtons = ({
           type="button"
           onClick={() => handle("google")}
           disabled={anyLoading}
-          className="inline-flex items-center justify-center gap-2 h-12 rounded-xl border border-border bg-card hover:bg-card/80 hover:border-primary/40 transition-all text-sm font-semibold text-foreground disabled:opacity-50"
+          className="btn-glass btn-glass-neutral inline-flex items-center justify-center gap-2 h-12 rounded-xl text-sm font-semibold disabled:opacity-50"
           aria-label="Continue with Google"
         >
           {googleLoading ? (
@@ -109,7 +109,7 @@ export const OAuthQuickButtons = ({
           type="button"
           onClick={() => handle("apple")}
           disabled={anyLoading}
-          className="inline-flex items-center justify-center gap-2 h-12 rounded-xl border border-border bg-card hover:bg-card/80 hover:border-primary/40 transition-all text-sm font-semibold text-foreground disabled:opacity-50"
+          className="btn-glass btn-glass-neutral inline-flex items-center justify-center gap-2 h-12 rounded-xl text-sm font-semibold disabled:opacity-50"
           aria-label="Continue with Apple"
         >
           {appleLoading ? (

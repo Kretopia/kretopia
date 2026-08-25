@@ -395,23 +395,100 @@ export const VoiceFirstCreateModal = ({
   const fmtSec = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
+  // Which of the three steps is live — drives the rail + Kreto's state.
+  const activeStep = mode === "review" ? 2 : mode === "thinking" ? 1 : 0;
+  const kretoState =
+    mode === "recording" ? "recording" : mode === "thinking" ? "thinking" : "idle";
+
   return (
-    <div className="fixed inset-0 z-[60] bg-background flex flex-col" role="dialog" aria-modal="true" aria-label="New room">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 h-14 shrink-0 border-b border-border/40">
-        <span className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-          New room
-        </span>
-        <Button ref={closeButtonRef} variant="ghost" size="icon" onClick={() => onOpenChange(false)} aria-label="Close">
+    <div
+      className="dark fixed inset-0 z-[60] flex flex-col text-white"
+      style={{ backgroundColor: "#05070D" }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="New Room"
+    >
+      {/* Cinematic Kretopia plate — same aurora + quadrille + grain used by
+          every feature header, so the New Room reads as part of Studio
+          rather than a bare system dialog. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 ai-ambient-breathe"
+        style={{ background: "radial-gradient(65% 50% at 50% 0%, rgba(255,45,161,0.16), transparent 62%)" }}
+      />
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.12]"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
+        }}
+      />
+
+      {/* Top bar — Kreto is present for the whole flow, and reacts to it. */}
+      <div className="relative flex items-center justify-between gap-3 px-4 h-16 shrink-0 border-b border-white/10">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <KretoAvatar size="xs" animated={!reducedMotion} state={kretoState} className="shrink-0" />
+          <span className="text-xs font-bold tracking-[0.22em] uppercase" style={{ color: ACCENT }}>
+            New Room
+          </span>
+        </div>
+
+        {/* Step rail — the three real stages of this flow, lit as you move. */}
+        <div className="hidden sm:flex items-center gap-2" aria-hidden>
+          {["Describe", "Kreto drafts", "Review"].map((label, i) => (
+            <div key={label} className="flex items-center gap-2">
+              <span
+                className="text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors duration-500"
+                style={{ color: i <= activeStep ? ACCENT : "rgba(255,255,255,0.32)" }}
+              >
+                {label}
+              </span>
+              {i < 2 && (
+                <span className="h-px w-6 overflow-hidden rounded-full bg-white/12">
+                  <motion.span
+                    className="block h-full"
+                    style={{ backgroundColor: ACCENT }}
+                    initial={false}
+                    animate={{ width: i < activeStep ? "100%" : "0%" }}
+                    transition={{ duration: reducedMotion ? 0 : 0.5, ease: [0.2, 0.65, 0.3, 0.95] }}
+                  />
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <Button
+          ref={closeButtonRef}
+          variant="ghost"
+          size="icon"
+          onClick={() => onOpenChange(false)}
+          aria-label="Close"
+          className="text-white/70 hover:text-white hover:bg-white/10"
+        >
           <X className="h-5 w-5" />
         </Button>
       </div>
 
+      {/* Mobile step rail */}
+      <div className="relative sm:hidden h-0.5 shrink-0 bg-white/10" aria-hidden>
+        <motion.div
+          className="h-full"
+          style={{ backgroundColor: ACCENT }}
+          initial={false}
+          animate={{ width: `${((activeStep + 1) / 3) * 100}%` }}
+          transition={{ duration: reducedMotion ? 0 : 0.5, ease: [0.2, 0.65, 0.3, 0.95] }}
+        />
+      </div>
+
       {/* Body */}
       <div className={cn(
-        "flex-1 flex flex-col items-center px-6 text-center overflow-y-auto overscroll-contain",
+        "relative flex-1 flex flex-col items-center px-6 text-center overflow-y-auto overscroll-contain",
         mode === "review" ? "justify-start py-6 pb-32" : "justify-center"
       )}>
+
         {mode === "prompt" && (
           <>
             <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">

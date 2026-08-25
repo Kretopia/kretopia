@@ -23,6 +23,7 @@ const ProjectsList = () => {
   const [invoicesByProject, setInvoicesByProject] = useState<
     Record<string, "paid" | "invoiced" | "unsent">
   >({});
+  const [moneyVisibleByProject, setMoneyVisibleByProject] = useState<Record<string, boolean>>({});
   const [showVoiceCreate, setShowVoiceCreate] = useState(false);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "planning" | "wrapping" | "completed">("all");

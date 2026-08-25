@@ -577,10 +577,11 @@ export const VoiceFirstCreateModal = ({
                   type="button"
                   onClick={startRecording}
                   aria-label="Start recording"
+                  style={{ backgroundColor: ACCENT }}
                   className={cn(
-                    "h-24 w-24 rounded-full bg-primary text-primary-foreground",
+                    "h-24 w-24 rounded-full text-white",
                     "flex items-center justify-center",
-                    "shadow-xl ring-8 ring-primary/15",
+                    "shadow-[0_0_40px_rgba(255,45,161,0.45)] ring-8 ring-[rgba(255,45,161,0.15)]",
                     "transition-transform hover:scale-105 active:scale-95"
                   )}
                 >

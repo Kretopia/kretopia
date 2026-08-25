@@ -65,7 +65,7 @@ serve(async (req) => {
       score += 0.30;
     }
     const tags = ((stage as any).vibe_tags || []).map((t: string) => t.toLowerCase());
-    const skills = (meProf?.skills || []).map((s: string) => s.toLowerCase());
+    const skills = mySkills.map((s: string) => String(s).toLowerCase());
     const hits = tags.filter((t: string) => skills.includes(t) || skills.some((s: string) => s.includes(t) || t.includes(s)));
     score += Math.min(0.40, hits.length * 0.15);
     if (pitch && String(pitch).trim().length > 80) score += 0.05;

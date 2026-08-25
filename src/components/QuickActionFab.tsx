@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
-import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
+import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 
@@ -367,13 +367,10 @@ const QuickActionFab = () => {
         onOpenChange={setShowCreateEvent}
         onCreated={() => navigate("/events/backstage")}
       />
-      <CreateProjectDialog
+      <VoiceFirstCreateModal
         open={showCreateProject}
         onOpenChange={setShowCreateProject}
-        onSuccess={() => {
-          setShowCreateProject(false);
-          navigate("/desk");
-        }}
+        onCreated={() => setShowCreateProject(false)}
       />
       <PostOpportunityDialog
         open={showPostGig}

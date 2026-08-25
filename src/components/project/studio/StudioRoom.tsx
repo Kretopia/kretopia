@@ -16,6 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { VibeHeader } from "./VibeHeader";
+import { StudioPhaseRail } from "./StudioPhaseRail";
 // StudioPulseFeed retired — merged into BriefDropZone (one true Drop Zone).
 import { NextStepCard } from "./NextStepCard";
 import { SendInvoiceNudge } from "./SendInvoiceNudge";
@@ -65,7 +66,7 @@ import { useStudioPresence } from "@/hooks/useStudioPresence";
 import { useProjectMoneySignal } from "@/hooks/useProjectMoneySignal";
 import { useStudioRole } from "@/hooks/useStudioRole";
 import { useDeskAgentWatch } from "@/hooks/useDeskAgentWatch";
-import type { NextStep } from "@/hooks/useProjectFlow";
+import type { ProjectFlow, ProjectFlowStageId } from "@/hooks/useProjectFlow";
 
 interface StudioRoomProps {
   project: any;
@@ -80,7 +81,8 @@ interface StudioRoomProps {
   currentUserId: string;
   onUpdated: () => void;
   onNavigateToTab: (tab: string, intent?: string) => void;
-  nextStep?: NextStep;
+  flow: ProjectFlow;
+  onPinStage?: (stageId: ProjectFlowStageId | null) => void;
 }
 
 /**
@@ -96,7 +98,8 @@ export const StudioRoom = ({
   currentUserId,
   onUpdated,
   onNavigateToTab,
-  nextStep,
+  flow,
+  onPinStage,
 }: StudioRoomProps) => {
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -407,6 +410,11 @@ export const StudioRoom = ({
         currentUserId={currentUserId}
       />
 
+      {/* One-page summary: compact six-phase rail + the one next action —
+          same on mobile and desktop, first thing under the header. */}
+      <StudioPhaseRail flow={flow} onPhaseClick={onNavigateToTab} onPinStage={onPinStage} />
+      {flow.nextStep && <NextStepCard nextStep={flow.nextStep} onAction={onNavigateToTab} />}
+
       {/* Proactive nudges — render once, responsive layout below */}
       {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
 
@@ -450,7 +458,6 @@ export const StudioRoom = ({
             className="mb-3"
           />
         )}
-        {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
         <SendInvoiceNudge project={project as any} />
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />

@@ -1074,7 +1074,10 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   --btn-glass-border: rgba(255, 255, 255, 0.14);
   position: relative;
   isolation: isolate;
-  overflow: visible;
+  /* Clipped so the sheen can never spill past the button's own shape --
+     this is what used to produce the stray pink segment hanging off the
+     corners of wide CTAs. */
+  overflow: hidden;
   color: #fff;
   background-image: linear-gradient(180deg, var(--btn-glass-bg-1), var(--btn-glass-bg-2));
   border: 1px solid var(--btn-glass-border);
@@ -1127,72 +1130,41 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   cursor: not-allowed;
 }
 
-/* Registered as an animatable custom property so the browser can
-   smoothly tween the conic-gradient's start angle below -- without
-   this, animating a custom property used inside conic-gradient(from
-   var(...)) would just snap between values instead of sweeping. */
-@property --btn-glass-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
-
-/* The scintillating border itself: a conic gradient (one bright arc,
-   the rest transparent) clipped to a 1px band around the button via
-   padding + mask-composite, so only the border ring is visible, not a
-   filled overlay. Rotating the gradient's OWN start angle (not the
-   element -- rotating the element would rotate the mask/border-radius
-   shape too, and desync it from the button's actual corners on
-   anything that isn't a perfect square) makes the bright arc genuinely
-   travel around the full perimeter -- one lap, not a side-to-side
-   sweep. Idle and invisible until hover.
-
-   Plays ONCE per hover, not on a loop: animation-iteration-count: 1
-   (not infinite), and CSS restarts an animation whenever the rule that
-   declares it starts matching again -- so it replays on every fresh
-   hover-in, but never repeats while the pointer just sits there. The
-   real border-color (set on .btn-glass:hover itself, further down)
-   stays solid pink for the whole hover independently of this pass, so
-   the button doesn't go dark once the single lap finishes -- only the
-   traveling light stops repeating. */
+/* SHEEN — deliberately restrained.
+   Earlier revisions ran a light around the button's perimeter (first a
+   rotating conic ring, then a comet on offset-path). Both read as
+   erratic on real buttons: the arc length maps unevenly onto a wide
+   rounded rectangle, so the highlight bunched into a stray pink blob at
+   the corners and looked detached from the button. Replaced with a
+   single soft diagonal sheen that sweeps across the INSIDE of the
+   button once per hover, clipped by overflow:hidden. Nothing renders on
+   or outside the border, so there is no segment to go astray. */
 .btn-glass::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 1;
   border-radius: inherit;
-  padding: 1px;
-  /* Narrower arc (12deg, was 23deg) and capped opacity (0.8, was fully
-     opaque) per feedback -- a finer, quieter line rather than a bold
-     flash. The solid border-color change on .btn-glass:hover is still
-     the primary hover cue; this lap is a subtle accent on top of it,
-     not the main signal. */
-  background: conic-gradient(from var(--btn-glass-angle),
-    transparent 0deg,
-    transparent 300deg,
-    rgba(var(--btn-glass-accent), 0.8) 337deg,
-    transparent 353deg);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  background: linear-gradient(100deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.13) 50%,
+    transparent 62%);
+  transform: translateX(-100%);
   opacity: 0;
-  transition: opacity 0.2s ease;
   pointer-events: none;
 }
 .btn-glass:hover::before {
-  opacity: 1;
-  /* Faster lap per feedback: 0.6s -> 0.3s. */
-  animation: btn-glass-shimmer 0.3s linear 1;
-  animation-fill-mode: forwards;
+  animation: btn-glass-sheen 0.6s ease-out 1;
 }
-@keyframes btn-glass-shimmer {
-  from { --btn-glass-angle: 0deg; }
-  to { --btn-glass-angle: 360deg; }
+@keyframes btn-glass-sheen {
+  from { transform: translateX(-100%); opacity: 1; }
+  to   { transform: translateX(100%); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .btn-glass:hover { transform: none; }
-  .btn-glass:hover::before { animation: none; opacity: 0.7; background-position: 50% 0; }
+  .btn-glass:hover::before { animation: none; opacity: 0; }
 }
+
 
 /* Accent modifiers -- same mechanics above, different signature color. */
 .btn-glass-primary {
@@ -1259,3 +1231,72 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 @media (min-width: 1024px) {
   .landing-section { padding-left: 3rem; padding-right: 3rem; }
 }
+
+/* ── NAVBAR ROLLBACK ────────────────────────────────────────────────
+   The glass-card + pink shimmer-border CTA system (f66b8e3) was meant
+   for CTA buttons, not navbar chrome. Buttons rendered inside the top
+   navbar opt out of it and go back to the plain shadcn treatment they
+   had before that sweep. Scoped strictly to [data-nav-chrome] so every
+   Studio / Landing CTA keeps the new system. */
+[data-nav-chrome] .btn-glass,
+.nav-btn-plain {
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+[data-nav-chrome] .btn-glass:hover,
+.nav-btn-plain:hover {
+  transform: none;
+  box-shadow: none;
+  background-image: none;
+}
+[data-nav-chrome] .btn-glass::before,
+[data-nav-chrome] .btn-glass::after,
+.nav-btn-plain::before,
+.nav-btn-plain::after {
+  display: none !important;
+  content: none !important;
+}
+[data-nav-chrome] .btn-glass,
+[data-nav-chrome] .btn-glass:hover,
+[data-nav-chrome] .btn-glass:focus,
+[data-nav-chrome] .btn-glass:active {
+  color: inherit !important;
+}
+[data-nav-chrome] .btn-glass-outline {
+  border-color: hsl(var(--border));
+}
+[data-nav-chrome] .btn-glass-ghost:hover,
+[data-nav-chrome] .btn-glass-outline:hover {
+  background-color: hsl(var(--accent) / 0.6);
+}
+/* The two navbar "Get Started" CTAs keep a solid primary fill, as they
+   had before the CTA sweep -- they must not inherit surrounding text
+   color from the rule above. */
+[data-nav-chrome] .nav-btn-plain,
+[data-nav-chrome] .nav-btn-plain:hover {
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+/* ── CANONICAL CTA ──────────────────────────────────────────────────
+   The global .btn-glass sweep layers a translucent gradient over every
+   Button, which washes out the solid primary fill the canonical CTA
+   depends on. <CtaButton> opts back into the flat, high-contrast fill. */
+.cta-solid {
+  background-image: none !important;
+  background-color: hsl(var(--primary)) !important;
+  border-color: transparent !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.cta-solid:hover {
+  background-color: hsl(var(--primary) / 0.9) !important;
+}
+.cta-solid,
+.cta-solid:hover,
+.cta-solid:focus-visible {
+  color: hsl(var(--primary-foreground)) !important;
+}
+.cta-solid::before { display: none !important; content: none !important; }

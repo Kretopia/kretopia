@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Upload, Loader2, X, Link2, Sparkles, AlertCircle, ImagePlus, Mic, Send } from "lucide-react";
+import { Upload, Loader2, X, Link2, Sparkles, AlertCircle, ImagePlus, Mic, Send, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,18 @@ interface IngestSummary {
   talent: number;
   facts: number;
   entities: number;
+}
+
+/** A brief `elevate-brief` drafted from an upload, held for review before
+ * any of it touches the Project — see the Drop Zone review gate below. */
+interface PendingElevation {
+  fileName: string;
+  brief: { title: string; summary: string; audience?: string; tone?: string };
+  tasks: Array<{ title: string; description?: string; due_offset_days?: number | null; suggested_assignee_id?: string | null; priority?: string }>;
+  deliverables: Array<{ title: string; description?: string; kind?: string; due_offset_days?: number | null; suggested_assignee_id?: string | null }>;
+  runOfShow: Array<{ segment_title: string; time?: string; duration_min?: number | null; notes?: string | null }>;
+  suppliers: Array<{ category: string; name: string; notes?: string | null }>;
+  talent: Array<{ role: string; name: string; notes?: string | null }>;
 }
 
 const offsetToISODate = (offset: number | null | undefined): string | null => {
@@ -56,6 +68,8 @@ export const BriefDropZone = ({
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<IngestSummary | null>(null);
+  const [pendingElevation, setPendingElevation] = useState<PendingElevation | null>(null);
+  const [applyingElevation, setApplyingElevation] = useState(false);
   const [linkValue, setLinkValue] = useState("");
   const [showLink, setShowLink] = useState(false);
   const [open, setOpen] = useState(false);
@@ -201,111 +215,24 @@ export const BriefDropZone = ({
       }
 
 
-      // 1. Brief elevation side-effects (tasks / deliverables / run-of-show)
-      let elevatedCounts = { tasks: 0, deliverables: 0, runOfShow: 0, suppliers: 0, talent: 0, brief: "" as string | undefined };
+      // 1. Brief elevation — REVIEW GATE (Studio overhaul v2, Drop Zone
+      // security risk #2). This used to write tasks/deliverables/run-of-
+      // show/suppliers/talent/description/notes straight to the DB the
+      // moment elevate-brief returned. Now it's only staged in
+      // pendingElevation; nothing here touches the Project until the user
+      // explicitly clicks "Add to Project" (see applyElevation below).
+      let stagedElevation: PendingElevation | null = null;
       if (elevated?.elevated_brief) {
         const brief = elevated.elevated_brief;
-        const deliverables: any[] = elevated.deliverables ?? [];
-        const tasks: any[] = elevated.tasks ?? [];
-        const runOfShow: any[] = Array.isArray(elevated.run_of_show) ? elevated.run_of_show : [];
-        const suppliers: any[] = Array.isArray(elevated.suppliers) ? elevated.suppliers : [];
-        const talent: any[] = Array.isArray(elevated.talent) ? elevated.talent : [];
-        const { data: userRes } = await supabase.auth.getUser();
-        const me = userRes?.user?.id;
-        if (me) {
-          const briefText = [brief.summary, "", `Audience: ${brief.audience}`, `Tone: ${brief.tone}`].filter(Boolean).join("\n");
-          await supabase.from("projects").update({ description: briefText.slice(0, 4000) }).eq("id", projectId);
-
-          if (tasks.length) {
-            const rows = tasks.filter((t) => t.title?.trim()).map((t) => ({
-              project_id: projectId,
-              title: t.title.trim().slice(0, 200),
-              description: t.description ?? null,
-              status: "todo",
-              priority: t.priority ?? "normal",
-              assigned_to: t.suggested_assignee_id || null,
-              created_by: me,
-              due_date: offsetToISODate(t.due_offset_days)
-                ? new Date(offsetToISODate(t.due_offset_days)!).toISOString()
-                : null,
-              labels: ["smart-brief"],
-            }));
-            if (rows.length) await supabase.from("project_tasks").insert(rows as never).then(() => {}, () => {});
-          }
-          if (deliverables.length) {
-            const rows = deliverables.filter((d) => d.title?.trim()).map((d, i) => ({
-              project_id: projectId,
-              title: d.title.trim().slice(0, 200),
-              description: d.description ?? null,
-              status: "pending",
-              version: 1,
-              source: "ai-elevated",
-              kind: d.kind ?? "other",
-              sort_order: i,
-              due_date: offsetToISODate(d.due_offset_days),
-              submitted_by: me,
-              assignee_id: d.suggested_assignee_id || null,
-              moodboard: [] as never,
-            }));
-            if (rows.length) await supabase.from("project_deliverables").insert(rows as never).then(() => {}, () => {});
-          }
-          if (runOfShow.length) {
-            const rows = runOfShow.filter((r) => r.segment_title?.trim()).map((r, i) => ({
-              project_id: projectId,
-              created_by: me,
-              segment_title: r.segment_title.trim().slice(0, 200),
-              time_slot: r.time && /^\d{1,2}:\d{2}$/.test(r.time) ? `${r.time}:00` : null,
-              duration_min: r.duration_min ?? null,
-              notes: r.notes ?? null,
-              position: i,
-            }));
-            if (rows.length) await supabase.from("project_run_of_show").insert(rows as never).then(() => {}, () => {});
-          }
-          if (suppliers.length) {
-            const rows = suppliers.filter((s) => s.name?.trim()).map((s) => ({
-              project_id: projectId,
-              created_by: me,
-              category: s.category || "other",
-              name: s.name.trim().slice(0, 200),
-              notes: s.notes ?? null,
-              status: "lead",
-            }));
-            if (rows.length) await supabase.from("event_suppliers").insert(rows as never).then(() => {}, () => {});
-          }
-          if (talent.length) {
-            const rows = talent.filter((t) => t.name?.trim()).map((t) => ({
-              project_id: projectId,
-              created_by: me,
-              role: t.role || "performer",
-              name: t.name.trim().slice(0, 200),
-              notes: t.notes ?? null,
-              status: "invited",
-            }));
-            if (rows.length) await supabase.from("event_talent").insert(rows as never).then(() => {}, () => {});
-          }
-          await supabase.from("project_notes").insert({
-            project_id: projectId,
-            created_by: me,
-            title: `Brief: ${brief.title}`,
-            content: [
-              `**Summary**\n${brief.summary}`,
-              `**Audience**\n${brief.audience}`,
-              `**Tone**\n${brief.tone}`,
-              brief.objectives?.length ? `**Objectives**\n${brief.objectives.map((o: string) => `• ${o}`).join("\n")}` : "",
-              brief.success_criteria?.length ? `**Success criteria**\n${brief.success_criteria.map((s: string) => `• ${s}`).join("\n")}` : "",
-              brief.research_notes?.length ? `**Research notes**\n${brief.research_notes.map((r: string) => `• ${r}`).join("\n")}` : "",
-            ].filter(Boolean).join("\n\n"),
-          } as never).then(() => {}, () => {});
-
-          elevatedCounts = {
-            tasks: tasks.length,
-            deliverables: deliverables.length,
-            runOfShow: runOfShow.length,
-            suppliers: suppliers.length,
-            talent: talent.length,
-            brief: brief.title,
-          };
-        }
+        stagedElevation = {
+          fileName: file.name,
+          brief: { title: brief.title, summary: brief.summary, audience: brief.audience, tone: brief.tone },
+          tasks: Array.isArray(elevated.tasks) ? elevated.tasks : [],
+          deliverables: Array.isArray(elevated.deliverables) ? elevated.deliverables : [],
+          runOfShow: Array.isArray(elevated.run_of_show) ? elevated.run_of_show : [],
+          suppliers: Array.isArray(elevated.suppliers) ? elevated.suppliers : [],
+          talent: Array.isArray(elevated.talent) ? elevated.talent : [],
+        };
       }
 
       // 2. Studio Brain — record facts + entities (always)
@@ -371,28 +298,35 @@ export const BriefDropZone = ({
 
 
 
-      setSummary({
-        fileName: file.name,
-        brief: elevatedCounts.brief,
-        tasks: elevatedCounts.tasks,
-        deliverables: elevatedCounts.deliverables,
-        runOfShow: elevatedCounts.runOfShow,
-        suppliers: elevatedCounts.suppliers,
-        talent: elevatedCounts.talent,
-        facts: brainRes.facts ?? 0,
-        entities: brainRes.entities ?? 0,
-      });
       if (brainErr) {
         toast({ title: "Brain didn't fully update", description: brainErr, variant: "destructive" });
-      } else {
-        toast({
-          title: "Studio Brain updated",
-          description: `${brainRes.facts ?? 0} facts · ${brainRes.entities ?? 0} entities remembered`,
-        });
       }
       // Notify any open Brain panels to refresh counts/lists.
       window.dispatchEvent(new CustomEvent("studio-brain:updated", { detail: { projectId } }));
+      // Vault file + Brain facts/entities already landed above -- refresh
+      // now. Tasks/deliverables/etc from a staged elevation have NOT been
+      // written yet; that refresh happens again in applyElevation() once
+      // the user confirms.
       onIngested();
+
+      if (stagedElevation) {
+        // Hold the review gate instead of the auto-confirmed summary panel.
+        setPendingElevation(stagedElevation);
+        toast({ title: "Kreto drafted a brief", description: "Review it below before it's added to your Project." });
+      } else {
+        setSummary({
+          fileName: file.name,
+          tasks: 0, deliverables: 0, runOfShow: 0, suppliers: 0, talent: 0,
+          facts: brainRes.facts ?? 0,
+          entities: brainRes.entities ?? 0,
+        });
+        if (!brainErr) {
+          toast({
+            title: "Studio Brain updated",
+            description: `${brainRes.facts ?? 0} facts · ${brainRes.entities ?? 0} entities remembered`,
+          });
+        }
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't process drop";
       setError(msg);
@@ -400,6 +334,119 @@ export const BriefDropZone = ({
     } finally {
       setBusy(false);
     }
+  };
+
+  /** Explicit confirmation — writes exactly what pendingElevation staged
+   * (title/summary → projects.description, plus tasks/deliverables/run-of-
+   * show/suppliers/talent/a brief note), the same shape the old inline
+   * code wrote, just gated behind a real user decision now. */
+  const applyElevation = async () => {
+    if (!pendingElevation) return;
+    setApplyingElevation(true);
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const me = userRes?.user?.id;
+      if (!me) throw new Error("Not signed in");
+      const { brief, tasks, deliverables, runOfShow, suppliers, talent } = pendingElevation;
+
+      const briefText = [brief.summary, "", `Audience: ${brief.audience}`, `Tone: ${brief.tone}`].filter(Boolean).join("\n");
+      await supabase.from("projects").update({ description: briefText.slice(0, 4000) }).eq("id", projectId);
+
+      if (tasks.length) {
+        const rows = tasks.filter((t) => t.title?.trim()).map((t) => ({
+          project_id: projectId,
+          title: t.title.trim().slice(0, 200),
+          description: t.description ?? null,
+          status: "todo",
+          priority: t.priority ?? "normal",
+          assigned_to: t.suggested_assignee_id || null,
+          created_by: me,
+          due_date: offsetToISODate(t.due_offset_days)
+            ? new Date(offsetToISODate(t.due_offset_days)!).toISOString()
+            : null,
+          labels: ["smart-brief"],
+        }));
+        if (rows.length) await supabase.from("project_tasks").insert(rows as never).then(() => {}, () => {});
+      }
+      if (deliverables.length) {
+        const rows = deliverables.filter((d) => d.title?.trim()).map((d, i) => ({
+          project_id: projectId,
+          title: d.title.trim().slice(0, 200),
+          description: d.description ?? null,
+          status: "pending",
+          version: 1,
+          source: "ai-elevated",
+          kind: d.kind ?? "other",
+          sort_order: i,
+          due_date: offsetToISODate(d.due_offset_days),
+          submitted_by: me,
+          assignee_id: d.suggested_assignee_id || null,
+          moodboard: [] as never,
+        }));
+        if (rows.length) await supabase.from("project_deliverables").insert(rows as never).then(() => {}, () => {});
+      }
+      if (runOfShow.length) {
+        const rows = runOfShow.filter((r) => r.segment_title?.trim()).map((r, i) => ({
+          project_id: projectId,
+          created_by: me,
+          segment_title: r.segment_title.trim().slice(0, 200),
+          time_slot: r.time && /^\d{1,2}:\d{2}$/.test(r.time) ? `${r.time}:00` : null,
+          duration_min: r.duration_min ?? null,
+          notes: r.notes ?? null,
+          position: i,
+        }));
+        if (rows.length) await supabase.from("project_run_of_show").insert(rows as never).then(() => {}, () => {});
+      }
+      if (suppliers.length) {
+        const rows = suppliers.filter((s) => s.name?.trim()).map((s) => ({
+          project_id: projectId,
+          created_by: me,
+          category: s.category || "other",
+          name: s.name.trim().slice(0, 200),
+          notes: s.notes ?? null,
+          status: "lead",
+        }));
+        if (rows.length) await supabase.from("event_suppliers").insert(rows as never).then(() => {}, () => {});
+      }
+      if (talent.length) {
+        const rows = talent.filter((t) => t.name?.trim()).map((t) => ({
+          project_id: projectId,
+          created_by: me,
+          role: t.role || "performer",
+          name: t.name.trim().slice(0, 200),
+          notes: t.notes ?? null,
+          status: "invited",
+        }));
+        if (rows.length) await supabase.from("event_talent").insert(rows as never).then(() => {}, () => {});
+      }
+      await supabase.from("project_notes").insert({
+        project_id: projectId,
+        created_by: me,
+        title: `Brief: ${brief.title}`,
+        content: [
+          `**Summary**\n${brief.summary}`,
+          `**Audience**\n${brief.audience}`,
+          `**Tone**\n${brief.tone}`,
+        ].filter(Boolean).join("\n\n"),
+      } as never).then(() => {}, () => {});
+
+      toast({
+        title: "Added to your Project",
+        description: `${tasks.length} tasks · ${deliverables.length} deliverables`,
+      });
+      setPendingElevation(null);
+      onIngested();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Couldn't apply those changes";
+      toast({ title: "Couldn't apply", description: msg, variant: "destructive" });
+    } finally {
+      setApplyingElevation(false);
+    }
+  };
+
+  const discardElevation = () => {
+    setPendingElevation(null);
+    toast({ title: "Discarded", description: "Nothing was added to your Project." });
   };
 
   const ingestLink = async () => {
@@ -494,6 +541,72 @@ export const BriefDropZone = ({
     );
   }
 
+  if (pendingElevation) {
+    const rows = [
+      { n: pendingElevation.tasks.length, label: "Tasks", where: "Studio feed" },
+      { n: pendingElevation.deliverables.length, label: "Deliverables", where: "Vault" },
+      { n: pendingElevation.runOfShow.length, label: "Run of show", where: "Event" },
+      { n: pendingElevation.suppliers.length, label: "Suppliers", where: "Event" },
+      { n: pendingElevation.talent.length, label: "Talent", where: "Event" },
+    ].filter((r) => r.n > 0);
+
+    return (
+      <div className="px-4 pt-5">
+        <div className="relative rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card p-4 sm:p-5 animate-fade-in">
+          <div className="flex items-center gap-2 mb-2">
+            <FileEdit className="h-4 w-4 text-primary" />
+            <h3 className="font-semibold text-sm">Review before it's added</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-1 truncate">
+            From <span className="font-medium text-foreground">{pendingElevation.fileName}</span>
+          </p>
+          <p className="text-sm font-medium mb-1">{pendingElevation.brief.title}</p>
+          {pendingElevation.brief.summary && (
+            <p className="text-xs text-muted-foreground mb-3 line-clamp-3">{pendingElevation.brief.summary}</p>
+          )}
+          <p className="text-[11px] text-muted-foreground mb-3">
+            Nothing below is in your Project yet.
+          </p>
+          {rows.length > 0 ? (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-3">
+              {rows.map((r) => (
+                <li key={r.label} className="flex items-center gap-2 text-xs">
+                  <Badge variant="secondary" className="rounded-full font-bold tabular-nums min-w-[28px] justify-center">
+                    {r.n}
+                  </Badge>
+                  <span className="font-medium">{r.label}</span>
+                  <span className="text-muted-foreground">→ {r.where}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted-foreground mb-3">Just a brief — no tasks or deliverables detected.</p>
+          )}
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={applyElevation}
+              disabled={applyingElevation}
+              className="h-8 text-xs gap-1.5 rounded-full"
+            >
+              {applyingElevation ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+              Add to Project
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={discardElevation}
+              disabled={applyingElevation}
+              className="h-8 text-xs rounded-full"
+            >
+              Discard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (summary) {
     const rows = [
       { n: summary.facts, label: "Facts", where: "Studio Brain" },
@@ -577,11 +690,11 @@ export const BriefDropZone = ({
           Drop Zone
         </p>
         <h2 className="text-lg font-black leading-none tracking-tight">
-          Land it here — Thrive files it
+          Feed the Kretopia Brain
         </h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          Deck · contract · budget · PDF · image · voice · link · idea.
-          Kreto remembers it and routes it to Moodboard, Tasks, Pad or Vault.
+          Drop a brief, file, voice note or link. Kreto will sort the useful parts
+          into this Project for you to review.
         </p>
       </header>
 

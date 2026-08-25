@@ -49,7 +49,8 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
-import { LooseProjectsCarousel } from "@/components/project/studio/LooseProjectsCarousel";
+import { StudioProjectsDashboard } from "@/components/project/studio/StudioProjectsDashboard";
+import { StudioCreateHero } from "@/components/project/studio/StudioCreateHero";
 import { StudioFoldersBar, type StudioFolder } from "@/components/project/studio/StudioFoldersBar";
 import { toast } from "sonner";
 import { TodayStrip } from "@/components/desk/TodayStrip";
@@ -370,6 +371,12 @@ const CreatorWorkHome = () => {
   const [invoicesByProject, setInvoicesByProject] = useState<
     Record<string, "paid" | "invoiced" | "unsent">
   >({});
+  // Per-project role check for the dashboard's money signals (pay dot,
+  // "needs an invoice" tile, etc). This list mixes Projects the viewer
+  // owns with ones they're only a collaborator/client/guest on, so a
+  // single global flag can't gate it correctly -- see
+  // STUDIO_ROLE_VISIBILITY_REPORT.md.
+  const [moneyVisibleByProject, setMoneyVisibleByProject] = useState<Record<string, boolean>>({});
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
@@ -473,6 +480,33 @@ const CreatorWorkHome = () => {
     return () => { cancelled = true; };
   }, [user, projects]);
 
+  // Per-project money visibility. Owner rows are known locally (no RPC
+  // needed); everything else goes through can_see_milestone_money, the
+  // same role check the single-Project page (useProjectData) already
+  // relies on -- owner/creative/collaborator see money, client/guest don't.
+  useEffect(() => {
+    if (!user || projects.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const owned: Record<string, boolean> = {};
+      const toCheck = projects.filter((p) => {
+        if (p.created_by === user.id) { owned[p.id] = true; return false; }
+        return true;
+      }).slice(0, 100);
+      const results = await Promise.all(
+        toCheck.map((p) =>
+          supabase
+            .rpc("can_see_milestone_money" as any, { _project_id: p.id, _user_id: user.id })
+            .then(({ data }) => [p.id, !!data] as const, () => [p.id, false] as const)
+        )
+      );
+      if (cancelled) return;
+      const checked = Object.fromEntries(results);
+      setMoneyVisibleByProject({ ...owned, ...checked });
+    })();
+    return () => { cancelled = true; };
+  }, [user, projects]);
+
   if (loading) {
     return <WorkHomeSkeleton variant="studio" />;
   }
@@ -498,75 +532,32 @@ const CreatorWorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Studios | Kretopia</title>
-        <meta name="description" content="Studios — your project rooms. Voice-first project management for creatives." />
+        <title>Studio | Kretopia</title>
+        <meta name="description" content="Studio — start a Project by voice or text, keep the work in one place, and wrap with credits and an invoice." />
       </Helmet>
 
       <FeaturePageHeader
-        eyebrow="Projects & Workspaces"
-        title="Studios."
-        accentTitle="One room per project."
-        subtitle="Brief, collaborators, milestones, and payment — all inside the same room, from kickoff to delivery."
-        tutorial={{ featureKey: "studio", label: "How Studios works", steps: STUDIO_TUTORIAL }}
+        eyebrow="Studio"
+        title="Start with what"
+        accentTitle="you're making."
+        subtitle="Kreto turns it into a working Project. The work happens in one place, and your credits and invoice are ready when it wraps."
+        tutorial={{ featureKey: "studio", label: "How Studio works", steps: STUDIO_TUTORIAL }}
       />
+
 
       {/* Wider on desktop, capped for readability */}
       <div className="max-w-6xl mx-auto px-4 pt-4 pb-36 md:pb-12 space-y-5">
         <KretoTip compact />
-        {activeProjects.length > 0 && (
-          <div className="flex justify-end">
-            <Badge className="bg-[hsl(var(--signal-teal))] text-black hover:bg-[hsl(var(--signal-teal))] gap-1 font-bold border-0">
-              {activeProjects.length} Active
-            </Badge>
-          </div>
-        )}
-        {/* Voice as a primary interaction, not a passive tip — real mic
-            button wired to the existing VoiceCommandSheet, styled with
-            Kreto's solid accent treatment (formerly a sunset gradient,
-            flattened in the design system reset). */}
-        <button
-          type="button"
-          onClick={() => setVoiceCmdOpen(true)}
-          className="btn-glass btn-glass-outline group inline-flex items-center gap-2.5 rounded-full pl-1.5 pr-4 py-1.5"
-        >
-          <span
-            className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white"
-            style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
-          >
-            <span
-              className="absolute inset-0 rounded-full animate-ping opacity-40 motion-reduce:animate-none"
-              style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
-              aria-hidden
-            />
-            <Mic className="relative h-3.5 w-3.5" />
-          </span>
-          <span className="text-sm font-semibold text-foreground">Just talk — Kreto's listening</span>
-          <span className="hidden md:inline text-xs text-muted-foreground">
-            · <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd> anywhere
-          </span>
-        </button>
 
-        {/* Dominant creation CTA — Studio creation is the primary action on
-            this page, so it's the first thing after the title, not a small
-            button competing with the header. */}
-        <button
-          type="button"
-          onClick={() => setShowCreateProject(true)}
-          className="btn-glass btn-glass-primary group w-full rounded-2xl p-5 sm:p-6 text-left"
-        >
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
-              <Plus className="h-6 w-6" strokeWidth={2.5} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-base sm:text-lg font-black tracking-tight">New project</p>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Tell Kreto what you're making — voice or text — and we'll set up the room.
-              </p>
-            </div>
-            <ArrowRight className="h-5 w-5 text-primary shrink-0 transition-transform group-hover:translate-x-0.5" />
-          </div>
-        </button>
+        {/* Creation-first hero — the promise, then one dominant CTA using
+            the canonical Landing Page CTA implementation. */}
+        <StudioCreateHero
+          onCreate={() => setShowCreateProject(true)}
+          onVoice={() => setShowCreateProject(true)}
+          projectCount={projects.length}
+          activeCount={activeProjects.length}
+        />
+
 
         {(() => {
           const moveProject = async (projectId: string, folderId: string | null) => {
@@ -627,6 +618,7 @@ const CreatorWorkHome = () => {
                 <StudioCardsGrid
                   projects={visibleProjects as any}
                   invoicesByProject={invoicesByProject}
+                  moneyVisibleByProject={moneyVisibleByProject}
                   onNewProject={() => setShowCreateProject(true)}
                   folders={folders}
                   onMoveToFolder={moveProject}
@@ -636,7 +628,7 @@ const CreatorWorkHome = () => {
             );
           }
 
-          // ── ROOT — folders grid + loose projects below ──
+          // ── ROOT — folders grid + Projects dashboard below ──
           return (
             <>
               {user && (projects.length > 0 || hasFolders) && (
@@ -651,42 +643,18 @@ const CreatorWorkHome = () => {
                 />
               )}
 
-              {hasFolders ? (
-                unfiledProjects.length > 0 && (
-                  <div className="space-y-2 pt-2">
-                    <div className="flex items-end justify-between">
-                      <h2 className="text-base font-bold">Loose projects</h2>
-                      <span className="text-xs text-muted-foreground">
-                        {unfiledProjects.length} unfiled · drag onto a folder to file
-                      </span>
-                    </div>
-                    <LooseProjectsCarousel
-                      projects={unfiledProjects as any}
-                      invoicesByProject={invoicesByProject}
-                      folders={folders}
-                      onMoveToFolder={moveProject}
-                    />
-                  </div>
-                )
-              ) : (
-                <>
-                  {projects.length > 0 && (
-                    <div className="flex items-end justify-between pt-1">
-                      <h2 className="text-base font-bold">Your studio rooms</h2>
-                      <span className="text-xs text-muted-foreground">
-                        {activeProjects.length} in progress · {completedProjects.length} delivered
-                      </span>
-                    </div>
-                  )}
-                  <StudioCardsGrid
-                    projects={projects as any}
-                    invoicesByProject={invoicesByProject}
-                    onNewProject={() => setShowCreateProject(true)}
-                    folders={folders}
-                    onMoveToFolder={moveProject}
-                  />
-                </>
-              )}
+              {/* One Projects dashboard for every root view. When folders
+                  exist we scope it to the unfiled Projects (previously
+                  labeled "Loose projects" — copy only, no data change). */}
+              <StudioProjectsDashboard
+                projects={(hasFolders ? unfiledProjects : projects) as any}
+                invoicesByProject={invoicesByProject}
+                moneyVisibleByProject={moneyVisibleByProject}
+                onCreate={() => setShowCreateProject(true)}
+                folders={folders}
+                onMoveToFolder={moveProject}
+              />
+
             </>
           );
         })()}

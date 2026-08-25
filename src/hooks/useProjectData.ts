@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -42,10 +42,19 @@ export function useProjectData(projectId: string | undefined) {
   const [projects, setProjects] = useState<any[]>([]);
   const [userRole, setUserRole] = useState<"creator" | "client">("creator");
 
+  // Guards against cross-project flashes: switching from an already-loaded
+  // Project to a different one used to leave the old Project's title/tasks/
+  // files/messages on screen (no skeleton, nothing cleared) until the new
+  // fetch resolved, and a slower in-flight fetch for a Project the user has
+  // already navigated away from could still win the race and overwrite the
+  // new Project's fresh data. Every fetch gets a generation id; only the
+  // most recent one is allowed to apply its results.
+  const requestIdRef = useRef(0);
+
   const fetchProjects = useCallback(async () => {
     const { data } = await supabase
       .from("projects")
-      .select("id, title, status, updated_at")
+      .select("id, title, status, updated_at, deadline, workspace_type")
       .order("updated_at", { ascending: false });
     setProjects(data || []);
   }, []);
@@ -96,8 +105,23 @@ export function useProjectData(projectId: string | undefined) {
   const fetchProjectData = useCallback(
     async (isInitial = false) => {
       if (!projectId || !userId) return;
+      const requestId = ++requestIdRef.current;
+      const isStale = () => requestId !== requestIdRef.current;
       try {
-        if (isInitial && !project) setLoading(true);
+        if (isInitial) {
+          // A real Project switch (route param changed) — clear the previous
+          // Project's state right away and show the skeleton, rather than
+          // leaving stale content on screen until the new fetch resolves.
+          // A same-Project refresh (isInitial=false, e.g. a realtime event)
+          // never touches loading/clears state, so it stays flicker-free.
+          setLoading(true);
+          setProject(null);
+          setCollaborators([]);
+          setFiles([]);
+          setMessages([]);
+          setTasks([]);
+          setMilestones([]);
+        }
 
         const { data: projectData, error: projectError } = await supabase
           .from("projects")
@@ -105,6 +129,7 @@ export function useProjectData(projectId: string | undefined) {
           .eq("id", projectId)
           .single();
         if (projectError) throw projectError;
+        if (isStale()) return;
 
         await supabase
           .from("project_collaborators")
@@ -117,6 +142,7 @@ export function useProjectData(projectId: string | undefined) {
           project_id_param: projectId,
           user_id_param: userId,
         });
+        if (isStale()) return;
         if (!hasAccess) {
           toast({
             title: "Access denied",
@@ -153,6 +179,7 @@ export function useProjectData(projectId: string | undefined) {
         } catch (finErr) {
           console.error("get_project_financials failed", finErr);
         }
+        if (isStale()) return;
 
         setProject(projectWithFinancials);
         setUserRole(projectData.created_by === userId ? "client" : "creator");
@@ -175,6 +202,7 @@ export function useProjectData(projectId: string | undefined) {
           supabase.from("milestones").select("*").eq("project_id", projectId).order("created_at", { ascending: true }),
           supabase.rpc("get_project_milestone_financials" as any, { _project_id: projectId }),
         ]);
+        if (isStale()) return;
 
         const financialsByMilestoneId = new Map(
           ((milestoneFinancialsRes.data as any[]) || []).map((f) => [f.milestone_id, f])
@@ -199,13 +227,14 @@ export function useProjectData(projectId: string | undefined) {
         setTasks(tasksRes.data || []);
         setMilestones(milestonesWithFinancials);
       } catch (error: any) {
+        if (isStale()) return;
         console.error("Error fetching project data:", error);
         toast({ title: "Error loading project", description: error.message, variant: "destructive" });
       } finally {
-        setLoading(false);
+        if (!isStale()) setLoading(false);
       }
     },
-    [projectId, userId, project, navigate, toast, fetchCollaborators, fetchMessages]
+    [projectId, userId, navigate, toast, fetchCollaborators, fetchMessages]
   );
 
   useEffect(() => {
@@ -251,5 +280,6 @@ export function useProjectData(projectId: string | undefined) {
     isPro,
     user,
     fetchProjectData,
+    fetchProjects,
   };
 }

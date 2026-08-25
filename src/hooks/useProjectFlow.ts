@@ -17,6 +17,40 @@ export const PROJECT_FLOW_STAGES = [
 
 export type ProjectFlowStageId = (typeof PROJECT_FLOW_STAGES)[number]["id"];
 
+/**
+ * Six-phase user-facing model (Studio overhaul v2). Purely a display
+ * grouping over the existing 8 stages above — the stages themselves,
+ * their tab ids, and deriveStage()'s activity-based logic are untouched,
+ * since every stage id is load-bearing elsewhere (StudioToolBar,
+ * DeskTabContent, the CTA "tab" targets below). No DB column stores a
+ * phase; it's derived the same way currentStageId already is.
+ */
+export const STUDIO_PHASES = [
+  { id: "discuss", label: "Discuss" },
+  { id: "define", label: "Define" },
+  { id: "build", label: "Build" },
+  { id: "review", label: "Review" },
+  { id: "commit", label: "Commit" },
+  { id: "complete", label: "Complete" },
+] as const;
+
+export type StudioPhaseId = (typeof STUDIO_PHASES)[number]["id"];
+
+const STAGE_TO_PHASE: Record<ProjectFlowStageId, StudioPhaseId> = {
+  discussion: "discuss",
+  brief: "define",
+  tasks: "build",
+  work: "build",
+  review: "review",
+  agreement: "commit",
+  payment: "commit",
+  complete: "complete",
+};
+
+export function stageToPhase(stageId: ProjectFlowStageId): StudioPhaseId {
+  return STAGE_TO_PHASE[stageId];
+}
+
 export interface ProjectFlowSignals {
   messageCount: number;
   noteCount: number;
@@ -52,6 +86,8 @@ export interface ProjectFlow {
   derivedStageId: ProjectFlowStageId;
   stageStatus: Record<ProjectFlowStageId, "complete" | "current" | "todo">;
   nextStep: NextStep;
+  currentPhaseId: StudioPhaseId;
+  phaseStatus: Record<StudioPhaseId, "complete" | "current" | "todo">;
 }
 
 /**
@@ -194,6 +230,18 @@ export function useProjectFlow(signals: ProjectFlowSignals): ProjectFlow {
       else stageStatus[stage.id] = "todo";
     });
 
+    const phaseStatus = {} as Record<StudioPhaseId, "complete" | "current" | "todo">;
+    for (const phase of STUDIO_PHASES) {
+      const statuses = PROJECT_FLOW_STAGES
+        .filter((s) => STAGE_TO_PHASE[s.id] === phase.id)
+        .map((s) => stageStatus[s.id]);
+      phaseStatus[phase.id] = statuses.includes("current")
+        ? "current"
+        : statuses.every((st) => st === "complete")
+        ? "complete"
+        : "todo";
+    }
+
     return {
       currentStageId,
       currentStageIndex,
@@ -202,6 +250,8 @@ export function useProjectFlow(signals: ProjectFlowSignals): ProjectFlow {
       derivedStageId,
       stageStatus,
       nextStep: buildNextStep(currentStageId, signals),
+      currentPhaseId: stageToPhase(currentStageId),
+      phaseStatus,
     };
   }, [signals]);
 }

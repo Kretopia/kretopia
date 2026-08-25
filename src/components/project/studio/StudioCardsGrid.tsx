@@ -21,6 +21,11 @@ export type { StudioProject };
 interface StudioCardsGridProps {
   projects: StudioProject[];
   invoicesByProject?: Record<string, "paid" | "invoiced" | "unsent">;
+  /** Per-project role check (can_see_milestone_money): owner/creative/
+   * collaborator see the pay dot, client/guest don't. Missing entries are
+   * treated as not-visible (fail closed), same convention as
+   * StudioProjectsDashboard's identical prop. */
+  moneyVisibleByProject?: Record<string, boolean>;
   onNewProject: () => void;
   folders?: StudioFolder[];
   onMoveToFolder?: (projectId: string, folderId: string | null) => void;
@@ -31,11 +36,13 @@ interface StudioCardsGridProps {
 export const StudioCardsGrid = ({
   projects,
   invoicesByProject = {},
+  moneyVisibleByProject,
   onNewProject,
   folders = [],
   onMoveToFolder,
   hideHero = false,
 }: StudioCardsGridProps) => {
+  const moneyVisible = (id: string): boolean => moneyVisibleByProject?.[id] ?? false;
   const navigate = useNavigate();
   const [moveTarget, setMoveTarget] = useState<StudioProject | null>(null);
   const longPressTimer = useRef<number | null>(null);
@@ -101,7 +108,7 @@ export const StudioCardsGrid = ({
         {hero && rest.length > 0 && (
           <FeatureCard
             project={hero}
-            pay={invoicesByProject[hero.id]}
+            pay={moneyVisible(hero.id) ? invoicesByProject[hero.id] : undefined}
             onClick={() => navigate(`/desk/${hero.id}`)}
           />
         )}
@@ -110,7 +117,7 @@ export const StudioCardsGrid = ({
           {(rest.length > 0 ? rest : projects).map((project) => {
             const status = STATUS_PILL[project.status ?? "active"] ?? STATUS_PILL.active;
             const accent = moodAccent(project.mood);
-            const pay = invoicesByProject[project.id];
+            const pay = moneyVisible(project.id) ? invoicesByProject[project.id] : undefined;
             const isDone = project.status === "completed";
             const currentFolder = folders.find((f) => f.id === project.studio_folder_id);
 

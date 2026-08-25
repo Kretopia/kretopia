@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mic, Square, Loader2, X, ArrowRight, Type, Search, Sparkles, MessageSquareText, FileEdit, Rocket } from "lucide-react";
+import {
+  Mic, Square, Loader2, X, ArrowRight, Type, Search, Sparkles,
+  MessageSquareText, FileEdit, Rocket, Upload, Link2, ShieldCheck,
+  Wand2, FolderPlus, CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CtaButton } from "@/components/ui/cta-button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { CreativeLoader } from "@/components/ui/creative-loader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceConfigs";
+
 
 const ACCENT = "#FF2DA1";
 
@@ -31,11 +38,45 @@ const EXAMPLE_PROMPTS: Record<WorkspaceType, string> = {
   general: "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday.",
 };
 
-const HOW_IT_WORKS = [
-  { icon: MessageSquareText, label: "Describe it", body: "Speak or type what you're making." },
-  { icon: Sparkles, label: "Kreto builds a brief", body: "AI drafts a title, summary and starter tasks." },
-  { icon: FileEdit, label: "Review & edit", body: "Everything stays fully editable before it's real." },
-  { icon: Rocket, label: "Launch the room", body: "Your Studio room opens, ready to work in." },
+type StepKind = "automatic" | "suggested" | "confirmed";
+
+const STEP_KIND_LABEL: Record<StepKind, string> = {
+  automatic: "Automatic",
+  suggested: "Suggested",
+  confirmed: "You confirm",
+};
+
+const STEP_KIND_TONE: Record<StepKind, string> = {
+  automatic: "bg-muted text-muted-foreground",
+  suggested: "bg-primary/10 text-primary",
+  confirmed: "text-white",
+};
+
+/** The full 8-beat sequence, each tagged with how much control Kreto has
+ * over it — shown expanded on request so "what happens after I click?"
+ * has a real, honest answer instead of a 4-card guess. */
+const HOW_IT_WORKS: Array<{ icon: typeof MessageSquareText; label: string; body: string; kind: StepKind }> = [
+  { icon: MessageSquareText, label: "Tell Kreto what you're making", body: "Speak, type, upload a brief or paste a sheet.", kind: "confirmed" },
+  { icon: Wand2, label: "Kreto identifies the type", body: "Photo shoot, campaign, music, event — inferred from what you said.", kind: "suggested" },
+  { icon: Sparkles, label: "Kreto drafts the brief & tasks", body: "A title, summary and starter tasks, structured for the room type.", kind: "automatic" },
+  { icon: FileEdit, label: "You review and edit", body: "Every field stays editable — title, tasks, type, dates, budget.", kind: "confirmed" },
+  { icon: CheckCircle2, label: "You confirm the Project", body: "Nothing is written to your Studio until you tap Create.", kind: "confirmed" },
+  { icon: Rocket, label: "Your room opens", body: "With one clear next action, ready to work in.", kind: "automatic" },
+  { icon: FolderPlus, label: "Work becomes Project memory", body: "Files and decisions you add later feed the Studio Brain.", kind: "automatic" },
+  { icon: ShieldCheck, label: "Credits & invoice at wrap", body: "Drafted for review when supported — never sent automatically.", kind: "suggested" },
+];
+
+/** Curated example categories shown as tappable inspiration chips on the
+ * prompt screen — replaces the old upfront "choose a type" tab step.
+ * Tapping one seeds the prompt with a real example; Kreto still infers
+ * (and the review step still lets the room type be corrected). */
+const INSPIRATION_TYPES: WorkspaceType[] = [
+  "photo_shoot",
+  "brand_collab",
+  "music_project",
+  "event_production",
+  "video_shoot",
+  "content_series",
 ];
 
 /** Lightweight keyword inference so the room shape matches what was said. */
@@ -96,10 +137,14 @@ export const VoiceFirstCreateModal = ({
   const [rawInput, setRawInput] = useState<string>("");
   const [deadline, setDeadline] = useState<string>("");
   const [budget, setBudget] = useState<string>("");
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const tickRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // A review-step draft (title/summary/type/deadline/budget/payments/credit)
   // survives a refresh or an accidental close — nothing here is saved to the
@@ -130,6 +175,9 @@ export const VoiceFirstCreateModal = ({
       setRawInput("");
       setDeadline("");
       setBudget("");
+      setShowLinkInput(false);
+      setLinkUrl("");
+      setUploadingFile(false);
       hydratedRef.current = false;
       return;
     }
@@ -291,6 +339,80 @@ export const VoiceFirstCreateModal = ({
     }
   };
 
+  /** "Upload a brief or file" — real capability, not a stub: extract-brief
+   * already supports source="doc" (base64 PDF/image, Gemini multimodal),
+   * it just wasn't wired up in this modal before now. */
+  const processFile = async (file: File) => {
+    setUploadingFile(true);
+    setMode("thinking");
+    try {
+      const data_base64 = await blobToBase64(file);
+      const { data, error } = await supabase.functions.invoke("extract-brief", {
+        body: {
+          source: "doc",
+          data_base64,
+          mime_type: file.type || "application/pdf",
+          workspace_type: workspaceType,
+        },
+      });
+      if (error) throw error;
+      const result = (data ?? {}) as ExtractedBrief;
+      if (!result?.project?.title) throw new Error("Couldn't read that file");
+      setBrief(result);
+      setSelected(new Set((result.deliverables ?? []).slice(0, 8).map((_, i) => i)));
+      if (workspaceType === "general") {
+        setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
+      }
+      setMode("review");
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Couldn't read that file",
+        description: err.message ?? "Try pasting the brief as text instead.",
+        variant: "destructive",
+      });
+      setMode("prompt");
+      setShowText(true);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (file) void processFile(file);
+  };
+
+  /** "Paste a link" — scoped honestly to what extract-brief's source="sheet"
+   * actually supports: a public Google Sheet, one row per deliverable. Not
+   * arbitrary URL scraping. */
+  const submitLink = async () => {
+    const url = linkUrl.trim();
+    if (!url) return;
+    setMode("thinking");
+    try {
+      const { data, error } = await supabase.functions.invoke("extract-brief", {
+        body: { source: "sheet", url, workspace_type: workspaceType },
+      });
+      if (error) throw error;
+      const result = (data ?? {}) as ExtractedBrief;
+      if (!result?.project?.title) throw new Error("Couldn't read that sheet");
+      setBrief(result);
+      setSelected(new Set((result.deliverables ?? []).slice(0, 8).map((_, i) => i)));
+      setMode("review");
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Couldn't read that link",
+        description: err.message ?? "Make sure the Google Sheet is shared as \"Anyone with the link.\"",
+        variant: "destructive",
+      });
+      setMode("prompt");
+      setShowLinkInput(true);
+    }
+  };
+
   const createProject = async (mode: "all" | "selected" | "none" = "all") => {
     if (!user || !brief) return;
     setCreating(true);
@@ -396,115 +518,176 @@ export const VoiceFirstCreateModal = ({
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-background flex flex-col" role="dialog" aria-modal="true" aria-label="New room">
+    <div
+      className="fixed inset-0 z-[60] flex flex-col bg-background"
+      role="dialog"
+      aria-modal="true"
+      aria-label="New Room"
+    >
+      {/* Ambient glow — same futuristic backdrop language as the Studio room */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(65% 50% at 50% 0%, rgba(255,45,161,0.12), transparent 62%)",
+        }}
+      />
+
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 h-14 shrink-0 border-b border-border/40">
-        <span className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-          New room
+      <div className="relative z-10 flex items-center justify-between gap-3 px-4 h-16 shrink-0 border-b border-border/40">
+        <span
+          className="text-xs font-bold tracking-[0.22em] uppercase"
+          style={{ color: ACCENT }}
+        >
+          New Room
         </span>
-        <Button ref={closeButtonRef} variant="ghost" size="icon" onClick={() => onOpenChange(false)} aria-label="Close">
+        <Button
+          ref={closeButtonRef}
+          variant="ghost"
+          size="icon"
+          onClick={() => onOpenChange(false)}
+          aria-label="Close"
+        >
           <X className="h-5 w-5" />
         </Button>
       </div>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/pdf,image/*,.doc,.docx"
+        className="hidden"
+        onChange={handleFilePick}
+      />
+
       {/* Body */}
       <div className={cn(
-        "flex-1 flex flex-col items-center px-6 text-center overflow-y-auto overscroll-contain",
+        "relative z-10 flex-1 flex flex-col items-center px-6 text-center overflow-y-auto overscroll-contain",
         mode === "review" ? "justify-start py-6 pb-32" : "justify-center"
       )}>
+
+
         {mode === "prompt" && (
           <>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
-              Create a project
+            <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] mb-3 leading-[1.05]">
+              What are you making?
             </h1>
-            <p className="text-sm text-muted-foreground max-w-sm mb-5">
-              Kreto will help shape the workspace around your brief, team and next milestone.
+            <p className="text-sm text-muted-foreground max-w-sm mb-3">
+              Share what you're working on — voice, text, a file or a link. Kreto drafts the
+              brief, starter tasks and room type for you to review.
             </p>
 
-            {/* How it works — compact, explains the flow before anyone commits to it */}
-            <div className="w-full max-w-lg mb-7 grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {HOW_IT_WORKS.map((step, i) => {
-                const StepIcon = step.icon;
-                return (
-                  <motion.div
-                    key={step.label}
-                    initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: i * 0.06 }}
-                    className="rounded-xl border border-border/60 bg-muted/20 px-2.5 py-2.5 text-left"
-                  >
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span
-                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
-                        style={{ backgroundColor: "rgba(255,45,161,0.14)", color: ACCENT }}
-                      >
-                        {i + 1}
-                      </span>
-                      <StepIcon className="h-3 w-3 text-muted-foreground shrink-0" />
-                    </div>
-                    <p className="text-[11px] font-semibold leading-tight">{step.label}</p>
-                    <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 hidden sm:block">
-                      {step.body}
-                    </p>
-                  </motion.div>
-                );
-              })}
-            </div>
+            {/* Trust copy — required up front, not buried in a tooltip */}
+            <p className="text-[11px] text-muted-foreground/80 max-w-md mb-5 leading-relaxed">
+              Nothing becomes a Project until you confirm the draft. Kreto will not invite
+              collaborators, send messages or emails, or trigger payments without your approval.
+            </p>
 
-            {/* Workspace type chips — visible from the start; this is Step 1 */}
-            <div className="w-full max-w-md mb-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
-                Step 1 · Choose the project type
-              </p>
-              <div className="flex flex-wrap justify-center gap-1.5">
-                {(Object.keys(WORKSPACE_CONFIGS) as WorkspaceType[]).map((t) => {
-                  const cfg = WORKSPACE_CONFIGS[t];
-                  const Icon = cfg.icon;
-                  const active = workspaceType === t;
+            {/* How it works — the full sequence, tagged by how much control Kreto has */}
+            <details className="w-full max-w-lg mb-7 group">
+              <summary className="cursor-pointer list-none inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors mb-3">
+                <span>How this works</span>
+                <ArrowRight className="h-3 w-3 transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {HOW_IT_WORKS.map((step, i) => {
+                  const StepIcon = step.icon;
                   return (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setWorkspaceType(t)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-colors",
-                        active
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:border-primary/40"
-                      )}
+                    <motion.div
+                      key={step.label}
+                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.04 }}
+                      className="rounded-xl border border-border/60 bg-muted/20 px-2.5 py-2.5 text-left"
                     >
-                      <Icon className="h-3.5 w-3.5" />
-                      {cfg.label}
-                    </button>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
+                            style={{ backgroundColor: "rgba(255,45,161,0.14)", color: ACCENT }}
+                          >
+                            {i + 1}
+                          </span>
+                          <StepIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                        </div>
+                        <span
+                          className={cn(
+                            "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
+                            STEP_KIND_TONE[step.kind]
+                          )}
+                          style={step.kind === "confirmed" ? { backgroundColor: ACCENT } : undefined}
+                        >
+                          {STEP_KIND_LABEL[step.kind]}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-semibold leading-tight">{step.label}</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 hidden sm:block">
+                        {step.body}
+                      </p>
+                    </motion.div>
                   );
                 })}
               </div>
-              {workspaceType !== "general" && (
-                <p className="mt-2 text-[11px] text-muted-foreground text-center">
-                  {WORKSPACE_CONFIGS[workspaceType].description}
-                </p>
-              )}
-            </div>
+            </details>
 
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">
-              Step 2 · Describe the idea
-            </p>
-
-            {!showText ? (
-              <>
-                <button
-                  type="button"
-                  onClick={startRecording}
-                  aria-label="Start recording"
-                  className={cn(
-                    "h-24 w-24 rounded-full bg-primary text-primary-foreground",
-                    "flex items-center justify-center",
-                    "shadow-xl ring-8 ring-primary/15",
-                    "transition-transform hover:scale-105 active:scale-95"
-                  )}
+            {showLinkInput ? (
+              <div className="w-full max-w-md space-y-3">
+                <div
+                  className="rounded-2xl border p-4 text-left"
+                  style={{ borderColor: "rgba(255,45,161,0.25)", boxShadow: "0 0 0 1px rgba(255,45,161,0.08)" }}
                 >
-                  <Mic className="h-9 w-9" />
-                </button>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: ACCENT }}>
+                    Google Sheet link
+                  </p>
+                  <Input
+                    autoFocus
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    placeholder="https://docs.google.com/spreadsheets/d/..."
+                    className="text-sm"
+                  />
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    Share it as "Anyone with the link can view" — one row per deliverable.
+                  </p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => { setShowLinkInput(false); setLinkUrl(""); }}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Back
+                  </button>
+                  <Button onClick={submitLink} disabled={!linkUrl.trim()} className="gap-1">
+                    Continue
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : !showText ? (
+              <>
+                <div className="relative">
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 rounded-full animate-ping pointer-events-none"
+                    style={{ backgroundColor: "rgba(255,45,161,0.18)" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={startRecording}
+                    aria-label="Start recording"
+                    style={{ backgroundColor: ACCENT }}
+                    className={cn(
+                      "relative h-24 w-24 rounded-full text-white",
+                      "flex items-center justify-center",
+                      "shadow-[0_0_40px_rgba(255,45,161,0.45)] ring-8 ring-[rgba(255,45,161,0.15)]",
+                      "transition-transform hover:scale-105 active:scale-95"
+                    )}
+                  >
+                    <Mic className="h-9 w-9" />
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowText(true)}
@@ -514,18 +697,68 @@ export const VoiceFirstCreateModal = ({
                   Or type it instead
                 </button>
 
-                {/* Example prompt — real example for the selected room type, tap to jump into text mode with it pre-filled */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTextInput(EXAMPLE_PROMPTS[workspaceType]);
-                    setShowText(true);
-                  }}
-                  className="mt-5 max-w-sm rounded-full border border-border/60 bg-muted/20 px-4 py-2 text-left text-[11px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors inline-flex items-center gap-2"
-                >
-                  <Sparkles className="h-3 w-3 shrink-0" style={{ color: ACCENT }} />
-                  <span className="truncate">"{EXAMPLE_PROMPTS[workspaceType]}"</span>
-                </button>
+                {/* Inspiration chips — real examples, tap to jump into text mode pre-filled */}
+                <div className="mt-8 w-full max-w-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                    Examples to get you started
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {INSPIRATION_TYPES.map((t) => {
+                      const cfg = WORKSPACE_CONFIGS[t];
+                      const Icon = cfg.icon;
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => {
+                            setWorkspaceType(t);
+                            setTextInput(EXAMPLE_PROMPTS[t]);
+                            setShowText(true);
+                          }}
+                          className="glass-surface inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                          {cfg.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* More ways to start — real, distinct capabilities, not
+                    stickers: extract-brief already supports source="doc"
+                    (upload) and source="sheet" (Google Sheet link), just
+                    newly wired up here. */}
+                <div className="mt-6 w-full max-w-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                    More ways to start
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingFile}
+                      className="glass-surface rounded-xl p-3 text-left hover:border-primary/40 transition-colors disabled:opacity-50"
+                    >
+                      <Upload className="h-4 w-4 mb-1.5" style={{ color: ACCENT }} />
+                      <p className="text-xs font-semibold leading-tight">Start from a brief or file</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                        PDF, image or doc — Kreto reads it.
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowLinkInput(true)}
+                      className="glass-surface rounded-xl p-3 text-left hover:border-primary/40 transition-colors"
+                    >
+                      <Link2 className="h-4 w-4 mb-1.5" style={{ color: ACCENT }} />
+                      <p className="text-xs font-semibold leading-tight">Paste a Google Sheet</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                        One row per deliverable — Kreto maps it.
+                      </p>
+                    </button>
+                  </div>
+                </div>
               </>
             ) : (
               <div className="w-full max-w-md space-y-3">
@@ -551,7 +784,7 @@ export const VoiceFirstCreateModal = ({
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     placeholder={EXAMPLE_PROMPTS[workspaceType]}
-                    className="min-h-[130px] text-base text-left border-0 focus-visible:ring-0 shadow-none resize-none"
+                    className="min-h-[130px] text-base text-left border-0 bg-transparent focus-visible:ring-0 shadow-none resize-none"
                   />
                 </div>
 
@@ -574,10 +807,15 @@ export const VoiceFirstCreateModal = ({
                     <Mic className="h-3.5 w-3.5" />
                     Use voice instead
                   </button>
-                  <Button onClick={submitText} disabled={!textInput.trim()} className="gap-1">
-                    Continue
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <CtaButton
+                    onClick={submitText}
+                    disabled={!textInput.trim()}
+                    size="default"
+                    className="w-auto gap-1.5"
+                  >
+                    Let Kreto draft my Project
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </CtaButton>
                 </div>
               </div>
             )}
@@ -587,17 +825,21 @@ export const VoiceFirstCreateModal = ({
         {mode === "recording" && (
           <>
             <div className="relative mb-8">
-              <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+              <span
+                className="absolute inset-0 rounded-full animate-ping"
+                style={{ backgroundColor: "rgba(255,45,161,0.25)" }}
+              />
               <button
                 type="button"
                 onClick={stopRecording}
                 aria-label="Stop recording"
-                className={cn(
-                  "relative h-24 w-24 rounded-full bg-primary text-primary-foreground",
-                  "flex items-center justify-center shadow-xl ring-8 ring-primary/15"
-                )}
+                className="glass-surface-elevated relative h-28 w-28 rounded-full flex items-center justify-center"
+                style={{
+                  border: "1.5px solid rgba(255,45,161,0.4)",
+                  boxShadow: "0 8px 40px rgba(255,45,161,0.22)",
+                }}
               >
-                <Square className="h-9 w-9 fill-current" />
+                <Square className="h-9 w-9 fill-current" style={{ color: ACCENT }} />
               </button>
             </div>
             <p className="text-2xl font-mono tabular-nums">{fmtSec(seconds)}</p>
@@ -615,8 +857,8 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "review" && brief && (
           <div className="w-full max-w-md space-y-5 text-left">
-            <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-              Step 3 · Kreto structured your project — review and edit
+            <p className="text-xs font-bold tracking-[0.18em] uppercase" style={{ color: ACCENT }}>
+              Kreto structured your project — review and edit
             </p>
             <div className="space-y-2">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">

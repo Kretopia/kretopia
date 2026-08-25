@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceConfigs";
+import { KretoAvatar } from "@/components/brand/KretoAvatar";
 
 const ACCENT = "#FF2DA1";
 
@@ -491,11 +492,14 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "prompt" && (
           <>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
-              Create a project
+            <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] mb-3 leading-[1.05]">
+              Open a New Room.
+              <br />
+              <span style={{ color: ACCENT }}>Kreto shapes it around you.</span>
             </h1>
             <p className="text-sm text-muted-foreground max-w-sm mb-5">
-              Kreto will help shape the workspace around your brief, team and next milestone.
+              Speak or type what you're making. Kreto drafts the brief, the team slots and the
+              next milestone — you review and edit before anything is created.
             </p>
 
             {/* How it works — compact, explains the flow before anyone commits to it */}
@@ -663,6 +667,7 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "recording" && (
           <>
+            <KretoAvatar size="md" animated={!reducedMotion} state="recording" className="mb-6" />
             <div className="relative mb-8">
               <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
               <button

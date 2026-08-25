@@ -36,7 +36,7 @@ describe("StudioProjectsDashboard", () => {
 
   it("filters via the summary tiles", () => {
     renderDash();
-    fireEvent.click(screen.getByRole("button", { name: /In progress/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Filter by In progress" }));
     expect(screen.getByText("Carnival Film")).toBeInTheDocument();
     expect(screen.queryByText("Album Rollout")).not.toBeInTheDocument();
   });

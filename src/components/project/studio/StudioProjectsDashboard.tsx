@@ -173,6 +173,7 @@ export const StudioProjectsDashboard = ({
               key={t.key}
               type="button"
               aria-pressed={active}
+              aria-label={`Filter by ${t.label}`}
               onClick={() => setFilter(active ? "all" : t.key)}
               className={cn(
                 "rounded-2xl border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",

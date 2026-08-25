@@ -3840,6 +3840,7 @@ export type Database = {
           role: string
           source: string | null
           source_id: string | null
+          source_url: string | null
           start_date: string | null
           tags: string[] | null
           thumbnail_url: string | null
@@ -3879,6 +3880,7 @@ export type Database = {
           role: string
           source?: string | null
           source_id?: string | null
+          source_url?: string | null
           start_date?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -3918,6 +3920,7 @@ export type Database = {
           role?: string
           source?: string | null
           source_id?: string | null
+          source_url?: string | null
           start_date?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null

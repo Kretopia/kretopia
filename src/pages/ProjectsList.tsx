@@ -92,6 +92,22 @@ const ProjectsList = () => {
           else if (cur !== "paid") map[row.project_id] = "invoiced";
         }
         setInvoicesByProject(map);
+
+        // Per-project money visibility (owner/creative/collaborator see the
+        // pay dot; clients and guests don't). Without this the grid fails
+        // closed and no dot renders at all.
+        if (user?.id) {
+          const visible: Record<string, boolean> = {};
+          await Promise.all(
+            ids.map(async (id) => {
+              const { data } = await supabase
+                .rpc("can_see_milestone_money", { _project_id: id, _user_id: user.id })
+                .then((r) => r, () => ({ data: false }));
+              visible[id] = Boolean(data);
+            }),
+          );
+          setMoneyVisibleByProject(visible);
+        }
       }
     } catch (error: any) {
       console.error("Error fetching projects:", error);

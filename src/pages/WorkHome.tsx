@@ -49,7 +49,8 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
-import { LooseProjectsCarousel } from "@/components/project/studio/LooseProjectsCarousel";
+import { StudioProjectsDashboard } from "@/components/project/studio/StudioProjectsDashboard";
+import { StudioCreateHero } from "@/components/project/studio/StudioCreateHero";
 import { StudioFoldersBar, type StudioFolder } from "@/components/project/studio/StudioFoldersBar";
 import { toast } from "sonner";
 import { TodayStrip } from "@/components/desk/TodayStrip";
@@ -592,7 +593,7 @@ const CreatorWorkHome = () => {
             );
           }
 
-          // ── ROOT — folders grid + loose projects below ──
+          // ── ROOT — folders grid + Projects dashboard below ──
           return (
             <>
               {user && (projects.length > 0 || hasFolders) && (

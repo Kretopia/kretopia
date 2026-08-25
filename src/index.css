@@ -1300,3 +1300,10 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 [data-nav-chrome] .btn-glass-outline:hover {
   background-color: hsl(var(--accent) / 0.6);
 }
+/* The two navbar "Get Started" CTAs keep a solid primary fill, as they
+   had before the CTA sweep -- they must not inherit surrounding text
+   color from the rule above. */
+[data-nav-chrome] .nav-btn-plain,
+[data-nav-chrome] .nav-btn-plain:hover {
+  color: hsl(var(--primary-foreground)) !important;
+}

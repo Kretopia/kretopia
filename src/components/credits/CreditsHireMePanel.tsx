@@ -36,7 +36,7 @@ export function CreditsHireMePanel({ profile, index }: { profile: HireMeProfile 
         <button
           type="button"
           onClick={() => navigate("/profile/edit#hire")}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+          className="btn-glass btn-glass-outline inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
         >
           <Pencil className="h-3.5 w-3.5" aria-hidden />
           Edit
@@ -52,7 +52,7 @@ export function CreditsHireMePanel({ profile, index }: { profile: HireMeProfile 
             <button
               type="button"
               onClick={() => navigate("/profile/edit#hire")}
-              className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="btn-glass btn-glass-primary rounded-full px-4 py-2 text-xs font-semibold"
             >
               Set it up
             </button>

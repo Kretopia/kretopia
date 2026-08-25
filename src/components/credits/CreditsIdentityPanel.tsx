@@ -32,7 +32,7 @@ export function CreditsIdentityPanel({ profile, index }: { profile: IdentityProf
         <button
           type="button"
           onClick={() => navigate("/profile/edit")}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+          className="btn-glass btn-glass-outline inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
         >
           <Pencil className="h-3.5 w-3.5" aria-hidden />
           Edit

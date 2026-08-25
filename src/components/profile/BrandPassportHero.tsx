@@ -354,7 +354,7 @@ export function BrandPassportHero({
               <button
                 type="button"
                 onClick={onEdit}
-                className="w-full flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 px-3.5 py-3 text-left hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
+                className="btn-glass btn-glass-outline w-full flex items-center gap-2.5 rounded-xl px-3.5 py-3 text-left"
               >
                 <Briefcase className="h-4 w-4 text-[hsl(var(--signal-teal))] shrink-0" />
                 <span className="text-xs font-medium flex-1 min-w-0 truncate">{nextAction.label}</span>
@@ -363,7 +363,7 @@ export function BrandPassportHero({
             ) : (
               <Link
                 to={nextAction.to}
-                className="w-full flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 px-3.5 py-3 text-left hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
+                className="btn-glass btn-glass-outline w-full flex items-center gap-2.5 rounded-xl px-3.5 py-3 text-left"
               >
                 <Briefcase className="h-4 w-4 text-[hsl(var(--signal-teal))] shrink-0" />
                 <span className="text-xs font-medium flex-1 min-w-0 truncate">{nextAction.label}</span>

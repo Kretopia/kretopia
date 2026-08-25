@@ -747,7 +747,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
               {/* AI Match Score Badge */}
               <button
                 onClick={() => setShowMatchExplanation(true)}
-                className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-colors"
+                className="btn-glass btn-glass-outline absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full"
               >
                 <Sparkles className="h-3.5 w-3.5 text-yellow-400" />
                 <span className="text-sm font-semibold">{currentCreator.match_score}%</span>

@@ -353,7 +353,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                className="relative flex h-9 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+                className="btn-glass btn-glass-outline relative flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium"
                 onClick={() => openReceiptScanner("camera")}
                 disabled={scanning}
               >
@@ -361,7 +361,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
               </button>
               <button
                 type="button"
-                className="relative flex h-9 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+                className="btn-glass btn-glass-outline relative flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium"
                 onClick={() => openReceiptScanner("upload")}
                 disabled={scanning}
               >

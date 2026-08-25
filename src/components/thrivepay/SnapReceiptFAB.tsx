@@ -487,7 +487,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             <div className="space-y-1">
             <button
               type="button"
-              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
+              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-[#FF2DA1]/10 text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
               onClick={() => isNativeCameraReady() ? openNativeImage(CameraSource.Camera) : startInlineCamera()}
               disabled={scanning || cameraStarting}
             >
@@ -499,7 +499,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             </button>
             <button
               type="button"
-              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
+              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-[#FF2DA1]/10 text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
               onClick={() => isNativeCameraReady() ? openNativeImage(CameraSource.Photos) : uploadRef.current?.click()}
               disabled={scanning}
             >

@@ -108,8 +108,8 @@ export function CreditsOverviewCard({ overview, completeness, nextAction, loadin
           type="button"
           onClick={nextAction.onClick}
           className={cn(
-            "group relative mt-5 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-[hsl(var(--accent-passport))] px-5 py-2.5 text-sm font-semibold text-white transition-transform",
-            "hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            "btn-glass btn-glass-primary group relative mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold",
+            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           )}
         >
           <span className="relative">{nextAction.label}</span>

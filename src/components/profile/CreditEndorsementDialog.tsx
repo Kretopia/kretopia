@@ -158,7 +158,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId, re
         </Button>
 
         <button
-          className="text-[11px] text-muted-foreground w-full text-center underline"
+          className="text-[11px] text-white/60 hover:text-[#FF2DA1] w-full text-center underline transition-colors"
           onClick={resetForm}
         >
           Send to someone else

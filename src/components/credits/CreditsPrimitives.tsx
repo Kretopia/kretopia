@@ -107,7 +107,7 @@ export function CreditsErrorState({ message, onRetry }: { message: string; onRet
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+          className="btn-glass btn-glass-outline mt-3 rounded-full px-4 py-1.5 text-xs font-semibold"
         >
           Try again
         </button>

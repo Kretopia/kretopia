@@ -1,17 +1,25 @@
 # Escrow Webhook Verification Report
 
-**Status: `BLOCKED_STRIPE_TEST_CONFIGURATION`**
+**Status update (this pass): the gap described below has been closed
+in code — see [ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md](ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md)
+for exactly what was added. Nothing in this report has been
+superseded by a live verification, only by new code. Overall status:
+`ESCROW_CODE_HARDENED_NOT_TESTED`. No live webhook event has been
+sent, received, or verified for escrow at any point in this
+engagement — that specific status (`BLOCKED_STRIPE_TEST_CONFIGURATION`)
+is unchanged and is tracked in [ESCROW_SANDBOX_TEST_REPORT.md](ESCROW_SANDBOX_TEST_REPORT.md).**
 
-No live webhook event was sent, received, or verified for escrow in this
-task. This report is static-only: what the code does if an event
-arrived, established by reading it, not by triggering one.
+The section below is preserved as originally written (the audit that
+motivated the fix) — it describes the state of the code *before* this
+pass. It is being kept, not deleted, because it's the record of why the
+fix in `ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md` exists.
 
-## Headline finding (from `ESCROW_FLOW_AUDIT.md`)
+## Headline finding (from `ESCROW_FLOW_AUDIT.md`) — historical, now fixed in code
 
 `supabase/functions/stripe-marketplace-webhook/index.ts` — the only
 webhook handler that touches `milestones`/Stripe Checkout Sessions —
-explicitly excludes escrow sessions. Around line 175, the handler
-branches on the Checkout Session's metadata:
+used to explicitly exclude escrow sessions. Around line 175, the handler
+branched on the Checkout Session's metadata:
 
 ```ts
 if (session.metadata?.useEscrow !== 'true') {
@@ -19,14 +27,14 @@ if (session.metadata?.useEscrow !== 'true') {
 }
 ```
 
-There is no corresponding branch for `useEscrow === 'true'`. If a real
-escrow Checkout Session completed right now, in test mode or live, this
-webhook would receive the `checkout.session.completed` event, evaluate
-the condition, and silently do nothing for that session — no error,
-no log entry distinguishing it, no DB write. This is not a hypothetical
-edge case; it's the only entry point in the whole codebase for the
-non-escrow milestone-paid flow, and escrow deliberately routes around
-it without a replacement.
+There was no corresponding branch for `useEscrow === 'true'`. A real
+escrow Checkout Session completing, in test mode or live, would have
+been received, evaluated against that condition, and silently dropped —
+no error, no log entry distinguishing it, no DB write. **This pass adds
+that branch** (full detail in `ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md`
+§1) — the code described in this paragraph no longer matches what's in
+the file. It is quoted here only to preserve the record of what was
+found and why the fix was necessary.
 
 ## What DOES exist and would function if reached
 
@@ -43,23 +51,20 @@ it without a replacement.
   Relevant precondition for future escrow webhook work, not itself
   escrow logic.
 
-## What does NOT exist
+## What existed at the start of this pass vs. what exists now
 
-- No webhook branch for `checkout.session.completed` with
-  `metadata.useEscrow === 'true'`.
-- No webhook branch for `payment_intent.amount_capturable_updated`
-  (the event Stripe emits when a manual-capture PaymentIntent becomes
-  capturable — the natural trigger for setting `escrow_status =
-  'authorized'`, per `ESCROW_STATE_MACHINE.md`'s analysis of the
-  missing transition).
-- No webhook branch for `payment_intent.canceled` or
-  `charge.refunded` scoped to escrow milestones.
-- No test-mode webhook endpoint registered with Stripe at all (per
-  `KREPAY_STRIPE_SANDBOX_REPORT.md`), so even if the above branches
-  existed, nothing would currently deliver events to them outside a
-  manual `stripe trigger` / CLI-forward session.
+| | Before this pass | After this pass |
+|---|---|---|
+| `checkout.session.completed` + `useEscrow === 'true'` | Absent | **Added** — see `ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md` §1 |
+| `payment_intent.canceled` | Absent | **Added** — §2 |
+| `payment_intent.payment_failed` | Absent | **Added** (logged, deliberately no DB write — reasoning in §3) |
+| `charge.refunded` | Absent | **Added** (logged + manual-review notification, no DB state transition — the `escrow_status` CHECK constraint has no value for it; see §4) |
+| `charge.dispute.created` | Absent | **Added** (same as refunded — §4) |
+| `transfer.reversed` | Absent | **Added**, reconciliation hook for the new commission-transfer ledger — §5 |
+| `payment_intent.amount_capturable_updated` | Absent | **Deliberately not added** — `checkout.session.completed` is used as the authorization trigger instead, with a live PaymentIntent re-verification; adding both would double the idempotency surface for no gain. Full reasoning in `ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md`'s "Events considered and deliberately NOT wired up" table |
+| Test-mode webhook endpoint registered with Stripe | Absent | **Still absent** — this is infrastructure/configuration, not code, and remains blocked (see below) |
 
-## Why this can't be verified further right now
+## Why this can't be verified live right now
 
 Verifying a webhook means: send a real event (or a `stripe trigger`
 test-mode event through the CLI to a forwarded endpoint), observe the
@@ -67,17 +72,21 @@ handler receive it, confirm the resulting DB state. Every one of those
 steps requires the test-mode Stripe configuration this task's Section 0
 already found missing (`BLOCKED_STRIPE_TEST_CONFIGURATION`, consistent
 across `KREPAY_STRIPE_SANDBOX_REPORT.md`, `ESCROW_SANDBOX_TEST_REPORT.md`,
-and this report). No amount of code reading substitutes for that; this
-report intentionally stops at "here is what the code would and
-wouldn't do," not "here is what happened."
+and this report) — unchanged by writing the handler code itself. No
+amount of code reading substitutes for that; this report intentionally
+stops at "here is what the code now does," not "here is what happened
+when it ran."
 
 ## Consolidated implication
 
-Combined with `ESCROW_FLOW_AUDIT.md`'s finding and
-`ESCROW_STATE_MACHINE.md`'s transition table: escrow-status webhook
-handling is not a partially-working feature with edge-case gaps. It is
-absent. Any sandbox test run (once unblocked) that only checks "did the
-Checkout Session complete" would pass while the actual escrow bookkeeping
-never happens — this is precisely why `ESCROW_SANDBOX_TEST_REPORT.md`
-lists building this handler as a precondition for running its blocked
-scenarios, not an optional follow-up.
+The code-level gap `ESCROW_FLOW_AUDIT.md` and the original version of
+this report found is closed. What remains is exactly what
+`ESCROW_SANDBOX_TEST_REPORT.md` already lists as blocked: there is
+still no way to prove any of this actually works end-to-end against
+real Stripe test-mode events, because no test-mode credentials or
+webhook endpoint exist in this project. The correct status for the
+webhook work specifically is `ESCROW_CODE_HARDENED_NOT_TESTED`, not
+`ESCROW_SANDBOX_VERIFIED` — that status is reserved for after the full
+matrix in `ESCROW_SANDBOX_TEST_REPORT.md` actually passes against a
+real Stripe object, a real webhook delivery, and the resulting database
+row, together.

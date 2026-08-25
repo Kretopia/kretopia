@@ -71,7 +71,7 @@ const ClientDetail = () => {
     <div className="max-w-6xl mx-auto p-4 lg:p-6 pb-32">
       <SEO title={`${client.company_name || client.name} · Client`} description="Client hub" />
 
-      <button onClick={() => navigate("/clients")} className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
+      <button onClick={() => navigate("/clients")} className="flex items-center gap-1 text-sm text-white/60 hover:text-[#FF2DA1] transition-colors mb-3">
         <ArrowLeft className="h-4 w-4" /> All clients
       </button>
 

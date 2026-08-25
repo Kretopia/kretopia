@@ -196,9 +196,9 @@ const DashboardContent = () => {
                 key={label}
                 type="button"
                 onClick={onClick}
-                className="group flex items-start gap-2.5 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-foreground/[0.03] hover:border-[hsl(var(--signal-teal))]/30"
+                className="btn-glass btn-glass-outline group flex items-start gap-2.5 rounded-xl p-3 text-left"
               >
-                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-[hsl(var(--signal-teal))] mt-0.5 shrink-0" />
+                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-[#FF2DA1] mt-0.5 shrink-0 transition-colors" />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold leading-tight">{label}</p>
                   {hint && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{hint}</p>}
@@ -415,11 +415,11 @@ const ShortcutCard = ({ icon: Icon, label, onClick }: { icon: typeof Inbox; labe
   <button
     type="button"
     onClick={onClick}
-    className="group flex items-center gap-2.5 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-foreground/[0.03] hover:border-[hsl(var(--signal-teal))]/30"
+    className="btn-glass btn-glass-outline group flex items-center gap-2.5 rounded-xl p-3 text-left"
   >
-    <Icon className="h-4 w-4 text-muted-foreground group-hover:text-[hsl(var(--signal-teal))]" />
+    <Icon className="h-4 w-4 text-muted-foreground group-hover:text-[#FF2DA1] transition-colors" />
     <span className="text-xs font-semibold">{label}</span>
-    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/60 ml-auto group-hover:text-[hsl(var(--signal-teal))] group-hover:translate-x-0.5 transition-all" />
+    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/60 ml-auto group-hover:text-[#FF2DA1] group-hover:translate-x-0.5 transition-all" />
   </button>
 );
 

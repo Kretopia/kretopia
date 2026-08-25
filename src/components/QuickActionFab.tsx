@@ -351,10 +351,9 @@ const QuickActionFab = () => {
           aria-label={open ? "Close quick actions" : "Open quick actions"}
           aria-expanded={open}
           className={cn(
-            "h-14 w-14 rounded-full flex items-center justify-center",
-            "bg-energy text-energy-foreground shadow-[0_8px_24px_-6px_hsl(var(--energy)/0.55)]",
+            "btn-glass btn-glass-primary h-14 w-14 rounded-full flex items-center justify-center",
+            "text-energy-foreground",
             "border-4 border-background",
-            "transition-transform duration-200 active:scale-95",
             open && "rotate-45"
           )}
         >

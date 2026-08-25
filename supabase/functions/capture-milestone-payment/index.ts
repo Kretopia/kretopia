@@ -157,40 +157,140 @@ serve(async (req) => {
             logStep("Manager commission recorded", { managerTableId, amount: managerCommission });
           }
 
-          // Transfer commission to manager's Stripe Connect account
+          // Transfer commission to manager's Stripe Connect account.
+          //
+          // Idempotent by construction (ESCROW_TRANSFER_IDEMPOTENCY_REPORT.md):
+          // a 'reserved' row is inserted into milestone_commission_transfers
+          // BEFORE calling Stripe, keyed on (milestone_id, manager_id) --
+          // a deterministic key derived from stable business identity, not a
+          // random per-attempt value. A duplicate/concurrent/retried request
+          // for the same commission collapses onto that same row instead of
+          // creating a second reservation or a second transfer. The same
+          // deterministic string is also passed to Stripe as the
+          // Idempotency-Key header, so even if two reservations somehow both
+          // reached the Stripe call (they can't, per the logic below), Stripe
+          // itself would still dedupe them for 24h.
           if (managerStripeAccountId && managerCommission > 0) {
-            try {
-              const transfer = await stripe.transfers.create({
-                amount: Math.round(managerCommission * 100),
-                currency: 'usd',
-                destination: managerStripeAccountId,
-                description: `Manager commission for milestone: ${milestone.title}`,
-                metadata: {
-                  milestone_id: milestoneId,
-                  project_id: milestone.project_id,
-                  manager_table_id: managerTableId,
-                  commission_rate: '0.10',
-                },
-              });
-              logStep("Commission transferred to manager", { transferId: transfer.id, amount: managerCommission, destination: managerStripeAccountId });
+            const operationKey = `milestone_commission_transfer:${milestoneId}:${managerTableId}`;
 
-              // Update total_earned on talent_managers
-              await supabaseAdmin.rpc('increment_manager_earnings' as any, {
-                manager_id_input: managerTableId,
-                amount_input: managerCommission,
-              }).then(() => {
-                logStep("Manager earnings updated");
-              }).catch((err: any) => {
-                logStep("WARNING: Failed to update manager earnings", { error: String(err) });
-              });
-            } catch (transferErr: any) {
-              logStep("WARNING: Failed to transfer commission to manager", { error: transferErr.message });
-              // Update commission status back to 'earned' (pending manual payout)
-              await supabaseAdmin
-                .from('referral_commissions')
-                .update({ status: 'earned' })
+            const { data: reservation, error: reserveError } = await supabaseAdmin
+              .from('milestone_commission_transfers')
+              .insert({
+                milestone_id: milestoneId,
+                manager_id: managerTableId,
+                commission_amount: managerCommission,
+                destination_account: managerStripeAccountId,
+                project_id: milestone.project_id,
+                idempotency_key: operationKey,
+                reserved_by: user.id,
+                status: 'reserved',
+              })
+              .select()
+              .single();
+
+            let ledgerRow = reservation;
+            if (reserveError && (reserveError as { code?: string }).code === '23505') {
+              // Conflict on the (milestone_id, manager_id) primary key --
+              // another attempt (this request retried, or a genuine
+              // concurrent duplicate) already reserved this exact commission.
+              const { data: existingRow, error: lookupError } = await supabaseAdmin
+                .from('milestone_commission_transfers')
+                .select('*')
+                .eq('milestone_id', milestoneId)
                 .eq('manager_id', managerTableId)
-                .eq('source_id', milestoneId);
+                .maybeSingle();
+              if (lookupError || !existingRow) {
+                logStep("WARNING: commission transfer reservation conflicted and no existing row found -- skipping transfer, not guessing", { error: lookupError?.message });
+                ledgerRow = null;
+              } else {
+                ledgerRow = existingRow;
+              }
+            } else if (reserveError) {
+              // Not a duplicate-key conflict -- most likely
+              // milestone_commission_transfers doesn't exist yet (the
+              // 20260824120000 migration hasn't been applied). Fail closed:
+              // skip the transfer rather than proceed without the
+              // idempotency guard this whole block exists to provide.
+              logStep("WARNING: commission transfer reservation failed (is the migration applied?) -- skipping transfer rather than proceeding unguarded", { error: reserveError.message });
+              ledgerRow = null;
+            }
+
+            const mismatched = ledgerRow && (
+              Number(ledgerRow.commission_amount) !== managerCommission ||
+              ledgerRow.destination_account !== managerStripeAccountId
+            );
+
+            const reservedAgeMs = ledgerRow?.created_at ? Date.now() - new Date(ledgerRow.created_at).getTime() : 0;
+            const isFreshConcurrentReservation = ledgerRow?.status === 'reserved' && reservedAgeMs < 60_000 && ledgerRow?.reserved_by !== user.id;
+
+            if (!ledgerRow) {
+              // handled above -- no-op, already logged
+            } else if (mismatched) {
+              logStep("ERROR: commission transfer amount/destination mismatch vs existing reservation -- refusing to transfer", {
+                milestoneId, managerTableId,
+                expected: { amount: ledgerRow.commission_amount, destination: ledgerRow.destination_account },
+                actual: { amount: managerCommission, destination: managerStripeAccountId },
+              });
+            } else if (ledgerRow.status === 'completed') {
+              logStep("Commission transfer already completed -- skipping duplicate transfer", { transferId: ledgerRow.stripe_transfer_id });
+            } else if (isFreshConcurrentReservation) {
+              logStep("WARNING: concurrent commission transfer already reserved by another request -- skipping, not double-transferring", { milestoneId, managerTableId });
+            } else {
+              // Either the first attempt for this reservation, or a safe
+              // retry of a 'failed' / stale 'reserved' (>60s, likely a prior
+              // process that crashed between reserve and resolve) row --
+              // same operation key either way, so Stripe's own idempotency
+              // cache is the backstop if the earlier attempt actually landed.
+              try {
+                const transfer = await stripe.transfers.create({
+                  amount: Math.round(managerCommission * 100),
+                  currency: 'usd',
+                  destination: managerStripeAccountId,
+                  description: `Manager commission for milestone: ${milestone.title}`,
+                  metadata: {
+                    milestone_id: milestoneId,
+                    project_id: milestone.project_id,
+                    manager_table_id: managerTableId,
+                    commission_rate: '0.10',
+                  },
+                }, { idempotencyKey: operationKey });
+
+                await supabaseAdmin
+                  .from('milestone_commission_transfers')
+                  .update({ status: 'completed', stripe_transfer_id: transfer.id, completed_at: new Date().toISOString(), last_error: null })
+                  .eq('milestone_id', milestoneId)
+                  .eq('manager_id', managerTableId);
+
+                logStep("Commission transferred to manager", { transferId: transfer.id, amount: managerCommission, destination: managerStripeAccountId, operationKey });
+
+                // Update total_earned on talent_managers
+                await supabaseAdmin.rpc('increment_manager_earnings' as any, {
+                  manager_id_input: managerTableId,
+                  amount_input: managerCommission,
+                }).then(() => {
+                  logStep("Manager earnings updated");
+                }).catch((err: any) => {
+                  logStep("WARNING: Failed to update manager earnings", { error: String(err) });
+                });
+              } catch (transferErr: any) {
+                // Release the reservation for a future retry -- 'failed' is
+                // not terminal here, it's what lets the next invocation
+                // (same operation key) try again instead of being permanently
+                // blocked by a stuck 'reserved' row.
+                await supabaseAdmin
+                  .from('milestone_commission_transfers')
+                  .update({ status: 'failed', last_error: String(transferErr?.message || transferErr) })
+                  .eq('milestone_id', milestoneId)
+                  .eq('manager_id', managerTableId);
+
+                logStep("WARNING: Failed to transfer commission to manager", { error: transferErr.message });
+                // Update commission status back to 'earned' (pending manual payout)
+                await supabaseAdmin
+                  .from('referral_commissions')
+                  .update({ status: 'earned' })
+                  .eq('manager_id', managerTableId)
+                  .eq('source_id', milestoneId);
+              }
             }
           }
         }

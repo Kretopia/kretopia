@@ -233,7 +233,7 @@ const FundCampaign = () => {
                         key={t.id}
                         onClick={() => !soldOut && openPledge(t.id, t.amount)}
                         disabled={!isLive || !!soldOut}
-                        className="w-full text-left p-3 rounded-md border hover:border-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="btn-glass btn-glass-outline w-full text-left p-3 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <div className="flex items-baseline justify-between">
                           <p className="font-bold text-primary">

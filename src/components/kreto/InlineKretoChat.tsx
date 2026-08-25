@@ -126,7 +126,7 @@ export function InlineKretoChat({ seedPrompt }: { seedPrompt?: string | null }) 
           <button
             type="submit"
             disabled={!input.trim()}
-            className="h-9 w-9 shrink-0 rounded-full bg-[#FF2DA1] text-white flex items-center justify-center disabled:opacity-40"
+            className="btn-glass btn-glass-primary h-9 w-9 shrink-0 rounded-full text-white flex items-center justify-center disabled:opacity-40"
             aria-label="Send"
           >
             <ArrowUp className="h-4 w-4" />

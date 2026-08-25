@@ -585,7 +585,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="w-full border-2 border-dashed rounded-xl p-4 flex flex-col items-center gap-2 text-muted-foreground hover:border-primary/50 hover:bg-primary/5 transition-all"
+                className="w-full border-2 border-dashed rounded-xl p-4 flex flex-col items-center gap-2 text-muted-foreground hover:border-[#FF2DA1]/50 hover:text-white transition-colors"
               >
                 {uploading ? (
                   <>

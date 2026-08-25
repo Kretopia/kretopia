@@ -237,7 +237,7 @@ export function ProfileLaunchScreen({
             <button
               type="button"
               onClick={handleCopy}
-              className="cta-primary w-full inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold"
+              className="btn-glass btn-glass-primary w-full inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? "Copied — paste anywhere" : "Copy profile link"}
@@ -247,7 +247,7 @@ export function ProfileLaunchScreen({
               <button
                 type="button"
                 onClick={handleWhatsApp}
-                className="h-10 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-white/80 rounded-lg border border-white/15 hover:bg-white/5 transition-colors"
+                className="btn-glass btn-glass-outline h-10 inline-flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
                 WhatsApp
@@ -255,7 +255,7 @@ export function ProfileLaunchScreen({
               <button
                 type="button"
                 onClick={handleInstagram}
-                className="h-10 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-white/80 rounded-lg border border-white/15 hover:bg-white/5 transition-colors"
+                className="btn-glass btn-glass-outline h-10 inline-flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg"
               >
                 <Instagram className="h-3.5 w-3.5" />
                 Instagram
@@ -263,7 +263,7 @@ export function ProfileLaunchScreen({
               <button
                 type="button"
                 onClick={handleTwitter}
-                className="h-10 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-white/80 rounded-lg border border-white/15 hover:bg-white/5 transition-colors"
+                className="btn-glass btn-glass-outline h-10 inline-flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg"
               >
                 <Twitter className="h-3.5 w-3.5" />
                 X / Twitter
@@ -290,7 +290,7 @@ export function ProfileLaunchScreen({
             <button
               type="button"
               onClick={goSetRate}
-              className="text-left p-3 rounded-xl border border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06] transition-colors"
+              className="btn-glass btn-glass-neutral text-left p-3 rounded-xl"
             >
               <DollarSign className="h-4 w-4 mb-1.5" style={{ color: ACCENT }} />
               <p className="text-xs font-semibold text-white">Set your rate</p>
@@ -299,7 +299,7 @@ export function ProfileLaunchScreen({
             <button
               type="button"
               onClick={goBrowseGigs}
-              className="text-left p-3 rounded-xl border border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06] transition-colors"
+              className="btn-glass btn-glass-neutral text-left p-3 rounded-xl"
             >
               <Briefcase className="h-4 w-4 mb-1.5" style={{ color: ACCENT }} />
               <p className="text-xs font-semibold text-white">Browse gigs</p>
@@ -311,7 +311,7 @@ export function ProfileLaunchScreen({
           <button
             type="button"
             onClick={handleContinue}
-            className="w-full inline-flex items-center justify-center gap-2 text-sm text-white/50 hover:text-white/80 transition-colors py-1"
+            className="w-full inline-flex items-center justify-center gap-2 text-sm text-white/50 hover:text-[#FF2DA1] transition-colors py-1"
           >
             Skip for now — go to my home
             <ArrowRight className="h-3.5 w-3.5" />

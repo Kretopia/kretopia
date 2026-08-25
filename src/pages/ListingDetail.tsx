@@ -158,13 +158,13 @@ const ListingDetail = () => {
                     <>
                       <button
                         onClick={() => setCurrentImageIndex(i => (i - 1 + images.length) % images.length)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
+                        className="btn-glass btn-glass-outline absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full"
                       >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => setCurrentImageIndex(i => (i + 1) % images.length)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-background/80 hover:bg-background transition-colors"
+                        className="btn-glass btn-glass-outline absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full"
                       >
                         <ChevronRight className="h-5 w-5" />
                       </button>

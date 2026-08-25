@@ -430,28 +430,28 @@ const ProfileContent = () => {
               <button
                 type="button"
                 onClick={() => setJustRevealed(null)}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[hsl(var(--signal-teal))] text-black hover:opacity-90 transition-opacity"
+                className="btn-glass btn-glass-primary text-xs font-semibold px-3 py-1.5 rounded-lg"
               >
                 Looks good
               </button>
               <button
                 type="button"
                 onClick={() => { setIsEditOpen(true); setJustRevealed(null); }}
-                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
+                className="btn-glass btn-glass-outline text-xs font-medium px-3 py-1.5 rounded-lg"
               >
                 Edit Passport
               </button>
               <button
                 type="button"
                 onClick={() => { navigate('/credits'); setJustRevealed(null); }}
-                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
+                className="btn-glass btn-glass-outline text-xs font-medium px-3 py-1.5 rounded-lg"
               >
                 Review credit evidence
               </button>
               <button
                 type="button"
                 onClick={() => { setIsShareDialogOpen(true); setJustRevealed(null); }}
-                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
+                className="btn-glass btn-glass-outline text-xs font-medium px-3 py-1.5 rounded-lg"
               >
                 Share Passport
               </button>
@@ -562,14 +562,14 @@ const ProfileContent = () => {
           <button
             type="button"
             onClick={() => window.open(`/profile/${profile?.user_id}`, '_blank', 'noopener')}
-            className="flex-1 text-[11px] text-muted-foreground hover:text-[hsl(var(--signal-teal))] transition-colors py-1.5 border border-border rounded-full"
+            className="btn-glass btn-glass-outline flex-1 text-[11px] py-1.5 rounded-full"
           >
             Preview public Passport ↗
           </button>
           <button
             type="button"
             onClick={() => navigate('/dashboard')}
-            className="flex-1 text-[11px] text-muted-foreground hover:text-[hsl(var(--signal-teal))] transition-colors py-1.5 border border-border rounded-full"
+            className="btn-glass btn-glass-outline flex-1 text-[11px] py-1.5 rounded-full"
           >
             Private dashboard →
           </button>

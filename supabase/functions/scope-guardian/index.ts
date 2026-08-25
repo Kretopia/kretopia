@@ -44,6 +44,29 @@ serve(async (req) => {
     // Fetch project context if projectId provided
     let projectContext = "";
     if (projectId) {
+      // IDOR fix (STUDIO_CURRENT_STATE_AUDIT.md finding 3): this function
+      // used to fetch and embed the project's title/description/status
+      // and every milestone's amount into the AI prompt for ANY
+      // authenticated caller who supplied a projectId, with no check that
+      // they had any relationship to it. The AI's response (returned
+      // directly to the caller) is built from that context, so an
+      // attacker who knew or guessed another user's project UUID could
+      // reliably exfiltrate that project's brief and milestone amounts
+      // through the analyze_brief/generate_milestones/check_scope_drift
+      // responses. Same user_has_project_access RPC used by every other
+      // project-scoped Edge Function in this codebase (create-video-room,
+      // mint-video-token, studio-ingest, desk-agent) -- reject before
+      // touching any project data, not after.
+      const { data: hasAccess } = await supabase.rpc('user_has_project_access', {
+        project_id_param: projectId,
+        user_id_param: user.id,
+      });
+      if (!hasAccess) {
+        return new Response(JSON.stringify({ error: 'You do not have access to this project' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       const { data: project } = await supabase
         .from('projects')
         .select('title, description, status')

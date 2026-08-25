@@ -792,7 +792,7 @@ export default function Onboarding() {
                       key={p.label}
                       type="button"
                       onClick={() => setProfileUrl(prev => prev || `https://${p.placeholder}`)}
-                      className="text-[10px] px-2 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
+                      className="btn-glass btn-glass-outline text-[10px] px-2 py-1 rounded-md"
                     >
                       {p.icon} {p.label}
                     </button>
@@ -854,7 +854,7 @@ export default function Onboarding() {
                             input?.setSelectionRange(opt.url.length, opt.url.length);
                           }, 30);
                         }}
-                        className="flex flex-col items-center gap-1 p-2.5 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all"
+                        className="btn-glass btn-glass-outline flex flex-col items-center gap-1 p-2.5 rounded-lg"
                       >
                         <span className="text-lg leading-none">{opt.icon}</span>
                         <span className="text-[11px] font-semibold">{opt.label}</span>
@@ -960,7 +960,7 @@ export default function Onboarding() {
                       <button
                         type="button"
                         onClick={() => document.getElementById("avatar-upload")?.click()}
-                        className="text-xs text-energy hover:text-energy-glow font-medium inline-flex items-center gap-1.5 transition-colors text-left"
+                        className="text-xs text-white hover:text-[#FF2DA1] font-medium inline-flex items-center gap-1.5 transition-colors text-left"
                       >
                         <Sparkles className="h-3 w-3 shrink-0" />
                         <span>Add a photo — profiles with photos get 3× more matches</span>
@@ -975,7 +975,7 @@ export default function Onboarding() {
                   {showCustomRole || (!isRoleInOptions && role) ? (
                     <div className="space-y-1.5">
                       <Input id="review-role-trigger" value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />
-                      <button type="button" className="text-xs text-primary hover:underline" onClick={() => { setShowCustomRole(false); setRole(""); }}>
+                      <button type="button" className="text-xs text-white hover:text-[#FF2DA1] hover:underline transition-colors" onClick={() => { setShowCustomRole(false); setRole(""); }}>
                         Choose from list
                       </button>
                     </div>
@@ -1043,7 +1043,7 @@ export default function Onboarding() {
                           setGeneratingBio(false);
                         }
                       }}
-                      className="text-xs font-medium inline-flex items-center gap-1 text-primary hover:text-primary/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="text-xs font-medium inline-flex items-center gap-1 text-white hover:text-[#FF2DA1] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       {generatingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                       {bio ? "Rewrite for me" : "Suggest a bio"}
@@ -1121,7 +1121,7 @@ export default function Onboarding() {
                 </Button>
 
                 {/* Back */}
-                <button onClick={() => setPhase("discover")} className="block w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+                <button onClick={() => setPhase("discover")} className="block w-full text-center text-xs text-white/60 hover:text-[#FF2DA1] transition-colors py-1">
                   ← Back to search
                 </button>
               </div>

@@ -93,7 +93,7 @@ export function KrePayAIInsights() {
 
         {error && !loading && (
           <p className="text-sm text-muted-foreground">
-            {error} — <button onClick={load} className="underline hover:text-foreground">retry</button>
+            {error} — <button onClick={load} className="underline text-white hover:text-[#FF2DA1] transition-colors">retry</button>
           </p>
         )}
 

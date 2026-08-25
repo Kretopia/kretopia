@@ -344,7 +344,7 @@ export function InvoicePaymentForm({ config, onChange }: InvoicePaymentFormProps
             <button
               type="button"
               onClick={() => onChange({ ...config, terms_conditions: DEFAULT_TERMS })}
-              className="text-[10px] text-primary hover:underline"
+              className="text-[10px] text-white hover:text-[#FF2DA1] hover:underline transition-colors"
             >
               Use default template
             </button>

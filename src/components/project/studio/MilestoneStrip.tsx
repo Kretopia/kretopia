@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils";
 interface MilestoneRow {
   id: string;
   title: string;
-  amount: number;
+  // undefined when the viewer isn't authorized to see this milestone's
+  // amount (client/guest role) -- see get_project_milestone_financials.
+  amount: number | undefined;
   status: string;
   due_date: string | null;
 }
@@ -53,13 +55,29 @@ export const MilestoneStrip = ({ projectId, currency, onOpenFinance }: Props) =>
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("milestones")
-        .select("id, title, amount, status, due_date")
-        .eq("project_id", projectId)
-        .order("created_at", { ascending: true });
+      // amount is no longer selectable directly as of
+      // 20260825100000_studio_role_based_money_rls.sql -- fetched
+      // separately via get_project_milestone_financials (owner/creative/
+      // collaborator only, not client/guest) and merged in below. A
+      // milestone this viewer isn't authorized to see the amount for
+      // keeps amount undefined, guarded at render time rather than faked.
+      const [milestonesRes, financialsRes] = await Promise.all([
+        supabase
+          .from("milestones")
+          .select("id, title, status, due_date")
+          .eq("project_id", projectId)
+          .order("created_at", { ascending: true }),
+        supabase.rpc("get_project_milestone_financials" as any, { _project_id: projectId }),
+      ]);
+      const amountByMilestoneId = new Map(
+        ((financialsRes.data as any[]) || []).map((f) => [f.milestone_id, f.amount])
+      );
+      const merged = (milestonesRes.data ?? []).map((m: any) => ({
+        ...m,
+        amount: amountByMilestoneId.get(m.id),
+      }));
       if (!cancelled) {
-        setRows((data ?? []) as MilestoneRow[]);
+        setRows(merged as MilestoneRow[]);
         setLoading(false);
       }
     })().catch(() => { if (!cancelled) setLoading(false); });
@@ -98,11 +116,11 @@ export const MilestoneStrip = ({ projectId, currency, onOpenFinance }: Props) =>
               <button
                 type="button"
                 onClick={onOpenFinance}
-                className="text-left rounded-lg border border-border/60 px-3 py-2 w-44 hover:border-energy/40 transition-colors"
+                className="btn-glass btn-glass-outline text-left rounded-lg px-3 py-2 w-44"
               >
                 <p className="text-sm font-medium truncate">{m.title}</p>
                 <div className="mt-1 flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground tabular-nums">{fmt(m.amount, currency)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{m.amount === undefined ? "—" : fmt(m.amount, currency)}</span>
                   <Badge variant="outline" className={cn("h-4 text-[9px] px-1.5 capitalize shrink-0", STATUS_STYLE[m.status] || STATUS_STYLE.pending)}>
                     {m.status}
                   </Badge>

@@ -117,7 +117,7 @@ export function CreditsAIInsights({
           type="button"
           onClick={() => run()}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
+          className="btn-glass btn-glass-outline inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold disabled:opacity-50"
         >
           <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden />
           Refresh
@@ -204,7 +204,7 @@ export function CreditsAIInsights({
                         type="button"
                         onClick={() => accept(i)}
                         disabled={saving === i.id}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                        className="btn-glass btn-glass-primary inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold disabled:opacity-50"
                       >
                         <Check className="h-3.5 w-3.5" aria-hidden />
                         {canEdit ? "Accept and save" : "Mark as done"}
@@ -218,7 +218,7 @@ export function CreditsAIInsights({
                       <button
                         type="button"
                         onClick={() => dismiss(i.id)}
-                        className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                        className="btn-glass btn-glass-outline ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold"
                       >
                         <X className="h-3.5 w-3.5" aria-hidden />
                         Dismiss

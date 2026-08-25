@@ -79,8 +79,8 @@ export const ForOrganisationsSection = () => {
           <Link
             to="/post-opportunity"
             onClick={() => analytics.ctaClick("hire_through_kretopia", "for_organisations")}
-            className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white"
-            style={{ backgroundColor: ACCENT, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+            className="btn-glass btn-glass-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold"
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             <Briefcase className="h-4 w-4" aria-hidden />
             Hire Through Kretopia

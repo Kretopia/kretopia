@@ -520,7 +520,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     </Button>
                     <Button
                       variant="link"
-                      className="cta-primary justify-start h-12 gap-2 text-sm font-semibold no-underline hover:no-underline"
+                      className="btn-glass btn-glass-primary justify-start h-12 gap-2 text-sm font-semibold no-underline hover:no-underline"
                       onClick={() => { setGuestMenuOpen(false); navigate("/auth?tab=signup"); }}
                     >
                       <Sparkles className="h-4 w-4" aria-hidden />
@@ -544,7 +544,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 </Button>
               </Link>
               <Link to="/auth?tab=signup">
-                <Button variant="link" size="sm" className="cta-primary gap-1.5 text-xs sm:text-sm px-2.5 sm:px-4 font-semibold no-underline hover:no-underline">
+                <Button variant="link" size="sm" className="btn-glass btn-glass-primary gap-1.5 text-xs sm:text-sm px-2.5 sm:px-4 font-semibold no-underline hover:no-underline">
                   <Sparkles className="h-4 w-4" aria-hidden />
                   Get Started
                 </Button>

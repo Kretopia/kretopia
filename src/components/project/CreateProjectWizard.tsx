@@ -401,7 +401,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                 <button
                   type="button"
                   onClick={() => { onOpenChange(false); setTimeout(() => setVoiceOpen(true), 80); }}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-[hsl(var(--energy)/0.5)] bg-[hsl(var(--energy)/0.08)] hover:bg-[hsl(var(--energy)/0.15)] transition-colors text-left"
+                  className="btn-glass btn-glass-primary w-full flex items-center gap-3 p-3 rounded-xl text-left"
                 >
                   <div className="h-10 w-10 rounded-full bg-[hsl(var(--energy))] text-background flex items-center justify-center shrink-0">
                     <Mic className="h-5 w-5" />
@@ -566,7 +566,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                         type="button"
                         onClick={expandWithAi}
                         disabled={expanding}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--energy))] hover:underline disabled:opacity-50"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-white hover:text-[#FF2DA1] hover:underline transition-colors disabled:opacity-50"
                       >
                         {expanding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                         {expanding ? "Thinking…" : "Expand with Copilot"}

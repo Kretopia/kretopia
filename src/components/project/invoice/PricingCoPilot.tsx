@@ -458,7 +458,7 @@ export function PricingCoPilot({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all group"
+        className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-[#FF2DA1]/50 transition-colors group"
       >
         <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
           <Sparkles className="h-4.5 w-4.5 text-primary-foreground" />
@@ -607,7 +607,7 @@ export function PricingCoPilot({
                 <button
                   key={i}
                   onClick={() => sendMessage(qp.prompt)}
-                  className="text-left p-2.5 rounded-lg border bg-background hover:bg-accent/50 hover:border-primary/30 transition-all text-[11px] leading-snug"
+                  className="btn-glass btn-glass-outline text-left p-2.5 rounded-lg text-[11px] leading-snug"
                 >
                   <span className="font-medium">{qp.label}</span>
                 </button>

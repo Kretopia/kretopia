@@ -1031,51 +1031,219 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   .ai-scan-line { display: none; }
 }
 
-/* Primary guest CTA ("Get Started") — flat #FF2DA1 regardless of light/
-   dark theme (the brand accent is a hard requirement here, not a themed
-   token), a restrained hover/focus glow, and one slow light-sweep per
-   cycle rather than a continuous shimmer. Transform/opacity only so it
-   costs nothing to composite and never shifts layout. */
-.cta-primary {
+/* ============================================================
+   BUTTON SYSTEM — glass card + scintillating border, one family
+   for every button in the app.
+
+   Directly modeled on VisualCardShell (src/components/landing/
+   kretopia/visualShell.tsx — the "Search preview / Illustrative —
+   not live data" card): the same translucent white-on-dark glass
+   fill, the same 1px hairline border, the same soft pink ambient
+   shadow, and the same traveling-light sweep the card runs along its
+   top edge (.ai-scan-line / @keyframes ai-scan-sweep) -- reused here
+   as a genuine animated GRADIENT BORDER (padding+mask-composite,
+   not an overlay on top of the fill) rather than a single edge, so
+   hovering a button reproduces the exact "scintillating pink border"
+   sensation the card has, on all four sides.
+
+   Replaces .btn-pink-gradient (a solid pink→grey fill) -- superseded
+   because the ask this pass is a consistent glass language across
+   EVERY button, not just the loudest CTAs.
+
+   Text is always white (color: #fff), per instruction, overriding
+   whatever text-* utility a call site or variant still carries --
+   this rule is unlayered (outside @layer) so it wins regardless.
+
+   One shared mechanism, several accent modifiers so variants stay
+   distinguishable from each other (same family, different emphasis)
+   rather than every button looking identical:
+     .btn-glass-primary  — pink accent (default, hero/lime, gradient CTAs)
+     .btn-glass-neutral  — white/grey accent (secondary, outline, glass)
+     .btn-glass-ghost    — invisible at rest, glass only appears on hover
+     .btn-glass-danger   — rose-red accent, NOT pink (destructive actions
+                            only -- a delete button glowing the same
+                            "delightful" pink as a primary CTA would be
+                            a real mislead risk, so this is the one
+                            deliberate deviation from "pink border
+                            everywhere")
+   ============================================================ */
+.btn-glass {
+  --btn-glass-accent: 255, 45, 161;
+  --btn-glass-bg-1: rgba(255, 255, 255, 0.07);
+  --btn-glass-bg-2: rgba(255, 255, 255, 0.02);
+  --btn-glass-border: rgba(255, 255, 255, 0.14);
   position: relative;
-  overflow: hidden;
-  background-color: #FF2DA1;
+  isolation: isolate;
+  overflow: visible;
   color: #fff;
+  background-image: linear-gradient(180deg, var(--btn-glass-bg-1), var(--btn-glass-bg-2));
+  border: 1px solid var(--btn-glass-border);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 16px 40px -28px rgba(var(--btn-glass-accent), 0.4);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease,
+              background-image 0.3s ease, transform 0.2s ease;
+}
+/* !important is deliberate here, not a shortcut: "text always white" is
+   an explicit, universal requirement, and .btn-glass is composed with
+   variant strings (e.g. the link variant's hover:text-[#FF2DA1]) that
+   would otherwise still win in some build/HMR orderings despite this
+   block sitting unlayered at the end of the file -- confirmed empirically
+   (computed style showed pink text on hover before this was added), not
+   assumed. This makes "always white" true unconditionally instead of
+   depending on cascade/layer ordering nuances. */
+.btn-glass,
+.btn-glass:hover,
+.btn-glass:focus,
+.btn-glass:active,
+.btn-glass:disabled {
+  color: #fff !important;
   text-decoration: none;
-  box-shadow: 0 0 0 0 rgba(255, 45, 161, 0);
-  transition: box-shadow 0.25s ease, transform 0.15s ease;
 }
-.cta-primary:hover,
-.cta-primary:focus,
-.cta-primary:active {
-  text-decoration: none;
+.btn-glass > * {
+  position: relative;
+  z-index: 2;
 }
-.cta-primary:hover {
-  background-color: #FF2DA1;
-  box-shadow: 0 0 22px rgba(255, 45, 161, 0.45);
+.btn-glass:hover {
+  border-color: rgba(var(--btn-glass-accent), 0.6);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  box-shadow: 0 0 0 1px rgba(var(--btn-glass-accent), 0.25),
+              0 0 22px rgba(var(--btn-glass-accent), 0.35),
+              0 16px 40px -28px rgba(var(--btn-glass-accent), 0.5);
+  transform: translateY(-1px);
 }
-.cta-primary:focus-visible {
-  box-shadow: 0 0 0 3px rgba(255, 45, 161, 0.4), 0 0 22px rgba(255, 45, 161, 0.45);
+.btn-glass:focus-visible {
+  border-color: rgba(var(--btn-glass-accent), 0.7);
+  box-shadow: 0 0 0 2px rgba(var(--btn-glass-accent), 0.4), 0 0 22px rgba(var(--btn-glass-accent), 0.35);
 }
-.cta-primary:active {
-  transform: scale(0.97);
+.btn-glass:active {
+  transform: translateY(0) scale(0.98);
 }
-.cta-primary::after {
+.btn-glass:disabled,
+.btn-glass[disabled] {
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Registered as an animatable custom property so the browser can
+   smoothly tween the conic-gradient's start angle below -- without
+   this, animating a custom property used inside conic-gradient(from
+   var(...)) would just snap between values instead of sweeping. */
+@property --btn-glass-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* The scintillating border itself: a conic gradient (one bright arc,
+   the rest transparent) clipped to a 1px band around the button via
+   padding + mask-composite, so only the border ring is visible, not a
+   filled overlay. Rotating the gradient's OWN start angle (not the
+   element -- rotating the element would rotate the mask/border-radius
+   shape too, and desync it from the button's actual corners on
+   anything that isn't a perfect square) makes the bright arc genuinely
+   travel around the full perimeter -- one lap, not a side-to-side
+   sweep. Idle and invisible until hover.
+
+   Plays ONCE per hover, not on a loop: animation-iteration-count: 1
+   (not infinite), and CSS restarts an animation whenever the rule that
+   declares it starts matching again -- so it replays on every fresh
+   hover-in, but never repeats while the pointer just sits there. The
+   real border-color (set on .btn-glass:hover itself, further down)
+   stays solid pink for the whole hover independently of this pass, so
+   the button doesn't go dark once the single lap finishes -- only the
+   traveling light stops repeating. */
+.btn-glass::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.4) 50%, transparent 58%);
-  transform: translateX(-130%);
-  animation: cta-primary-sweep 6s ease-in-out infinite;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  /* Narrower arc (12deg, was 23deg) and capped opacity (0.8, was fully
+     opaque) per feedback -- a finer, quieter line rather than a bold
+     flash. The solid border-color change on .btn-glass:hover is still
+     the primary hover cue; this lap is a subtle accent on top of it,
+     not the main signal. */
+  background: conic-gradient(from var(--btn-glass-angle),
+    transparent 0deg,
+    transparent 300deg,
+    rgba(var(--btn-glass-accent), 0.8) 337deg,
+    transparent 353deg);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.2s ease;
   pointer-events: none;
 }
-@keyframes cta-primary-sweep {
-  0% { transform: translateX(-130%); }
-  18% { transform: translateX(130%); }
-  100% { transform: translateX(130%); }
+.btn-glass:hover::before {
+  opacity: 1;
+  /* Faster lap per feedback: 0.6s -> 0.3s. */
+  animation: btn-glass-shimmer 0.3s linear 1;
+  animation-fill-mode: forwards;
+}
+@keyframes btn-glass-shimmer {
+  from { --btn-glass-angle: 0deg; }
+  to { --btn-glass-angle: 360deg; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cta-primary::after { animation: none; display: none; }
+  .btn-glass:hover { transform: none; }
+  .btn-glass:hover::before { animation: none; opacity: 0.7; background-position: 50% 0; }
+}
+
+/* Accent modifiers -- same mechanics above, different signature color. */
+.btn-glass-primary {
+  --btn-glass-accent: 255, 45, 161; /* #FF2DA1 -- default/hero/gradient CTAs */
+  --btn-glass-bg-1: rgba(255, 45, 161, 0.10);
+  --btn-glass-bg-2: rgba(255, 45, 161, 0.03);
+  --btn-glass-border: rgba(255, 45, 161, 0.28);
+}
+/* Loudest CTA -- same accent as primary, turned up: stronger tint and
+   border at rest so it still reads as "the" call to action next to a
+   plain .btn-glass-primary button, even though both share one family. */
+.btn-glass-hero {
+  --btn-glass-bg-1: rgba(255, 45, 161, 0.18);
+  --btn-glass-bg-2: rgba(255, 45, 161, 0.06);
+  --btn-glass-border: rgba(255, 45, 161, 0.4);
+}
+.btn-glass-hero:hover {
+  box-shadow: 0 0 0 1px rgba(var(--btn-glass-accent), 0.35),
+              0 0 28px rgba(var(--btn-glass-accent), 0.45),
+              0 16px 40px -28px rgba(var(--btn-glass-accent), 0.6);
+}
+.btn-glass-neutral {
+  --btn-glass-accent: 255, 45, 161; /* hover shimmer is still pink -- only the REST state is neutral */
+  --btn-glass-bg-1: rgba(255, 255, 255, 0.06);
+  --btn-glass-bg-2: rgba(255, 255, 255, 0.015);
+  --btn-glass-border: rgba(255, 255, 255, 0.13);
+}
+.btn-glass-outline {
+  --btn-glass-accent: 255, 45, 161;
+  --btn-glass-bg-1: rgba(255, 255, 255, 0.02);
+  --btn-glass-bg-2: rgba(255, 255, 255, 0.00);
+  --btn-glass-border: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+.btn-glass-ghost {
+  --btn-glass-accent: 255, 45, 161;
+  --btn-glass-bg-1: transparent;
+  --btn-glass-bg-2: transparent;
+  --btn-glass-border: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+.btn-glass-ghost:hover {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+}
+.btn-glass-danger {
+  --btn-glass-accent: 244, 63, 94; /* rose-500 -- destructive only, deliberately not pink */
+  --btn-glass-bg-1: rgba(244, 63, 94, 0.12);
+  --btn-glass-bg-2: rgba(244, 63, 94, 0.04);
+  --btn-glass-border: rgba(244, 63, 94, 0.32);
 }
 
 /* Shared vertical rhythm + horizontal padding for landing sections. */

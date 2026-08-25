@@ -284,7 +284,7 @@ export const ShareToMessageDialog = ({
           <div className="flex gap-2">
             <button
               onClick={shareWhatsApp}
-              className="flex-1 flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-muted transition-colors"
+              className="btn-glass btn-glass-outline flex-1 flex flex-col items-center gap-1 p-2 rounded-xl"
             >
               <div className="h-10 w-10 rounded-full bg-[#25D366] flex items-center justify-center">
                 <MessageCircle className="h-5 w-5 text-white" />
@@ -293,7 +293,7 @@ export const ShareToMessageDialog = ({
             </button>
             <button
               onClick={shareNative}
-              className="flex-1 flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-muted transition-colors"
+              className="btn-glass btn-glass-outline flex-1 flex flex-col items-center gap-1 p-2 rounded-xl"
             >
               <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
                 <Share2 className="h-5 w-5" />
@@ -302,7 +302,7 @@ export const ShareToMessageDialog = ({
             </button>
             <button
               onClick={copyLink}
-              className="flex-1 flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-muted transition-colors"
+              className="btn-glass btn-glass-outline flex-1 flex flex-col items-center gap-1 p-2 rounded-xl"
             >
               <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
                 <Link2 className="h-5 w-5" />

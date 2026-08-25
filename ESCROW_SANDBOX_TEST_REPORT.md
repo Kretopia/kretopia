@@ -1,6 +1,8 @@
 # Escrow Sandbox Test Report
 
-**Status: `BLOCKED_STRIPE_TEST_CONFIGURATION`**
+**Status: `BLOCKED_STRIPE_TEST_CONFIGURATION`** (unchanged by this
+pass's code hardening — see the updated §"What would unblock this"
+below for what has and hasn't changed)
 
 Per Section 0's own stop condition: *"If Stripe mode cannot be verified:
 stop immediately; return `BLOCKED_STRIPE_TEST_CONFIGURATION`."* Already
@@ -49,22 +51,48 @@ looks right so it would probably pass."
 
 ## What would unblock this
 
-Identical to the standing KrePay-wide blocker:
 1. A real `STRIPE_SECRET_KEY_TEST`.
 2. `STRIPE_MODE=test` (or equivalent) wired so `resolveStripeSecretKey()`
-   — the parallel session's new mode-switching helper — actually resolves
+   — the parallel session's mode-switching helper — actually resolves
    to it.
 3. Three test-mode webhook endpoints registered with their own signing
-   secrets.
-4. **Additionally, specific to escrow**: the missing webhook handling for
-   `useEscrow==='true'` events (or an equivalent reconciliation path)
-   should be built and reviewed *before* running the B/C/D scenarios —
-   otherwise the sandbox run would just reconfirm the same gap
-   `ESCROW_FLOW_AUDIT.md` already found by reading the code: a test
-   payer would authorize funds and the app still wouldn't show it.
-5. A **test milestone with no manager referral attached** — required to
-   safely test the capture path at all, since a milestone with an active
-   `talent_referrals` row would trigger a real `stripe.transfers.create()`
-   call as a side effect of testing capture (`ESCROW_FLOW_AUDIT.md`
-   finding 3). This is a hard precondition for ever running section C of
-   the matrix, test-mode or not.
+   secrets, subscribed to at minimum: `checkout.session.completed`,
+   `payment_intent.canceled`, `payment_intent.payment_failed`,
+   `charge.refunded`, `charge.dispute.created`, `transfer.reversed`
+   (the exact set the handler now branches on — see
+   `ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md`).
+4. ~~The missing webhook handling for `useEscrow==='true'` events~~ —
+   **done this pass**. `stripe-marketplace-webhook/index.ts` now has an
+   escrow-authorization branch plus cancellation/refund/dispute/transfer-
+   reversal handling. Still untested against a real event — see
+   `ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md` for exactly what exists and
+   what's still a known gap (refunds/disputes are logged, not
+   auto-reconciled into a DB state, since the CHECK constraint has no
+   value for either).
+5. ~~Manager-commission transfer idempotency~~ — **done this pass**, code
+   only. `capture-milestone-payment/index.ts` now reserves a
+   deterministic-key ledger row before calling Stripe. Requires
+   [`20260824120000_milestone_commission_transfer_idempotency.sql`](supabase/migrations/20260824120000_milestone_commission_transfer_idempotency.sql)
+   to be applied first (prepared, not applied — same manual-approval
+   process as the privilege migration) — until then, the code fails
+   closed (skips the transfer with a warning) rather than proceeding
+   without the guard. See `ESCROW_TRANSFER_IDEMPOTENCY_REPORT.md`.
+6. [`20260824100000_milestones_privilege_hardening.sql`](supabase/migrations/20260824100000_milestones_privilege_hardening.sql)
+   applied and re-verified live (`BLOCKED_MIGRATION_NOT_APPLIED` — see
+   [ESCROW_PRIVILEGE_MIGRATION_RUNBOOK.md](ESCROW_PRIVILEGE_MIGRATION_RUNBOOK.md)
+   for the exact steps).
+7. A **test milestone with no manager referral attached** — required to
+   safely test the capture path at all when the commission-transfer
+   ledger migration (#5) is *not yet* applied, since the code fails
+   closed and simply skips the transfer in that case; and even once #5
+   is applied, a referral-free milestone remains the simplest way to
+   test capture (section C of the matrix) in isolation from the
+   commission-transfer scenarios (which should be tested separately,
+   deliberately, with a referral attached — see
+   `ESCROW_TRANSFER_IDEMPOTENCY_REPORT.md` scenario list).
+
+Items 1–3 remain fully blocked (infrastructure/credentials, not code).
+Items 4–5 are now code-complete but zero-percent live-tested. Item 6
+is prepared but not applied. None of this changes the report's overall
+status: the matrix in this document has still executed exactly zero
+scenarios against a real Stripe object.

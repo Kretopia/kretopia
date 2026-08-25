@@ -228,7 +228,7 @@ export const FeatureTutorial = ({ steps, label, activeStep, onStepChange }: Feat
           onClick={prev}
           disabled={isFirst}
           aria-label="Previous step"
-          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors disabled:opacity-30 disabled:pointer-events-none hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2"
+          className="btn-glass btn-glass-outline flex h-8 w-8 items-center justify-center rounded-full disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2"
           style={{ outlineColor: ACCENT }}
         >
           <ChevronLeft className="h-4 w-4 text-white/80" aria-hidden />
@@ -263,7 +263,7 @@ export const FeatureTutorial = ({ steps, label, activeStep, onStepChange }: Feat
           onClick={next}
           disabled={isLast}
           aria-label="Next step"
-          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors disabled:opacity-30 disabled:pointer-events-none hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2"
+          className="btn-glass btn-glass-outline flex h-8 w-8 items-center justify-center rounded-full disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2"
           style={{ outlineColor: ACCENT }}
         >
           <ChevronRight className="h-4 w-4 text-white/80" aria-hidden />

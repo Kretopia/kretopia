@@ -313,7 +313,7 @@ export function FinanceHub({
                     className="h-7 text-xs gap-1.5 border-primary/30 hover:bg-primary/10"
                   >
                     <FileText className="h-3 w-3" />
-                    Bill "{m.title.length > 22 ? m.title.slice(0, 22) + "…" : m.title}" — ${Number(m.amount).toFixed(0)}
+                    Bill "{m.title.length > 22 ? m.title.slice(0, 22) + "…" : m.title}" — ${Number(m.amount || 0).toFixed(0)}
                   </Button>
                 ))}
                 {unbilledMilestones.length > 4 && (

@@ -166,12 +166,130 @@ serve(async (req) => {
         });
       }
 
+      // ── Escrow milestone payment: authorization ──
+      // Manual-capture escrow PaymentIntents reach `requires_capture` the
+      // moment this Checkout Session completes. Previously nothing ever
+      // observed that transition -- capture-milestone-payment only runs
+      // later, when a human clicks "release" or "cancel", so a completed
+      // escrow session left escrow_status stuck at 'none' indefinitely
+      // (ESCROW_FLOW_AUDIT.md headline finding). This branch is the ONLY
+      // place escrow_status moves from 'none' to 'authorized', and it
+      // re-verifies the PaymentIntent's actual state with Stripe directly
+      // rather than trusting the webhook payload, matching the verification
+      // style capture-milestone-payment already uses for capture/cancel.
+      if (kind === "milestone" && session.metadata?.useEscrow === "true" && session.payment_status === "paid") {
+        const milestoneId = session.metadata?.milestoneId;
+        const paymentIntentId = session.payment_intent as string;
+
+        if (!milestoneId || !paymentIntentId) {
+          logStep("Escrow authorization missing metadata", { milestoneId, paymentIntentId });
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const { data: escrowMilestone } = await supabaseAdmin
+          .from("milestones")
+          .select("id, title, project_id, created_by, escrow_status, status")
+          .eq("id", milestoneId)
+          .maybeSingle();
+
+        if (!escrowMilestone) {
+          logStep("Escrow milestone not found", { milestoneId });
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Idempotent: covers webhook redelivery of this same event AND a
+        // second completed session racing in after the first already
+        // authorized (or after capture/cancel already moved it further).
+        // Once escrow_status leaves 'none', this branch never writes again.
+        if (escrowMilestone.escrow_status !== "none") {
+          logStep("Escrow milestone already authorized/captured/cancelled, skipping", {
+            milestoneId, existingEscrowStatus: escrowMilestone.escrow_status,
+          });
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Never trust session.payment_status alone for a state transition --
+        // retrieve the PaymentIntent directly and confirm it actually holds
+        // funds (requires_capture) before writing escrow_status='authorized'.
+        const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        if (intent.status !== "requires_capture") {
+          logStep("Escrow PaymentIntent not in requires_capture state, not authorizing", {
+            milestoneId, paymentIntentId, actualStatus: intent.status,
+          });
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Compare-and-swap WHERE guard as a second, DB-level idempotency
+        // barrier alongside the pre-check above (closes the race between
+        // two concurrent deliveries of the same event).
+        const { data: authUpdatedRows, error: authUpdateError } = await supabaseAdmin
+          .from("milestones")
+          .update({
+            escrow_status: "authorized",
+            payment_intent_id: paymentIntentId,
+          })
+          .eq("id", milestoneId)
+          .eq("escrow_status", "none")
+          .select("id");
+
+        if (authUpdateError) {
+          logStep("ERROR authorizing escrow milestone", { error: authUpdateError.message });
+          throw authUpdateError;
+        }
+
+        if (!authUpdatedRows || authUpdatedRows.length === 0) {
+          logStep("Escrow authorization lost the race to a concurrent update, skipping", { milestoneId });
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        logStep("Escrow authorized -- funds held, awaiting capture", { milestoneId, paymentIntentId });
+
+        try {
+          const payerUserId = session.metadata?.userId;
+          await supabaseAdmin.from("notifications").insert([
+            {
+              user_id: escrowMilestone.created_by,
+              title: "Escrow funded 🔒",
+              message: `Funds for "${escrowMilestone.title}" are now held in escrow, awaiting release.`,
+              type: "payment",
+              category: "payment",
+              priority: "normal",
+              link: `/desk/${escrowMilestone.project_id}?tab=finance`,
+              action_url: `/desk/${escrowMilestone.project_id}?tab=finance`,
+              action_text: "View milestone",
+            },
+            ...(payerUserId ? [{
+              user_id: payerUserId,
+              title: "Payment authorized ✓",
+              message: `Your payment for "${escrowMilestone.title}" is held in escrow. It will only be released when you approve the work.`,
+              type: "payment",
+              category: "payment",
+              priority: "normal",
+              link: `/desk/${escrowMilestone.project_id}?tab=finance`,
+              action_url: `/desk/${escrowMilestone.project_id}?tab=finance`,
+              action_text: "View milestone",
+            }] : []),
+          ]);
+        } catch (notifErr) {
+          logStep("WARNING: escrow authorization notification failed", { error: String(notifErr) });
+        }
+
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       // ── Milestone payment (non-escrow "Pay Now") ──
-      // Escrow milestones (useEscrow === 'true') are confirmed separately at
-      // capture time by capture-milestone-payment, which re-verifies the
-      // PaymentIntent with Stripe directly before writing status -- this
-      // branch only covers the immediate-capture "Pay Now" path, which
-      // previously had no confirmation step at all.
       if (kind === "milestone" && session.metadata?.useEscrow !== "true" && session.payment_status === "paid") {
         const milestoneId = session.metadata?.milestoneId;
         const paymentIntentId = session.payment_intent as string;
@@ -489,6 +607,144 @@ serve(async (req) => {
       }
 
       logStep("Webhook processing complete", { orderId: order.id });
+    } else if (event.type === "payment_intent.canceled") {
+      // Stripe auto-cancels an uncaptured manual-capture PaymentIntent after
+      // 7 days, and it can also be cancelled directly via the API/Dashboard --
+      // neither goes through capture-milestone-payment's own 'cancel' action.
+      // Without this, an expired escrow silently desyncs: Stripe shows the
+      // hold released, the milestone still reads escrow_status='authorized'.
+      try {
+        const intent = event.data.object as Stripe.PaymentIntent;
+        const milestoneId = intent.metadata?.milestoneId;
+
+        if (milestoneId) {
+          const { data: cancelledRows, error: cancelError } = await supabaseAdmin
+            .from("milestones")
+            .update({ escrow_status: "cancelled" })
+            .eq("id", milestoneId)
+            .eq("payment_intent_id", intent.id)
+            .eq("escrow_status", "authorized")
+            .select("id, title, project_id, created_by");
+
+          if (cancelError) {
+            logStep("ERROR handling payment_intent.canceled", { error: cancelError.message });
+          } else if (cancelledRows && cancelledRows.length > 0) {
+            const m = cancelledRows[0] as { id: string; title: string; project_id: string; created_by: string };
+            logStep("Escrow cancelled via PaymentIntent cancellation/expiry", { milestoneId, paymentIntentId: intent.id });
+            await supabaseAdmin.from("notifications").insert({
+              user_id: m.created_by,
+              title: "Escrow cancelled",
+              message: `The held payment for "${m.title}" was cancelled or expired before release.`,
+              type: "payment",
+              category: "payment",
+              priority: "high",
+              link: `/desk/${m.project_id}?tab=finance`,
+            });
+          } else {
+            logStep("payment_intent.canceled: no matching authorized escrow milestone (already resolved, or not escrow)", { milestoneId, paymentIntentId: intent.id });
+          }
+        }
+      } catch (cancelHandlerErr) {
+        logStep("WARNING: payment_intent.canceled handling failed", { error: String(cancelHandlerErr) });
+      }
+    } else if (event.type === "payment_intent.payment_failed") {
+      // Fires on e.g. a card decline. For the escrow path this can only
+      // happen before checkout.session.completed ever fires, so
+      // escrow_status is still 'none' by construction here -- there is
+      // nothing to roll back. Logged for visibility only; deliberately no
+      // DB write, matching the "don't invent unverified state" rule.
+      const intent = event.data.object as Stripe.PaymentIntent;
+      logStep("payment_intent.payment_failed received (no-op for escrow state)", {
+        paymentIntentId: intent.id,
+        milestoneId: intent.metadata?.milestoneId,
+        lastPaymentError: intent.last_payment_error?.message,
+      });
+    } else if (event.type === "charge.refunded") {
+      // A refund issued after capture (e.g. manually via the Stripe
+      // Dashboard) has no representable terminal state in the current
+      // escrow_status CHECK constraint ('none'|'authorized'|'captured'|
+      // 'cancelled' -- 20251001071212_...sql). Writing 'cancelled' here
+      // would be misleading: that value means "never captured" everywhere
+      // else in this codebase. Rather than overload it or extend the
+      // constraint speculatively, this is logged (the raw event is already
+      // persisted via the stripe_webhook_events insert above) and flagged
+      // for manual reconciliation. See ESCROW_WEBHOOK_IMPLEMENTATION_REPORT.md
+      // "Known gap: refunds and disputes".
+      try {
+        const charge = event.data.object as Stripe.Charge;
+        logStep("charge.refunded received -- manual reconciliation required, no automatic DB write", {
+          chargeId: charge.id, paymentIntentId: charge.payment_intent,
+        });
+        const { data: refundedMilestone } = await supabaseAdmin
+          .from("milestones")
+          .select("id, title, project_id, created_by")
+          .eq("payment_intent_id", charge.payment_intent as string)
+          .maybeSingle();
+        if (refundedMilestone) {
+          await supabaseAdmin.from("notifications").insert({
+            user_id: refundedMilestone.created_by,
+            title: "Refund issued — needs review",
+            message: `A refund was issued for "${refundedMilestone.title}". Please verify this milestone's status manually.`,
+            type: "alert",
+            category: "payment",
+            priority: "high",
+            link: `/desk/${refundedMilestone.project_id}?tab=finance`,
+          });
+        }
+      } catch (refundErr) {
+        logStep("WARNING: charge.refunded handling failed", { error: String(refundErr) });
+      }
+    } else if (event.type === "charge.dispute.created") {
+      // Same reasoning as charge.refunded above -- no DB state machine
+      // support for 'disputed' today. Logged + a high-priority manual-review
+      // notification; does not touch milestone rows.
+      try {
+        const dispute = event.data.object as Stripe.Dispute;
+        logStep("charge.dispute.created received -- manual review required", {
+          disputeId: dispute.id, chargeId: dispute.charge,
+        });
+        const charge = await stripe.charges.retrieve(dispute.charge as string);
+        const { data: disputedMilestone } = await supabaseAdmin
+          .from("milestones")
+          .select("id, title, project_id, created_by")
+          .eq("payment_intent_id", charge.payment_intent as string)
+          .maybeSingle();
+        if (disputedMilestone) {
+          await supabaseAdmin.from("notifications").insert({
+            user_id: disputedMilestone.created_by,
+            title: "Payment disputed — needs review",
+            message: `A dispute was filed for "${disputedMilestone.title}". Please review immediately.`,
+            type: "alert",
+            category: "payment",
+            priority: "high",
+            link: `/desk/${disputedMilestone.project_id}?tab=finance`,
+          });
+        }
+      } catch (disputeErr) {
+        logStep("WARNING: charge.dispute.created handling failed", { error: String(disputeErr) });
+      }
+    } else if (event.type === "transfer.reversed") {
+      // Reconciliation hook for the manager-commission transfer ledger
+      // (see ESCROW_TRANSFER_IDEMPOTENCY_REPORT.md). A reversed transfer
+      // means Stripe pulled the commission back -- mark the ledger row so it
+      // surfaces in the reconciliation query instead of reading as
+      // 'completed' forever. Wrapped in try/catch: the ledger table is a
+      // prepared-not-applied migration as of this pass, so this must not
+      // crash the whole webhook handler if it doesn't exist yet.
+      try {
+        const transfer = event.data.object as Stripe.Transfer;
+        const { error: reversalError } = await supabaseAdmin
+          .from("milestone_commission_transfers")
+          .update({ status: "reversed" })
+          .eq("stripe_transfer_id", transfer.id);
+        if (reversalError) {
+          logStep("WARNING: failed to mark commission transfer reversed", { error: reversalError.message, transferId: transfer.id });
+        } else {
+          logStep("Commission transfer marked reversed", { transferId: transfer.id });
+        }
+      } catch (reversalHandlerErr) {
+        logStep("WARNING: transfer.reversed handling failed", { error: String(reversalHandlerErr) });
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {

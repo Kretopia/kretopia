@@ -39,7 +39,7 @@ export function CreditsStampsPanel({ credits, loading, query, index }: Props) {
         <button
           type="button"
           onClick={() => navigate("/profile?add=credit")}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+          className="btn-glass btn-glass-outline inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold"
         >
           <Plus className="h-3.5 w-3.5" aria-hidden />
           Add credit

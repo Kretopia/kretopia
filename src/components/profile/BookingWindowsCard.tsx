@@ -122,7 +122,7 @@ export const BookingWindowsCard = ({ userId, username, bookingsEnabled }: Props)
       {enabled && bookingUrl && (
         <button
           onClick={() => { navigator.clipboard.writeText(bookingUrl); toast.success("Booking link copied"); }}
-          className="w-full text-left text-[11px] font-mono px-3 py-2 mb-3 rounded-lg border border-border bg-background/40 flex items-center justify-between gap-2 hover:border-[hsl(var(--signal-teal))]/50 transition-colors"
+          className="btn-glass btn-glass-outline w-full text-left text-[11px] font-mono px-3 py-2 mb-3 rounded-lg flex items-center justify-between gap-2"
         >
           <span className="truncate">{bookingUrl.replace(/^https?:\/\//, "")}</span>
           <Copy className="h-3 w-3 shrink-0 text-muted-foreground" />

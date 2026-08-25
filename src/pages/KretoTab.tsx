@@ -146,7 +146,7 @@ export default function KretoTab() {
                 key={label}
                 type="button"
                 onClick={() => ask(prompt)}
-                className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-sm font-medium text-white/80 hover:border-white/25 hover:bg-white/[0.06] transition-colors"
+                className="btn-glass btn-glass-outline flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium"
               >
                 <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
                 {label}
@@ -189,7 +189,7 @@ export default function KretoTab() {
               <button
                 type="button"
                 onClick={() => ask(`Help me think through this opportunity: "${gig.title}"${gig.company ? ` at ${gig.company}` : ""}.`)}
-                className="text-left rounded-xl border border-white/10 bg-white/[0.03] p-4 hover:border-[#FF2DA1]/40 transition-colors"
+                className="btn-glass btn-glass-outline text-left rounded-xl p-4"
               >
                 <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2">Top Scout match</p>
                 <p className="text-sm font-medium truncate">{gig.title}</p>

@@ -504,7 +504,7 @@ const Auth = () => {
                     toast({ title: "Could not resend", description: err?.message || "Try again in a moment.", variant: "destructive" });
                   }
                 }}
-                className="text-sm text-primary font-semibold hover:underline"
+                className="text-sm text-white font-semibold hover:text-[#FF2DA1] hover:underline transition-colors"
               >
                 Resend verification email
               </button>
@@ -512,7 +512,7 @@ const Auth = () => {
                 <button
                   type="button"
                   onClick={() => { setPendingVerificationEmail(null); setActiveTab("signin"); }}
-                  className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                  className="text-xs text-white/60 hover:text-[#FF2DA1] underline-offset-4 hover:underline transition-colors"
                 >
                   Use a different email
                 </button>
@@ -597,7 +597,7 @@ const Auth = () => {
                       <button
                         type="button"
                         onClick={() => setSignupMode("classic")}
-                        className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                        className="text-xs text-white/60 hover:text-[#FF2DA1] underline-offset-4 hover:underline transition-colors"
                       >
                         Use email & password instead
                       </button>
@@ -619,7 +619,7 @@ const Auth = () => {
                       <button
                         type="button"
                         onClick={() => setSignupMode("claim")}
-                        className="text-xs text-primary hover:underline font-semibold"
+                        className="text-xs text-white hover:text-[#FF2DA1] hover:underline font-semibold transition-colors"
                       >
                         ← Back to one-tap claim
                       </button>

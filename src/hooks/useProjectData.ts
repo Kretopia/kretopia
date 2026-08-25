@@ -127,22 +127,77 @@ export function useProjectData(projectId: string | undefined) {
           return;
         }
 
-        setProject(projectData);
+        // client_price/creative_payout/margin_type/margin_value are no
+        // longer selectable directly as of
+        // 20260825100000_studio_role_based_money_rls.sql -- projectData
+        // above already has them silently omitted for non-owners.
+        // get_project_financials is owner-only (matches useStudioRole.ts's
+        // documented canSeeMoney intent); merge it in only when it
+        // succeeds, so a non-owner's projectData is left exactly as RLS
+        // returned it rather than faking these fields as null/0.
+        let projectWithFinancials = projectData;
+        try {
+          const { data: financials } = await supabase.rpc("get_project_financials" as any, {
+            _project_id: projectId,
+          });
+          const fin = financials as { success?: boolean; client_price?: number; creative_payout?: number; margin_type?: string; margin_value?: number } | null;
+          if (fin?.success) {
+            projectWithFinancials = {
+              ...projectData,
+              client_price: fin.client_price,
+              creative_payout: fin.creative_payout,
+              margin_type: fin.margin_type,
+              margin_value: fin.margin_value,
+            };
+          }
+        } catch (finErr) {
+          console.error("get_project_financials failed", finErr);
+        }
+
+        setProject(projectWithFinancials);
         setUserRole(projectData.created_by === userId ? "client" : "creator");
 
-        const [collabs, msgs, filesRes, tasksRes, milestonesRes] = await Promise.all([
+        const [collabs, msgs, filesRes, tasksRes, milestonesRes, milestoneFinancialsRes] = await Promise.all([
           fetchCollaborators(projectData),
           fetchMessages(),
           supabase.from("project_files").select("*").eq("project_id", projectId).order("created_at", { ascending: false }),
           supabase.from("project_tasks").select("*").eq("project_id", projectId).order("created_at", { ascending: false }),
+          // amount/paid_to/paid_at/escrow_status/payment_intent_id are no
+          // longer selectable directly as of
+          // 20260825100000_studio_role_based_money_rls.sql -- select("*")
+          // here now silently omits them for everyone. They're merged back
+          // in below from get_project_milestone_financials, which is the
+          // only remaining read path and enforces the same
+          // owner/creative/collaborator-only rule (not client/guest) that
+          // the Money section's own UI already tries to apply -- so a
+          // client/guest collaborator now gets the real enforcement this
+          // hook's data represents, not just a UI hint.
           supabase.from("milestones").select("*").eq("project_id", projectId).order("created_at", { ascending: true }),
+          supabase.rpc("get_project_milestone_financials" as any, { _project_id: projectId }),
         ]);
+
+        const financialsByMilestoneId = new Map(
+          ((milestoneFinancialsRes.data as any[]) || []).map((f) => [f.milestone_id, f])
+        );
+        const milestonesWithFinancials = (milestonesRes.data || []).map((m: any) => {
+          const fin = financialsByMilestoneId.get(m.id);
+          return fin
+            ? {
+                ...m,
+                amount: fin.amount,
+                paid_to: fin.paid_to,
+                paid_at: fin.paid_at,
+                escrow_status: fin.escrow_status,
+                payment_intent_id: fin.payment_intent_id,
+              }
+            : m; // not authorized to see this milestone's money -- amount/paid_to/etc. stay absent, not faked as 0/null
+        });
 
         setCollaborators(collabs);
         setMessages(msgs);
         setFiles(filesRes.data || []);
         setTasks(tasksRes.data || []);
-        setMilestones(milestonesRes.data || []);
+        setMilestones(milestonesWithFinancials);
       } catch (error: any) {
         console.error("Error fetching project data:", error);
         toast({ title: "Error loading project", description: error.message, variant: "destructive" });

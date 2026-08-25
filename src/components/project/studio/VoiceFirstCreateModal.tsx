@@ -552,7 +552,6 @@ export const VoiceFirstCreateModal = ({
                   </div>
                 </div>
               </>
-              </>
             ) : (
               <div className="w-full max-w-md space-y-3">
                 {/* AI-search-styled entry surface */}

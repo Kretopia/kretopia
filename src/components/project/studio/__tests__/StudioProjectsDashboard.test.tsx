@@ -55,6 +55,25 @@ describe("StudioProjectsDashboard", () => {
     expect(container.textContent).not.toContain("Draft the invoice");
   });
 
+  it("gates money per-project when moneyVisibleByProject is provided, not globally", () => {
+    // "a" (Carnival Film) is owner-visible, "b" (Album Rollout) is not --
+    // this is the real shape of a viewer's dashboard mixing roles across
+    // Projects, which a single canSeeMoney boolean can't express.
+    renderDash({ canSeeMoney: true, moneyVisibleByProject: { a: true, b: false } });
+    const carnivalRow = screen.getByText("Carnival Film").closest("li")!;
+    const albumRow = screen.getByText("Album Rollout").closest("li")!;
+    expect(carnivalRow.textContent).toContain("Invoiced");
+    expect(albumRow.textContent).not.toContain("No invoice");
+    expect(albumRow.textContent).not.toContain("Invoiced");
+  });
+
+  it("treats a project missing from moneyVisibleByProject as not visible (fails closed)", () => {
+    renderDash({ moneyVisibleByProject: { a: true } }); // "b" intentionally absent
+    const albumRow = screen.getByText("Album Rollout").closest("li")!;
+    expect(albumRow.textContent).not.toContain("No invoice");
+    expect(albumRow.textContent).toContain("Review the delivery");
+  });
+
   it("shows a creation-led empty state with no dead end", () => {
     renderDash({ projects: [] });
     expect(screen.getByText("No Projects yet")).toBeInTheDocument();

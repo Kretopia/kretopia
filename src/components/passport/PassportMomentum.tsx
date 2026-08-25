@@ -47,7 +47,7 @@ export function PassportMomentum({ userId }: PassportMomentumProps = {}) {
     const cosignsP = (supabase as any)
       .from("reviews")
       .select("id", { count: "exact", head: true })
-      .eq("reviewee_id", targetId)
+      .eq("profile_id", targetId)
       .eq("status", "approved")
       .gte("created_at", cutoff)
       .then((r: any) => r.count || 0, () => 0);

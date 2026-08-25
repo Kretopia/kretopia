@@ -1130,103 +1130,35 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   cursor: not-allowed;
 }
 
-/* Registered as an animatable custom property so the browser can
-   smoothly tween the conic-gradient's start angle below -- without
-   this, animating a custom property used inside conic-gradient(from
-   var(...)) would just snap between values instead of sweeping. */
-@property --btn-glass-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
-
-/* The scintillating border itself: a conic gradient (one bright arc,
-   the rest transparent) clipped to a 1px band around the button via
-   padding + mask-composite, so only the border ring is visible, not a
-   filled overlay. Rotating the gradient's OWN start angle (not the
-   element -- rotating the element would rotate the mask/border-radius
-   shape too, and desync it from the button's actual corners on
-   anything that isn't a perfect square) makes the bright arc genuinely
-   travel around the full perimeter -- one lap, not a side-to-side
-   sweep. Idle and invisible until hover.
-
-   Plays ONCE per hover, not on a loop: animation-iteration-count: 1
-   (not infinite), and CSS restarts an animation whenever the rule that
-   declares it starts matching again -- so it replays on every fresh
-   hover-in, but never repeats while the pointer just sits there. The
-   real border-color (set on .btn-glass:hover itself, further down)
-   stays solid pink for the whole hover independently of this pass, so
-   the button doesn't go dark once the single lap finishes -- only the
-   traveling light stops repeating. */
-/* TRAVELING LIGHT — full lap, constant speed.
-   The old implementation rotated a conic-gradient's start angle. On a
-   wide (non-square) button that maps ANGLE to PERIMETER unevenly: a
-   fixed-degree arc becomes a huge blob near the middle of the long
-   edges and appears to stall there -- the "gros point parasite" the
-   design review flagged. Replaced with a comet element riding the
-   button's actual border-box path via offset-path, so the highlight
-   keeps a constant physical length and a constant speed all the way
-   around the perimeter, with no stall and no blob. */
+/* SHEEN — deliberately restrained.
+   Earlier revisions ran a light around the button's perimeter (first a
+   rotating conic ring, then a comet on offset-path). Both read as
+   erratic on real buttons: the arc length maps unevenly onto a wide
+   rounded rectangle, so the highlight bunched into a stray pink blob at
+   the corners and looked detached from the button. Replaced with a
+   single soft diagonal sheen that sweeps across the INSIDE of the
+   button once per hover, clipped by overflow:hidden. Nothing renders on
+   or outside the border, so there is no segment to go astray. */
 .btn-glass::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 34%;
-  min-width: 44px;
-  max-width: 120px;
-  height: 2px;
-  margin: 0;
+  inset: 0;
   z-index: 1;
-  border-radius: 999px;
-  background: linear-gradient(90deg,
-    rgba(var(--btn-glass-accent), 0) 0%,
-    rgba(var(--btn-glass-accent), 0.85) 55%,
-    rgba(var(--btn-glass-accent), 0) 100%);
-  box-shadow: 0 0 10px rgba(var(--btn-glass-accent), 0.55);
-  offset-path: border-box;
-  offset-rotate: auto;
-  offset-anchor: 50% 50%;
-  offset-distance: 0%;
+  border-radius: inherit;
+  background: linear-gradient(100deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.13) 50%,
+    transparent 62%);
+  transform: translateX(-100%);
   opacity: 0;
-  transition: opacity 0.2s ease;
   pointer-events: none;
 }
 .btn-glass:hover::before {
-  opacity: 1;
-  /* One uninterrupted lap per hover-in. */
-  animation: btn-glass-lap 0.75s linear 1;
+  animation: btn-glass-sheen 0.6s ease-out 1;
 }
-@keyframes btn-glass-lap {
-  from { offset-distance: 0%; opacity: 1; }
-  85%  { opacity: 1; }
-  to   { offset-distance: 100%; opacity: 0; }
-}
-
-/* Fallback for engines without offset-path: border-box — keep the old
-   masked conic ring rather than dropping the cue entirely. */
-@supports not (offset-path: border-box) {
-  .btn-glass::before {
-    inset: 0;
-    left: auto; top: auto;
-    width: auto; height: auto; max-width: none; min-width: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: conic-gradient(from var(--btn-glass-angle),
-      transparent 0deg,
-      transparent 300deg,
-      rgba(var(--btn-glass-accent), 0.8) 337deg,
-      transparent 353deg);
-    box-shadow: none;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-  }
-  .btn-glass:hover::before { animation: btn-glass-shimmer 0.45s linear 1; animation-fill-mode: forwards; }
-}
-@keyframes btn-glass-shimmer {
-  from { --btn-glass-angle: 0deg; }
-  to { --btn-glass-angle: 360deg; }
+@keyframes btn-glass-sheen {
+  from { transform: translateX(-100%); opacity: 1; }
+  to   { transform: translateX(100%); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .btn-glass:hover { transform: none; }

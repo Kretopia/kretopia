@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   DndContext,
   closestCenter,
@@ -270,6 +271,20 @@ export const StudioRoom = ({
     </div>
   );
 
+  // Condensed by default — end-of-project widgets nobody needs on every
+  // visit are collapsed behind a one-line summary instead of always
+  // pushing the page length out. Native <details> so no extra state.
+  // Shared by mobile (flat divide-y list) and desktop (card widgets).
+  const collapsedWidget = (label: string, node: React.ReactNode, flat = false) => (
+    <details className={cn("group", flat ? "" : "rounded-2xl border border-border/60 bg-card/40 overflow-hidden")}>
+      <summary className={cn("cursor-pointer list-none flex items-center justify-between text-sm font-semibold", flat ? "px-4 py-3.5" : "px-4 py-3")}>
+        {label}
+        <span className="text-muted-foreground transition-transform group-open:rotate-90">›</span>
+      </summary>
+      <div className="border-t border-border/60">{node}</div>
+    </details>
+  );
+
   const mobileSideColumn = (
     <div className="divide-y divide-border/60">
       {showMoney && (
@@ -282,9 +297,9 @@ export const StudioRoom = ({
         <RequestPaymentCard project={project} currentUserId={currentUserId} />
       )}
       <PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />
-      <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />
-      <AddCreditSection project={project} collaborators={people} />
-      <CallHistorySection projectId={project.id} />
+      {collapsedWidget("Wrap the project", <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />, true)}
+      {collapsedWidget("Add a credit", <AddCreditSection project={project} collaborators={people} />, true)}
+      {collapsedWidget("Call history", <CallHistorySection projectId={project.id} />, true)}
     </div>
   );
 
@@ -308,9 +323,9 @@ export const StudioRoom = ({
       case "milestones": return showMoney ? wrap(<MilestoneStrip projectId={project.id} currency={project.currency} onOpenFinance={() => onNavigateToTab("finance")} />) : null;
       case "request_pay": return isCollaborator ? wrap(<RequestPaymentCard project={project} currentUserId={currentUserId} />) : null;
       case "people": return wrap(<PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />);
-      case "wrap": return wrap(<WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
-      case "credit": return wrap(<AddCreditSection project={project} collaborators={people} />);
-      case "calls": return wrap(<CallHistorySection projectId={project.id} />);
+      case "wrap": return collapsedWidget("Wrap the project", <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
+      case "credit": return collapsedWidget("Add a credit", <AddCreditSection project={project} collaborators={people} />);
+      case "calls": return collapsedWidget("Call history", <CallHistorySection projectId={project.id} />);
     }
   };
 
@@ -526,8 +541,8 @@ export const StudioRoom = ({
       </div>
 
       {/* Desktop: 2-column draggable widget board */}
-      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
-        <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
+      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-4 lg:px-6 lg:py-4 lg:max-w-[1500px] lg:mx-auto">
+        <div className="col-span-12 xl:col-span-8 space-y-3 min-w-0">
           {isOwner && (
             <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
               {dropZone}
@@ -622,7 +637,7 @@ export const StudioRoom = ({
           </div>
           {renderColumn(isEvent ? leftOrder.filter((id) => id !== "brief") : leftOrder, "left")}
         </div>
-        <aside className="col-span-12 xl:col-span-4 space-y-4 min-w-0">
+        <aside className="col-span-12 xl:col-span-4 space-y-3 min-w-0">
           {RoomChatButton}
           {renderColumn(rightOrder, "right")}
         </aside>

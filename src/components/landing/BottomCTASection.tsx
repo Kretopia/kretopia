@@ -61,16 +61,12 @@ export const BottomCTASection = () => {
 
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/auth" onClick={handleCtaClick} className="w-full sm:w-auto">
-                <Button
-                  size="xl"
-                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold group shadow-md"
-                >
-                  <Sparkles className="mr-2 h-5 w-5" />
+                <CtaButton size="xl" className="w-full sm:w-auto" leadingIcon={Sparkles}>
                   Get Started Free
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
+                </CtaButton>
               </Link>
             </div>
+
 
             <p className="mt-6 text-xs text-muted-foreground/80">
               {content.tagline}

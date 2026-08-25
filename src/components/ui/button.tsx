@@ -4,36 +4,48 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+// Every variant below shares one design language -- the glass card +
+// scintillating pink-border-on-hover system defined as .btn-glass (+
+// accent modifiers) in src/index.css, modeled directly on
+// VisualCardShell (the landing page's "Search preview / Illustrative —
+// not live data" card). Text is forced white by that CSS regardless of
+// which text-* utility (if any) a variant string still carries below.
+// Modifiers exist so variants stay distinguishable from each other at
+// rest (pink-tinted vs neutral vs near-invisible vs red) while every one
+// of them gets the same hover signature.
 const HERO_LIME_CLASSES =
-  "btn-pink-gradient text-energy-foreground font-black uppercase tracking-wider";
+  "btn-glass btn-glass-primary btn-glass-hero font-black uppercase tracking-wider";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-all duration-200 ease-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-md",
-        outline: "border-2 border-primary/60 bg-primary/10 text-foreground hover:bg-primary/20 hover:border-primary backdrop-blur-sm hover:shadow-sm",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-sm",
-        ghost: "hover:bg-muted text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        // Smart accent CTA — pink → grey linear gradient with a hover
-        // sweep/lift/glow, shared with the hero/lime variant below (see
-        // .btn-pink-gradient in index.css). Previously a theme-dependent
-        // flat gradient-primary fill (near-black in light mode, pink only
-        // in dark mode) -- now a consistent brand-pink gradient in every
-        // theme, since this is meant to be a strong CTA regardless of
-        // light/dark/vibe.
-        gradient: "btn-pink-gradient text-energy-foreground font-bold",
-        // Hero / Lime — identical loudest-CTA treatment (signature accent,
-        // #FF2DA1) kept as two variant names for call-site readability.
-        // Shared string so the two can't drift apart.
+        default: "btn-glass btn-glass-primary",
+        destructive: "btn-glass btn-glass-danger",
+        outline: "btn-glass btn-glass-outline",
+        secondary: "btn-glass btn-glass-neutral",
+        ghost: "btn-glass btn-glass-ghost font-medium",
+        // Link stays a plain inline text trigger, not a boxed surface --
+        // a border doesn't make sense on it. White at rest, pink on hover
+        // (text + underline) is the closest honest analog to the
+        // scintillating-border signature for something that isn't a box.
+        link: "text-white underline-offset-4 hover:underline hover:text-[#FF2DA1] transition-colors",
+        gradient: "btn-glass btn-glass-primary font-bold",
+        // Hero / Lime — loudest CTA. Same family, extra emphasis via
+        // btn-glass-hero (stronger tint/border than plain primary) plus
+        // the bold/uppercase treatment that already set it apart. Kept as
+        // two variant names for call-site readability; shared string so
+        // they can't drift apart.
         hero: HERO_LIME_CLASSES,
         lime: HERO_LIME_CLASSES,
-        glow: "bg-primary text-primary-foreground hover:bg-primary/90 animate-glow",
-        // Liquid Glass — translucent surface, hairline border, accent on hover/active.
-        glass: "glass-surface text-foreground hover:border-[hsl(var(--color-accent)_/_0.5)] hover:text-[hsl(var(--color-accent))] data-[state=open]:border-[hsl(var(--color-accent)_/_0.6)] data-[state=open]:text-[hsl(var(--color-accent))]",
+        glow: "btn-glass btn-glass-primary animate-glow",
+        // Liquid Glass trigger surface (dropdowns/menus) — keeps its own
+        // .glass-surface mechanism (used elsewhere beyond Button) rather
+        // than switching to .btn-glass, but text is forced white and the
+        // hover/open accent is the same signature pink as every other
+        // variant now, not a theme-dependent token.
+        glass: "glass-surface text-white hover:border-[#FF2DA1]/50 hover:text-white data-[state=open]:border-[#FF2DA1]/60 data-[state=open]:text-white",
       },
       size: {
         default: "h-10 px-4 py-2",

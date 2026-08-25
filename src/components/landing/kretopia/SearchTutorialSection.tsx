@@ -95,7 +95,7 @@ export const SearchTutorialSection = () => {
           <button
             type="button"
             onClick={scrollToHeroSearch}
-            className="btn-pink-gradient rounded-full px-5 py-2.5 text-sm font-semibold text-white"
+            className="btn-glass btn-glass-primary rounded-full px-5 py-2.5 text-sm font-semibold text-white"
           >
             Search Your Name
           </button>

@@ -386,7 +386,7 @@ export default function Subscription() {
                 <Button className="w-full" variant="outline" disabled>Sold Out</Button>
               ) : (
                 <Button
-                  className="btn-pink-gradient w-full text-energy-foreground"
+                  className="btn-glass btn-glass-primary w-full text-energy-foreground"
                   onClick={handleFounderCheckout}
                   disabled={loading === "founder"}
                 >

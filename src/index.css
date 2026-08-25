@@ -1314,8 +1314,13 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
    depends on. <CtaButton> opts back into the flat, high-contrast fill. */
 .cta-solid {
   background-image: none !important;
+  background-color: hsl(var(--primary)) !important;
+  border-color: transparent !important;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+.cta-solid:hover {
+  background-color: hsl(var(--primary) / 0.9) !important;
 }
 .cta-solid,
 .cta-solid:hover,

@@ -607,42 +607,17 @@ const CreatorWorkHome = () => {
                 />
               )}
 
-              {hasFolders ? (
-                unfiledProjects.length > 0 && (
-                  <div className="space-y-2 pt-2">
-                    <div className="flex items-end justify-between">
-                      <h2 className="text-base font-bold">Loose projects</h2>
-                      <span className="text-xs text-muted-foreground">
-                        {unfiledProjects.length} unfiled · drag onto a folder to file
-                      </span>
-                    </div>
-                    <LooseProjectsCarousel
-                      projects={unfiledProjects as any}
-                      invoicesByProject={invoicesByProject}
-                      folders={folders}
-                      onMoveToFolder={moveProject}
-                    />
-                  </div>
-                )
-              ) : (
-                <>
-                  {projects.length > 0 && (
-                    <div className="flex items-end justify-between pt-1">
-                      <h2 className="text-base font-bold">Your studio rooms</h2>
-                      <span className="text-xs text-muted-foreground">
-                        {activeProjects.length} in progress · {completedProjects.length} delivered
-                      </span>
-                    </div>
-                  )}
-                  <StudioCardsGrid
-                    projects={projects as any}
-                    invoicesByProject={invoicesByProject}
-                    onNewProject={() => setShowCreateProject(true)}
-                    folders={folders}
-                    onMoveToFolder={moveProject}
-                  />
-                </>
-              )}
+              {/* One Projects dashboard for every root view. When folders
+                  exist we scope it to the unfiled Projects (previously
+                  labeled "Loose projects" — copy only, no data change). */}
+              <StudioProjectsDashboard
+                projects={(hasFolders ? unfiledProjects : projects) as any}
+                invoicesByProject={invoicesByProject}
+                onCreate={() => setShowCreateProject(true)}
+                folders={folders}
+                onMoveToFolder={moveProject}
+              />
+
             </>
           );
         })()}

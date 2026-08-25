@@ -1130,9 +1130,16 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 /* The scintillating border itself: an animated gradient ring, clipped
    to a 1px band around the button via padding + mask-composite so
    only the border area is visible, not a filled overlay. Idle and
-   invisible until hover -- same trigger discipline as the previous
-   design (the card's own sweep loops always; on a button, always-on
-   would be too much noise multiplied across a whole page). */
+   invisible until hover.
+
+   Plays ONCE per hover, not on a loop: animation-iteration-count: 1
+   (not infinite), and CSS restarts an animation whenever the rule that
+   declares it starts matching again -- so it replays on every fresh
+   hover-in, but never repeats while the pointer just sits there. The
+   real border-color (set on .btn-glass:hover itself, further down)
+   stays solid pink for the whole hover independently of this pass, so
+   the button doesn't go dark once the single sweep finishes -- only the
+   traveling light stops repeating. */
 .btn-glass::before {
   content: "";
   position: absolute;
@@ -1155,7 +1162,8 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 .btn-glass:hover::before {
   opacity: 1;
-  animation: btn-glass-shimmer 1.3s ease-in-out infinite;
+  animation: btn-glass-shimmer 0.9s ease-out 1;
+  animation-fill-mode: forwards;
 }
 @keyframes btn-glass-shimmer {
   0% { background-position: -100% 0; }

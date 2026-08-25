@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * actions, status controls. Those keep their own affordances.
  */
 export const CTA_BUTTON_CLASS =
-  "w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold group shadow-md";
+  "cta-solid w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold group shadow-md";
 
 export type CtaButtonProps = React.ComponentProps<typeof Button>;
 

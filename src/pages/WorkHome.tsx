@@ -499,17 +499,18 @@ const CreatorWorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Studios | Kretopia</title>
-        <meta name="description" content="Studios — your project rooms. Voice-first project management for creatives." />
+        <title>Studio | Kretopia</title>
+        <meta name="description" content="Studio — start a Project by voice or text, keep the work in one place, and wrap with credits and an invoice." />
       </Helmet>
 
       <FeaturePageHeader
-        eyebrow="Projects & Workspaces"
-        title="Studios."
-        accentTitle="One room per project."
-        subtitle="Brief, collaborators, milestones, and payment — all inside the same room, from kickoff to delivery."
-        tutorial={{ featureKey: "studio", label: "How Studios works", steps: STUDIO_TUTORIAL }}
+        eyebrow="Studio"
+        title="Start with what"
+        accentTitle="you're making."
+        subtitle="Kreto turns it into a working Project. The work happens in one place, and your credits and invoice are ready when it wraps."
+        tutorial={{ featureKey: "studio", label: "How Studio works", steps: STUDIO_TUTORIAL }}
       />
+
 
       {/* Wider on desktop, capped for readability */}
       <div className="max-w-6xl mx-auto px-4 pt-4 pb-36 md:pb-12 space-y-5">

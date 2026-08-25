@@ -9,6 +9,7 @@
 // so the frontend can review and bulk-insert into project_deliverables.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -182,6 +183,24 @@ serve(async (req) => {
   }
 
   try {
+    // Auth fix (STUDIO_OVERHAUL_V2_AUDIT.md security risk #1): this function
+    // had no authentication at all -- anyone with the public anon key could
+    // invoke Kreto's AI brief-drafting directly, off-platform, for free.
+    // It persists nothing itself (the frontend does all DB writes after
+    // review), so this is a cost/abuse control, not a data-authorization
+    // fix, but it's still real callers only from here on.
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 

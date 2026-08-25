@@ -274,7 +274,29 @@ serve(async (req) => {
               ? ((surface_context as Record<string, unknown>).project_id ??
                  (surface_context as Record<string, unknown>).active_project_id)
               : null) as string | null;
-          if (projectId && typeof projectId === "string") {
+          // IDOR fix (STUDIO_OVERHAUL_V2_AUDIT.md security risk #3): this
+          // block used the service-role `admin` client to read Studio Brain
+          // facts/entities for whatever project_id showed up in the
+          // client-supplied surface_context, with no check that the caller
+          // actually belongs to that project -- the RLS policies on these
+          // two tables (project-membership-scoped) exist but never applied,
+          // since a service-role client bypasses RLS entirely. Same
+          // user_has_project_access check every other project-scoped
+          // function in this codebase already uses, gating the fetch, not
+          // just the response.
+          let hasProjectAccess = false;
+          if (projectId && typeof projectId === "string" && userId) {
+            try {
+              const { data } = await admin.rpc("user_has_project_access", {
+                project_id_param: projectId,
+                user_id_param: userId,
+              });
+              hasProjectAccess = !!data;
+            } catch (e) {
+              console.warn("user_has_project_access check failed", e);
+            }
+          }
+          if (projectId && typeof projectId === "string" && hasProjectAccess) {
             const [factsRes, entitiesRes] = await Promise.all([
               admin
                 .from("studio_facts")

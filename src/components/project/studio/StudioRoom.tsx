@@ -67,7 +67,9 @@ import { useStudioPresence } from "@/hooks/useStudioPresence";
 import { useProjectMoneySignal } from "@/hooks/useProjectMoneySignal";
 import { useStudioRole } from "@/hooks/useStudioRole";
 import { useDeskAgentWatch } from "@/hooks/useDeskAgentWatch";
-import type { ProjectFlow, ProjectFlowStageId } from "@/hooks/useProjectFlow";
+import { PROJECT_FLOW_STAGES, STUDIO_PHASES, stageToPhase, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
+import { notifyPhaseAdvanced } from "@/lib/notifyPhaseAdvanced";
+import { ProjectCompleteDialog } from "./ProjectCompleteDialog";
 
 interface StudioRoomProps {
   project: any;
@@ -138,6 +140,32 @@ export const StudioRoom = ({
     project?.id,
     me ? { id: me.id, full_name: me.full_name, avatar_url: me.avatar_url } : null,
   );
+
+  // Explicit step validation — advancing the phase rail is a deliberate
+  // click, not just derived from activity. Reuses the existing
+  // pinned_stage override (onPinStage) so "validate" and "pin" are the
+  // same underlying mechanism instead of two competing ones.
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+  const handleValidateStep = () => {
+    if (!onPinStage) return;
+    const currentIdx = PROJECT_FLOW_STAGES.findIndex((s) => s.id === flow.currentStageId);
+    if (currentIdx < 0 || currentIdx >= PROJECT_FLOW_STAGES.length - 1) return;
+    const nextStage = PROJECT_FLOW_STAGES[currentIdx + 1];
+    const nextPhaseLabel = STUDIO_PHASES.find((p) => p.id === stageToPhase(nextStage.id))?.label ?? nextStage.label;
+
+    onPinStage(nextStage.id);
+    toast({ title: `${nextPhaseLabel} unlocked`, description: `${project.title} moved into ${nextPhaseLabel}.` });
+
+    notifyPhaseAdvanced({
+      projectId: project.id,
+      projectTitle: project.title,
+      phaseLabel: nextPhaseLabel,
+      collaboratorIds: people.map((p) => p.id),
+      actorId: currentUserId,
+    }).catch(() => { /* non-blocking */ });
+
+    if (nextStage.id === "complete") setCompleteDialogOpen(true);
+  };
 
   const handleAddReference = () => {
     if (!isOwner) {
@@ -426,8 +454,18 @@ export const StudioRoom = ({
       />
 
       {/* One-page summary: compact six-phase rail + the one next action —
-          same on mobile and desktop, first thing under the header. */}
-      <StudioPhaseRail flow={flow} onPhaseClick={onNavigateToTab} onPinStage={onPinStage} />
+          same on mobile and desktop, first thing under the header. The
+          rail itself stays pinned to the top of the scroll area while the
+          rest of the room scrolls underneath it — "where am I" should
+          never require scrolling back up to check. */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-xl border-b border-border/60">
+        <StudioPhaseRail
+          flow={flow}
+          onPhaseClick={onNavigateToTab}
+          onPinStage={onPinStage}
+          onValidateStep={handleValidateStep}
+        />
+      </div>
       {flow.nextStep && <NextStepCard nextStep={flow.nextStep} onAction={onNavigateToTab} />}
 
       {/* Proactive nudges — render once, responsive layout below */}
@@ -458,6 +496,11 @@ export const StudioRoom = ({
         open={autopilotOpen}
         onOpenChange={setAutopilotOpen}
         onUpdated={onUpdated}
+      />
+      <ProjectCompleteDialog
+        open={completeDialogOpen}
+        onOpenChange={setCompleteDialogOpen}
+        projectTitle={project.title}
       />
 
       {/* Mobile: original single-scroll order */}

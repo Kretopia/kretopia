@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
-import { Lock, Pin, PinOff } from "lucide-react";
+import { ArrowRight, Lock, Pin, PinOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
@@ -16,6 +17,10 @@ interface StudioPhaseRailProps {
   /** Jumps to the tab of the first stage inside the clicked phase. */
   onPhaseClick: (tab: string) => void;
   onPinStage?: (stageId: ProjectFlowStageId | null) => void;
+  /** Explicit "I'm done with this phase" CTA — advances to the next
+   * phase, notifies collaborators, and (on reaching Complete) opens the
+   * informative dialog. Omit to hide the button entirely. */
+  onValidateStep?: () => void;
   className?: string;
 }
 
@@ -33,8 +38,9 @@ interface StudioPhaseRailProps {
  * show a small lock glyph instead of a step number so the restriction
  * reads as intentional, not broken.
  */
-export const StudioPhaseRail = memo(({ flow, onPhaseClick, onPinStage, className }: StudioPhaseRailProps) => {
+export const StudioPhaseRail = memo(({ flow, onPhaseClick, onPinStage, onValidateStep, className }: StudioPhaseRailProps) => {
   const reducedMotion = useReducedMotion();
+  const currentPhaseLabel = STUDIO_PHASES.find((p) => p.id === flow.currentPhaseId)?.label ?? "";
 
   const phaseTab = (phaseId: StudioPhaseId) => {
     const stageIds = phaseTabStages(phaseId);
@@ -121,6 +127,20 @@ export const StudioPhaseRail = memo(({ flow, onPhaseClick, onPinStage, className
           );
         })}
       </div>
+
+      {/* Explicit validation — the phase only ever advances on this
+          click, never silently. Hidden once Complete is reached. */}
+      {onValidateStep && flow.currentPhaseId !== "complete" && (
+        <Button
+          type="button"
+          size="sm"
+          onClick={onValidateStep}
+          className="mt-2.5 w-full gap-1.5"
+        >
+          Validate "{currentPhaseLabel}" & continue
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Button>
+      )}
     </div>
   );
 });

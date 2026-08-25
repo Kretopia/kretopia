@@ -52,7 +52,21 @@ export const CallHistorySection = ({ projectId }: Props) => {
     };
   }, [projectId]);
 
-  if (loading || rows.length === 0) return null;
+  if (loading) return null;
+
+  if (rows.length === 0) {
+    return (
+      <section className="px-4 py-5">
+        <div className="rounded-2xl border border-dashed border-border/60 p-4 text-center space-y-1.5">
+          <Phone className="h-5 w-5 mx-auto text-muted-foreground" aria-hidden />
+          <p className="text-sm font-semibold">No calls yet</p>
+          <p className="text-xs text-muted-foreground leading-snug">
+            Video calls on this project — once one ends, it shows up here.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="px-4 py-5 space-y-3">

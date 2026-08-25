@@ -94,8 +94,8 @@ export const ClosingCTASection = () => {
           <Link
             to="/auth?tab=signup&intent=closing_cta"
             onClick={trackSignupClick}
-            className="group inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02]"
-            style={{ backgroundColor: ACCENT, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+            className="btn-glass btn-glass-hero btn-glass-primary group inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-semibold"
+            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             Claim Your Creative Passport
             <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />

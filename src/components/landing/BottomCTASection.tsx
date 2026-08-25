@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { CtaButton } from "@/components/ui/cta-button";
 import { Sparkles, ArrowRight, Globe, MapPin } from "lucide-react";
 
 const TRINIDAD_CONTENT = {
@@ -15,7 +15,7 @@ const DEFAULT_CONTENT = {
   badge: "Free Forever · Creator from $29/mo",
   heading: "Make it. Own it. Get paid.",
   subheading:
-    "Claim your credits. Match with collaborators. Send invoices. Get paid. One platform replaces nine apps — and Thrive does the busywork.",
+    "Claim your credits. Match with collaborators. Send invoices. Get paid. One platform replaces nine apps — and Kreto does the busywork.",
   tagline: "Free forever · 60-second setup · No credit card",
   isTT: false,
 };
@@ -61,16 +61,15 @@ export const BottomCTASection = () => {
 
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/auth" onClick={handleCtaClick} className="w-full sm:w-auto">
-                <Button
-                  size="xl"
-                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold group shadow-md"
-                >
+                <CtaButton size="xl" className="w-full sm:w-auto">
                   <Sparkles className="mr-2 h-5 w-5" />
                   Get Started Free
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
+                </CtaButton>
+
               </Link>
             </div>
+
 
             <p className="mt-6 text-xs text-muted-foreground/80">
               {content.tagline}

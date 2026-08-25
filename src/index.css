@@ -1259,3 +1259,72 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 @media (min-width: 1024px) {
   .landing-section { padding-left: 3rem; padding-right: 3rem; }
 }
+
+/* ── NAVBAR ROLLBACK ────────────────────────────────────────────────
+   The glass-card + pink shimmer-border CTA system (f66b8e3) was meant
+   for CTA buttons, not navbar chrome. Buttons rendered inside the top
+   navbar opt out of it and go back to the plain shadcn treatment they
+   had before that sweep. Scoped strictly to [data-nav-chrome] so every
+   Studio / Landing CTA keeps the new system. */
+[data-nav-chrome] .btn-glass,
+.nav-btn-plain {
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+[data-nav-chrome] .btn-glass:hover,
+.nav-btn-plain:hover {
+  transform: none;
+  box-shadow: none;
+  background-image: none;
+}
+[data-nav-chrome] .btn-glass::before,
+[data-nav-chrome] .btn-glass::after,
+.nav-btn-plain::before,
+.nav-btn-plain::after {
+  display: none !important;
+  content: none !important;
+}
+[data-nav-chrome] .btn-glass,
+[data-nav-chrome] .btn-glass:hover,
+[data-nav-chrome] .btn-glass:focus,
+[data-nav-chrome] .btn-glass:active {
+  color: inherit !important;
+}
+[data-nav-chrome] .btn-glass-outline {
+  border-color: hsl(var(--border));
+}
+[data-nav-chrome] .btn-glass-ghost:hover,
+[data-nav-chrome] .btn-glass-outline:hover {
+  background-color: hsl(var(--accent) / 0.6);
+}
+/* The two navbar "Get Started" CTAs keep a solid primary fill, as they
+   had before the CTA sweep -- they must not inherit surrounding text
+   color from the rule above. */
+[data-nav-chrome] .nav-btn-plain,
+[data-nav-chrome] .nav-btn-plain:hover {
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+/* ── CANONICAL CTA ──────────────────────────────────────────────────
+   The global .btn-glass sweep layers a translucent gradient over every
+   Button, which washes out the solid primary fill the canonical CTA
+   depends on. <CtaButton> opts back into the flat, high-contrast fill. */
+.cta-solid {
+  background-image: none !important;
+  background-color: hsl(var(--primary)) !important;
+  border-color: transparent !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.cta-solid:hover {
+  background-color: hsl(var(--primary) / 0.9) !important;
+}
+.cta-solid,
+.cta-solid:hover,
+.cta-solid:focus-visible {
+  color: hsl(var(--primary-foreground)) !important;
+}
+.cta-solid::before { display: none !important; content: none !important; }

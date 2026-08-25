@@ -85,10 +85,23 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    // Map guest_role → collaborator role (commenter/contributor land as full collaborator; viewer stays guest)
+    // All three guest-link tiers (viewer/commenter/contributor) write
+    // role: 'guest' unconditionally -- role is the only column any RLS
+    // policy can see, and per STUDIO_CURRENT_STATE_AUDIT.md finding 1's
+    // remediation (20260825100000_studio_role_based_money_rls.sql),
+    // it now gates money visibility. Previously this mapped
+    // contributor -> 'collaborator' and commenter -> 'commenter',
+    // which (a) used role values no other code path ever wrote, and
+    // (b) meant a guest-link "contributor" became textually
+    // indistinguishable from a real, fully-trusted team member once
+    // role-based RLS existed -- a real privilege-escalation path
+    // (finding 2). The comment/contribute distinction between tiers is
+    // still available via project_guest_links.permissions (JSON,
+    // already fetched into `link` above) for any UI or RPC that needs
+    // it -- that column was always the right place for this
+    // distinction, not the same `role` column money-visibility reads.
     const guestRole = (link as any).guest_role || "viewer";
-    const collabRole =
-      guestRole === "contributor" ? "collaborator" : guestRole === "commenter" ? "commenter" : "guest";
+    const collabRole = "guest";
 
     const isNewJoin = !existing;
 

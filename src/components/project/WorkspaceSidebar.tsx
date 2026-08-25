@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Briefcase, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
+import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 
 interface WorkspaceSidebarProps {
   projects: Array<{
@@ -15,9 +15,11 @@ interface WorkspaceSidebarProps {
   }>;
   activeProjectId?: string;
   onClose: () => void;
+  /** Refreshes this sidebar's own project list after a new Project is created here. */
+  onProjectCreated?: () => void;
 }
 
-export function WorkspaceSidebar({ projects, activeProjectId, onClose }: WorkspaceSidebarProps) {
+export function WorkspaceSidebar({ projects, activeProjectId, onClose, onProjectCreated }: WorkspaceSidebarProps) {
   const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
 
@@ -92,10 +94,13 @@ export function WorkspaceSidebar({ projects, activeProjectId, onClose }: Workspa
         </div>
       </div>
 
-      <CreateProjectDialog
+      <VoiceFirstCreateModal
         open={showCreate}
         onOpenChange={setShowCreate}
-        onSuccess={() => setShowCreate(false)}
+        onCreated={() => {
+          setShowCreate(false);
+          onProjectCreated?.();
+        }}
       />
     </>
   );

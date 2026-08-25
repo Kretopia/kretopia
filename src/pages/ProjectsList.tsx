@@ -4,13 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, MoreHorizontal, FolderKanban, Plus, Search, X, Download } from "lucide-react";
+import { Loader2, FolderKanban, Plus, Search, X, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
-import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 import { StudioFoldersBar, type StudioFolder } from "@/components/project/studio/StudioFoldersBar";
@@ -25,7 +24,6 @@ const ProjectsList = () => {
     Record<string, "paid" | "invoiced" | "unsent">
   >({});
   const [showVoiceCreate, setShowVoiceCreate] = useState(false);
-  const [showWizard, setShowWizard] = useState(false);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "planning" | "wrapping" | "completed">("all");
   const [payFilter, setPayFilter] = useState<"all" | "unsent" | "invoiced" | "paid">("all");
@@ -209,16 +207,6 @@ const ProjectsList = () => {
             <Download className="h-3.5 w-3.5" />
             Import
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowWizard(true)}
-            className="h-8 w-8 text-muted-foreground"
-            title="Advanced setup"
-            aria-label="Advanced setup"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
         </div>
       </header>
 
@@ -335,21 +323,11 @@ const ProjectsList = () => {
         <Plus className="h-6 w-6" />
       </Button>
 
-      {/* Voice-first entry */}
+      {/* Voice-first entry — the one canonical creation flow */}
       <VoiceFirstCreateModal
         open={showVoiceCreate}
         onOpenChange={setShowVoiceCreate}
         onCreated={fetchProjects}
-      />
-
-      {/* Power-user wizard (kept for advanced/agent flows) */}
-      <CreateProjectDialog
-        open={showWizard}
-        onOpenChange={setShowWizard}
-        onSuccess={() => {
-          setShowWizard(false);
-          fetchProjects();
-        }}
       />
     </div>
   );

@@ -14,13 +14,10 @@ import { ProjectInviteAcceptBanner } from "@/components/project/ProjectInviteAcc
 import { DeskTabContent } from "@/components/project/DeskTabContent";
 import { useAgentRole } from "@/hooks/useAgentRole";
 
-import { ProjectFlowTimeline } from "@/components/project/flow/ProjectFlowTimeline";
-import { NextStepBar } from "@/components/project/flow/NextStepBar";
 import { MobileProjectHub } from "@/components/project/mobile/MobileProjectHub";
 import { StudioRoom } from "@/components/project/studio/StudioRoom";
 import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
 import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { ArrowLeft } from "lucide-react";
 import { useProjectData } from "@/hooks/useProjectData";
 import { useProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
@@ -34,7 +31,7 @@ const ThriveDesk = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     loading, project, collaborators, files, messages, tasks, milestones,
-    projects, userRole, isPro, user, fetchProjectData,
+    projects, userRole, isPro, user, fetchProjectData, fetchProjects,
   } = useProjectData(projectId);
 
   const [activeTab, setActiveTab] = useState("today");
@@ -49,7 +46,6 @@ const ThriveDesk = () => {
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
-  const isMobile = useIsMobile();
   // Studio Room is the default for "today" tab on BOTH mobile and desktop now
   const isStudioRoom = activeTab === "today";
 
@@ -222,6 +218,7 @@ const ThriveDesk = () => {
           projects={projects}
           activeProjectId={projectId}
           onClose={() => setSidebarOpen(false)}
+          onProjectCreated={fetchProjects}
         />
       </div>
 
@@ -257,18 +254,6 @@ const ThriveDesk = () => {
             onNavigateToTab={setActiveTab}
           />
         </header>
-
-        {/* Desktop-only flow timeline + next step (only when in Studio) */}
-        {!isMobile && isStudioRoom && (
-          <div>
-            <ProjectFlowTimeline
-              flow={flow}
-              onStageClick={(_stageId, tab) => setActiveTab(tab)}
-              onPinStage={handlePinStage}
-            />
-            <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
-          </div>
-        )}
 
         {/* Unified tool bar — same on mobile and desktop when drilled into a tool */}
         {!isStudioRoom && (
@@ -308,7 +293,8 @@ const ThriveDesk = () => {
               currentUserId={user?.id || ""}
               onUpdated={fetchProjectData}
               onNavigateToTab={goToTabWithIntent}
-              nextStep={flow.nextStep}
+              flow={flow}
+              onPinStage={handlePinStage}
             />
           ) : (
             <DeskTabContent

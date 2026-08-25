@@ -53,7 +53,14 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
           Create a Project
           <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
         </CtaButton>
-        <Button variant="outline" size="lg" onClick={onVoice} className="w-full sm:w-auto gap-2">
+        {/* Secondary, deliberately quieter than the canonical CTA so the
+            primary action stays unambiguous on dark Studio chrome. */}
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={onVoice}
+          className="w-full sm:w-auto gap-2 bg-transparent hover:bg-foreground/10 border-border text-foreground"
+        >
           <Mic className="h-4 w-4" aria-hidden />
           Describe it out loud
         </Button>

@@ -291,10 +291,10 @@ export const VoiceTaskCapture = ({
               <button
                 onClick={phase === "recording" ? stopRecording : startRecording}
                 className={cn(
-                  "h-28 w-28 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95",
+                  "h-28 w-28 rounded-full flex items-center justify-center shadow-lg active:scale-95",
                   phase === "recording"
-                    ? "bg-destructive text-destructive-foreground animate-pulse"
-                    : "bg-primary text-primary-foreground",
+                    ? "bg-destructive text-destructive-foreground animate-pulse transition-colors"
+                    : "btn-glass btn-glass-primary",
                 )}
                 aria-label={phase === "recording" ? "Stop recording" : "Start recording"}
               >

@@ -184,7 +184,7 @@ export const EventProducerDashboard = ({ project, currentUserId }: Props) => {
           <div className="rounded-xl bg-card/60 border border-border/50 p-2">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Run sheet</p>
             <p className="text-lg font-black flex items-center gap-1">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-white" />
               {doneCount}
               <span className="text-[10px] font-medium text-muted-foreground">/{items.length}</span>
             </p>
@@ -220,16 +220,16 @@ export const EventProducerDashboard = ({ project, currentUserId }: Props) => {
         )}
 
         {atRisk > 0 && (
-          <Badge className="text-[10px] bg-amber-500/15 text-amber-600 border border-amber-500/30">
+          <Badge className="text-[10px] bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))] border border-[hsl(var(--energy)/0.3)]">
             <AlertTriangle className="h-3 w-3 mr-1" />
             {atRisk} cue{atRisk === 1 ? "" : "s"} flagged at risk
           </Badge>
         )}
 
         {isLiveWindow && rsvpCount > 0 && checkInRate < 60 && (now.getTime() - (startsAt?.getTime() ?? 0)) > 30 * 60 * 1000 && (
-          <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-2 flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-amber-700 dark:text-amber-300 leading-snug">
+          <div className="rounded-xl bg-[hsl(var(--energy)/0.1)] border border-[hsl(var(--energy)/0.3)] p-2 flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--energy))" }} />
+            <p className="text-[11px] text-foreground/80 leading-snug">
               Only {checkInRate}% of RSVPs checked in. Consider sending a reminder to no-shows.
             </p>
           </div>

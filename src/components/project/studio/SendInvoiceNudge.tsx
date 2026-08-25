@@ -46,9 +46,9 @@ export const SendInvoiceNudge = ({ project }: Props) => {
   if (!show || dismissed) return null;
 
   return (
-    <div className="mb-3 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-3 flex items-center gap-3">
-      <div className="h-9 w-9 rounded-lg bg-emerald-500/15 flex items-center justify-center shrink-0">
-        <DollarSign className="h-4 w-4 text-emerald-600" />
+    <div className="mb-3 rounded-xl border border-[hsl(var(--energy)/0.4)] bg-[hsl(var(--energy)/0.06)] p-3 flex items-center gap-3">
+      <div className="h-9 w-9 rounded-lg bg-[hsl(var(--energy)/0.15)] flex items-center justify-center shrink-0">
+        <DollarSign className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold leading-tight">Wrapped. Get paid.</p>
@@ -58,7 +58,7 @@ export const SendInvoiceNudge = ({ project }: Props) => {
       </div>
       <Button
         size="sm"
-        className="bg-emerald-600 hover:bg-emerald-700 text-white h-8"
+        className="h-8"
         onClick={() => navigate(`/thrivepay?tab=invoices&new=1&project=${project.id}`)}
       >
         Draft <ArrowRight className="h-3 w-3 ml-1" />

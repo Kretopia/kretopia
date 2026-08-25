@@ -1,6 +1,9 @@
 import { memo } from "react";
-import { Check, Pin, PinOff } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Lock, Pin, PinOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   PROJECT_FLOW_STAGES,
   STUDIO_PHASES,
@@ -14,28 +17,39 @@ interface StudioPhaseRailProps {
   /** Jumps to the tab of the first stage inside the clicked phase. */
   onPhaseClick: (tab: string) => void;
   onPinStage?: (stageId: ProjectFlowStageId | null) => void;
+  /** Explicit "I'm done with this phase" CTA — advances to the next
+   * phase, notifies collaborators, and (on reaching Complete) opens the
+   * informative dialog. Omit to hide the button entirely. */
+  onValidateStep?: () => void;
   className?: string;
 }
 
 /**
- * Compact six-phase progress rail — Discuss / Define / Build / Review /
- * Commit / Complete — the Studio Room's one-page "where am I" summary.
- * Purely a grouped view over the existing 8-stage useProjectFlow() data
- * (see stageToPhase in that hook); introduces no new progression system
- * and no new stored state. Replaces the old desktop-only, 8-pill
- * ProjectFlowTimeline as the primary indicator so mobile and desktop show
- * the same thing; that detailed per-stage timeline is retired (see
- * STUDIO_ROOM_PROGRESS_MODEL.md), not deleted.
+ * Studio Room's one-page "where am I" indicator — a single animated
+ * progress bar (not a row of pills) with a labeled marker per phase
+ * underneath. Purely a grouped view over the existing 8-stage
+ * useProjectFlow() data (see stageToPhase in that hook); introduces no
+ * new progression system and no new stored state.
+ *
+ * Sequential gating, by design: a phase whose status is "todo" (not yet
+ * reached) is not clickable — you can always step back into a completed
+ * phase or work the current one, but you can't jump ahead to preview a
+ * phase before its predecessor is actually satisfied. Locked markers
+ * show a small lock glyph instead of a step number so the restriction
+ * reads as intentional, not broken.
  */
-export const StudioPhaseRail = memo(({ flow, onPhaseClick, onPinStage, className }: StudioPhaseRailProps) => {
+export const StudioPhaseRail = memo(({ flow, onPhaseClick, onPinStage, onValidateStep, className }: StudioPhaseRailProps) => {
+  const reducedMotion = useReducedMotion();
+  const currentPhaseLabel = STUDIO_PHASES.find((p) => p.id === flow.currentPhaseId)?.label ?? "";
+
   const phaseTab = (phaseId: StudioPhaseId) => {
     const stageIds = phaseTabStages(phaseId);
-    return PROJECT_FLOW_STAGES.find((s) => stageIds.includes(s.id))?.tab;
+    return PROJECT_FLOW_STAGES.find((s) => stageIds.includes(s.id))?.tab ?? "today";
   };
 
   return (
     <div className={cn("px-4 pt-3", className)}>
-      <div className="flex items-center justify-between mb-1.5">
+      <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
           {flow.completionPct}% through Studio
         </span>
@@ -51,54 +65,82 @@ export const StudioPhaseRail = memo(({ flow, onPhaseClick, onPinStage, className
           </button>
         )}
       </div>
-      <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-1 px-1">
-        {STUDIO_PHASES.map((phase, idx) => {
+
+      {/* Track — single gray-to-pink gradient fill, animated to the real
+          completion percentage. No step pills, no per-segment coloring. */}
+      <div className="relative h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+        <motion.div
+          className="absolute inset-y-0 left-0 rounded-full"
+          style={{
+            background: "linear-gradient(90deg, hsl(var(--muted-foreground) / 0.5), hsl(var(--energy)))",
+            boxShadow: "0 0 12px hsl(var(--energy) / 0.5)",
+          }}
+          initial={false}
+          animate={{ width: `${Math.max(flow.completionPct, 3)}%` }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] }}
+        />
+      </div>
+
+      {/* Markers — labeled, but only complete/current phases are
+          interactive. A "todo" phase is locked: no onClick, dimmed, a
+          lock glyph instead of relying on color alone to say "not yet." */}
+      <div className="mt-2 flex items-start justify-between gap-0.5">
+        {STUDIO_PHASES.map((phase) => {
           const status = flow.phaseStatus[phase.id];
-          const isLast = idx === STUDIO_PHASES.length - 1;
-          const tab = phaseTab(phase.id) ?? "today";
+          const locked = status === "todo";
           return (
-            <div key={phase.id} className="flex items-center shrink-0">
-              <button
-                type="button"
-                onClick={() => onPhaseClick(tab)}
+            <button
+              key={phase.id}
+              type="button"
+              disabled={locked}
+              aria-current={status === "current" ? "step" : undefined}
+              aria-disabled={locked}
+              onClick={() => !locked && onPhaseClick(phaseTab(phase.id))}
+              className={cn(
+                "flex flex-1 flex-col items-center gap-1 py-0.5 rounded-md transition-colors",
+                locked ? "cursor-not-allowed" : "cursor-pointer hover:bg-white/[0.04]"
+              )}
+              title={locked ? `${phase.label} — complete the earlier steps first` : phase.label}
+            >
+              <span
                 className={cn(
-                  "group flex items-center gap-1.5 px-2 py-1 rounded-md transition-all whitespace-nowrap",
-                  status === "current" && "bg-primary/15 ring-1 ring-primary/40",
-                  status === "complete" && "hover:bg-muted/60",
-                  status === "todo" && "hover:bg-muted/40 opacity-60 hover:opacity-100"
+                  "h-1.5 w-1.5 rounded-full transition-colors",
+                  status === "current" && "ring-2 ring-[hsl(var(--energy)/0.25)]"
+                )}
+                style={{
+                  backgroundColor:
+                    status === "todo" ? "hsl(0 0% 100% / 0.15)" : "hsl(var(--energy))",
+                }}
+              />
+              <span
+                className={cn(
+                  "text-[9px] font-semibold uppercase tracking-wide leading-tight text-center flex items-center gap-0.5",
+                  status === "current" && "text-foreground",
+                  status === "complete" && "text-muted-foreground",
+                  status === "todo" && "text-muted-foreground/35"
                 )}
               >
-                <span
-                  className={cn(
-                    "h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors",
-                    status === "complete" && "bg-primary text-primary-foreground",
-                    status === "current" && "bg-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-1 ring-offset-background",
-                    status === "todo" && "bg-muted text-muted-foreground border border-border"
-                  )}
-                >
-                  {status === "complete" ? <Check className="h-3 w-3" /> : idx + 1}
-                </span>
-                <span
-                  className={cn(
-                    "text-xs font-medium",
-                    status === "current" ? "text-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {phase.label}
-                </span>
-              </button>
-              {!isLast && (
-                <div
-                  className={cn(
-                    "h-px w-3 md:w-5 mx-0.5 transition-colors",
-                    status === "complete" ? "bg-primary/60" : "bg-border"
-                  )}
-                />
-              )}
-            </div>
+                {locked && <Lock className="h-2 w-2 shrink-0" aria-hidden />}
+                {phase.label}
+              </span>
+            </button>
           );
         })}
       </div>
+
+      {/* Explicit validation — the phase only ever advances on this
+          click, never silently. Hidden once Complete is reached. */}
+      {onValidateStep && flow.currentPhaseId !== "complete" && (
+        <Button
+          type="button"
+          size="sm"
+          onClick={onValidateStep}
+          className="mt-2.5 w-full gap-1.5"
+        >
+          Validate "{currentPhaseLabel}" & continue
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Button>
+      )}
     </div>
   );
 });

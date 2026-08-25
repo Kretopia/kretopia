@@ -49,37 +49,43 @@ interface StudioFoldersBarProps {
   onDropProject?: (projectId: string, folderId: string | null) => void | Promise<void>;
 }
 
-// Map color name → tailwind-ish HSL token tints
+// Map color name → tint. Kept as six distinct keys (folders already
+// saved with these names in the DB must keep resolving), but every tint
+// is now a shade of the brand pink or a neutral gray -- no rainbow.
+// Fixes a real, separate bug found while auditing this: "magenta" and
+// "yellow" referenced --signal-magenta/--signal-yellow, custom
+// properties never defined anywhere in index.css, so those two swatches
+// were silently rendering as invalid/no color before this.
 const COLOR_TINT: Record<string, { bg: string; ring: string; ink: string }> = {
   teal: {
-    bg: "bg-[hsl(var(--signal-teal))]/10",
-    ring: "ring-[hsl(var(--signal-teal))]/40",
-    ink: "text-[hsl(var(--signal-teal))]",
+    bg: "bg-[hsl(327_100%_59%)]/10",
+    ring: "ring-[hsl(327_100%_59%)]/40",
+    ink: "text-[hsl(327_100%_59%)]",
   },
   magenta: {
-    bg: "bg-[hsl(var(--signal-magenta))]/10",
-    ring: "ring-[hsl(var(--signal-magenta))]/40",
-    ink: "text-[hsl(var(--signal-magenta))]",
+    bg: "bg-[hsl(327_85%_50%)]/10",
+    ring: "ring-[hsl(327_85%_50%)]/40",
+    ink: "text-[hsl(327_85%_50%)]",
   },
   yellow: {
-    bg: "bg-[hsl(var(--signal-yellow))]/10",
-    ring: "ring-[hsl(var(--signal-yellow))]/40",
-    ink: "text-[hsl(var(--signal-yellow))]",
+    bg: "bg-[hsl(240_8%_60%)]/10",
+    ring: "ring-[hsl(240_8%_60%)]/40",
+    ink: "text-[hsl(240_8%_60%)]",
   },
   green: {
-    bg: "bg-emerald-500/10",
-    ring: "ring-emerald-500/40",
-    ink: "text-emerald-500",
+    bg: "bg-[hsl(327_60%_68%)]/10",
+    ring: "ring-[hsl(327_60%_68%)]/40",
+    ink: "text-[hsl(327_60%_68%)]",
   },
   blue: {
-    bg: "bg-violet-500/10",
-    ring: "ring-violet-500/40",
-    ink: "text-violet-500",
+    bg: "bg-[hsl(240_6%_40%)]/10",
+    ring: "ring-[hsl(240_6%_40%)]/40",
+    ink: "text-[hsl(240_6%_40%)]",
   },
   purple: {
-    bg: "bg-violet-500/10",
-    ring: "ring-violet-500/40",
-    ink: "text-violet-500",
+    bg: "bg-[hsl(327_45%_75%)]/10",
+    ring: "ring-[hsl(327_45%_75%)]/40",
+    ink: "text-[hsl(327_45%_75%)]",
   },
 };
 

@@ -39,10 +39,10 @@ interface Props {
 
 const SPONSOR_TONES: Record<string, string> = {
   pitched: "bg-muted text-muted-foreground",
-  negotiating: "bg-amber-500/15 text-amber-600",
+  negotiating: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]",
   booked: "bg-primary/15 text-primary",
-  paid: "bg-emerald-500/15 text-emerald-600",
-  declined: "bg-destructive/15 text-destructive",
+  paid: "bg-white/15 text-white font-semibold",
+  declined: "bg-muted text-muted-foreground",
 };
 
 export function EpisodeDetailDialog({ open, onOpenChange, episode, projectId, currentUserId, onUpdated }: Props) {

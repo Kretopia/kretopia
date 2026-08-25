@@ -14,7 +14,24 @@ interface AddCreditSectionProps {
 
 export const AddCreditSection = ({ project, collaborators }: AddCreditSectionProps) => {
   const navigate = useNavigate();
-  if (project.status !== "completed") return null;
+
+  // Used to return null here — inside the "Add a credit" disclosure that
+  // now collapses this by default, a null render looked like a broken,
+  // empty expand instead of an explained one.
+  if (project.status !== "completed") {
+    return (
+      <section className="px-4 py-5">
+        <div className="rounded-2xl border border-dashed border-border/60 p-4 text-center space-y-1.5">
+          <Award className="h-5 w-5 mx-auto text-muted-foreground" aria-hidden />
+          <p className="text-sm font-semibold">No credit yet</p>
+          <p className="text-xs text-muted-foreground leading-snug">
+            Credits unlock once "{project.title}" is wrapped — collaborators get tagged
+            automatically when you add it.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   const handleAdd = () => {
     const tagged = collaborators.map((c) => c.id).join(",");

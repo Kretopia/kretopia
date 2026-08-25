@@ -53,14 +53,14 @@ interface Approval {
 const ASSET_STATUS_TONE: Record<string, string> = {
   idea: "bg-muted text-muted-foreground",
   in_progress: "bg-primary/15 text-primary",
-  review: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  approved: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  review: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]",
+  approved: "bg-[hsl(var(--energy)/0.25)] text-[hsl(var(--energy))] font-semibold",
   scheduled: "bg-energy/15 text-foreground",
-  published: "bg-emerald-600/20 text-emerald-700 dark:text-emerald-300",
+  published: "bg-white/15 text-white font-semibold",
 };
 
 const CHANNEL_TONE: Record<string, string> = {
-  paid: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  paid: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]",
   organic: "bg-primary/15 text-primary",
   both: "bg-foreground/10 text-foreground",
 };
@@ -263,7 +263,7 @@ export function CampaignStudioSection({ project, currentUserId }: Props) {
           <TabsTrigger value="approvals" className="text-[11px]">
             <CheckSquare className="h-3 w-3 mr-1" />Approve
             {pendingCount > 0 && (
-              <span className="ml-1 text-[9px] bg-amber-500/20 text-amber-600 px-1 rounded">{pendingCount}</span>
+              <span className="ml-1 text-[9px] bg-[hsl(var(--energy)/0.2)] text-[hsl(var(--energy))] px-1 rounded">{pendingCount}</span>
             )}
           </TabsTrigger>
         </TabsList>
@@ -370,7 +370,7 @@ export function CampaignStudioSection({ project, currentUserId }: Props) {
                       )}
                       {a.feedback && <p className="mt-1 text-[11px] text-muted-foreground italic">"{a.feedback}"</p>}
                     </div>
-                    <Badge className={`text-[10px] uppercase shrink-0 ${a.status === "approved" ? "bg-emerald-500/15 text-emerald-600" : a.status === "changes_requested" ? "bg-primary/15 text-primary" : a.status === "rejected" ? "bg-destructive/15 text-destructive" : "bg-amber-500/15 text-amber-600"}`}>
+                    <Badge className={`text-[10px] uppercase shrink-0 ${a.status === "approved" ? "bg-white/15 text-white font-semibold" : a.status === "changes_requested" ? "bg-primary/15 text-primary" : a.status === "rejected" ? "bg-muted text-muted-foreground" : "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))]"}`}>
                       {a.status.replace("_", " ")}
                     </Badge>
                   </div>

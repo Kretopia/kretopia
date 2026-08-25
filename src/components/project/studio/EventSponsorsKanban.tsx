@@ -28,11 +28,13 @@ interface Sponsor {
   position: number;
 }
 
+// A 5-stage pipeline, left to right: gray -> increasing pink intensity
+// -> white (delivered). No per-stage hue switching.
 const COLUMNS: { id: string; label: string; tone: string }[] = [
   { id: "lead",      label: "Lead",      tone: "bg-muted text-muted-foreground" },
-  { id: "outreach",  label: "Outreach",  tone: "bg-violet-500/15 text-violet-600 dark:text-violet-400" },
-  { id: "proposed",  label: "Proposed",  tone: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
-  { id: "confirmed", label: "Confirmed", tone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+  { id: "outreach",  label: "Outreach",  tone: "bg-[hsl(var(--energy)/0.12)] text-[hsl(var(--energy))]" },
+  { id: "proposed",  label: "Proposed",  tone: "bg-[hsl(var(--energy)/0.2)] text-[hsl(var(--energy))]" },
+  { id: "confirmed", label: "Confirmed", tone: "bg-[hsl(var(--energy)/0.3)] text-[hsl(var(--energy))] font-semibold" },
   { id: "delivered", label: "Delivered", tone: "bg-primary/15 text-primary" },
 ];
 
@@ -329,7 +331,7 @@ function DraggableSponsor({ sponsor, onRemove }: { sponsor: Sponsor; onRemove: (
             <p className="text-sm font-semibold leading-tight truncate">{sponsor.name}</p>
             <button
               onClick={() => onRemove(sponsor)}
-              className="text-muted-foreground/50 hover:text-rose-500 opacity-0 group-hover:opacity-100"
+              className="text-muted-foreground/50 hover:text-destructive opacity-0 group-hover:opacity-100"
               aria-label="Remove"
             >
               <Trash2 className="h-3 w-3" />

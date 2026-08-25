@@ -109,7 +109,24 @@ export function WrapProjectCard({
       </section>
     );
   }
-  if (!hasProgress) return null;
+  // Used to return null here — inside the "Wrap the project" disclosure
+  // that now collapses this by default, a null render looked like a
+  // broken, empty expand instead of an explained one.
+  if (!hasProgress) {
+    return (
+      <section className="px-4 py-5">
+        <div className="rounded-2xl border border-dashed border-border/60 p-4 text-center space-y-1.5">
+          <CheckCircle2 className="h-5 w-5 mx-auto text-muted-foreground" aria-hidden />
+          <p className="text-sm font-semibold">Not ready to wrap yet</p>
+          <p className="text-xs text-muted-foreground leading-snug">
+            {completedTaskCount} task{completedTaskCount === 1 ? "" : "s"} done, {approvedCount}{" "}
+            deliverable{approvedCount === 1 ? "" : "s"} approved — wrap unlocks once you've
+            approved a deliverable or finished 3 tasks.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   const handleWrap = async () => {
     setSubmitting(true);

@@ -1,10 +1,13 @@
-// Solid, on-brand accent colors per mood (no gradients — keeps it editorial).
+// One accent family, no rainbow: every mood is a shade of the brand pink
+// (hue 327, matching --energy) or neutral gray, differentiated by
+// lightness/saturation instead of hue — keeps moods visually distinct
+// without introducing teal/red/blue/green into the palette.
 const MOOD_ACCENT: Record<string, string> = {
-  creative: "hsl(174 73% 47%)", // teal (brand)
-  urgent: "hsl(8 80% 58%)",
-  musical: "hsl(330 100% 65%)", // signal pink
-  visual: "hsl(190 70% 45%)",
-  chill: "hsl(160 45% 45%)",
+  creative: "hsl(327 70% 60%)",  // bright pink
+  urgent: "hsl(327 90% 45%)",    // deep, saturated pink — reads as intense
+  musical: "hsl(327 100% 59%)",  // canonical brand pink
+  visual: "hsl(327 40% 72%)",    // soft, pale pink
+  chill: "hsl(240 8% 55%)",      // neutral gray — calm, deliberately colorless
 };
 export const moodAccent = (m?: string | null) => MOOD_ACCENT[m ?? "creative"] ?? MOOD_ACCENT.creative;
 
@@ -35,13 +38,19 @@ export const STATUS_PILL: Record<string, { label: string; tone: string }> = {
   },
   planning: { label: "Planning", tone: "bg-background/80 text-foreground ring-1 ring-border" },
   wrapping: { label: "Wrapping Up", tone: "bg-primary/20 text-primary-foreground ring-1 ring-primary/40" },
-  completed: { label: "Delivered", tone: "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/40" },
+  // "Delivered" reads as neutral/final, not another accent color — active
+  // work is the only state that gets the brand pink.
+  completed: { label: "Delivered", tone: "bg-white/10 text-foreground ring-1 ring-white/20" },
 };
 
+// No red/amber/green traffic light: paid = brightest (fully resolved),
+// invoiced = brand pink (in motion), unsent = dim neutral (needs
+// attention, without borrowing red's "error" connotation). The label
+// text next to each dot already says the actual state.
 export const PAY_DOT: Record<string, string> = {
-  paid: "bg-emerald-500",
-  invoiced: "bg-amber-500",
-  unsent: "bg-rose-500",
+  paid: "bg-white",
+  invoiced: "bg-[hsl(var(--energy))]",
+  unsent: "bg-muted-foreground/50",
 };
 
 export const PAY_LABEL: Record<string, string> = {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, Square, Loader2, X, ArrowRight, Type, Search, Sparkles,
   MessageSquareText, FileEdit, Rocket, Upload, Link2, ShieldCheck,
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CtaButton } from "@/components/ui/cta-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { CreativeLoader } from "@/components/ui/creative-loader";
+import { KretoAvatar } from "@/components/brand/KretoAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -65,6 +65,17 @@ const HOW_IT_WORKS: Array<{ icon: typeof MessageSquareText; label: string; body:
   { icon: Rocket, label: "Your room opens", body: "With one clear next action, ready to work in.", kind: "automatic" },
   { icon: FolderPlus, label: "Work becomes Project memory", body: "Files and decisions you add later feed the Studio Brain.", kind: "automatic" },
   { icon: ShieldCheck, label: "Credits & invoice at wrap", body: "Drafted for review when supported — never sent automatically.", kind: "suggested" },
+];
+
+/** Contextual copy cycled through while Kreto drafts the brief — real
+ * pipeline stages (extract → structure → seed tasks), not a generic
+ * "loading…" — paced on a timer since the actual extract-brief call is a
+ * single request/response with no intermediate progress to report. */
+const THINKING_STEPS = [
+  "Reading what you shared",
+  "Sketching the brief",
+  "Mapping the first tasks",
+  "Almost ready",
 ];
 
 /** Curated example categories shown as tappable inspiration chips on the
@@ -141,6 +152,7 @@ export const VoiceFirstCreateModal = ({
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState(0);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -220,6 +232,17 @@ export const VoiceFirstCreateModal = ({
   const clearDraft = useCallback(() => {
     if (draftKey) { try { sessionStorage.removeItem(draftKey); } catch { /* ignore */ } }
   }, [draftKey]);
+
+  // Cycle the thinking-state copy while Kreto drafts — resets to the first
+  // line every time thinking mode starts.
+  useEffect(() => {
+    if (mode !== "thinking") { setThinkingStep(0); return; }
+    const id = window.setInterval(
+      () => setThinkingStep((i) => Math.min(i + 1, THINKING_STEPS.length - 1)),
+      1400,
+    );
+    return () => window.clearInterval(id);
+  }, [mode]);
 
   const startTimer = () => {
     setSeconds(0);
@@ -889,11 +912,34 @@ export const VoiceFirstCreateModal = ({
         )}
 
         {mode === "thinking" && (
-          <CreativeLoader
-            size="lg"
-            context={textInput || "studio"}
-            hint="Sorting the right space for what you're making"
-          />
+          <div className="flex flex-col items-center">
+            <KretoAvatar size="xl" state="thinking" animated />
+
+            <div className="mt-7 h-7 relative w-full max-w-xs">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={thinkingStep}
+                  initial={reducedMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reducedMotion ? undefined : { opacity: 0, y: -6 }}
+                  transition={{ duration: 0.3, ease: [0.2, 0.65, 0.3, 0.95] }}
+                  className="absolute inset-0 text-base font-semibold text-foreground"
+                >
+                  {THINKING_STEPS[thinkingStep]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+
+            {/* Indeterminate progress — gray-to-pink gradient sweep, no spinner */}
+            <div className="mt-4 h-1 w-48 rounded-full bg-muted/60 overflow-hidden">
+              <motion.div
+                className="h-full w-1/2 rounded-full"
+                style={{ background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)` }}
+                animate={reducedMotion ? undefined : { x: ["-100%", "200%"] }}
+                transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </div>
         )}
 
         {mode === "review" && brief && (

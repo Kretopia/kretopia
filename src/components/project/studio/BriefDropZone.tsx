@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Upload, Loader2, X, Link2, Sparkles, AlertCircle, ImagePlus, Mic, Send, FileEdit } from "lucide-react";
+import { Upload, Loader2, X, Link2, Sparkles, AlertCircle, ImagePlus, Mic, Send, FileEdit, ArrowRight, MessageSquarePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -475,7 +475,7 @@ export const BriefDropZone = ({
         entities: brainRes.entities ?? 0,
       });
       toast({
-        title: "Got it 🎯",
+        title: "Got it",
         description: `Filed to the Pad · Brain +${brainRes.facts ?? 0} facts`,
       });
       onIngested();
@@ -688,63 +688,62 @@ export const BriefDropZone = ({
             if (f) ingestFile(f);
           }}
           className={cn(
-            "relative w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-pointer",
-            "bg-gradient-to-br from-primary/5 via-background to-[hsl(var(--energy)/0.08)]",
-            "ring-1 ring-border hover:ring-[hsl(var(--energy))] transition-all group",
-            dragOver && "ring-2 ring-[hsl(var(--energy))] scale-[1.01]",
+            "glass-surface relative w-full rounded-2xl p-4 cursor-pointer transition-all",
+            "border border-dashed border-white/12 hover:border-[hsl(var(--energy)/0.5)]",
+            dragOver && "border-[hsl(var(--energy)/0.7)] bg-white/[0.03] scale-[1.005]",
           )}
           aria-label="Open Drop Zone"
         >
-          {/* Skydive target rings */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="relative">
-              <div className={cn(
-                "absolute inset-0 m-auto rounded-full border-2 border-primary/15 h-56 w-56 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:border-primary/30 transition-colors",
-                dragOver && "animate-ping border-[hsl(var(--energy))]/40",
-              )} />
-              <div className="absolute inset-0 m-auto rounded-full border-2 border-primary/25 h-44 w-44 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:border-primary/45 transition-colors" />
-              <div className="absolute inset-0 m-auto rounded-full border-2 border-[hsl(var(--energy)/0.4)] h-32 w-32 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:border-[hsl(var(--energy)/0.7)] transition-colors" />
-              <div className="absolute inset-0 m-auto rounded-full border-2 border-[hsl(var(--energy)/0.6)] h-20 w-20 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 transition-colors" />
-              <div className="absolute inset-0 m-auto h-10 w-10 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 rounded-full bg-[hsl(var(--energy))] shadow-[0_0_30px_hsl(var(--energy)/0.6)] flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-background" />
-              </div>
+          <div className="flex items-center gap-3.5">
+            <span
+              aria-hidden
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+              style={{ background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06), hsl(var(--energy) / 0.16))" }}
+            >
+              <Upload className="h-4.5 w-4.5" style={{ color: "hsl(var(--energy))" }} />
+            </span>
+            <div className="min-w-0 flex-1 text-left">
+              <p className="text-sm font-semibold leading-tight">
+                {dragOver ? "Drop it here" : "Drop a file, or tap to add anything"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                PDF, image, voice note, link or a quick thought
+              </p>
             </div>
+            <ArrowRight className="h-4 w-4 text-muted-foreground/60 shrink-0" aria-hidden />
           </div>
 
-          {/* Floating hint icons — each opens the matching input mode */}
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setOpen(true); setShowLink(true); }}
-            className="absolute top-3 left-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
-          >
-            <Link2 className="h-3 w-3" /> Link
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
-            className="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
-          >
-            <ImagePlus className="h-3 w-3" /> Image
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
-            className="absolute bottom-3 left-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
-          >
-            <Mic className="h-3 w-3" /> Voice
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-            className="absolute bottom-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
-          >
-            💭 Idea
-          </button>
-
-          <div className="absolute inset-x-0 bottom-10 text-center pointer-events-none">
-            <p className="text-[11px] font-semibold text-foreground/80">
-              {dragOver ? "Drop to land 🎯" : "Tap or drop anything"}
-            </p>
+          {/* Quick actions — same input modes as before, as a normal row
+              instead of four buttons floating in the corners of a target. */}
+          <div className="mt-3.5 flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-white/20 transition-colors"
+            >
+              <ImagePlus className="h-3 w-3" /> Image
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-white/20 transition-colors"
+            >
+              <Mic className="h-3 w-3" /> Voice
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setOpen(true); setShowLink(true); }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-white/20 transition-colors"
+            >
+              <Link2 className="h-3 w-3" /> Link
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:border-white/20 transition-colors"
+            >
+              <MessageSquarePlus className="h-3 w-3" /> Idea
+            </button>
           </div>
         </div>
       ) : (
@@ -754,7 +753,7 @@ export const BriefDropZone = ({
               <Sparkles className="h-3.5 w-3.5 text-background" />
             </div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--energy))]">
-              Landing zone armed
+              Ready for your drop
             </p>
             <Badge variant="secondary" className="ml-auto rounded-full text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
               Remembers everything
@@ -813,7 +812,7 @@ export const BriefDropZone = ({
                 }}
               >
                 <Send className="h-3 w-3" />
-                Drop 🎯
+                Add to Project
               </Button>
             </div>
           </div>

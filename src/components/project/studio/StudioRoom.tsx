@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   DndContext,
   closestCenter,
@@ -66,7 +67,9 @@ import { useStudioPresence } from "@/hooks/useStudioPresence";
 import { useProjectMoneySignal } from "@/hooks/useProjectMoneySignal";
 import { useStudioRole } from "@/hooks/useStudioRole";
 import { useDeskAgentWatch } from "@/hooks/useDeskAgentWatch";
-import type { ProjectFlow, ProjectFlowStageId } from "@/hooks/useProjectFlow";
+import { PROJECT_FLOW_STAGES, STUDIO_PHASES, stageToPhase, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
+import { notifyPhaseAdvanced } from "@/lib/notifyPhaseAdvanced";
+import { ProjectCompleteDialog } from "./ProjectCompleteDialog";
 
 interface StudioRoomProps {
   project: any;
@@ -137,6 +140,32 @@ export const StudioRoom = ({
     project?.id,
     me ? { id: me.id, full_name: me.full_name, avatar_url: me.avatar_url } : null,
   );
+
+  // Explicit step validation — advancing the phase rail is a deliberate
+  // click, not just derived from activity. Reuses the existing
+  // pinned_stage override (onPinStage) so "validate" and "pin" are the
+  // same underlying mechanism instead of two competing ones.
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+  const handleValidateStep = () => {
+    if (!onPinStage) return;
+    const currentIdx = PROJECT_FLOW_STAGES.findIndex((s) => s.id === flow.currentStageId);
+    if (currentIdx < 0 || currentIdx >= PROJECT_FLOW_STAGES.length - 1) return;
+    const nextStage = PROJECT_FLOW_STAGES[currentIdx + 1];
+    const nextPhaseLabel = STUDIO_PHASES.find((p) => p.id === stageToPhase(nextStage.id))?.label ?? nextStage.label;
+
+    onPinStage(nextStage.id);
+    toast({ title: `${nextPhaseLabel} unlocked`, description: `${project.title} moved into ${nextPhaseLabel}.` });
+
+    notifyPhaseAdvanced({
+      projectId: project.id,
+      projectTitle: project.title,
+      phaseLabel: nextPhaseLabel,
+      collaboratorIds: people.map((p) => p.id),
+      actorId: currentUserId,
+    }).catch(() => { /* non-blocking */ });
+
+    if (nextStage.id === "complete") setCompleteDialogOpen(true);
+  };
 
   const handleAddReference = () => {
     if (!isOwner) {
@@ -270,6 +299,20 @@ export const StudioRoom = ({
     </div>
   );
 
+  // Condensed by default — end-of-project widgets nobody needs on every
+  // visit are collapsed behind a one-line summary instead of always
+  // pushing the page length out. Native <details> so no extra state.
+  // Shared by mobile (flat divide-y list) and desktop (card widgets).
+  const collapsedWidget = (label: string, node: React.ReactNode, flat = false) => (
+    <details className={cn("group", flat ? "" : "rounded-2xl border border-border/60 bg-card/40 overflow-hidden")}>
+      <summary className={cn("cursor-pointer list-none flex items-center justify-between text-sm font-semibold", flat ? "px-4 py-3.5" : "px-4 py-3")}>
+        {label}
+        <span className="text-muted-foreground transition-transform group-open:rotate-90">›</span>
+      </summary>
+      <div className="border-t border-border/60">{node}</div>
+    </details>
+  );
+
   const mobileSideColumn = (
     <div className="divide-y divide-border/60">
       {showMoney && (
@@ -282,9 +325,9 @@ export const StudioRoom = ({
         <RequestPaymentCard project={project} currentUserId={currentUserId} />
       )}
       <PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />
-      <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />
-      <AddCreditSection project={project} collaborators={people} />
-      <CallHistorySection projectId={project.id} />
+      {collapsedWidget("Wrap the project", <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />, true)}
+      {collapsedWidget("Add a credit", <AddCreditSection project={project} collaborators={people} />, true)}
+      {collapsedWidget("Call history", <CallHistorySection projectId={project.id} />, true)}
     </div>
   );
 
@@ -308,9 +351,9 @@ export const StudioRoom = ({
       case "milestones": return showMoney ? wrap(<MilestoneStrip projectId={project.id} currency={project.currency} onOpenFinance={() => onNavigateToTab("finance")} />) : null;
       case "request_pay": return isCollaborator ? wrap(<RequestPaymentCard project={project} currentUserId={currentUserId} />) : null;
       case "people": return wrap(<PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />);
-      case "wrap": return wrap(<WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
-      case "credit": return wrap(<AddCreditSection project={project} collaborators={people} />);
-      case "calls": return wrap(<CallHistorySection projectId={project.id} />);
+      case "wrap": return collapsedWidget("Wrap the project", <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
+      case "credit": return collapsedWidget("Add a credit", <AddCreditSection project={project} collaborators={people} />);
+      case "calls": return collapsedWidget("Call history", <CallHistorySection projectId={project.id} />);
     }
   };
 
@@ -411,8 +454,18 @@ export const StudioRoom = ({
       />
 
       {/* One-page summary: compact six-phase rail + the one next action —
-          same on mobile and desktop, first thing under the header. */}
-      <StudioPhaseRail flow={flow} onPhaseClick={onNavigateToTab} onPinStage={onPinStage} />
+          same on mobile and desktop, first thing under the header. The
+          rail itself stays pinned to the top of the scroll area while the
+          rest of the room scrolls underneath it — "where am I" should
+          never require scrolling back up to check. */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-xl border-b border-border/60">
+        <StudioPhaseRail
+          flow={flow}
+          onPhaseClick={onNavigateToTab}
+          onPinStage={onPinStage}
+          onValidateStep={handleValidateStep}
+        />
+      </div>
       {flow.nextStep && <NextStepCard nextStep={flow.nextStep} onAction={onNavigateToTab} />}
 
       {/* Proactive nudges — render once, responsive layout below */}
@@ -443,6 +496,11 @@ export const StudioRoom = ({
         open={autopilotOpen}
         onOpenChange={setAutopilotOpen}
         onUpdated={onUpdated}
+      />
+      <ProjectCompleteDialog
+        open={completeDialogOpen}
+        onOpenChange={setCompleteDialogOpen}
+        projectTitle={project.title}
       />
 
       {/* Mobile: original single-scroll order */}
@@ -526,8 +584,8 @@ export const StudioRoom = ({
       </div>
 
       {/* Desktop: 2-column draggable widget board */}
-      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
-        <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
+      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-4 lg:px-6 lg:py-4 lg:max-w-[1500px] lg:mx-auto">
+        <div className="col-span-12 xl:col-span-8 space-y-3 min-w-0">
           {isOwner && (
             <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
               {dropZone}
@@ -622,7 +680,7 @@ export const StudioRoom = ({
           </div>
           {renderColumn(isEvent ? leftOrder.filter((id) => id !== "brief") : leftOrder, "left")}
         </div>
-        <aside className="col-span-12 xl:col-span-4 space-y-4 min-w-0">
+        <aside className="col-span-12 xl:col-span-4 space-y-3 min-w-0">
           {RoomChatButton}
           {renderColumn(rightOrder, "right")}
         </aside>

@@ -324,6 +324,7 @@ const ProjectsList = () => {
         <StudioCardsGrid
           projects={filteredProjects as any}
           invoicesByProject={invoicesByProject}
+          moneyVisibleByProject={moneyVisibleByProject}
           onNewProject={() => setShowVoiceCreate(true)}
           folders={folders}
           onMoveToFolder={moveProjectToFolder}

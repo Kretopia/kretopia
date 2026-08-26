@@ -193,7 +193,7 @@ const Messages = () => {
 
   return (
     <PageTransition>
-      <div className="accent-match flex h-[calc(100dvh-4rem)] overflow-hidden pb-20 lg:pb-24">
+      <div className="accent-match flex h-[calc(100dvh-4rem)] overflow-hidden lg:pb-24">
         <ConversationListPanel
           hidden={!!(selectedConversation || selectedGroup)}
           activeTab={activeTab}
@@ -223,7 +223,7 @@ const Messages = () => {
             onBack={() => setSelectedGroup(null)}
           />
         ) : selectedConversation && otherUser ? (
-          <div className="flex-1 flex flex-col bg-background pb-20 lg:pb-24">
+          <div className="flex-1 flex flex-col bg-background pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-24">
             <ChatHeader
               otherUser={otherUser}
               isOnline={onlineUsers.has(otherUser.id)}

@@ -58,7 +58,7 @@ export const ConversationListPanel = ({
       : { id: conv.sender_id, name: conv.sender_name, avatar: conv.sender_avatar };
 
   return (
-    <div className={`${hidden ? "hidden md:flex" : "flex"} w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card`}>
+    <div className={`${hidden ? "hidden md:flex" : "flex"} w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0`}>
       <div className="p-3 sm:p-4 border-b-2 border-primary/20 space-y-2.5 sm:space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1 min-w-0">

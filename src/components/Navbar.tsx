@@ -34,7 +34,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, type ReactNode, type ComponentType } from "react";
 
 
 interface NavbarProps {
@@ -354,15 +354,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   {isCompany ? (
                     /* ====== COMPANY MENU (unchanged) ====== */
                     <>
-                      <MenuButton icon={Inbox} label="Inbox" onClick={() => handleNavigation("/inbox")} path="/inbox" badge={inboxBadge} />
-                      <Separator className="my-3" />
-                      <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
-                      {/* "Find Talent" removed — already one tap away via bottom nav (mobile)
-                          and the top desktop nav, at every breakpoint this menu is reachable from. */}
-                      {/* Events hidden from nav — /meetup route alive, event Studios cover the workflow. */}
-                      {isManagerMode && (
-                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
-                      )}
+                      <MenuGrid>
+                        <MenuGridTile icon={Inbox} label="Inbox" onClick={() => handleNavigation("/inbox")} path="/inbox" badge={inboxBadge} />
+                        {/* "Find Talent" removed — already one tap away via bottom nav (mobile)
+                            and the top desktop nav, at every breakpoint this menu is reachable from. */}
+                        {/* Events hidden from nav — /meetup route alive, event Studios cover the workflow. */}
+                        <MenuGridTile icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
+                        {isManagerMode && (
+                          <MenuGridTile icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
+                        )}
+                      </MenuGrid>
                       <Separator className="my-3" />
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
                       <Button variant="ghost" className="justify-start gap-3 h-auto w-full py-3" onClick={() => handleNavigation("/subscription")}>
@@ -403,29 +404,32 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       {/* WORKSPACE — daily shortcuts only. Today/Desk live in bottom nav; Pay in Passport. */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
-                      <MenuButton icon={DollarSign} label="KrePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
-                      <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
-                      {/* Crews hidden from UI — data preserved, deep links still work via /crews. Group chat lives in Messages. */}
-                      {isManagerMode && (
-                        <MenuButton icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
-                      )}
-
+                      <MenuGrid>
+                        <MenuGridTile icon={DollarSign} label="KrePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
+                        <MenuGridTile icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
+                        {/* Crews hidden from UI — data preserved, deep links still work via /crews. Group chat lives in Messages. */}
+                        {isManagerMode && (
+                          <MenuGridTile icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
+                        )}
+                      </MenuGrid>
 
                       <Separator className="my-3" />
 
                       {/* PILLARS — live surfaces not in bottom nav */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
-                      {/* "Stages" -> /circle is the one entry point here. /soundstages
-                          renders the same live-stages feed with no other chrome (confirmed
-                          duplicate content, not just a duplicate label) -- it stays reachable
-                          from inside /circle and from every in-app "Join"/"Start Stage" button,
-                          it just doesn't need its own top-level menu entry too. */}
-                      <MenuButton icon={Theater} label="Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
-                      <MenuButton icon={Sparkles} label="Kreto" onClick={() => handleNavigation("/kreto")} path="/kreto" />
-                     <MenuButton icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
-                      <MenuButton icon={Gift} label="Perks" onClick={() => handleNavigation("/perks")} path="/perks" />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={Video} label="Recordings" onClick={() => handleNavigation("/recordings")} path="/recordings" />
+                      <MenuGrid>
+                        {/* "Stages" -> /circle is the one entry point here. /soundstages
+                            renders the same live-stages feed with no other chrome (confirmed
+                            duplicate content, not just a duplicate label) -- it stays reachable
+                            from inside /circle and from every in-app "Join"/"Start Stage" button,
+                            it just doesn't need its own top-level menu entry too. */}
+                        <MenuGridTile icon={Theater} label="Stages" onClick={() => handleNavigation("/circle")} path="/circle" />
+                        <MenuGridTile icon={Sparkles} label="Kreto" onClick={() => handleNavigation("/kreto")} path="/kreto" />
+                        <MenuGridTile icon={Heart} label="Match" onClick={() => handleNavigation("/match")} path="/match" />
+                        <MenuGridTile icon={Gift} label="Perks" onClick={() => handleNavigation("/perks")} path="/perks" />
+                        <MenuGridTile icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
+                        <MenuGridTile icon={Video} label="Recordings" onClick={() => handleNavigation("/recordings")} path="/recordings" />
+                      </MenuGrid>
 
                       <Separator className="my-3" />
 
@@ -434,10 +438,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           "Write" (edit/upload article) button for editors/admins, and
                           direct-URL-only made that undiscoverable. */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">More</p>
-                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
-                      <MenuButton icon={Database} label="Verified Credits" onClick={() => handleNavigation("/credits")} path="/credits" />
-                      <MenuButton icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
-                      <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />
+                      <MenuGrid>
+                        <MenuGridTile icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
+                        <MenuGridTile icon={Database} label="Verified Credits" onClick={() => handleNavigation("/credits")} path="/credits" />
+                        <MenuGridTile icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
+                        <MenuGridTile icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />
+                      </MenuGrid>
 
 
                       {/* Settings and Support sections removed from this menu by request --
@@ -559,8 +565,47 @@ const Navbar = memo(({ user }: NavbarProps) => {
   );
 });
 
+/* Responsive grid tile for the Menu sheet's feature/navigation items --
+   auto-fill + minmax adapts to the sheet's own rendered width (85vw on
+   mobile, 400px fixed above sm:) rather than the viewport breakpoints
+   Tailwind's sm:/lg: prefixes key off, which don't track a fixed-width
+   panel's actual size. */
+function MenuGridTile({ icon: Icon, label, onClick, badge, path }: { icon: ComponentType<{ className?: string }>; label: string; onClick: () => void; badge?: string; path?: string }) {
+  const location = useLocation();
+  const isActive = !!path && (
+    path === location.pathname ||
+    (path !== "/" && location.pathname.startsWith(path + "/"))
+  );
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-current={isActive ? "page" : undefined}
+      aria-label={label}
+      className={cn(
+        "relative flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] px-2 py-3.5 min-h-[76px] text-center transition-colors hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-energy",
+        isActive && "border-energy/30 bg-energy/10 text-energy",
+      )}
+    >
+      <Icon className="h-5 w-5 shrink-0" />
+      <span className="text-[11px] font-medium leading-tight line-clamp-2">{label}</span>
+      {badge && (
+        <Badge className="absolute top-1.5 right-1.5 bg-primary/15 text-primary text-[9px] px-1.5 h-4">{badge}</Badge>
+      )}
+    </button>
+  );
+}
+
+function MenuGrid({ children }: { children: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2">
+      {children}
+    </div>
+  );
+}
+
 /* Reusable menu button */
-function MenuButton({ icon: Icon, label, onClick, badge, path }: { icon: any; label: string; onClick: () => void; badge?: string; path?: string }) {
+function MenuButton({ icon: Icon, label, onClick, badge, path }: { icon: ComponentType<{ className?: string }>; label: string; onClick: () => void; badge?: string; path?: string }) {
   const location = useLocation();
   const isActive = !!path && (
     path === location.pathname ||

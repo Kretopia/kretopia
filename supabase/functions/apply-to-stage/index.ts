@@ -52,16 +52,20 @@ serve(async (req) => {
 
     // Smart Match: lightweight role/vibe overlap score (0..1)
     const [{ data: hostProf }, { data: meProf }] = await Promise.all([
-      admin.from("profiles").select("primary_role, skills").eq("user_id", stage.host_user_id).maybeSingle(),
-      admin.from("profiles").select("primary_role, skills").eq("user_id", user.id).maybeSingle(),
+      admin.from("profiles").select("primary_role, professional_skills, passion_skills").eq("user_id", stage.host_user_id).maybeSingle(),
+      admin.from("profiles").select("primary_role, professional_skills, passion_skills").eq("user_id", user.id).maybeSingle(),
     ]);
+    const mySkills: string[] = [
+      ...((meProf as any)?.professional_skills || []),
+      ...((meProf as any)?.passion_skills || []),
+    ];
     let score = 0.30;
     if (hostProf?.primary_role && meProf?.primary_role &&
         String(hostProf.primary_role).toLowerCase() === String(meProf.primary_role).toLowerCase()) {
       score += 0.30;
     }
     const tags = ((stage as any).vibe_tags || []).map((t: string) => t.toLowerCase());
-    const skills = (meProf?.skills || []).map((s: string) => s.toLowerCase());
+    const skills = mySkills.map((s: string) => String(s).toLowerCase());
     const hits = tags.filter((t: string) => skills.includes(t) || skills.some((s: string) => s.includes(t) || t.includes(s)));
     score += Math.min(0.40, hits.length * 0.15);
     if (pitch && String(pitch).trim().length > 80) score += 0.05;

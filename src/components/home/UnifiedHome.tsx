@@ -10,7 +10,6 @@ import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
@@ -44,25 +43,13 @@ import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
 // Prune: NewMemberStarterCard, FoundingMemberCard, MagicHomeHero, OpportunityIntelCard,
 // WeeklyIntentCard, ThriveFundFeedRow, EventsNearYouSection moved off Home → live on their own surfaces.
-import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
-import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBanner";
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
-import { MorningPulse } from "@/components/home/MorningPulse";
-import { KretoTip } from "@/components/agent/KretoTip";
-import { CuratedStagesRail } from "@/components/circle/CuratedStagesRail";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
-import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
-import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
-import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
-import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
-import { DailyBriefingCard } from "@/components/home/DailyBriefingCard";
-import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
-import { TodayThreeCards } from "@/components/home/TodayThreeCards";
-import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
-import { UpcomingSessionsCard } from "@/components/home/UpcomingSessionsCard";
-import { TrendingLane } from "@/components/discover/TrendingLane";
+import { TodayFocus } from "@/components/home/TodayFocus";
+import { MoreFromToday } from "@/components/home/MoreFromToday";
+import { Momentum } from "@/components/home/Momentum";
 // SpotlightFeedRow removed from Home — lives at /spotlight only.
 import { ChevronDown } from "lucide-react";
 // LiveGigsStrip removed — see Smart Gig Scout
@@ -83,8 +70,8 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const TODAY_TUTORIAL: TutorialStep[] = [
   { icon: Sparkles, title: "Tell Kreto what's next", body: "Type or speak what you're working on — Kreto routes it to a new workspace, a people search, a gig search, or a straight answer." },
-  { icon: ListChecksIcon, title: "Three things that matter now", body: "Your next move, your top opportunity, and your money signal — no digging through separate pages to find them." },
-  { icon: ChevronDown, title: "Everything else, one tap away", body: "Pulse, approvals, scouted gigs and trending — tucked under \"More from today\" so the main view stays focused." },
+  { icon: ListChecksIcon, title: "Today Focus", body: "The one thing that matters most right now — an overdue task, a pending approval, or a fresh opportunity — with real actions right there." },
+  { icon: ChevronDown, title: "More from Today + Momentum", body: "Filterable approvals, deadlines and discovery, plus what's actually moving — completed work and projects in progress." },
 ];
 
 
@@ -97,24 +84,6 @@ const ACTIVITY_TEMPLATES = [
   (n: string) => `${n} landed a gig through Kretopia`,
   (n: string) => `${n} joined the creative community`,
 ];
-
-/**
- * Sound Stages section — owns its own header so the whole block disappears
- * when there are no live/scheduled stages (avoids a stranded "this week" header).
- */
-const SoundStagesSection = () => {
-  const [count, setCount] = useState<number | null>(null);
-  if (count === 0) return null;
-  return (
-    <div className="mt-2 mb-4 space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
-        <Link to="/circle?tab=live" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
-      </div>
-      <CuratedStagesRail limit={6} hideWhenEmpty onLoad={setCount} />
-    </div>
-  );
-};
 
 export const UnifiedHome = () => {
   const { user, subscriptionInfo, loading: authLoading } = useAuth();
@@ -173,7 +142,6 @@ export const UnifiedHome = () => {
   const [profileFull, setProfileFull] = useState<any>(null);
   const [myCredits, setMyCredits] = useState(0);
   const [myConnections, setMyConnections] = useState(0);
-  const [greeting, setGreeting] = useState("");
 
   // Live activity pulse
   const [activityMsg, setActivityMsg] = useState("");
@@ -181,13 +149,6 @@ export const UnifiedHome = () => {
 
   // First-Win celebration sheet (one-shot for fresh accounts)
   const [showFirstWin, setShowFirstWin] = useState(false);
-
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good morning");
-    else if (hour < 18) setGreeting("Good afternoon");
-    else setGreeting("Good evening");
-  }, []);
 
   // Rotate hero roles
   useEffect(() => {
@@ -462,6 +423,59 @@ export const UnifiedHome = () => {
 
   const firstName = profile?.full_name?.split(" ")[0] || "Creator";
 
+  const peopleForYouNode =
+    featuredCreators.length > 0 ? (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">People for you</p>
+          <Link to="/match" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+        </div>
+        <Carousel
+          setApi={setPeopleForYouApi}
+          opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }}
+          className="w-full"
+          aria-label="People for you"
+        >
+          <CarouselContent className="-ml-3">
+            {featuredCreators.slice(0, 10).map((c: any) => (
+              <CarouselItem key={c.user_id} className="pl-3 basis-auto">
+                <Link
+                  to={`/profile/${c.user_id}`}
+                  className="shrink-0 w-44 flex flex-col rounded-2xl overflow-hidden border border-border bg-card group transition-all hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden shrink-0">
+                    <div
+                      className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-background transition-transform duration-500 group-hover:scale-105"
+                      style={c.avatar_url ? { backgroundImage: `url(${c.avatar_url})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+                    {c.match_score && (
+                      <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm border border-border text-[9px] font-bold text-energy flex items-center gap-1">
+                        <Sparkles className="h-2.5 w-2.5" />
+                        {c.match_score}%
+                      </span>
+                    )}
+                    <div className="absolute bottom-0 inset-x-0 p-2.5">
+                      <p className="text-sm font-black leading-tight text-foreground line-clamp-1">{c.full_name}</p>
+                    </div>
+                  </div>
+                  <div className="mt-auto p-2.5 border-t border-border/60">
+                    <p className="text-[10px] text-muted-foreground line-clamp-1">{c.role || "Creator"}</p>
+                    {c.reason && (
+                      <p className="text-[10px] text-primary line-clamp-2 pt-0.5">{c.reason}</p>
+                    )}
+                  </div>
+                </Link>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous — people for you" />
+          <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next — people for you" />
+        </Carousel>
+        <CarouselPositionDots api={peopleForYouApi} label="People for you" />
+      </div>
+    ) : undefined;
+
   return (
     <div className="bg-background min-h-screen accent-passport">
       <SEO
@@ -486,124 +500,45 @@ export const UnifiedHome = () => {
 
       {/* ═══════════ AUTH HUB ═══════════
           Render as soon as we know there's a user — don't wait for the profile fetch.
-          ThrivePromptHero + TodayThreeCards load their own data and skeletons, so
+          ThrivePromptHero + TodayFocus load their own data and skeletons, so
           gating the whole hub on `profile` left mobile blank for ~500ms+ on slow nets. */}
       {user && (
         <>
           <FeaturePageHeader
             eyebrow="Today"
-            title="What are we moving"
-        accentTitle="forward today?"
-            subtitle="One place for your next move, your top opportunity, and your money signal."
+            title={`${firstName},`}
+            accentTitle="here's what moves you forward today."
+            subtitle="Your highest-impact actions, latest movement and next decisions in one place."
             tutorial={{ featureKey: "today", label: "How Today works", steps: TODAY_TUTORIAL }}
           />
-          <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
-            <TodayCommandCenter
-              entry={<ThrivePromptHero />}
-              nextAction={
-                <div className="space-y-4">
-                  <TodayThreeCards />
-                  <KretoTip surface="today" />
-                  <SurfaceProactiveCards surface="home" className="px-0" />
-                </div>
-              }
-              schedule={
-                <div className="space-y-2">
-                  <UpcomingSessionsCard />
-                  {/* Sound Stages discovery — hidden entirely when no live stages */}
-                  <SoundStagesSection />
-                  <SpeedTonightCard />
-                </div>
-              }
-              opportunities={
-                featuredCreators.length > 0 ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">People for you</p>
-                      <Link to="/match" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
-                    </div>
-                    <Carousel
-                      setApi={setPeopleForYouApi}
-                      opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }}
-                      className="w-full"
-                      aria-label="People for you"
-                    >
-                      <CarouselContent className="-ml-3">
-                        {featuredCreators.slice(0, 10).map((c: any) => (
-                          <CarouselItem key={c.user_id} className="pl-3 basis-auto">
-                            <Link
-                              to={`/profile/${c.user_id}`}
-                              className="shrink-0 w-44 flex flex-col rounded-2xl overflow-hidden border border-border bg-card group transition-all hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10"
-                            >
-                              <div className="relative aspect-[16/10] overflow-hidden shrink-0">
-                                <div
-                                  className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-background transition-transform duration-500 group-hover:scale-105"
-                                  style={c.avatar_url ? { backgroundImage: `url(${c.avatar_url})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                                {c.match_score && (
-                                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm border border-border text-[9px] font-bold text-energy flex items-center gap-1">
-                                    <Sparkles className="h-2.5 w-2.5" />
-                                    {c.match_score}%
-                                  </span>
-                                )}
-                                <div className="absolute bottom-0 inset-x-0 p-2.5">
-                                  <p className="text-sm font-black leading-tight text-foreground line-clamp-1">{c.full_name}</p>
-                                </div>
-                              </div>
-                              <div className="mt-auto p-2.5 border-t border-border/60">
-                                <p className="text-[10px] text-muted-foreground line-clamp-1">{c.role || "Creator"}</p>
-                                {c.reason && (
-                                  <p className="text-[10px] text-primary line-clamp-2 pt-0.5">{c.reason}</p>
-                                )}
-                              </div>
-                            </Link>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous — people for you" />
-                      <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next — people for you" />
-                    </Carousel>
-                    <CarouselPositionDots api={peopleForYouApi} label="People for you" />
-                  </div>
-                ) : undefined
-              }
-              supporting={
-                <div className="space-y-4">
-                  {/* Executive Producer's morning brief */}
-                  <DailyBriefingCard />
+          <div className="mx-auto px-3 sm:px-4 pt-4 max-w-7xl">
+            <div className="space-y-5">
+              <ThrivePromptHero firstName={firstName} />
 
-                  {/* Duplicate-account merge prompt */}
-                  <div className="empty:hidden">
-                    <DuplicateAccountBanner />
-                  </div>
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: [0.2, 0.65, 0.3, 0.95] }}
+              >
+                <TodayFocus />
+              </motion.div>
 
-                  {/* New-user setup checklist — gated on profile load */}
-                  {profile && checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
-                    <GetStartedChecklist />
-                  )}
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={reducedMotion ? { duration: 0 } : { duration: 0.4, delay: 0.08, ease: [0.2, 0.65, 0.3, 0.95] }}
+              >
+                <MoreFromToday peopleForYou={peopleForYouNode} profile={profile} profileFull={profileFull} myCredits={myCredits} />
+              </motion.div>
 
-                  {/* More from today — the full Pulse / Approvals / Scouted / Money sections live here,
-                      one tap away but out of the main scroll. */}
-                  <details className="group rounded-2xl border border-border bg-card/40">
-                    <summary className="flex items-center justify-between cursor-pointer list-none px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground transition-colors">
-                      <span>More from today</span>
-                      <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div className="px-3 sm:px-4 pb-4 pt-1 space-y-4">
-                      <MorningPulse firstName={firstName} greeting={greeting} />
-                      <ApprovalsHub limit={4} />
-                      <ScoutedGigsSection limit={3} />
-                      <MoneyBrief variant="compact" />
-                      <TrendingLane />
-                    </div>
-                  </details>
-
-                  {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
-                  <PushNotificationPrompt trigger="default" />
-                </div>
-              }
-            />
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={reducedMotion ? { duration: 0 } : { duration: 0.4, delay: 0.16, ease: [0.2, 0.65, 0.3, 0.95] }}
+              >
+                <Momentum />
+              </motion.div>
+            </div>
           </div>
         </>
       )}
@@ -617,7 +552,7 @@ export const UnifiedHome = () => {
           guests get a bare `pb-28` (112px) empty block below the real
           footer with nothing in it. */}
       {user && (
-        <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
+        <div className="mx-auto px-3 sm:px-4 pb-28 max-w-7xl">
           <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
             <Link to="/about" className="hover:text-foreground transition-colors">{t("common.about")}</Link>
             <span className="text-border">·</span>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { notifyUser } from "@/lib/notifyUser";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useCircleData } from "@/hooks/useCircleData";
@@ -128,25 +129,25 @@ export const ConnectFeed = ({ onMatch }: ConnectFeedProps) => {
             .single();
 
           // Notify both users
-          await supabase.from('notifications').insert([
-            {
-              user_id: targetId,
+          await Promise.all([
+            notifyUser({
+              userId: targetId,
               type: 'match',
               title: "It's a Match!",
               message: `You matched with ${currentProfile?.full_name || 'a creator'}!`,
               link: `/messages?user=${user.id}`,
-              action_url: `/messages?user=${user.id}`,
-              action_text: 'Send Message',
-            },
-            {
-              user_id: user.id,
+              actionUrl: `/messages?user=${user.id}`,
+              actionText: 'Send Message',
+            }),
+            notifyUser({
+              userId: user.id,
               type: 'match',
               title: "It's a Match!",
               message: `You matched with ${targetProfile?.full_name || 'a creator'}!`,
               link: `/messages?user=${targetId}`,
-              action_url: `/messages?user=${targetId}`,
-              action_text: 'Send Message',
-            }
+              actionUrl: `/messages?user=${targetId}`,
+              actionText: 'Send Message',
+            }),
           ]);
 
           return { 

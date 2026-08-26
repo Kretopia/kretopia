@@ -106,18 +106,35 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
   return queries;
 }
 
+// Per-source timeout: one dead/slow query must not stall the whole scan.
+// Firecrawl calls that exceed this are aborted and treated as "no results"
+// for that source, not a fatal error for the run.
+const SOURCE_TIMEOUT_MS = 9000;
+
 async function firecrawlSearch(query: string, key: string) {
-  const r = await fetch(FIRECRAWL, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query,
-      limit: 6,
-      // RECENCY: only results from the past WEEK (was past month)
-      tbs: "qdr:w",
-      scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
-    }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SOURCE_TIMEOUT_MS);
+  let r: Response;
+  try {
+    r = await fetch(FIRECRAWL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query,
+        limit: 6,
+        // RECENCY: only results from the past WEEK (was past month)
+        tbs: "qdr:w",
+        scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
+      }),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    const timedOut = e instanceof Error && e.name === "AbortError";
+    console.warn("[scout] firecrawl", timedOut ? "timeout" : "network error", query);
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
   if (!r.ok) {
     console.warn("[scout] firecrawl fail", query, r.status);
     return [];
@@ -172,9 +189,14 @@ Location: ${profile.location || "remote"}
 Bio: ${(profile.bio || "").slice(0, 300)}
 ${prefBlurb ? `\nUSER SCOUT PREFERENCES:\n${prefBlurb}` : ""}`;
 
-  const r = await fetch(AI_URL, {
+  const aiController = new AbortController();
+  const aiTimer = setTimeout(() => aiController.abort(), 25000);
+  let r: Response;
+  try {
+    r = await fetch(AI_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
+    signal: aiController.signal,
     body: JSON.stringify({
       model: "google/gemini-3-flash-preview",
       messages: [
@@ -227,7 +249,14 @@ ${prefBlurb ? `\nUSER SCOUT PREFERENCES:\n${prefBlurb}` : ""}`;
       }],
       tool_choice: { type: "function", function: { name: "save_gigs" } },
     }),
-  });
+    });
+  } catch (e) {
+    const timedOut = e instanceof Error && e.name === "AbortError";
+    console.error("[scout] AI", timedOut ? "timeout" : "network error", e);
+    return [];
+  } finally {
+    clearTimeout(aiTimer);
+  }
   if (!r.ok) {
     console.error("[scout] AI fail", r.status, await r.text());
     return [];
@@ -336,7 +365,7 @@ serve(async (req) => {
         .from("scouted_gigs")
         .select("id", { count: "exact", head: true })
         .eq("target_user_id", userId)
-        .gte("created_at", weekAgo);
+        .gte("scouted_at", weekAgo);
       if ((count ?? 0) >= 1) {
         return new Response(JSON.stringify({
           ok: true, gated: true, tier, message: "Free tier: 1 Scout preview per week. Upgrade to Creator for daily Scout + auto-drafted applications.",
@@ -376,16 +405,22 @@ serve(async (req) => {
     const queries = buildSearchQueries(mergedProfile, prefs);
     console.log("[scout] queries", queries.length, "for", userId);
 
-    // Run searches in parallel (cap concurrency by chunking)
+    // Run searches concurrently in wider batches than before -- each
+    // individual call is now time-bounded (SOURCE_TIMEOUT_MS), so a dead
+    // source can no longer stall the whole scan the way an un-timed-out
+    // sequential chunk could. allSettled means one rejected promise never
+    // takes down its batch's other results.
     const allRaw: any[] = [];
-    const CHUNK = 4;
+    const CHUNK = 12;
     for (let i = 0; i < queries.length; i += CHUNK) {
       const batch = queries.slice(i, i + CHUNK);
-      const results = await Promise.all(batch.map(async (q) => {
+      const results = await Promise.allSettled(batch.map(async (q) => {
         const items = await firecrawlSearch(q.query, fcKey);
         return items.map((it) => ({ ...it, source: q.source }));
       }));
-      results.flat().forEach((r) => allRaw.push(r));
+      for (const r of results) {
+        if (r.status === "fulfilled") allRaw.push(...r.value);
+      }
     }
     console.log("[scout] raw results", allRaw.length);
 

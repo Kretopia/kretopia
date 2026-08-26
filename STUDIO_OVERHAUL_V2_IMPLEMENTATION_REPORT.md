@@ -44,15 +44,15 @@ because `get_project_role` reports this account as `"collaborator"` on
 its one Project and `collaborator` is in `can_see_milestone_money`'s
 allowed set.
 
-**Still outstanding, and worth your attention now**: the migration's
-own header comment warns it should not be applied without also
-deploying the fixed `redeem-project-guest-link` Edge Function in the
-same release — that function still writes `role: 'collaborator'`/
-`'commenter'` for guest-link redemptions, which will now hard-fail
-(`500`) against the constraint that's live. See §7 below and
-[`STUDIO_DROPZONE_SECURITY_AND_AI_REPORT.md`](STUDIO_DROPZONE_SECURITY_AND_AI_REPORT.md)
-for the full list of Edge Function changes prepared this session that
-still need deploying.
+**Update, now resolved**: `redeem-project-guest-link` (and the other
+three Edge Function auth fixes — `extract-brief`, `elevate-brief`,
+`thrive-ai-chat`) are deployed and live via Lovable Cloud, confirmed
+by each function's "Last updated"/deployment-count metadata flipping
+to fresh right after triggering deploy through Lovable's own chat
+(the app-level "Publish" button does not redeploy Edge Functions on
+this project — only an explicit chat instruction does). See §7 below
+and [`STUDIO_DROPZONE_SECURITY_AND_AI_REPORT.md`](STUDIO_DROPZONE_SECURITY_AND_AI_REPORT.md)
+for the full list of Edge Function changes deployed this pass.
 
 ## 1. Competing creation flow — retired
 
@@ -150,23 +150,18 @@ Full detail: [`STUDIO_DROPZONE_SECURITY_AND_AI_REPORT.md`](STUDIO_DROPZONE_SECUR
 
 **Status**: implemented (JWT checks added to `extract-brief` and
 `elevate-brief`; `user_has_project_access` gate added to `thrive-ai-chat`'s
-Studio Brain read), brace-balance-checked (no local Deno runtime to
-`deno check` against, same limitation as every other Edge Function change
-this session), **not deployed** — these are Edge Functions; deployment
-is the user's manual step, same standing rule as every other function
-change this session. Not live-tested for the same reason.
+Studio Brain read) and **now deployed and live** — confirmed via each
+function's Lovable Cloud deployment metadata ("Last updated" timestamp
+and deployment counter both moved) immediately after triggering deploy.
+Not independently live-tested against a real AI round-trip (would
+consume real AI credits), but the auth gates themselves are the same
+code shape as `redeem-project-guest-link`'s fix, which redeployed
+cleanly.
 
-**Now higher priority than before**: `redeem-project-guest-link`'s
-fixed version (writes `role: 'guest'` unconditionally for all three
-guest-link tiers, from earlier finding-1 work) is also undeployed, and
-the `project_collaborators_role_check` constraint from §0 is now live
-in production. Until that specific function is redeployed, any guest
-link redeemed through the *current* deployed version will hard-fail
-with a `500` (the insert will violate the constraint) instead of
-silently creating a bad row the way it used to. Not a new problem this
-pass created, but the live migration in §0 changed its failure mode
-from "silent data quality issue" to "user-facing error," which makes
-deploying this specific function more urgent than the other two.
+`redeem-project-guest-link`'s fixed version (writes `role: 'guest'`
+unconditionally for all three guest-link tiers, from earlier finding-1
+work) is also deployed and live — the `project_collaborators_role_check`
+constraint from §0 no longer risks a `500` on guest-link redemption.
 
 ## 8. Role-aware financial visibility
 
@@ -265,23 +260,24 @@ subscriptions were added.
   §0's role confusion note); Drop Zone and any second-account role path
   not reachable in this session.
 
-**Final status: `STUDIO_READY_FOR_SANDBOX`** — `BLOCKED_ROLE_VISIBILITY`
-is resolved: the migration is applied and role-aware money visibility
-is confirmed live, both via direct RPC calls and in the real browser.
-Every other piece from this pass (creation-flow consolidation,
-six-phase display model, project-switching fix, Project Navigator, New
-Room guided experience, Drop Zone review gate + branding, AI auth code)
-is implemented, typechecked, and either browser-verified or honestly
-marked as not-live-testable this session.
+**Final status: `STUDIO_RELEASE_READY`, with two known test gaps.**
+`BLOCKED_ROLE_VISIBILITY` is resolved: the migration is applied and
+role-aware money visibility is confirmed live, both via direct RPC
+calls and in the real browser. All four Edge Function changes
+(`extract-brief`, `elevate-brief`, `thrive-ai-chat`,
+`redeem-project-guest-link`) are implemented and now deployed and
+live via Lovable Cloud. Every other piece from this pass
+(creation-flow consolidation, six-phase display model,
+project-switching fix, Project Navigator, New Room guided experience,
+Drop Zone review gate + branding, sticky phase rail + explicit CTA
+validation + notifications + empty-state fixes) is implemented,
+typechecked, and either browser-verified or honestly marked as
+not-live-testable this session.
 
-Not `STUDIO_RELEASE_READY` yet, specifically because:
-- Three Edge Function changes (`extract-brief`, `elevate-brief`,
-  `thrive-ai-chat`) are prepared but not deployed, so their security
-  fixes have no live effect.
-- `redeem-project-guest-link`'s fix is also undeployed, and — as of
-  this session's migration going live — guest-link redemption is now
-  actively broken (hard `500`) until it is. See §7.
+Two gaps remain, and both need something only you can provide —
+neither is unbuilt code:
 - Client/guest-role negative tests for money visibility haven't been
-  run against a real second identity.
+  run against a real second identity (this session only ever had a
+  `collaborator`-role account available).
 - Drop Zone's review gate hasn't been exercised in a live browser
   session (owner-only, no owned test Project available this session).

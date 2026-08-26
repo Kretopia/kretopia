@@ -260,27 +260,64 @@ function buildSearchQueries(name: string, isCreator: boolean) {
   ];
 }
 
-async function firecrawlSearch(apiKey: string, query: string, limit: number): Promise<FirecrawlResult[]> {
-  try {
-    const res = await fetch('https://api.firecrawl.dev/v1/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query, limit }),
-    });
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-    if (!res.ok) {
-      console.warn(`Firecrawl query failed (${res.status}):`, query.substring(0, 80));
+async function firecrawlSearch(apiKey: string, query: string, limit: number): Promise<FirecrawlResult[]> {
+  // Firecrawl rate-limits aggressively (HTTP 429) when the whole query fan-out
+  // fires at once. Retry a rate-limited query a couple of times with backoff,
+  // honouring Retry-After when the API sends it.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch('https://api.firecrawl.dev/v1/search', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query, limit }),
+      });
+
+      if (res.status === 429 && attempt < 2) {
+        const retryAfter = Number(res.headers.get('retry-after'));
+        const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.min(retryAfter * 1000, 8000)
+          : 1500 * (attempt + 1);
+        await sleep(waitMs);
+        continue;
+      }
+
+      if (!res.ok) {
+        console.warn(`Firecrawl query failed (${res.status}):`, query.substring(0, 80));
+        return [];
+      }
+
+      const data = await res.json();
+      return Array.isArray(data?.data) ? data.data : [];
+    } catch {
       return [];
     }
-
-    const data = await res.json();
-    return Array.isArray(data?.data) ? data.data : [];
-  } catch {
-    return [];
   }
+  console.warn('Firecrawl query still rate limited after retries:', query.substring(0, 80));
+  return [];
+}
+
+/** Runs the query fan-out with bounded concurrency so we stay under quota. */
+async function firecrawlSearchAll(
+  apiKey: string,
+  queries: string[],
+  limit: number,
+  concurrency = 3,
+): Promise<FirecrawlResult[][]> {
+  const out: FirecrawlResult[][] = new Array(queries.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(concurrency, queries.length) }, async () => {
+    while (cursor < queries.length) {
+      const i = cursor++;
+      out[i] = await firecrawlSearch(apiKey, queries[i], limit);
+    }
+  });
+  await Promise.all(workers);
+  return out;
 }
 
 async function firecrawlScrape(apiKey: string, url: string): Promise<{ markdown: string; image_url: string | null }> {
@@ -342,7 +379,7 @@ serve(async (req) => {
     if (FIRECRAWL_API_KEY) {
       try {
         const queries = buildSearchQueries(trimmedQuery, creatorQuery);
-        const queryResults = await Promise.all(queries.map((q) => firecrawlSearch(FIRECRAWL_API_KEY, q, 5)));
+        const queryResults = await firecrawlSearchAll(FIRECRAWL_API_KEY, queries, 5);
 
         const uniqueResults = new Map<string, FirecrawlResult>();
         for (const batch of queryResults) {

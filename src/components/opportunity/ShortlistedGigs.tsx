@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
@@ -31,42 +31,34 @@ interface ScoutedGig {
 export function ShortlistedGigs() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [gigs, setGigs] = useState<ScoutedGig[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const queryKey = ["shortlisted-gigs", user?.id];
+  const { data: gigs = [], isLoading: loading } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      // Fetch all 'saved' actions then their gigs (subset is small).
+      const { data: actions } = await supabase
+        .from("scouted_gig_actions")
+        .select("scouted_gig_id, created_at")
+        .eq("user_id", user!.id)
+        .eq("action", "saved")
+        .order("created_at", { ascending: false })
+        .limit(60);
 
-  const load = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    // Fetch all 'saved' actions then their gigs (subset is small).
-    const { data: actions } = await supabase
-      .from("scouted_gig_actions")
-      .select("scouted_gig_id, created_at")
-      .eq("user_id", user.id)
-      .eq("action", "saved")
-      .order("created_at", { ascending: false })
-      .limit(60);
+      const ids = (actions || []).map((a) => a.scouted_gig_id);
+      if (ids.length === 0) return [] as ScoutedGig[];
 
-    const ids = (actions || []).map((a: any) => a.scouted_gig_id);
-    if (ids.length === 0) {
-      setGigs([]);
-      setLoading(false);
-      return;
-    }
+      const { data: rows } = await supabase
+        .from("scouted_gigs")
+        .select("id, title, company, location, remote, description, image_url, apply_url, source_url, fit_score, fit_reason, scouted_at")
+        .in("id", ids);
 
-    const { data: rows } = await supabase
-      .from("scouted_gigs")
-      .select("id, title, company, location, remote, description, image_url, apply_url, source_url, fit_score, fit_reason, scouted_at")
-      .in("id", ids);
-
-    // Preserve action ordering (most recently saved first)
-    const order = new Map(ids.map((id, i) => [id, i]));
-    const sorted = ((rows || []) as ScoutedGig[])
-      .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
-    setGigs(sorted);
-    setLoading(false);
-  }, [user]);
-
-  useEffect(() => { load().catch(() => {}); }, [load]);
+      // Preserve action ordering (most recently saved first)
+      const order = new Map(ids.map((id, i) => [id, i]));
+      return ((rows || []) as ScoutedGig[]).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+    },
+    enabled: !!user,
+  });
 
   const unsave = async (gigId: string) => {
     if (!user) return;
@@ -76,7 +68,7 @@ export function ShortlistedGigs() {
       .eq("user_id", user.id)
       .eq("scouted_gig_id", gigId)
       .eq("action", "saved");
-    setGigs((prev) => prev.filter((g) => g.id !== gigId));
+    queryClient.setQueryData<ScoutedGig[]>(queryKey, (prev) => (prev ?? []).filter((g) => g.id !== gigId));
     toast({ title: "Removed from shortlist" });
   };
 

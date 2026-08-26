@@ -349,7 +349,20 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <SheetTitle className="font-serif text-2xl font-normal text-white mt-1">Menu</SheetTitle>
                 </SheetHeader>
 
-                <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
+                {/* [&>*]:shrink-0 is load-bearing, not decorative: every row
+                    here (Subscription, StorageMeter, AccountSwitcher's two
+                    rows, the grids, Sign Out) has overflow:hidden via the
+                    shared .btn-glass button styling, which per the flexbox
+                    spec makes its automatic min-height resolve to 0 instead
+                    of content-based. Without shrink-0, once this list's
+                    natural content height exceeds max-h below, the flex
+                    algorithm silently *shrinks* multi-line rows toward that
+                    zero minimum (clipping "Upgrade →", "Currently: Personal",
+                    etc.) instead of just scrolling — confirmed live: removing
+                    shrink prevention collapsed Subscription to 26px and
+                    Switch-to-Company to 18px, both with the second line
+                    rendered but invisible underneath the first. */}
+                <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)] [&>*]:shrink-0">
 
                   {isCompany ? (
                     /* ====== COMPANY MENU (unchanged) ====== */

@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { FeeStructure } from "@/components/FeeStructure";
 import { FeeCalculator } from "@/components/FeeCalculator";
 import { getFeeDisplayText } from "@/lib/platformFees";
@@ -29,13 +28,11 @@ import { ThriveWalletCard } from "@/components/wallet/ThriveWalletCard";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { FreeTierGate } from "@/components/FreeTierGate";
-import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
+import { KrePayDashboard } from "@/components/thrivepay/KrePayDashboard";
 import { SurfaceProactiveCards } from "@/components/agent/SurfaceProactiveCards";
-import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
 import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
 import { PaymentLinksSection } from "@/components/thrivepay/PaymentLinksSection";
 import { KrePayAIInsights } from "@/components/thrivepay/KrePayAIInsights";
-import { FinancialSummaryPanel } from "@/components/thrivepay/FinancialSummaryPanel";
 import { TransactionDetailDrawer, type TransactionDetail } from "@/components/thrivepay/TransactionDetailDrawer";
 import { TrustControlsCard } from "@/components/thrivepay/TrustControlsCard";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
@@ -299,8 +296,8 @@ export default function ThrivePay() {
 
       <FeaturePageHeader
         eyebrow="Your money, daily"
-        title="KrePay."
-        accentTitle={isBrand ? "Pay creators, all in one place." : "Get paid, all in one place."}
+        title="Kreto"
+        accentTitle="KrePay."
         subtitle={
           isBrand
             ? "Everything about paying the creators you hire, without the spreadsheet."
@@ -313,12 +310,6 @@ export default function ThrivePay() {
         }
         tabs={
           <div className="flex items-center gap-2">
-            {/* Top Up — primary lime CTA */}
-            <Button size="sm" variant="lime" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
-              <Plus className="h-4 w-4" />
-              <span>Top Up</span>
-            </Button>
-
             {/* Send Money — icon only */}
             <Button
               size="sm"
@@ -330,16 +321,24 @@ export default function ThrivePay() {
               <Send className="h-4 w-4" />
             </Button>
 
-            {/* Create menu — Invoice / Quote / Expense */}
+            {/* Actions menu — Top Up / Invoice / Quote / Expense. Top Up
+                used to be a standalone primary CTA here; demoted into this
+                menu so the header emphasizes Get Paid / Activity / Payouts
+                instead of a wallet-funding action most sessions don't need. */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline" className="h-9 w-9 p-0" aria-label="Create">
+                <Button size="sm" variant="outline" className="h-9 w-9 p-0" aria-label="Actions">
                   <Plus className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 z-50 bg-popover">
-                <DropdownMenuLabel>Create</DropdownMenuLabel>
+                <DropdownMenuLabel>Wallet</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setTopUpDialogOpen(true)}>
+                  <Wallet className="h-4 w-4 mr-2 text-primary" />
+                  Top Up
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuLabel>Create</DropdownMenuLabel>
                 <DropdownMenuItem
                   onClick={() => {
                     setActiveTab("earnings");
@@ -380,27 +379,25 @@ export default function ThrivePay() {
       />
 
       <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
-        <PassportAnchorStrip className="mb-3" />
-
         <KretoTip compact className="mb-5" />
 
-        {/* Kretopia Wallet — frictionless payouts (Path 2) */}
+        {/* Get Paid dashboard — the unified summary (metrics + trend chart
+            + weekly insights) required by the overhaul spec, replacing the
+            previous stack of separate, partly-redundant cards. */}
+        <div className="mb-4 sm:mb-6">
+          <KrePayDashboard />
+        </div>
+
+        {/* Linked bank accounts — Kretopia Wallet card owns the actionable
+            "Add your bank" / "Cash out" balance and payout methods; kept
+            distinct from the dashboard above so the balance is shown once,
+            not twice. */}
         <div className="mb-6">
           <ThriveWalletCard />
         </div>
 
         {/* Thrive proactive nudges (Pay surface) */}
         <SurfaceProactiveCards surface="pay" className="px-0 mb-4 sm:mb-6" />
-
-        {/* Money Brief — daily-driver hero */}
-        <div className="mb-4 sm:mb-6">
-          <MoneyBrief />
-        </div>
-
-        {/* Weekly insights */}
-        <div className="mb-4 sm:mb-6">
-          <WeeklyMoneyInsights />
-        </div>
 
         {/* AI assistance — the one genuinely LLM-backed surface on this
             page; see KrePayAIInsights for what it does and doesn't do. */}
@@ -415,17 +412,6 @@ export default function ThrivePay() {
           walletBalance={walletBalance}
           onTransferComplete={handleTransferComplete}
         />
-
-        {/* Balance Overview */}
-        <div className="mb-4 sm:mb-6">
-          <FinancialSummaryPanel
-            walletBalance={walletBalance}
-            connectAvailable={balance.available}
-            connectPending={balance.pending}
-            connectActive={connectStatus === "active"}
-            currency={balance.currency}
-          />
-        </div>
 
         {/* ───── Command center: 3 tabbed panels instead of one long
             scroll ─────
@@ -462,6 +448,10 @@ export default function ThrivePay() {
 
           {/* 2. Activity — Invoices & Earnings + Recent Activity */}
           <TabsContent value="activity" className="mt-0 space-y-6">
+        {/* Scan-a-receipt — contextual to Activity (where expenses live)
+            instead of floating globally over every tab, per the overhaul
+            spec's "misplaced Scan button." */}
+        <SnapReceiptFAB />
         <section className="space-y-3">
           <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" /> Invoices & Earnings
@@ -684,9 +674,6 @@ export default function ThrivePay() {
         transaction={selectedTransaction}
         onOpenChange={(open) => !open && setSelectedTransaction(null)}
       />
-
-      {/* Floating Snap Receipt button — opens camera immediately, AI fills the expense */}
-      <SnapReceiptFAB />
     </>
   );
 }

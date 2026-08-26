@@ -14,6 +14,47 @@ interface Props {
   onAdded?: () => void;
 }
 
+// Mirrors the Edge Function's error-code vocabulary — never show the raw
+// Stripe/DB message to the user, only these reviewed, actionable strings.
+const ERROR_COPY: Record<string, string> = {
+  authentication_required: "Sign in again, then try adding your bank account.",
+  wallet_not_found: "We couldn't find your payout wallet. Try again or contact support.",
+  connect_account_missing: "Your payout account couldn't be found. Contact support.",
+  connect_account_mismatch: "Your payout account is already set up for a different country. Contact support to reset it.",
+  country_not_supported: "That country isn't supported for payouts yet.",
+  currency_not_supported: "That currency doesn't match the selected country.",
+  invalid_iban: "That IBAN doesn't look right — please double-check it.",
+  invalid_bank_details: "Those bank details were rejected — please double-check them.",
+  account_requirement_missing: "Your bank details were valid, but your payout account still needs verification. Complete the remaining account requirements, then try again.",
+  account_not_ready: "Your payout account isn't ready yet. Complete the remaining requirements, then try again.",
+  bank_account_already_exists: "This bank account is already on file.",
+  stripe_configuration_error: "Payments aren't configured correctly right now. Contact support.",
+  stripe_api_error: "Your bank couldn't be added right now. Try again in a moment.",
+  database_persistence_error: "Your bank details were valid, but we couldn't save them. Try again.",
+  unknown_error: "Something went wrong adding your bank account. Try again.",
+};
+
+interface AddBankResponse {
+  ok?: boolean;
+  error?: string;
+  code?: string;
+  requirements_due?: string[];
+}
+
+async function describeAddBankError(error: unknown): Promise<string> {
+  const context = (error as { context?: Response })?.context;
+  if (context && typeof context.json === "function") {
+    try {
+      const body = await context.clone().json();
+      if (body?.code && ERROR_COPY[body.code]) return ERROR_COPY[body.code];
+      if (typeof body?.error === "string") return body.error;
+    } catch {
+      // fall through to generic message below
+    }
+  }
+  return ERROR_COPY.unknown_error;
+}
+
 const COUNTRIES = [
   { code: "US", currency: "USD", routingLabel: "Routing number (ABA)", routingRequired: true, accountLabel: "Account number" },
   { code: "CA", currency: "CAD", routingLabel: "Transit + Institution (XXXXX-YYY)", routingRequired: true, accountLabel: "Account number" },
@@ -46,7 +87,7 @@ export function WalletAddBankSheet({ open, onOpenChange, onAdded }: Props) {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("wallet-add-bank", {
+      const { data, error } = await supabase.functions.invoke<AddBankResponse>("wallet-add-bank", {
         body: {
           country,
           currency: cfg.currency,
@@ -56,14 +97,29 @@ export function WalletAddBankSheet({ open, onOpenChange, onAdded }: Props) {
           make_default: true,
         },
       });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      toast({ title: "Bank added", description: "You can now get paid." });
+      if (error) {
+        toast({ title: "Couldn't add bank", description: await describeAddBankError(error), variant: "destructive" });
+        return;
+      }
+      if (data?.error) {
+        toast({
+          title: "Couldn't add bank",
+          description: (data.code && ERROR_COPY[data.code]) ?? data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+      const requirementsDue = data?.requirements_due ?? [];
+      toast(
+        requirementsDue.length > 0
+          ? { title: "Bank added", description: ERROR_COPY.account_requirement_missing }
+          : { title: "Bank added", description: "You can now get paid." },
+      );
       onAdded?.();
       onOpenChange(false);
       setHolder(""); setAccountNumber(""); setRouting("");
-    } catch (e: any) {
-      toast({ title: "Couldn't add bank", description: e.message, variant: "destructive" });
+    } catch {
+      toast({ title: "Couldn't add bank", description: ERROR_COPY.unknown_error, variant: "destructive" });
     } finally {
       setLoading(false);
     }

@@ -1,18 +1,37 @@
 # KrePay Critical Security Runbook
 
-**Status: `CRITICAL_VULNERABILITY_ACTIVE`** (updated — see §12: after both
-migrations were applied and partially verified, a full re-check found
-**every one of the 8 target columns across all 3 tables reverted to
-UPDATE-able by both `authenticated` and `anon`** — including 5 columns
-independently confirmed locked in an earlier check. All fixes in this
-document are live in the repo but are **not currently in effect in
-production**.)
+**Status: `RESOLVED — CONFIRMED CLOSED 2026-08-26`.** §12 documents a real
+reversal that happened after this document's original narrow fix
+(`20260823160000`/`20260823170000` — never actually committed to this repo,
+see note below). That reversal is **not the current state.** A separate,
+broader, actually-committed migration — "Migration A"
+(`supabase/migrations/20260823223419_...sql` +
+`20260823223514_...sql`) — was applied later the same day. Unlike this
+document's column-level `REVOKE`s, Migration A drops the underlying
+permissive RLS policies entirely and grants `ALL` only to `service_role`,
+which is why it didn't suffer the same silent-reopening failure mode.
+`KREPAY_SECURITY_VERIFICATION_REPORT.md` confirmed Migration A live via
+`has_column_privilege`/`has_table_privilege`. **The user independently
+re-ran this document's own §12 verification query directly against
+production on 2026-08-26 and got zero rows** — confirmed, not inferred.
 
-Not `CRITICAL_VULNERABILITY_ACTIVE`-only, because a reviewed fix exists.
+Historical note for whoever reads this later: the `20260823160000`/
+`20260823170000` migration files this document's earlier sections
+describe do not exist anywhere in this repo's git history (verified by
+direct file search and `git log --all`) — despite the note below claiming
+they were "live in the repo." Whatever was actually applied and later
+found reverted in §11-12 was applied directly against the database, not
+through a committed migration file. Migration A, the fix that's actually
+in effect now, is the real committed artifact. Do not attempt to
+re-apply the SQL blocks in §1 or §11 of this document — they don't
+correspond to files in this repo and are superseded by Migration A.
+
+~~Not `CRITICAL_VULNERABILITY_ACTIVE`-only, because a reviewed fix exists.
 Not `FIX_APPLIED_AND_VERIFIED`, because nothing has been applied or tested
 against a live database — no Supabase DB access exists in this session,
 and none of the negative tests in `KREPAY_WALLET_NEGATIVE_TEST_MATRIX.md`
-have been run. **The vulnerability is still live in production right now.**
+have been run. The vulnerability is still live in production right now.~~
+(Superseded — see status line above.)
 
 No deploy, email, live Stripe call, live transfer, or production data
 modification was performed while producing this document. Nothing was
@@ -545,12 +564,18 @@ visual schema editor or AI app-builder until the mechanism is identified
 
 ## Final status
 
-**`CRITICAL_VULNERABILITY_ACTIVE`**
+**`RESOLVED — CONFIRMED CLOSED 2026-08-26`**
 
-Both original findings, plus the `profiles.stripe_account_id` login-link
-path, are live in production right now, exactly as if neither migration
-had ever been applied. The fix is written, reviewed, and was briefly
-verified in effect — but is not currently protecting anything. Do not
-report either vulnerability as closed until the re-verification query in
-§12 returns zero rows **and** the cause of the reversal is understood
-well enough to be confident it won't recur silently.
+This document's own §12 "full reversal" was real at the time it was
+written, but describes a different, narrower, never-actually-committed
+fix attempt — not Migration A (`20260823223419_...sql` +
+`20260823223514_...sql`), which is the migration genuinely in the repo
+and in effect today. The user ran this document's own §12 verification
+query directly against production on 2026-08-26 and got **zero rows** —
+`wallets.balance`/`credits`, all five `creator_wallets` columns, and
+`profiles.stripe_account_id`/`stripe_account_status` are confirmed locked
+down, both `authenticated` and `anon`. Superseded the ~~CRITICAL_VULNERABILITY_ACTIVE~~
+status above; leaving §1-§12 intact for the historical record of how this
+was found and the false starts along the way, but nothing in this
+document should be treated as describing the current state except this
+line.

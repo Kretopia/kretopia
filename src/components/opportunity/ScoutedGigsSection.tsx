@@ -190,6 +190,10 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
     e.stopPropagation();
     if (!user) return;
     await supabase.from("scouted_gig_actions").upsert({ user_id: user.id, scouted_gig_id: gigId, action: "saved" });
+    // Shortlist lives in a separate query cache (ShortlistedGigs.tsx) —
+    // without this, saving here can leave that tab showing a stale list
+    // for up to its 5min staleTime if it was already visited this session.
+    queryClient.invalidateQueries({ queryKey: ["shortlisted-gigs", user.id] });
     toast({ title: "Saved" });
   };
 

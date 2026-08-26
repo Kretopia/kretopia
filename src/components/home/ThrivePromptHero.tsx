@@ -321,13 +321,21 @@ export function ThrivePromptHero({ firstName }: { firstName?: string } = {}) {
       <div aria-hidden className="absolute -bottom-24 -left-12 h-48 w-48 rounded-full bg-energy/10 blur-3xl" />
 
       <div className="relative">
-        {/* Editorial serif headline — mockup vibe. h2, not h1: FeaturePageHeader
-            owns the page's one <h1> (the personalized greeting, via
-            UnifiedHome.tsx) — this is deliberately a *different*, shorter
-            prompt so the two never read as a duplicate. */}
-        <h2 className="font-serif italic font-normal leading-[1.05] tracking-tight text-[28px] sm:text-[34px] text-foreground">
-          {firstName ? `What's next, ${firstName}` : "What's on your mind"}
-          <span className="text-[hsl(var(--signal-teal))] not-italic font-semibold">?</span>
+        {/* h2, not h1: FeaturePageHeader owns the page's one <h1> (the
+            personalized greeting, via UnifiedHome.tsx) — this is
+            deliberately a *different*, shorter prompt so the two never read
+            as a duplicate. font-display matches the h1's own font-family
+            (--font-family-brand, via .landing-h1) instead of the previous
+            unrelated serif — only the name is pink, matching the h1's own
+            accent color; the "?" stays the same white as the rest of the
+            line. */}
+        <h2 className="font-display font-semibold leading-[1.05] tracking-tight text-[28px] sm:text-[34px] text-foreground">
+          {firstName ? (
+            <>What's next, <span className="text-[hsl(var(--energy))]">{firstName}</span></>
+          ) : (
+            "What's on your mind"
+          )}
+          ?
         </h2>
 
         {/* Composer */}

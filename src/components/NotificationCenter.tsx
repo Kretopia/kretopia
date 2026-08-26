@@ -64,12 +64,19 @@ export const NotificationCenter = ({ triggerClassName }: { triggerClassName?: st
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn("relative", triggerClassName)} aria-label="Open notifications">
+        <Button variant="ghost" size="icon" className={cn("relative h-8 w-8 sm:h-10 sm:w-10", triggerClassName)} aria-label="Open notifications">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+            // Positioned inside the button's own edges (not overflowing past
+            // them via negative insets) -- the shared .btn-glass button
+            // styling clips overflow to contain its decorative sheen, which
+            // was silently cutting off part of this badge when it extended
+            // past the trigger's box, collapsing "1"/"9+" to an unreadable
+            // sliver. min-w instead of a fixed w- so two-character "9+"
+            // never gets squeezed narrower than its own text.
+            <Badge
+              variant="destructive"
+              className="absolute top-0.5 right-0.5 min-w-[16px] h-4 flex items-center justify-center px-0.5 text-[9px] leading-none"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>

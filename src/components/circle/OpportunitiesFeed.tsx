@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
@@ -72,9 +73,6 @@ export const OpportunitiesFeed = () => {
   const navigate = useNavigate();
   const { pick: pickTone } = useAccountTone();
   const { pick: pickVoice } = useTrinidadVoice();
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [creators, setCreators] = useState<Record<string, GigCreatorProfile>>({});
-  const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSkill, setSelectedSkill] = useState("all");
@@ -105,9 +103,9 @@ export const OpportunitiesFeed = () => {
 
   const activeFilterCount = [activeFilter !== "all", selectedSkill !== "all", locationFilter !== "all", compensationFilter !== "all"].filter(Boolean).length;
 
-  const fetchOpportunities = useCallback(async () => {
-    setLoading(true);
-    try {
+  const { data, isLoading: loading, refetch: fetchOpportunities } = useQuery({
+    queryKey: ["opportunities-feed", activeFilter, searchQuery, selectedSkill, locationFilter],
+    queryFn: async () => {
       let query = supabase
         .from("opportunities")
         .select("*")
@@ -135,50 +133,46 @@ export const OpportunitiesFeed = () => {
         query = query.ilike("location", `%${locationFilter}%`);
       }
 
-      const { data, error } = await query;
+      const { data: rows, error } = await query;
       if (error) throw error;
 
       // Stale-gig filter: hide if deadline passed, OR (no deadline AND created >30d ago with no recent priority)
       const now = Date.now();
       const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-      const fresh = ((data as any[]) || []).filter((o) => {
+      const fresh = ((rows as any[]) || []).filter((o) => {
         if (o.application_deadline && new Date(o.application_deadline).getTime() < now) return false;
         if (!o.application_deadline && o.created_at && now - new Date(o.created_at).getTime() > THIRTY_DAYS) return false;
         return true;
       });
 
       // Sort priority gigs to the top
-      let sorted = fresh.sort((a, b) => {
+      const sorted: Opportunity[] = fresh.sort((a, b) => {
         const aPriority = a.is_priority && a.priority_expires_at && new Date(a.priority_expires_at) > new Date() ? 1 : 0;
         const bPriority = b.is_priority && b.priority_expires_at && new Date(b.priority_expires_at) > new Date() ? 1 : 0;
         return bPriority - aPriority;
       });
-      setOpportunities(sorted);
 
-      if (data && data.length > 0) {
-        const creatorIds = [...new Set(data.map(o => o.created_by).filter(Boolean))] as string[];
+      let creators: Record<string, GigCreatorProfile> = {};
+      if (rows && rows.length > 0) {
+        const creatorIds = [...new Set(rows.map((o) => o.created_by).filter(Boolean))] as string[];
         if (creatorIds.length > 0) {
           const { data: profiles } = await supabase
             .from("profiles")
             .select("user_id, full_name, avatar_url, role")
             .in("user_id", creatorIds);
           if (profiles) {
-            const map: Record<string, GigCreatorProfile> = {};
-            profiles.forEach(p => { map[p.user_id] = p; });
-            setCreators(map);
+            creators = Object.fromEntries(profiles.map((p) => [p.user_id, p]));
           }
         }
       }
-    } catch (error) {
-      console.error("[OpportunitiesFeed] Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeFilter, searchQuery, selectedSkill, locationFilter]);
 
-  useEffect(() => { fetchOpportunities(); }, [fetchOpportunities]);
+      return { opportunities: sorted, creators };
+    },
+  });
+  const opportunities = data?.opportunities ?? [];
+  const creators = data?.creators ?? {};
 
-  
+
 
   return (
     <div className="space-y-4">

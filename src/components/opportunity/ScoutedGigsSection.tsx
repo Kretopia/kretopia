@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -86,11 +87,49 @@ interface ScoutedGigsSectionProps {
   limit?: number;
 }
 
+const isThinListing = (g: ScoutedGig) => {
+  const desc = (g.full_description || g.description || "").trim();
+  if (desc.length < 40 && !g.compensation && !g.company) return true;
+  const url = g.apply_url || g.source_url || "";
+  try {
+    const u = new URL(url);
+    const segs = u.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+    const last = (segs[segs.length - 1] || "").toLowerCase();
+    const generic = ["jobs","careers","search","browse","explore","listings","opportunities","gigs","tags","postings","apply","casting"];
+    if (generic.includes(last)) return true;
+    if (segs.length < 2 && last.length < 8) return true;
+    if (/linkedin\.com$/.test(u.hostname.replace(/^www\./, "")) && !/\/jobs\/view\//.test(u.pathname)) return true;
+  } catch { return true; }
+  return false;
+};
+
 export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [gigs, setGigs] = useState<ScoutedGig[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const queryKey = ["scouted-gigs", user?.id];
+  const { data: gigs = [], isLoading: loading } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("scouted_gigs")
+        .select("*")
+        .eq("target_user_id", user!.id)
+        .gt("expires_at", new Date().toISOString())
+        .order("fit_score", { ascending: false })
+        .order("scouted_at", { ascending: false })
+        .limit(20);
+
+      const { data: actions } = await supabase
+        .from("scouted_gig_actions")
+        .select("scouted_gig_id, action")
+        .eq("user_id", user!.id)
+        .eq("action", "dismissed");
+      const dismissed = new Set((actions || []).map((a) => a.scouted_gig_id));
+      return ((data || []) as ScoutedGig[]).filter((g) => !dismissed.has(g.id) && !isThinListing(g));
+    },
+    enabled: !!user,
+  });
   const [scanning, setScanning] = useState(false);
   const [scanElapsed, setScanElapsed] = useState(0);
   const scanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -101,45 +140,6 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
   const [drafting, setDrafting] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const reducedMotion = useReducedMotion();
-
-  const load = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    const { data } = await supabase
-      .from("scouted_gigs")
-      .select("*")
-      .eq("target_user_id", user.id)
-      .gt("expires_at", new Date().toISOString())
-      .order("fit_score", { ascending: false })
-      .order("scouted_at", { ascending: false })
-      .limit(20);
-
-    const { data: actions } = await supabase
-      .from("scouted_gig_actions")
-      .select("scouted_gig_id, action")
-      .eq("user_id", user.id)
-      .eq("action", "dismissed");
-    const dismissed = new Set((actions || []).map((a) => a.scouted_gig_id));
-    const isThin = (g: ScoutedGig) => {
-      const desc = (g.full_description || g.description || "").trim();
-      if (desc.length < 40 && !g.compensation && !g.company) return true;
-      const url = g.apply_url || g.source_url || "";
-      try {
-        const u = new URL(url);
-        const segs = u.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
-        const last = (segs[segs.length - 1] || "").toLowerCase();
-        const generic = ["jobs","careers","search","browse","explore","listings","opportunities","gigs","tags","postings","apply","casting"];
-        if (generic.includes(last)) return true;
-        if (segs.length < 2 && last.length < 8) return true;
-        if (/linkedin\.com$/.test(u.hostname.replace(/^www\./, "")) && !/\/jobs\/view\//.test(u.pathname)) return true;
-      } catch { return true; }
-      return false;
-    };
-    setGigs(((data || []) as ScoutedGig[]).filter((g) => !dismissed.has(g.id) && !isThin(g)));
-    setLoading(false);
-  }, [user]);
-
-  useEffect(() => { load(); }, [load]);
 
   const scanNow = async () => {
     if (!user) return;
@@ -175,7 +175,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
     } else {
       toast({ title: "No fresh gigs matched right now", description: "Try again later, or widen your sources under Tune." });
     }
-    load();
+    queryClient.invalidateQueries({ queryKey });
   };
 
   useEffect(() => () => { if (scanTimerRef.current) clearInterval(scanTimerRef.current); }, []);
@@ -183,7 +183,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
   const dismiss = async (gigId: string) => {
     if (!user) return;
     await supabase.from("scouted_gig_actions").upsert({ user_id: user.id, scouted_gig_id: gigId, action: "dismissed" });
-    setGigs((prev) => prev.filter((g) => g.id !== gigId));
+    queryClient.setQueryData<ScoutedGig[]>(queryKey, (prev) => (prev ?? []).filter((g) => g.id !== gigId));
   };
 
   const save = async (gigId: string, e: React.MouseEvent) => {
@@ -210,7 +210,9 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
       setEnriching(false);
       if (!error && data?.gig) {
         setOpenGig(data.gig as ScoutedGig);
-        setGigs((prev) => prev.map((g) => g.id === gig.id ? (data.gig as ScoutedGig) : g));
+        queryClient.setQueryData<ScoutedGig[]>(queryKey, (prev) =>
+          (prev ?? []).map((g) => (g.id === gig.id ? (data.gig as ScoutedGig) : g)),
+        );
       }
     }
   };

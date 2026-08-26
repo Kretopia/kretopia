@@ -1,11 +1,26 @@
 # KrePay Production Blockers
 
-Status: **`CRITICAL_VULNERABILITY_ACTIVE`** — both migrations were
+**Update 2026-08-26 — the wallet-RLS item below is RESOLVED, not active.**
+This entire document (including the section immediately below) describes
+a fix attempt that was never actually committed to this repo
+(`20260823160000`/`20260823170000` — confirmed absent from git history) and
+whose reversal is real but not the current state. A separate, broader,
+genuinely-committed migration ("Migration A" —
+`supabase/migrations/20260823223419_...sql` + `20260823223514_...sql`)
+is what's actually live. The user independently re-ran this document's own
+verification query directly against production and got **zero rows** —
+`wallets`/`creator_wallets`/`profiles`' sensitive columns are confirmed
+locked for both `authenticated` and `anon`. Full explanation in
+`KREPAY_CRITICAL_SECURITY_RUNBOOK.md`'s updated status line. The rest of
+this document is left intact below for historical record only — do not
+act on its "apply the migration" instructions, those files don't exist.
+
+~~Status: `CRITICAL_VULNERABILITY_ACTIVE` — both migrations were
 applied, briefly verified in effect, then found fully reverted on
 re-check (all 8 target columns across `wallets`/`creator_wallets`/
 `profiles`, both `authenticated` and `anon`, writable again). See
 `KREPAY_CRITICAL_SECURITY_RUNBOOK.md` §12 for the full evidence and
-stop-gap SQL. This doc is the short, action-oriented version.
+stop-gap SQL. This doc is the short, action-oriented version.~~
 
 ## Active right now — most urgent item in this document
 

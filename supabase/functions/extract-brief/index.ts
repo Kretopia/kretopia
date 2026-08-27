@@ -40,33 +40,77 @@ interface BriefOut {
   deliverables: DeliverableOut[];
 }
 
-type WorkspaceType = "podcast" | "event" | "content" | "campaign" | "music" | "client" | "general";
+// Kept in sync by hand with src/lib/workspaceConfigs.ts's WorkspaceType --
+// there is no shared import between the Vite app and a Deno edge function,
+// so this list is the second copy of that enum by necessity. Previously
+// this used a completely different 7-value vocabulary (podcast/event/
+// content/campaign/music/client/general) that didn't match any of the
+// app's real 11 workspace types except "general" -- every real project
+// type silently fell back to the generic persona below, regardless of
+// what kind of project it actually was. "podcast" and "client" are kept
+// as extra recognized aliases (podcast folds into content_series, per
+// workspaceConfigs.ts's own "Podcast, YouTube series, IG/TikTok content"
+// description) in case anything still sends them.
+type WorkspaceType =
+  | "photo_shoot" | "video_shoot" | "music_project" | "fashion_show"
+  | "event_production" | "commissioned_art" | "brand_collab" | "dj_live_gig"
+  | "edit_job" | "content_series" | "general" | "podcast" | "client";
 
 const PERSONAS: Record<WorkspaceType, { role: string; lens: string; example: string }> = {
-  event: {
+  photo_shoot: {
+    role: "a senior photo producer who has run editorial, commercial and lifestyle shoots",
+    lens: "Think call sheet, shot list, location/permits, talent and glam booking, lighting notes, and the selects-to-retouch pipeline.",
+    example: 'Lock shoot date & location, build shot list, confirm talent + glam, scout/confirm permits, build call sheet, shoot day, cull to selects, send for retouch, deliver final retouched set.',
+  },
+  video_shoot: {
+    role: "a senior film/video producer who has run music videos, shorts, commercials and docs",
+    lens: "Think treatment, scene/shot breakdown, crew and cast, call sheet, equipment list, shoot days, and the edit milestone chain to final export.",
+    example: "Lock treatment & scenes, confirm crew + cast, build call sheet, shoot day(s), assemble rough cut, client/self review, picture lock, color & sound, deliver final exports.",
+  },
+  music_project: {
+    role: "an A&R / release manager",
+    lens: "Think writing & production, stems, mix, master, artwork, splits, distribution, pre-save, press kit, release-day promo.",
+    example: "Lock final mix, deliver master, finalize artwork, register splits, distribute via partner, pre-save campaign, press kit, release-day socials.",
+  },
+  fashion_show: {
+    role: "a fashion show producer who has run runway shows and lookbook drops",
+    lens: "Think model casting and lineup, looks and changes, run-of-show, backstage roll call, glam call times, and vendor/venue coordination.",
+    example: "Finalize model lineup, confirm looks per model, map backstage changes, build runway run of show, confirm glam call times, day-of backstage lead, post-show recap assets.",
+  },
+  event_production: {
     role: "a senior event producer who has run festivals, conferences, brand activations and weddings",
     lens: "Think like a producer: venue & vendor lock, run-of-show, talent/lineup, sponsors, marketing & comms, ticketing/RSVP, content capture, day-of logistics, post-event recap.",
     example: 'For "Bali Carnival" you would draft: "Lock concept & creative direction", "Scout & confirm venue/site permits", "Book lineup (DJs, performers, hosts)", "Confirm key vendors (stage, sound, lights, security)", "Build run-of-show document", "Open RSVP/ticketing & launch comms", "Sponsor outreach pack", "Content & social capture plan", "Day-of crew brief", "Post-event recap & thank-yous".',
   },
-  content: {
-    role: "a content director who plans shoots and weekly social cadences for creators and brands",
-    lens: "Think in scripts, shot lists, B-roll, posting cadence, and platform-specific cuts (Reels, Shorts, TikTok, carousels).",
-    example: "Lock concept, script v1, shot list, shoot day, edit v1, client/self review, schedule + publish across platforms, repurpose into clips.",
+  commissioned_art: {
+    role: "a producer managing a commissioned art piece (illustration, design, painting, custom work)",
+    lens: "Think concept rounds, sketch/mockup approval, milestone check-ins, revision tracking, licensing/usage terms, and final handoff packaging.",
+    example: "Confirm concept & size, share initial sketch/mockup, get direction approved, work-in-progress check-in, revision round, final approval, package final files for handoff.",
+  },
+  brand_collab: {
+    role: "a creator-brand collaboration manager running sponsored content and UGC deals",
+    lens: "Think brief alignment, usage rights, deliverable tracking (per platform/format), approval rounds, and payment milestones.",
+    example: "Confirm brief & usage rights, draft content concepts, submit first cut, revision round, secure final approval, deliver final assets, send invoice.",
+  },
+  dj_live_gig: {
+    role: "a producer managing a DJ set or live performance gig",
+    lens: "Think set time and tech rider, setlist, load-in/out logistics, payment terms, and post-gig recap content.",
+    example: "Confirm set time & rider, build setlist, confirm load-in time, confirm payment terms, day-of set, upload recap clips, send invoice.",
+  },
+  edit_job: {
+    role: "a post-production editor managing a photo retouch, video edit or audio mix job",
+    lens: "Think raw asset ingestion and organization, version control, revision rounds against reference, and final delivery in the right formats.",
+    example: "Collect raw footage/photos + references, create first pass, send review link, revision round, second review, export final deliverables in requested formats.",
+  },
+  content_series: {
+    role: "an executive producer for an ongoing content series (podcast, YouTube series, or IG/TikTok content)",
+    lens: "Think episode/entry planning, guest or topic research, production calendar, batch recording, edit pass, thumbnails/cover art, and publishing cadence.",
+    example: "Outline episodes/entries, book guests or lock topics, build production calendar, batch-record assets, edit pass, design thumbnails/cover art, schedule publishing, extract social clips.",
   },
   podcast: {
     role: "an executive podcast producer",
     lens: "Think guest research, outreach + booking, prep doc, recording session, edit, show notes, cover art, episode publish, clip extraction for socials, sponsor outreach.",
     example: "Confirm guest, send prep doc, record episode, rough cut, final mix, write show notes, design cover, schedule release, generate 3-5 social clips.",
-  },
-  campaign: {
-    role: "a brand strategist running an integrated campaign",
-    lens: "Think brief & KPIs, hero asset, paid + organic asset matrix, creator partnerships, approvals, launch week schedule, reporting.",
-    example: "Approve brief, deliver hero film, build asset matrix (paid + organic per platform), creator briefs, secure approvals, launch sequence, post-launch report.",
-  },
-  music: {
-    role: "an A&R / release manager",
-    lens: "Think writing & production, stems, mix, master, artwork, splits, distribution, pre-save, press kit, release-day promo.",
-    example: "Lock final mix, deliver master, finalize artwork, register splits, distribute via partner, pre-save campaign, press kit, release-day socials.",
   },
   client: {
     role: "a producer running a paid client engagement",
@@ -215,9 +259,7 @@ serve(async (req) => {
     const projectTitle: string | undefined = body.project_title;
     const rawType = (body.workspace_type ?? "general") as string;
     const workspaceType: WorkspaceType = (
-      ["podcast","event","content","campaign","music","client","general"].includes(rawType)
-        ? rawType
-        : "general"
+      Object.keys(PERSONAS).includes(rawType) ? rawType : "general"
     ) as WorkspaceType;
     const systemPrompt = buildSystemPrompt(workspaceType);
 

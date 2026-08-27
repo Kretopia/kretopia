@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type ReactNode, type CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,8 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import {
   Monitor, Smartphone, X, Save, Loader2, Eye, EyeOff,
-  GripVertical, ChevronDown, ChevronRight, Wand2,
-  PanelLeft, ArrowLeft, Crown, Lock, FileDown, Palette,
+  GripVertical, ChevronDown, ChevronRight, ChevronLeft, Wand2,
+  PanelLeft, ArrowLeft, Crown, Lock, FileDown, Palette, Star,
   Type, Image as ImageIcon, Plus, Trash2, LayoutTemplate, Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
 import { useNavigate } from "react-router-dom";
+import { BrandLogo } from "@/components/BrandLogo";
 import type { EPKPdfInput } from "@/lib/epkPdfGenerator";
 import { EPK_TEMPLATES, type EPKTemplateId } from "@/lib/epkPdfGenerator";
 
@@ -89,9 +90,9 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
   const [tagline, setTagline] = useState("");
   const [sections, setSections] = useState<EPKSection[]>(DEFAULT_SECTIONS);
   const [branding, setBranding] = useState<EPKBranding>({
-    primaryColor: "#8B5CF6",
-    accentColor: "#A882FF",
-    darkColor: "#1E1B2D",
+    primaryColor: "#FF2DA1",
+    accentColor: "#FF2DA1",
+    darkColor: "#05070D",
     logoUrl: "",
     tagline: "",
   });
@@ -553,11 +554,49 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
   );
 };
 
-// Lightweight HTML preview of the EPK
+// ── Live preview ────────────────────────────────────────────────────────
+// A landscape, page-by-page mirror of the real generateEPKPdf() output --
+// same dark canvas, bordered cards, pink accent, K-icon eyebrows and page
+// order as the actual PDF, instead of the old single-column mobile-card
+// mockup that shared none of the PDF's structure or visual language.
+
+const PdfPageFrame = ({
+  dark,
+  children,
+}: {
+  dark: string;
+  children: ReactNode;
+}) => (
+  <div
+    className="relative w-full aspect-[338/190] rounded-xl border border-white/10 overflow-hidden shrink-0"
+    style={{ background: dark, fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+  >
+    {children}
+  </div>
+);
+
+const PdfCard = ({ className, style, children }: { className?: string; style?: CSSProperties; children: ReactNode }) => (
+  <div className={cn("rounded-md border border-white/[0.08] bg-white/[0.03]", className)} style={style}>
+    {children}
+  </div>
+);
+
+const PdfEyebrow = ({ label, primary }: { label: string; primary: string }) => (
+  <div className="flex items-center gap-1.5 mb-2">
+    <BrandLogo size="sm" iconOnly className="[&_img]:h-[10px] [&_img]:w-[10px]" />
+    <span className="text-[8px] font-bold uppercase tracking-[0.18em]" style={{ color: primary }}>{label}</span>
+  </div>
+);
+
+const PdfPill = ({ label }: { label: string }) => (
+  <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[7px] text-white/70">
+    {label}
+  </span>
+);
+
 const EPKPreview = ({
   data,
   branding,
-  tagline,
   sections,
 }: {
   data: EPKPdfInput;
@@ -565,110 +604,235 @@ const EPKPreview = ({
   tagline?: string;
   sections: EPKSection[];
 }) => {
-  const primary = branding?.primaryColor || "#8B5CF6";
-  const accent = branding?.accentColor || "#A882FF";
-  const dark = branding?.darkColor || "#1E1B2D";
+  const primary = branding?.primaryColor || "#FF2DA1";
+  const dark = branding?.darkColor || "#05070D";
   const { profile, credits, awards, pressLinks, industryStats, reviews } = data;
-
+  // Content-driven sections (credits/awards/press/credentials/reviews) are
+  // already filtered into empty arrays by buildModifiedData() when hidden,
+  // so pages below check array length only -- re-checking visibleIds too
+  // would incorrectly hide, say, still-visible press links whenever only
+  // the separate "Awards" toggle was off. bio/skills have no such backing
+  // data filter (a real, pre-existing gap -- see EPK_PDF investigation),
+  // so those two still gate on visibleIds directly.
   const visibleIds = new Set(sections.filter(s => s.visible).map(s => s.id));
 
-  return (
-    <div className="w-full max-w-[420px] bg-white rounded-lg shadow-xl overflow-hidden text-left" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
-      {/* Hero */}
-      {visibleIds.has("hero") && (
-        <div style={{ background: dark, padding: "2rem 1.5rem", textAlign: "center" }}>
+  // Build the same page list generateEPKPdf() would, in the same order,
+  // so "page 3 of 5" in the preview really is credits, not a guess.
+  const pages: { key: string; render: () => ReactNode }[] = [];
+
+  pages.push({
+    key: "cover",
+    render: () => (
+      <div className="relative h-full p-4 flex flex-col">
+        <BrandLogo size="sm" className="[&_img]:h-3" />
+        <div className="mt-3">
+          <PdfEyebrow label="Creative Passport" primary={primary} />
+        </div>
+        <div className="mt-1 flex items-center gap-3">
           {profile.avatar_url && (
-            <img
-              src={profile.avatar_url}
-              alt=""
-              className="w-20 h-20 rounded-full mx-auto mb-3 border-2"
-              style={{ borderColor: primary }}
-            />
+            <img src={profile.avatar_url} alt="" className="h-12 w-12 rounded-md object-cover ring-2" style={{ ["--tw-ring-color" as string]: primary }} />
           )}
-          <h1 className="text-xl font-bold" style={{ color: "#fff" }}>{profile.full_name || "Creator"}</h1>
-          <p className="text-sm mt-1" style={{ color: accent }}>{profile.job_title || profile.role || "Creative Professional"}</p>
-          {profile.location && (
-            <p className="text-xs mt-1" style={{ color: "#9494A0" }}>📍 {profile.location}</p>
-          )}
-          {tagline && (
-            <p className="text-xs mt-2 italic" style={{ color: accent }}>{tagline}</p>
+          <div>
+            <p className="text-lg font-bold text-white leading-tight">{profile.full_name || "Creator"}</p>
+            <p className="text-[10px] font-semibold" style={{ color: primary }}>{profile.job_title || profile.role || "Creative Professional"}</p>
+          </div>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {profile.location && <PdfPill label={profile.location} />}
+          {(profile.verification_tier || profile.verification_status === "verified") && (
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[7px] font-semibold" style={{ backgroundColor: `${primary}22`, color: primary }}>
+              Verified Creator
+            </span>
           )}
         </div>
-      )}
-
-      <div className="px-4 py-3 space-y-4 text-xs" style={{ color: "#3C3C46" }}>
-        {/* Bio */}
-        {visibleIds.has("bio") && profile.bio && (
-          <div>
-            <p className="leading-relaxed">{profile.bio}</p>
-          </div>
-        )}
-
-        {/* Stats */}
-        {visibleIds.has("stats") && (
-          <div className="flex flex-wrap gap-2 justify-center text-[10px] font-semibold" style={{ color: primary }}>
-            {credits.length > 0 && <span>{credits.length} Credits</span>}
-            {awards.length > 0 && <span>• {awards.length} Awards</span>}
-            {profile.average_rating && <span>• ⭐ {profile.average_rating.toFixed(1)}</span>}
-          </div>
-        )}
-
-        {/* Credits */}
-        {visibleIds.has("credits") && credits.length > 0 && (
-          <div>
-            <h3 className="font-bold text-xs mb-2 uppercase tracking-wider" style={{ color: primary }}>Work History</h3>
-            {credits.slice(0, 8).map((c, i) => (
-              <div key={i} className="flex justify-between py-1 border-b border-gray-100">
-                <div>
-                  <span className="font-semibold">{c.project_name || c.title}</span>
-                  {c.isVerified && <span className="ml-1" style={{ color: primary }}>✓</span>}
-                  <br />
-                  <span className="text-[10px]" style={{ color: "#50505A" }}>{c.role}</span>
-                </div>
-                {c.year && <span className="text-[10px]" style={{ color: "#9494A0" }}>{c.year}</span>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Awards */}
-        {visibleIds.has("awards") && awards.length > 0 && (
-          <div>
-            <h3 className="font-bold text-xs mb-2 uppercase tracking-wider" style={{ color: primary }}>Awards</h3>
-            {awards.map((a, i) => (
-              <p key={i} className="py-0.5">🏆 {a.title} — <span style={{ color: "#9494A0" }}>{a.organization}{a.year ? ` • ${a.year}` : ""}</span></p>
-            ))}
-          </div>
-        )}
-
-        {/* Press */}
-        {visibleIds.has("press") && pressLinks.length > 0 && (
-          <div>
-            <h3 className="font-bold text-xs mb-2 uppercase tracking-wider" style={{ color: primary }}>Featured In</h3>
-            {pressLinks.map((p, i) => (
-              <p key={i} className="py-0.5">{p.title}{p.publication ? ` — ${p.publication}` : ""}</p>
-            ))}
-          </div>
-        )}
-
-        {/* Reviews */}
-        {visibleIds.has("reviews") && reviews.length > 0 && (
-          <div>
-            <h3 className="font-bold text-xs mb-2 uppercase tracking-wider" style={{ color: primary }}>Reviews</h3>
-            {reviews.slice(0, 3).map((r, i) => (
-              <div key={i} className="py-1 border-b border-gray-100">
-                <span style={{ color: primary }}>{"★".repeat(Math.round(r.rating))}</span>
-                {r.reviewer_name && <span className="ml-1 font-semibold">— {r.reviewer_name}</span>}
-                {r.review_text && <p className="text-[10px] italic mt-0.5" style={{ color: "#50505A" }}>"{r.review_text.slice(0, 120)}"</p>}
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="mt-auto flex gap-2 self-end">
+          {[
+            credits.length > 0 && { l: "Credits", v: credits.length },
+            awards.length > 0 && { l: "Awards", v: awards.length },
+            profile.average_rating && { l: "Rating", v: profile.average_rating.toFixed(1) },
+          ].filter(Boolean).map((s: any) => (
+            <PdfCard key={s.l} className="px-3 py-1.5 text-center">
+              <p className="text-sm font-bold" style={{ color: primary }}>{s.v}</p>
+              <p className="text-[6px] uppercase tracking-wide text-white/50">{s.l}</p>
+            </PdfCard>
+          ))}
+        </div>
       </div>
+    ),
+  });
 
-      {/* Footer */}
-      <div className="py-2 text-center text-[9px]" style={{ background: primary, color: "#fff" }}>
-        {branding?.tagline || `${profile.full_name} — EPK • kretopia.com`}
+  if (visibleIds.has("bio") || visibleIds.has("skills")) {
+    pages.push({
+      key: "about",
+      render: () => (
+        <div className="h-full p-4 grid grid-cols-2 gap-4">
+          <div>
+            <PdfEyebrow label="Profile" primary={primary} />
+            <p className="text-[11px] font-bold text-white mb-1.5">About</p>
+            {visibleIds.has("bio") && profile.bio && (
+              <p className="text-[7.5px] leading-relaxed text-white/70 line-clamp-6">{profile.bio}</p>
+            )}
+          </div>
+          <div>
+            <PdfEyebrow label="Expertise" primary={primary} />
+            <p className="text-[11px] font-bold text-white mb-1.5">Skills &amp; Connect</p>
+            {visibleIds.has("skills") && (
+              <div className="flex flex-wrap gap-1">
+                {[...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []), ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])]
+                  .slice(0, 6)
+                  .map((s: any, i: number) => <PdfPill key={i} label={typeof s === "string" ? s : s?.skill || s?.name} />)}
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+    });
+  }
+
+  if (credits.length > 0) {
+    pages.push({
+      key: "credits",
+      render: () => (
+        <div className="h-full p-4">
+          <PdfEyebrow label="Portfolio" primary={primary} />
+          <p className="text-[11px] font-bold text-white mb-2">Selected Work — {credits.length} Credits</p>
+          <div className="grid grid-cols-4 gap-2">
+            {credits.slice(0, 4).map((c, i) => (
+              <PdfCard key={i} className="overflow-hidden">
+                <div className="h-1" style={{ backgroundColor: primary }} />
+                <div className="p-1.5">
+                  <p className="text-[7px] font-bold text-white truncate">{c.project_name || c.title}</p>
+                  <p className="text-[6px] text-white/60 truncate">{c.role}</p>
+                </div>
+              </PdfCard>
+            ))}
+          </div>
+        </div>
+      ),
+    });
+  }
+
+  if (awards.length > 0 || pressLinks.length > 0) {
+    pages.push({
+      key: "awards",
+      render: () => (
+        <div className="h-full p-4 grid grid-cols-2 gap-4">
+          <div>
+            <PdfEyebrow label="Recognition" primary={primary} />
+            <p className="text-[11px] font-bold text-white mb-1.5">Awards</p>
+            <div className="space-y-1">
+              {awards.slice(0, 3).map((a, i) => (
+                <PdfCard key={i} className="p-1.5">
+                  <p className="text-[7px] font-bold" style={{ color: primary }}>{a.title}</p>
+                  <p className="text-[6px] text-white/50">{a.organization}</p>
+                </PdfCard>
+              ))}
+            </div>
+          </div>
+          <div>
+            <PdfEyebrow label="Coverage" primary={primary} />
+            <p className="text-[11px] font-bold text-white mb-1.5">Featured In</p>
+            <div className="space-y-1">
+              {pressLinks.slice(0, 3).map((p, i) => (
+                <PdfCard key={i} className="p-1.5">
+                  <p className="text-[7px] font-bold text-white">{p.title}</p>
+                </PdfCard>
+              ))}
+            </div>
+          </div>
+        </div>
+      ),
+    });
+  }
+
+  if (reviews.length > 0) {
+    pages.push({
+      key: "reviews",
+      render: () => (
+        <div className="h-full p-4">
+          <PdfEyebrow label="Word of Mouth" primary={primary} />
+          <p className="text-[11px] font-bold text-white mb-2">Client Testimonials</p>
+          <div className="grid grid-cols-2 gap-2">
+            {reviews.slice(0, 2).map((r, i) => (
+              <PdfCard key={i} className="p-2">
+                <div className="flex gap-0.5 mb-1">
+                  {Array.from({ length: 5 }).map((_, s) => (
+                    <Star key={s} className="h-2 w-2" fill={s < Math.round(r.rating) ? "#FFC440" : "none"} stroke="#FFC440" />
+                  ))}
+                </div>
+                {r.reviewer_name && <p className="text-[7px] font-bold" style={{ color: primary }}>{r.reviewer_name}</p>}
+                {r.review_text && <p className="text-[6.5px] italic text-white/60 line-clamp-3 mt-0.5">"{r.review_text}"</p>}
+              </PdfCard>
+            ))}
+          </div>
+        </div>
+      ),
+    });
+  }
+
+  if (industryStats.length > 0) {
+    pages.push({
+      key: "credentials",
+      render: () => (
+        <div className="h-full p-4">
+          <PdfEyebrow label="Credentials" primary={primary} />
+          <p className="text-[11px] font-bold text-white mb-2">Credentials &amp; Industry Stats</p>
+          <div className="flex gap-2">
+            {industryStats.slice(0, 4).map((s, i) => (
+              <PdfCard key={i} className="flex-1 p-2 text-center">
+                <p className="text-sm font-bold" style={{ color: primary }}>{s.value}</p>
+                <p className="text-[6px] font-semibold text-white/70 mt-0.5">{s.title}</p>
+              </PdfCard>
+            ))}
+          </div>
+        </div>
+      ),
+    });
+  }
+
+  pages.push({
+    key: "closing",
+    render: () => (
+      <div className="relative h-full p-4 flex flex-col">
+        <BrandLogo size="sm" className="[&_img]:h-3" />
+        <div className="mt-auto flex items-end justify-between">
+          <div>
+            <p className="text-xl font-bold text-white leading-tight">Let's create</p>
+            <p className="text-xl font-bold leading-tight" style={{ color: primary }}>together.</p>
+            <div className="h-[2px] w-8 mt-1.5 mb-2" style={{ backgroundColor: primary }} />
+            <span className="inline-block rounded-full px-3 py-1 text-[8px] font-bold" style={{ backgroundColor: primary, color: dark }}>
+              View Full Passport
+            </span>
+          </div>
+          <PdfCard className="p-2.5 w-32">
+            <p className="text-[6px] uppercase tracking-wide text-white/40">Contact</p>
+            <p className="text-[9px] font-bold text-white mt-0.5">{profile.full_name}</p>
+            <p className="text-[7px]" style={{ color: primary }}>{profile.job_title || profile.role}</p>
+          </PdfCard>
+        </div>
+      </div>
+    ),
+  });
+
+  const [pageIdx, setPageIdx] = useState(0);
+  const clampedIdx = Math.min(pageIdx, pages.length - 1);
+
+  return (
+    <div className="w-full max-w-2xl">
+      <PdfPageFrame dark={dark}>
+        {pages[clampedIdx]?.render()}
+        <div className="absolute inset-x-0 bottom-0 h-[3px]" style={{ backgroundColor: primary, opacity: 0.6 }} />
+      </PdfPageFrame>
+      <div className="mt-3 flex items-center justify-between">
+        <Button variant="ghost" size="sm" disabled={clampedIdx === 0} onClick={() => setPageIdx(i => Math.max(0, i - 1))}>
+          <ChevronLeft className="h-4 w-4" /> Prev
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          Page {clampedIdx + 1} of {pages.length} — {pages[clampedIdx].key}
+        </span>
+        <Button variant="ghost" size="sm" disabled={clampedIdx === pages.length - 1} onClick={() => setPageIdx(i => Math.min(pages.length - 1, i + 1))}>
+          Next <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

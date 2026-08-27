@@ -14,8 +14,6 @@ interface StudioCreateHeroProps {
   activeCount: number;
 }
 
-const ACCENT = "#FF2DA1";
-
 const PROOF = [
   { icon: FileText, label: "Brief", copy: "Your idea, structured into a brief you can edit." },
   { icon: ListChecks, label: "Work", copy: "Tasks, deliverables and milestones in one place." },
@@ -53,13 +51,13 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
     <section
       aria-labelledby="studio-hero-title"
       className="dark relative isolate overflow-hidden rounded-3xl border border-white/10"
-      style={{ backgroundColor: "#05070D" }}
+      style={{ backgroundColor: "hsl(var(--background))" }}
     >
       {/* aurora — same plate as FeaturePageHeader / landing chapters */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 ai-ambient-breathe"
-        style={{ background: "radial-gradient(70% 60% at 20% 0%, rgba(255,45,161,0.18), transparent 64%)" }}
+        style={{ background: "radial-gradient(70% 60% at 20% 0%, hsl(var(--energy) / 0.18), transparent 64%)" }}
       />
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
       <div
@@ -77,7 +75,7 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
           <div className="min-w-0">
             <span
               className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em]"
-              style={{ borderColor: "rgba(255,45,161,0.35)", color: ACCENT }}
+              style={{ borderColor: "hsl(var(--energy) / 0.35)", color: "hsl(var(--energy))" }}
             >
               <Sparkles className="h-3 w-3" aria-hidden />
               New Room
@@ -88,7 +86,7 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
             >
               Say what you're making.
               <br />
-              <span style={{ color: ACCENT }}>Kreto builds the room.</span>
+              <span style={{ color: "hsl(var(--energy))" }}>Kreto builds the room.</span>
             </h2>
             <p className="mt-3 max-w-xl text-sm sm:text-base text-white/55">
               By voice or text. Kreto shapes a brief and a starting structure, you review and
@@ -102,15 +100,15 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
           type="button"
           onClick={onCreate}
           aria-label="Open the New Room"
-          className="group mt-6 flex w-full items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors hover:border-[rgba(255,45,161,0.45)]"
-          style={{ borderColor: "rgba(255,45,161,0.22)", backgroundColor: "rgba(255,255,255,0.03)" }}
+          className="group mt-6 flex w-full items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors hover:border-[hsl(var(--energy)/0.45)]"
+          style={{ borderColor: "hsl(var(--energy) / 0.22)", backgroundColor: "rgba(255,255,255,0.03)" }}
         >
           <span
             aria-hidden
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full"
-            style={{ backgroundColor: "rgba(255,45,161,0.14)" }}
+            style={{ backgroundColor: "hsl(var(--energy) / 0.14)" }}
           >
-            <Mic className="h-4 w-4" style={{ color: ACCENT }} />
+            <Mic className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} />
           </span>
           <span className="min-w-0 flex-1 overflow-hidden">
             <AnimatePresence mode="wait" initial={false}>
@@ -165,7 +163,7 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
               className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
             >
               <div className="flex items-center gap-2">
-                <Icon className="h-4 w-4" style={{ color: ACCENT }} aria-hidden />
+                <Icon className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} aria-hidden />
                 <span className="text-xs font-bold uppercase tracking-wider text-white">{label}</span>
               </div>
               <p className="mt-1.5 text-xs text-white/50">{copy}</p>

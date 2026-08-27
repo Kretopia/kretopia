@@ -379,6 +379,75 @@ export const analytics = {
       properties: { project_id: projectId, match_id: matchId, collaborator_count: collaboratorCount },
     }),
 
+  // New Room (voice-first project intake). Properties are deliberately safe
+  // metadata only -- input mode, workspace type, outcome, error category --
+  // never raw transcripts, file contents or brief text. See
+  // NEW_ROOM_UX_AUDIT.md for why these specific points were instrumented.
+  newRoomOpened: (source: string) =>
+    trackEvent({
+      eventName: 'new_room_opened',
+      eventCategory: EventCategory.PROJECT,
+      properties: { source },
+    }),
+
+  newRoomInputModeSelected: (mode: 'voice' | 'text' | 'file' | 'link') =>
+    trackEvent({
+      eventName: 'new_room_input_mode_selected',
+      eventCategory: EventCategory.PROJECT,
+      properties: { mode },
+    }),
+
+  newRoomVoiceStarted: () =>
+    trackEvent({ eventName: 'new_room_voice_started', eventCategory: EventCategory.PROJECT }),
+
+  newRoomVoiceCompleted: (durationSeconds: number) =>
+    trackEvent({
+      eventName: 'new_room_voice_completed',
+      eventCategory: EventCategory.PROJECT,
+      properties: { duration_bucket: durationSeconds < 10 ? 'short' : durationSeconds < 60 ? 'medium' : 'long' },
+    }),
+
+  newRoomTextSubmitted: (workspaceType: string) =>
+    trackEvent({
+      eventName: 'new_room_text_submitted',
+      eventCategory: EventCategory.PROJECT,
+      properties: { workspace_type: workspaceType },
+    }),
+
+  newRoomFileUploaded: (fileType: string) =>
+    trackEvent({
+      eventName: 'new_room_file_uploaded',
+      eventCategory: EventCategory.PROJECT,
+      properties: { file_type: fileType },
+    }),
+
+  newRoomLinkSubmitted: () =>
+    trackEvent({ eventName: 'new_room_link_submitted', eventCategory: EventCategory.PROJECT }),
+
+  newRoomDraftReady: (workspaceType: string, deliverableCount: number) =>
+    trackEvent({
+      eventName: 'new_room_draft_ready',
+      eventCategory: EventCategory.PROJECT,
+      properties: { workspace_type: workspaceType, deliverable_count: deliverableCount },
+    }),
+
+  newRoomDraftCancelled: () =>
+    trackEvent({ eventName: 'new_room_draft_cancelled', eventCategory: EventCategory.PROJECT }),
+
+  newRoomProjectConfirmed: (workspaceType: string) =>
+    trackEvent({
+      eventName: 'new_room_project_confirmed',
+      eventCategory: EventCategory.PROJECT,
+      properties: { workspace_type: workspaceType },
+    }),
+
+  newRoomCreationFailed: (errorCategory: string) =>
+    trackEvent({
+      eventName: 'new_room_creation_failed',
+      eventCategory: EventCategory.PROJECT,
+      properties: { error_category: errorCategory },
+    }),
+
   projectFileShared: (projectId: string, fileType: string) =>
     trackEvent({
       eventName: 'project_file_shared',

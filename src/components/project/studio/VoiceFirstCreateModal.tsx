@@ -18,9 +18,9 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceConfigs";
 import { compressImage } from "@/lib/extractBriefDocument";
+import { inferWorkspaceType } from "@/lib/inferWorkspaceType";
+import { analytics } from "@/lib/analytics";
 
-
-const ACCENT = "#FF2DA1";
 
 /** Real example prompts per workspace type — the same examples already used
  * as placeholder text, promoted to visible, tappable chips so they teach by
@@ -90,23 +90,6 @@ const INSPIRATION_TYPES: WorkspaceType[] = [
   "video_shoot",
   "content_series",
 ];
-
-/** Lightweight keyword inference so the room shape matches what was said. */
-function inferWorkspaceType(text: string): WorkspaceType {
-  const t = (text || "").toLowerCase();
-  if (/\b(podcast|episode|guest|interview show|mic|recording session)\b/.test(t)) return "content_series";
-  if (/\b(event|festival|launch party|conference|gala|run sheet|venue|doors open|lineup)\b/.test(t)) return "event_production";
-  if (/\b(album|ep|single|track|mix|master|release|tour|studio session|song)\b/.test(t)) return "music_project";
-  if (/\b(campaign|brand|sponsor|paid social|launch.*(brand|product))\b/.test(t)) return "brand_collab";
-  if (/\b(runway|fashion show|lookbook|model lineup)\b/.test(t)) return "fashion_show";
-  if (/\b(dj|set|live gig|club night)\b/.test(t)) return "dj_live_gig";
-  if (/\b(retouch|color grade|edit pass|audio mix)\b/.test(t)) return "edit_job";
-  if (/\b(illustration|painting|commission)\b/.test(t)) return "commissioned_art";
-  if (/\b(film|short film|music video|commercial spot|treatment)\b/.test(t)) return "video_shoot";
-  if (/\b(photo shoot|editorial|headshot)\b/.test(t)) return "photo_shoot";
-  if (/\b(shoot|reel|video|content|tiktok|instagram|youtube|carousel|post|edit)\b/.test(t)) return "content_series";
-  return "general";
-}
 
 interface VoiceFirstCreateModalProps {
   open: boolean;
@@ -268,6 +251,8 @@ export const VoiceFirstCreateModal = ({
       };
       rec.start();
       mediaRef.current = rec;
+      analytics.newRoomInputModeSelected('voice');
+      analytics.newRoomVoiceStarted();
       setMode("recording");
       startTimer();
     } catch (err: any) {
@@ -282,6 +267,7 @@ export const VoiceFirstCreateModal = ({
 
   const stopRecording = () => {
     stopTimer();
+    analytics.newRoomVoiceCompleted(seconds);
     if (mediaRef.current && mediaRef.current.state !== "inactive") {
       mediaRef.current.stop();
     }
@@ -334,6 +320,7 @@ export const VoiceFirstCreateModal = ({
       if (workspaceType === "general") {
         setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
       }
+      analytics.newRoomDraftReady(workspaceType, (result.deliverables ?? []).length);
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -351,12 +338,14 @@ export const VoiceFirstCreateModal = ({
     const trimmed = textInput.trim();
     if (!trimmed) return;
     setRawInput(trimmed);
+    analytics.newRoomInputModeSelected('text');
     setMode("thinking");
     // If user hasn't picked a type yet, infer one before calling extract-brief
     // so the AI uses the right producer persona.
     const typeForCall: WorkspaceType =
       workspaceType !== "general" ? workspaceType : inferWorkspaceType(trimmed);
     if (typeForCall !== workspaceType) setWorkspaceType(typeForCall);
+    analytics.newRoomTextSubmitted(typeForCall);
     try {
       const { data, error } = await supabase.functions.invoke("extract-brief", {
         body: { source: "text", text: trimmed, workspace_type: typeForCall },
@@ -368,6 +357,7 @@ export const VoiceFirstCreateModal = ({
         : result;
       setBrief(finalBrief);
       setSelected(new Set((finalBrief.deliverables ?? []).slice(0, 8).map((_, i) => i)));
+      analytics.newRoomDraftReady(typeForCall, (finalBrief.deliverables ?? []).length);
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -392,6 +382,7 @@ export const VoiceFirstCreateModal = ({
    * already supports source="doc" (base64 PDF/image, Gemini multimodal),
    * it just wasn't wired up in this modal before now. */
   const processFile = async (file: File) => {
+    analytics.newRoomInputModeSelected('file');
     if (file.size > 25 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -401,6 +392,7 @@ export const VoiceFirstCreateModal = ({
       return;
     }
     setUploadingFile(true);
+    analytics.newRoomFileUploaded(file.type || 'unknown');
     setMode("thinking");
     try {
       // Images go through the same compress-before-send step BriefDropZone
@@ -427,9 +419,11 @@ export const VoiceFirstCreateModal = ({
       if (workspaceType === "general") {
         setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
       }
+      analytics.newRoomDraftReady(workspaceType, (result.deliverables ?? []).length);
       setMode("review");
     } catch (err: any) {
       console.error(err);
+      analytics.newRoomCreationFailed('file_extract');
       toast({
         title: "Couldn't read that file",
         description: await describeFunctionError(err, "Try pasting the brief as text instead."),
@@ -454,6 +448,8 @@ export const VoiceFirstCreateModal = ({
   const submitLink = async () => {
     const url = linkUrl.trim();
     if (!url) return;
+    analytics.newRoomInputModeSelected('link');
+    analytics.newRoomLinkSubmitted();
     setMode("thinking");
     try {
       const { data, error } = await supabase.functions.invoke("extract-brief", {
@@ -464,9 +460,11 @@ export const VoiceFirstCreateModal = ({
       if (!result?.project?.title) throw new Error("Couldn't read that sheet");
       setBrief(result);
       setSelected(new Set((result.deliverables ?? []).slice(0, 8).map((_, i) => i)));
+      analytics.newRoomDraftReady(workspaceType, (result.deliverables ?? []).length);
       setMode("review");
     } catch (err: any) {
       console.error(err);
+      analytics.newRoomCreationFailed('link_extract');
       toast({
         title: "Couldn't read that link",
         description: await describeFunctionError(err, "Make sure the Google Sheet is shared as \"Anyone with the link.\""),
@@ -479,6 +477,7 @@ export const VoiceFirstCreateModal = ({
 
   const createProject = async (mode: "all" | "selected" | "none" = "all") => {
     if (!user || !brief) return;
+    analytics.newRoomProjectConfirmed(workspaceType);
     setCreating(true);
     try {
       const { data: project, error } = await supabase
@@ -550,6 +549,7 @@ export const VoiceFirstCreateModal = ({
       setTimeout(() => navigate(`/desk/${project.id}`), 80);
     } catch (err: any) {
       console.error(err);
+      analytics.newRoomCreationFailed('project_insert');
       toast({
         title: "Couldn't open the room",
         description: err.message,
@@ -560,12 +560,36 @@ export const VoiceFirstCreateModal = ({
     }
   };
 
-  // This is a full-screen custom overlay, not a Radix Dialog, so it needs
-  // its own Escape handling and ARIA role — neither came for free.
+  // This is a full-screen custom overlay, not a Radix Dialog, so Escape
+  // handling, a focus trap and focus return -- all free with Dialog --
+  // have to be built by hand here.
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenChange(false);
+      if (e.key === "Escape") {
+        onOpenChange(false);
+        return;
+      }
+      if (e.key !== "Tab" || !modalRef.current) return;
+      // Manual focus trap: Tab/Shift+Tab wraps within the modal instead of
+      // escaping into the page behind it, which a bare `role="dialog"` div
+      // (unlike Radix Dialog) does nothing to prevent on its own.
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -573,7 +597,14 @@ export const VoiceFirstCreateModal = ({
 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (open) closeButtonRef.current?.focus();
+    if (open) {
+      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+      closeButtonRef.current?.focus();
+      analytics.newRoomOpened('desk');
+    } else {
+      previouslyFocusedRef.current?.focus();
+      previouslyFocusedRef.current = null;
+    }
   }, [open]);
 
   if (!open) return null;
@@ -583,10 +614,11 @@ export const VoiceFirstCreateModal = ({
 
   return (
     <div
+      ref={modalRef}
       className="fixed inset-0 z-[60] flex flex-col bg-background"
       role="dialog"
       aria-modal="true"
-      aria-label="New Room"
+      aria-labelledby="new-room-title"
     >
       {/* Ambient glow — same futuristic backdrop language as the Studio room */}
       <div
@@ -594,15 +626,15 @@ export const VoiceFirstCreateModal = ({
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(65% 50% at 50% 0%, rgba(255,45,161,0.12), transparent 62%)",
+            "radial-gradient(65% 50% at 50% 0%, hsl(var(--energy) / 0.12), transparent 62%)",
         }}
       />
 
       {/* Top bar */}
       <div className="relative z-10 flex items-center justify-between gap-3 px-4 h-16 shrink-0 border-b border-border/40">
         <span
-          className="text-xs font-bold tracking-[0.22em] uppercase"
-          style={{ color: ACCENT }}
+          id="new-room-title"
+          className="text-xs font-bold tracking-[0.22em] uppercase text-[hsl(var(--energy))]"
         >
           New Room
         </span>
@@ -669,7 +701,7 @@ export const VoiceFirstCreateModal = ({
                         <div className="flex items-center gap-1.5">
                           <span
                             className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
-                            style={{ backgroundColor: "rgba(255,45,161,0.14)", color: ACCENT }}
+                            style={{ backgroundColor: "hsl(var(--energy) / 0.14)", color: "hsl(var(--energy))" }}
                           >
                             {i + 1}
                           </span>
@@ -680,7 +712,7 @@ export const VoiceFirstCreateModal = ({
                             "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
                             STEP_KIND_TONE[step.kind]
                           )}
-                          style={step.kind === "confirmed" ? { backgroundColor: ACCENT } : undefined}
+                          style={step.kind === "confirmed" ? { backgroundColor: "hsl(var(--energy))" } : undefined}
                         >
                           {STEP_KIND_LABEL[step.kind]}
                         </span>
@@ -699,9 +731,9 @@ export const VoiceFirstCreateModal = ({
               <div className="w-full max-w-md space-y-3">
                 <div
                   className="rounded-2xl border p-4 text-left"
-                  style={{ borderColor: "rgba(255,45,161,0.25)", boxShadow: "0 0 0 1px rgba(255,45,161,0.08)" }}
+                  style={{ borderColor: "hsl(var(--energy) / 0.25)", boxShadow: "0 0 0 1px hsl(var(--energy) / 0.08)" }}
                 >
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: ACCENT }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "hsl(var(--energy))" }}>
                     Google Sheet link
                   </p>
                   <Input
@@ -735,17 +767,17 @@ export const VoiceFirstCreateModal = ({
                   <span
                     aria-hidden
                     className="absolute inset-0 rounded-full animate-ping pointer-events-none"
-                    style={{ backgroundColor: "rgba(255,45,161,0.18)" }}
+                    style={{ backgroundColor: "hsl(var(--energy) / 0.18)" }}
                   />
                   <button
                     type="button"
                     onClick={startRecording}
                     aria-label="Start recording"
-                    style={{ backgroundColor: ACCENT }}
+                    style={{ backgroundColor: "hsl(var(--energy))" }}
                     className={cn(
                       "relative h-24 w-24 rounded-full text-white",
                       "flex items-center justify-center",
-                      "shadow-[0_0_40px_rgba(255,45,161,0.45)] ring-8 ring-[rgba(255,45,161,0.15)]",
+                      "shadow-[0_0_40px_hsl(var(--energy)/0.45)] ring-8 ring-[hsl(var(--energy)/0.15)]",
                       "transition-transform hover:scale-105 active:scale-95"
                     )}
                   >
@@ -775,6 +807,7 @@ export const VoiceFirstCreateModal = ({
                           key={t}
                           type="button"
                           onClick={() => {
+                            analytics.featureUsed('new_room_starter_intent', { workspace_type: t });
                             setWorkspaceType(t);
                             setTextInput(EXAMPLE_PROMPTS[t]);
                             setShowText(true);
@@ -804,7 +837,7 @@ export const VoiceFirstCreateModal = ({
                       disabled={uploadingFile}
                       className="glass-surface rounded-xl p-3 text-left hover:border-primary/40 transition-colors disabled:opacity-50"
                     >
-                      <Upload className="h-4 w-4 mb-1.5" style={{ color: ACCENT }} />
+                      <Upload className="h-4 w-4 mb-1.5" style={{ color: "hsl(var(--energy))" }} />
                       <p className="text-xs font-semibold leading-tight">Start from a brief or file</p>
                       <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
                         PDF, image or doc — Kreto reads it.
@@ -815,7 +848,7 @@ export const VoiceFirstCreateModal = ({
                       onClick={() => setShowLinkInput(true)}
                       className="glass-surface rounded-xl p-3 text-left hover:border-primary/40 transition-colors"
                     >
-                      <Link2 className="h-4 w-4 mb-1.5" style={{ color: ACCENT }} />
+                      <Link2 className="h-4 w-4 mb-1.5" style={{ color: "hsl(var(--energy))" }} />
                       <p className="text-xs font-semibold leading-tight">Paste a Google Sheet</p>
                       <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
                         One row per deliverable — Kreto maps it.
@@ -830,15 +863,15 @@ export const VoiceFirstCreateModal = ({
                 <div
                   className="rounded-2xl border transition-shadow focus-within:shadow-lg"
                   style={{
-                    borderColor: "rgba(255,45,161,0.25)",
-                    boxShadow: "0 0 0 1px rgba(255,45,161,0.08)",
+                    borderColor: "hsl(var(--energy) / 0.25)",
+                    boxShadow: "0 0 0 1px hsl(var(--energy) / 0.08)",
                   }}
                 >
                   <div className="flex items-center gap-1.5 px-3.5 pt-3">
-                    <Search className="h-3 w-3" style={{ color: ACCENT }} />
+                    <Search className="h-3 w-3" style={{ color: "hsl(var(--energy))" }} />
                     <span
                       className="text-[9px] font-semibold uppercase tracking-[0.18em]"
-                      style={{ color: ACCENT }}
+                      style={{ color: "hsl(var(--energy))" }}
                     >
                       Describe your project
                     </span>
@@ -858,7 +891,7 @@ export const VoiceFirstCreateModal = ({
                   onClick={() => setTextInput(EXAMPLE_PROMPTS[workspaceType])}
                   className="w-full rounded-lg border border-dashed border-border/60 px-3 py-1.5 text-left text-[11px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors inline-flex items-center gap-1.5"
                 >
-                  <Sparkles className="h-3 w-3 shrink-0" style={{ color: ACCENT }} />
+                  <Sparkles className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--energy))" }} />
                   <span className="truncate">Try: "{EXAMPLE_PROMPTS[workspaceType]}"</span>
                 </button>
 
@@ -891,7 +924,7 @@ export const VoiceFirstCreateModal = ({
             <div className="relative mb-8">
               <span
                 className="absolute inset-0 rounded-full animate-ping"
-                style={{ backgroundColor: "rgba(255,45,161,0.25)" }}
+                style={{ backgroundColor: "hsl(var(--energy) / 0.25)" }}
               />
               <button
                 type="button"
@@ -899,11 +932,11 @@ export const VoiceFirstCreateModal = ({
                 aria-label="Stop recording"
                 className="glass-surface-elevated relative h-28 w-28 rounded-full flex items-center justify-center"
                 style={{
-                  border: "1.5px solid rgba(255,45,161,0.4)",
-                  boxShadow: "0 8px 40px rgba(255,45,161,0.22)",
+                  border: "1.5px solid hsl(var(--energy) / 0.4)",
+                  boxShadow: "0 8px 40px hsl(var(--energy) / 0.22)",
                 }}
               >
-                <Square className="h-9 w-9 fill-current" style={{ color: ACCENT }} />
+                <Square className="h-9 w-9 fill-current" style={{ color: "hsl(var(--energy))" }} />
               </button>
             </div>
             <p className="text-2xl font-mono tabular-nums">{fmtSec(seconds)}</p>
@@ -934,7 +967,7 @@ export const VoiceFirstCreateModal = ({
             <div className="mt-4 h-1 w-48 rounded-full bg-muted/60 overflow-hidden">
               <motion.div
                 className="h-full w-1/2 rounded-full"
-                style={{ background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)` }}
+                style={{ background: "linear-gradient(90deg, transparent, hsl(var(--energy)), transparent)" }}
                 animate={reducedMotion ? undefined : { x: ["-100%", "200%"] }}
                 transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
               />
@@ -944,7 +977,7 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "review" && brief && (
           <div className="w-full max-w-md space-y-5 text-left">
-            <p className="text-xs font-bold tracking-[0.18em] uppercase" style={{ color: ACCENT }}>
+            <p className="text-xs font-bold tracking-[0.18em] uppercase" style={{ color: "hsl(var(--energy))" }}>
               Kreto structured your project — review and edit
             </p>
             <div className="space-y-2">
@@ -1159,6 +1192,7 @@ export const VoiceFirstCreateModal = ({
             variant="ghost"
             size="sm"
             onClick={() => {
+              analytics.newRoomDraftCancelled();
               setBrief(null);
               setSelected(new Set());
               setMode("prompt");

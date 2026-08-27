@@ -90,7 +90,9 @@ None required for the P0/P1 scope below. A real idempotency-key mechanism (e.g. 
 5. Delete the confirmed-dead `CreateProjectWizard.tsx`/`CreateProjectDialog.tsx` pair, after a final grep-verify.
 6. Add a first test suite: persona-mapping unit tests (pure logic, no mocks needed) + a `VoiceFirstCreateModal` component test following the app's established Supabase/`useAuth` mock pattern (`UnifiedSearchDropdown.hero.test.tsx`'s style, since no test currently mocks `useAuth` anywhere in the repo — this establishes that pattern).
 
-**Explicitly out of scope for this pass** (P2, per the spec's own scope-control section): converting the overlay to a full `Dialog` primitive; a client-side idempotency-key mechanism (needs a migration); voice-specific test coverage requiring real microphone hardware; a from-scratch visual redesign of a flow that is already functionally solid — this pass fixes real bugs and real gaps rather than reskinning working UI.
+**Explicitly out of scope for this pass** (P2, per the spec's own scope-control section): converting the overlay to a full `Dialog` primitive; voice-specific test coverage requiring real microphone hardware; a from-scratch visual redesign of a flow that is already functionally solid — this pass fixes real bugs and real gaps rather than reskinning working UI.
+
+**Update, same pass**: the double-click duplicate-project race (originally scoped here as needing a migration) turned out to have a real non-migration fix -- a synchronous ref guard closes the dominant double-click case; only the narrower network-retry case still needs a migration. The 7-breakpoint responsive matrix and a full reduced-motion code-path audit were also completed within this pass rather than deferred. See `NEW_ROOM_RELEASE_GATE.md` for the final, accurate status.
 
 ## 13. Test plan
 

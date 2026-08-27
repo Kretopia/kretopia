@@ -14,9 +14,11 @@ No `projects` write happens before the explicit Create click — confirmed both 
 
 The trust line ("Nothing becomes a Project until you confirm the draft. Kreto will not invite collaborators, send messages or emails, or trigger payments without your approval.") is accurate to what the code does — `createProject()` does not invite, message, or charge anyone; it inserts a project row, optional tasks, and scaffolds default folders/tasks, all owned by the confirming user.
 
-## Confirmed gap, not fixed this pass
+## Duplicate-project race — the double-click case closed, the network-retry case documented
 
-**No idempotency key.** A double-click or a retried request after an ambiguous network response could create two `projects` rows for one draft. The only guard is the client-side `creating` boolean disabling the Create buttons — real, but not airtight (two near-simultaneous taps before a re-render, or a client retry after a request that actually succeeded server-side). A real fix needs a migration (client-generated UUID in a unique-constrained column, checked before insert) — not applied this pass per the standing rule against unprompted migrations. Flagged as P2/requires-backend-work in `NEW_ROOM_UX_AUDIT.md`.
+The `creating` React state boolean disabling the Create buttons was real but not airtight: state updates lag a render behind the click handler, so two near-simultaneous taps could both fire before either saw `creating: true`. Fixed with a synchronous `creatingRef` guard, checked and set at the top of `createProject()` before any async work -- a ref updates immediately, so the second call in a fast double-click reads it as already-in-progress and returns early. Verified by a test that drives the full flow to the review screen and double-clicks Create, asserting the `projects` insert fires exactly once.
+
+**Remaining, narrower gap**: a client retry after a genuinely lost response (the original request succeeded server-side but the client's connection dropped before it saw the reply) is not covered by a ref that resets on remount/unmount -- that case needs a true server-side idempotency key (client-generated UUID in a unique-constrained column, checked before insert), which needs a migration and is not applied this pass per the standing rule against unprompted migrations. This residual case requires both a lost response *and* the user manually retrying, which is materially narrower than the double-click case that's now closed.
 
 ## Minor, low-severity, not fixed this pass
 

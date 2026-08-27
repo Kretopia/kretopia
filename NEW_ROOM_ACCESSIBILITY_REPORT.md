@@ -13,9 +13,9 @@
 
 Escape handling (real `keydown` listener, not simulated). `role="dialog"`/`aria-modal="true"` present. Voice is not the only input path (text/file/link all present and reachable without touching the mic). No animation-only feedback found — every mode transition (recording/thinking/review) is paired with real text, not just a color or motion change.
 
-## Reduced motion
+## Reduced motion — full code-path audit
 
-`useReducedMotion()` (the same shared, already-proven hook used throughout the app) gates the prompt-line rotation in `StudioCreateHero` and the thinking-step crossfade/progress-sweep in `VoiceFirstCreateModal` — confirmed present in the code, unmodified by this pass. Not independently re-verified live this pass (no direct `prefers-reduced-motion` emulation control in the available browser tooling) — documented as a gap, not silently skipped.
+No direct `prefers-reduced-motion` emulation control was available in the browser tooling used this pass, so this was verified by reading every motion call site rather than live OS-level toggling. `useReducedMotion()` (the same shared, already-proven hook used throughout the app) gates all 7 framer-motion entry/exit/loop call sites across both files: `StudioCreateHero.tsx` -- the rotating-prompt-line interval effect itself (stops the state cycling, not just the transition, when reduced motion is on), the prompt-line's enter/exit animation, and the proof-strip's scroll-in animation; `VoiceFirstCreateModal.tsx` -- the how-it-works step reveal, the thinking-step crossfade's enter/exit, and the progress-bar gradient sweep. The one animation not individually gated -- the mic button's plain-CSS `animate-ping` halo -- is covered instead by the app's existing global rule in `src/index.css` (`@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; ... } }`), confirmed present and unconditional across the whole app, not added by this pass.
 
 ## Test coverage added
 

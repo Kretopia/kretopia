@@ -124,6 +124,15 @@ export const VoiceFirstCreateModal = ({
   const [textInput, setTextInput] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [creating, setCreating] = useState(false);
+  // Synchronous guard against a duplicate project on a fast double-click or
+  // double-tap: React state updates (the `creating` flag disabling the
+  // button) are batched and lag a render behind the actual click handler,
+  // so two clicks fired close enough together can both read `creating` as
+  // still false. A ref updates immediately, closing that race. This does
+  // not cover a network retry after a genuinely lost response (that needs
+  // a server-side idempotency key -- see NEW_ROOM_APPROVAL_AND_SECURITY.md)
+  // but it closes the far more common double-click case without a migration.
+  const creatingRef = useRef(false);
   const [brief, setBrief] = useState<ExtractedBrief | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [paymentsInvolved, setPaymentsInvolved] = useState<boolean | null>(null);
@@ -477,6 +486,8 @@ export const VoiceFirstCreateModal = ({
 
   const createProject = async (mode: "all" | "selected" | "none" = "all") => {
     if (!user || !brief) return;
+    if (creatingRef.current) return;
+    creatingRef.current = true;
     analytics.newRoomProjectConfirmed(workspaceType);
     setCreating(true);
     try {
@@ -556,6 +567,7 @@ export const VoiceFirstCreateModal = ({
         variant: "destructive",
       });
     } finally {
+      creatingRef.current = false;
       setCreating(false);
     }
   };

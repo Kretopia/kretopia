@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { VoiceFirstCreateModal } from "../VoiceFirstCreateModal";
@@ -15,17 +15,34 @@ import { VoiceFirstCreateModal } from "../VoiceFirstCreateModal";
  * what browser verification covered instead.
  */
 
+const mocks = vi.hoisted(() => ({
+  invoke: vi.fn(() => Promise.resolve({
+    data: {
+      project: { title: "Test Project", summary: "A test brief." },
+      deliverables: [{ title: "First task", description: "" }],
+    },
+    error: null,
+  })),
+  projectsInsert: vi.fn(() => ({
+    select: () => ({ single: () => Promise.resolve({ data: { id: "new-project-id" }, error: null }) }),
+  })),
+}));
+
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    functions: { invoke: () => Promise.resolve({ data: null, error: null }) },
-    from: () => ({
-      insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
+    functions: { invoke: mocks.invoke },
+    from: (table: string) => ({
+      insert: table === "projects" ? mocks.projectsInsert : vi.fn(() => Promise.resolve({ data: null, error: null })),
     }),
     // analytics.ts's trackEvent() calls this when no explicit userId is
     // passed -- without it, every event fired during these tests (e.g. the
     // real new_room_opened call on mount) logs a swallowed-but-noisy error.
     auth: { getUser: () => Promise.resolve({ data: { user: { id: "test-user-id" } }, error: null }) },
   },
+}));
+
+vi.mock("@/lib/scaffoldProject", () => ({
+  scaffoldProjectDefaults: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
@@ -117,5 +134,30 @@ describe("VoiceFirstCreateModal", () => {
   it("offers a text fallback entry point alongside voice", () => {
     renderModal();
     expect(screen.getByText("Or type it instead")).toBeInTheDocument();
+  });
+
+  it("creates exactly one project even if Create is double-clicked", async () => {
+    renderModal();
+    fireEvent.click(screen.getByText("Photo Shoot"));
+    const textarea = screen.getByPlaceholderText(/Editorial shoot/i);
+    fireEvent.change(textarea, { target: { value: "A real editorial shoot brief for testing." } });
+    fireEvent.click(screen.getByText("Let Kreto draft my Project"));
+
+    await screen.findByText("Kreto structured your project — review and edit", {}, { timeout: 3000 });
+    // The "Money involved?" gate is required -- both Create buttons stay
+    // disabled until it's answered, same as in the real app.
+    fireEvent.click(screen.getByText("No — personal/passion"));
+
+    const createButton = screen.getByText("Create all & open");
+
+    // Two rapid clicks simulate the double-click/double-tap race a plain
+    // `creating` state boolean can't fully close (state updates lag a
+    // render behind the click handler) -- the synchronous creatingRef
+    // guard in createProject() is what this test actually verifies.
+    fireEvent.click(createButton);
+    fireEvent.click(createButton);
+
+    await waitFor(() => expect(mocks.projectsInsert).toHaveBeenCalled());
+    expect(mocks.projectsInsert).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoSphere } from "@/components/brand/KretoSphere";
 import { cn } from "@/lib/utils";
 
 /**
@@ -68,7 +68,7 @@ export function KretoLauncher() {
         bottom: "max(1.25rem, env(safe-area-inset-bottom))",
       }}
     >
-      <KretoAvatar size="xs" animated={!reducedMotion} />
+      <KretoSphere size={30} animated={!reducedMotion} />
       <span className="sr-only">Open Kreto</span>
     </button>
   );

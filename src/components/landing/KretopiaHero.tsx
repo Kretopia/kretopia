@@ -15,7 +15,6 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
-import { KretoSpectrum, type SpectrumState } from "@/components/landing/kretopia/KretoSpectrum";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { analytics } from "@/lib/analytics";
@@ -49,8 +48,6 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
     if (open && !focused) analytics.featureUsed("landing_search_focused", { location: "hero" });
     setFocused(open);
   };
-
-  const spectrumState: SpectrumState = focused ? (query.trim() ? "typing" : "focus") : "idle";
 
   const submitSearch = (value: string) => {
     analytics.searchStarted(value);
@@ -169,14 +166,6 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
           transition={{ duration: 0.6, delay: 0.22 }}
           className="mt-9 sm:mt-11 max-w-2xl mx-auto"
         >
-          {/* Kreto's floating presence — a small grey-to-pink waveform that
-              reads as "listening," reacting to real focus/typing state
-              rather than looping the same idle animation regardless of
-              what's happening in the input below it. */}
-          <div className="mb-3 flex justify-center">
-            <KretoSpectrum state={spectrumState} size={20} />
-          </div>
-
           {/* AI-glow ring — an ambient breathing halo behind the search bar,
               intensifying while the dropdown is actively open, plus a
               scan-line sweep along the top edge. Purely decorative: sits

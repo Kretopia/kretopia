@@ -25,6 +25,7 @@ import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 import { VibePicker } from "@/components/onboarding/VibePicker";
 import { Palette } from "lucide-react";
 import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
+import { StaggerHeading } from "@/components/typography/StaggerReveal";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -1029,7 +1030,7 @@ const Settings = ({ embedded = false }: SettingsProps = {}) => {
               <p className="brand-eyebrow mb-1">Account</p>
               <h1 className="text-3xl font-black tracking-[-0.03em] mb-2 flex items-center gap-2">
                 <SettingsIcon className="h-8 w-8 text-primary" />
-                Settings
+                <StaggerHeading as="span" text="Settings" className="inline" />
               </h1>
               <p className="text-muted-foreground">
                 Manage your account preferences and security

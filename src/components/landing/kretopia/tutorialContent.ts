@@ -27,7 +27,7 @@ export const SEARCH_TUTORIAL: TutorialStep[] = [
 export const PASSPORT_TUTORIAL: TutorialStep[] = [
   { icon: UserCheck, title: "Review your identity", body: "Check your name, role, avatar, and bio — the basics that appear on your public Passport." },
   { icon: ListChecks, title: "Confirm your credits", body: "Go through each imported or claimed credit and confirm it's actually yours before it counts." },
-  { icon: FileEdit, title: "Edit AI-generated content", body: "Any AI-drafted bio or summary stays fully editable — nothing publishes without your changes reviewed." },
+  { icon: FileEdit, title: "Review before it publishes", body: "Any drafted bio or summary stays fully editable — nothing publishes without your changes reviewed." },
   { icon: SparklesIcon, title: "Publish your Passport", body: "Once you're happy with it, publish — your Passport becomes your one shareable link." },
 ];
 

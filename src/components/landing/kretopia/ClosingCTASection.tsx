@@ -35,6 +35,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { FixedProgressiveCard } from "@/components/landing/kretopia/FixedProgressiveCard";
+import { Button } from "@/components/ui/button";
 import { analytics } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -85,21 +86,27 @@ export const ClosingCTASection = () => {
             <span className="italic pink-glow-breathe" style={{ color: ACCENT }}>already proving their work.</span>
           </h2>
         }
-        subtitle={
-          <p className="landing-sub max-w-lg mx-auto">
-            Build the Creative Passport that grows with every project, collaborator and opportunity.
-          </p>
-        }
         keyValue={
-          <Link
-            to="/auth?tab=signup&intent=closing_cta"
-            onClick={trackSignupClick}
-            className="btn-glass btn-glass-hero btn-glass-primary group inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-semibold"
-            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-          >
-            Claim Your Creative Passport
-            <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
-          </Link>
+          // Glow sits behind the button on its own layer rather than as a
+          // box-shadow so it can blur past the button's own rounded-full
+          // edge without being clipped by btn-glass's overflow:hidden.
+          <div className="relative inline-block">
+            <div
+              aria-hidden
+              className="ai-ambient-breathe pointer-events-none absolute -inset-4 rounded-full blur-2xl"
+              style={{ background: `radial-gradient(circle, ${ACCENT}55, transparent 70%)` }}
+            />
+            <Button
+              asChild
+              className="btn-glass-hero group relative h-auto rounded-full px-8 py-4 text-base font-semibold"
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+            >
+              <Link to="/auth?tab=signup&intent=closing_cta" onClick={trackSignupClick}>
+                Claim Your Creative Passport
+                <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden />
+              </Link>
+            </Button>
+          </div>
         }
         supportingItem={
           <p className="text-xs text-white/45" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>

@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { TutorialStepper } from "./TutorialStepper";
 import { KRETO_TUTORIAL } from "./tutorialContent";
@@ -104,7 +105,7 @@ export const MeetKretoSection = () => {
               className="mt-4 max-w-xl text-sm text-white/45"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              Not a generic chatbot. A context-aware career and production agent.
+              Your Executive Producer — not a script you talk to.
             </p>
 
             {/* Capabilities — exactly three, per the charter's positioning */}
@@ -147,14 +148,16 @@ export const MeetKretoSection = () => {
               removed, and only becomes part of your official record once you confirm it.
             </p>
 
-            <Link
-              to="/auth?next=/circle"
-              className="btn-glass btn-glass-primary group inline-flex items-center gap-2 mt-9 rounded-full px-6 py-3 text-sm font-semibold"
+            <Button
+              asChild
+              className="group mt-9 h-auto w-fit rounded-full px-6 py-3 text-sm font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              Meet Kreto
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
-            </Link>
+              <Link to="/auth?next=/circle">
+                Meet Kreto
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+              </Link>
+            </Button>
           </motion.div>
 
           {/* Command surface */}

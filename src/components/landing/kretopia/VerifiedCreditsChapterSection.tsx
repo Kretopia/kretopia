@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Fingerprint, Link2, ShieldCheck, UserCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
 import { EVIDENCE_STATE_ORDER, type EvidenceState } from "@/lib/creditEvidence";
@@ -110,14 +111,16 @@ export const VerifiedCreditsChapterSection = () => {
               ))}
             </ul>
 
-            <Link
-              to="/credits"
-              className="btn-glass btn-glass-primary group inline-flex items-center gap-2 mt-9 rounded-full px-6 py-3 text-sm font-semibold"
+            <Button
+              asChild
+              className="group mt-9 h-auto w-fit rounded-full px-6 py-3 text-sm font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              Explore Verified Credits
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
-            </Link>
+              <Link to="/credits">
+                Explore Verified Credits
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+              </Link>
+            </Button>
           </motion.div>
 
           {/* Illustrative evidence-progression mockup */}

@@ -9,6 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { BrandLoader } from "@/components/brand/BrandDots";
 import { ShieldCheck, MapPin, Search as SearchIcon, Fingerprint } from "lucide-react";
 import { BRAND } from "@/lib/brandLexicon";
+import { StaggerHeading } from "@/components/typography/StaggerReveal";
 import { APP_URL } from "@/lib/constants";
 
 interface PassportRow {
@@ -76,9 +77,10 @@ const PassportDirectory = () => {
             <Fingerprint className="h-3 w-3" />
             Passport Directory
           </p>
-          <h1 className="font-serif text-3xl sm:text-5xl leading-[1.05] tracking-[-0.02em] text-foreground mb-3">
-            {BRAND.passportHeadline}
-          </h1>
+          <StaggerHeading
+            text={BRAND.passportHeadline}
+            className="font-serif text-3xl sm:text-5xl leading-[1.05] tracking-[-0.02em] text-foreground mb-3"
+          />
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl">
             {BRAND.passportSubline}
           </p>

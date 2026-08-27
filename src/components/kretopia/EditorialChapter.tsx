@@ -50,7 +50,12 @@ export const EditorialChapter = ({ index, kicker, title, accentWord, children, a
         >
           <div className={cn("flex items-center gap-3 mb-4", centered && "justify-center")}>
             <span className="font-serif italic text-2xl pink-glow-breathe" style={{ color: ACCENT }}>{index}.</span>
-            <span className="landing-eyebrow text-white/55">{kicker}</span>
+            {/* Inline override, not a text-white/55 utility class: both that
+                utility and .landing-eyebrow's own default now live in the
+                same Tailwind layer, so an inline style is the only way to
+                guarantee this numbered kicker stays neutral instead of
+                inheriting the class's pink default. */}
+            <span className="landing-eyebrow" style={{ color: "rgba(255,255,255,0.55)" }}>{kicker}</span>
           </div>
           <h2
             className={cn("font-serif font-normal text-white leading-[1.0] tracking-[-0.02em] max-w-3xl", centered && "mx-auto")}

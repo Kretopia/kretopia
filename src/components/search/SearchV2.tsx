@@ -3,6 +3,7 @@ import { Sparkles, Radar } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { EmptyState } from "@/components/ui/empty-state";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+import { StaggerHeading } from "@/components/typography/StaggerReveal";
 import { analytics } from "@/lib/analytics";
 
 /**
@@ -43,9 +44,10 @@ export function SearchV2({ initialQuery = "" }: { initialQuery?: string } = {}) 
 
       <div className="container mx-auto max-w-2xl px-4 sm:px-6 pt-14 sm:pt-20 pb-6 text-center">
         <p className="brand-eyebrow mb-3">Creative Record</p>
-        <h1 className="text-3xl sm:text-5xl font-semibold tracking-[-0.03em] text-foreground leading-[1.05] mb-3">
-          Find your creative identity.
-        </h1>
+        <StaggerHeading
+          text="Find your creative identity."
+          className="text-3xl sm:text-5xl font-semibold tracking-[-0.03em] text-foreground leading-[1.05] mb-3"
+        />
         <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-8">
           Search your name, a collaborator's, or any production — backed by verified credits
           across the creative economy.

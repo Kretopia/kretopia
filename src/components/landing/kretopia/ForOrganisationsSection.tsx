@@ -11,6 +11,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Search, IdCard, Megaphone, Users2, CheckCircle2, Briefcase, Handshake } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { analytics } from "@/lib/analytics";
 
@@ -76,24 +77,18 @@ export const ForOrganisationsSection = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-8 flex flex-wrap items-center gap-3"
         >
-          <Link
-            to="/post-opportunity"
-            onClick={() => analytics.ctaClick("hire_through_kretopia", "for_organisations")}
-            className="btn-glass btn-glass-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold"
-            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-          >
-            <Briefcase className="h-4 w-4" aria-hidden />
-            Hire Through Kretopia
-          </Link>
-          <Link
-            to="/auth?tab=signup"
-            onClick={() => analytics.ctaClick("partner_with_us", "for_organisations")}
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:border-white/40 hover:text-white"
-            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-          >
-            <Handshake className="h-4 w-4" aria-hidden />
-            Partner With Us
-          </Link>
+          <Button asChild className="h-auto w-fit rounded-full px-5 py-2.5 text-sm font-semibold" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
+            <Link to="/post-opportunity" onClick={() => analytics.ctaClick("hire_through_kretopia", "for_organisations")}>
+              <Briefcase className="h-4 w-4" aria-hidden />
+              Hire Through Kretopia
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-auto w-fit rounded-full px-5 py-2.5 text-sm font-semibold" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
+            <Link to="/auth?tab=signup" onClick={() => analytics.ctaClick("partner_with_us", "for_organisations")}>
+              <Handshake className="h-4 w-4" aria-hidden />
+              Partner With Us
+            </Link>
+          </Button>
         </motion.div>
       </div>
     </section>

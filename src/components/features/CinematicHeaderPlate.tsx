@@ -12,8 +12,16 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { renderStaggerWords } from "@/components/typography/StaggerReveal";
 
 const ACCENT = "#FF2DA1";
+
+// Feature titles are short by convention (2-4 words per this file's own
+// prop doc), so the hero's per-word stagger (via the shared
+// renderStaggerWords helper) adds only a few hundred ms over the old
+// single-block fade -- not the hero's full-sentence-length reveal. See
+// TITLE_ANIMATION_AUDIT.md §7 for why this was previously landing-only
+// and why that exception was later lifted.
 
 export interface CinematicHeaderPlateProps {
   eyebrow: string;
@@ -59,13 +67,19 @@ export function CinematicHeaderPlate({
             className={`landing-h1 landing-glow ${oneLine ? "whitespace-nowrap max-w-none" : "text-balance max-w-4xl"}`}
             style={oneLine ? { fontSize: "clamp(1.05rem, 4.2vw, 3rem)" } : undefined}
           >
-            {title}
-            {accentTitle && (
-              <>
-                {oneLine ? " " : <br />}
-                <span className="landing-accent">{accentTitle}</span>
-              </>
-            )}
+            <motion.span
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: reducedMotion ? 0 : 0.075 } } }}
+            >
+              {renderStaggerWords(title, "t", reducedMotion)}
+              {accentTitle && (
+                <>
+                  {oneLine ? " " : <br />}
+                  <span className="landing-accent">{renderStaggerWords(accentTitle, "a", reducedMotion)}</span>
+                </>
+              )}
+            </motion.span>
           </h1>
           {subtitle && (
             <p className={`landing-sub mt-5 max-w-xl ${centered ? "mx-auto" : ""}`}>{subtitle}</p>

@@ -73,7 +73,7 @@ const Chapter = ({
         >
           <div className="flex items-center gap-3 mb-6">
             <span className="font-serif italic text-2xl pink-glow-breathe" style={{ color: ACCENT }}>{index}.</span>
-            <span className="landing-eyebrow text-white/55">{kicker}</span>
+            <span className="landing-eyebrow" style={{ color: "rgba(255,255,255,0.55)" }}>{kicker}</span>
           </div>
           <h2
             className="font-serif font-normal text-white leading-[1.0] tracking-[-0.02em] max-w-3xl"

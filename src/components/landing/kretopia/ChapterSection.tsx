@@ -8,6 +8,7 @@ import { ArrowUpRight } from "lucide-react";
 import type { ComponentType } from "react";
 import type { TutorialStep } from "./FeatureTutorial";
 import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
+import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { analytics } from "@/lib/analytics";
 
@@ -154,20 +155,19 @@ export const ChapterSection = ({
               </p>
             )}
 
-            <Link
-              to={href}
-              onClick={() => analytics.ctaClick(`${kicker.toLowerCase()}_chapter_cta`, "landing_chapter")}
-              className="group inline-flex items-center gap-2 mt-9 text-sm tracking-wide"
-              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif", color: "rgba(255,255,255,0.85)" }}
+            <Button
+              asChild
+              className="group mt-9 h-auto w-fit rounded-full px-6 py-3 text-sm font-semibold"
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              <span className="border-b border-white/30 group-hover:border-white pb-0.5 transition-colors">
+              <Link
+                to={href}
+                onClick={() => analytics.ctaClick(`${kicker.toLowerCase()}_chapter_cta`, "landing_chapter")}
+              >
                 {ctaLabel ?? `Enter ${kicker}`}
-              </span>
-              <ArrowUpRight
-                className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                style={{ color: accent }}
-              />
-            </Link>
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+              </Link>
+            </Button>
           </motion.div>
         </div>
 

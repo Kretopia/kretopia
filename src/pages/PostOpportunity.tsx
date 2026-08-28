@@ -23,7 +23,7 @@ import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
 import { Reveal } from "@/components/kretopia/Reveal";
 import { SectionHeading } from "@/components/typography/Heading";
 
-const ACCENT = "#FF2DA1";
+const ACCENT = "hsl(var(--energy))";
 
 const NOTES = [
   { icon: ShieldCheck, title: "Verified credits", body: "Every creative is backed by co-signed work — you see proof, not promises." },
@@ -323,7 +323,7 @@ const PostOpportunity = () => {
 
   if (step === "sent") {
     return (
-      <div className="dark min-h-screen flex items-center justify-center p-4 bg-background" style={{ backgroundColor: "#05070D" }}>
+      <div className="dark min-h-screen flex items-center justify-center p-4 bg-background">
         <Helmet>
           <title>Check Your Email | Kretopia</title>
         </Helmet>
@@ -340,7 +340,7 @@ const PostOpportunity = () => {
           <CardContent>
             <p className="text-sm text-muted-foreground">
               Didn't get it? Check your spam folder or{" "}
-              <button onClick={() => setStep("form")} className="text-white underline hover:text-[#FF2DA1] transition-colors">
+              <button onClick={() => setStep("form")} className="text-white underline hover:text-[hsl(var(--energy))] transition-colors">
                 try again
               </button>
               .
@@ -353,7 +353,7 @@ const PostOpportunity = () => {
 
   return (
     <PageTransition>
-    <div className="dark min-h-screen" style={{ backgroundColor: "#05070D" }}>
+    <div className="dark min-h-screen bg-background">
       <Helmet>
         <title>Hire Talent — Post an Opportunity | Kretopia</title>
         <meta name="description" content="Post a job, collaboration, or gig opportunity on Kretopia and connect with thousands of creative professionals. No account needed." />
@@ -377,9 +377,9 @@ const PostOpportunity = () => {
           <Reveal>
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
               {/* AI-powered brief writer — anchored at the top as the primary action */}
-              <div className="p-5 sm:p-8 border-b border-white/10 bg-gradient-to-r from-[rgba(255,45,161,0.08)] via-transparent to-transparent">
+              <div className="p-5 sm:p-8 border-b border-white/10 bg-gradient-to-r from-[hsl(var(--energy)/0.08)] via-transparent to-transparent">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[rgba(255,45,161,0.12)]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--energy)/0.12)]">
                     <Sparkles className="h-4 w-4" style={{ color: ACCENT }} />
                   </span>
                   <div>
@@ -473,7 +473,7 @@ const PostOpportunity = () => {
                         <button
                           type="button"
                           onClick={() => logoFileInputRef.current?.click()}
-                          className="w-full h-10 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center gap-1.5 text-white/50 hover:border-[#FF2DA1]/50 hover:text-white transition-colors text-xs font-medium"
+                          className="w-full h-10 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center gap-1.5 text-white/50 hover:border-[hsl(var(--energy)/0.5)] hover:text-white transition-colors text-xs font-medium"
                         >
                           <Upload className="h-3.5 w-3.5" />
                           Upload
@@ -709,7 +709,7 @@ const PostOpportunity = () => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full h-40 sm:h-52 border-2 border-dashed border-white/15 rounded-xl flex flex-col items-center justify-center gap-2 text-white/50 hover:border-[#FF2DA1]/50 hover:text-white transition-colors"
+                      className="w-full h-40 sm:h-52 border-2 border-dashed border-white/15 rounded-xl flex flex-col items-center justify-center gap-2 text-white/50 hover:border-[hsl(var(--energy)/0.5)] hover:text-white transition-colors"
                     >
                       <Upload className="h-7 w-7" />
                       <span className="text-sm font-medium">Click to upload an image</span>
@@ -734,7 +734,7 @@ const PostOpportunity = () => {
               </div>
 
               {/* Sticky submit footer */}
-              <div className="sticky bottom-0 z-10 p-5 sm:p-8 border-t border-white/10 bg-[#0B0B10]/95 backdrop-blur supports-[backdrop-filter]:bg-[#0B0B10]/80">
+              <div className="sticky bottom-0 z-10 p-5 sm:p-8 border-t border-white/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                   <Button type="submit" size="lg" className="flex-1 gap-2 h-12 text-base" disabled={posting}>
                     {posting ? (
@@ -760,10 +760,9 @@ const PostOpportunity = () => {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {NOTES.map((n, i) => (
             <Reveal key={n.title} delayIndex={i}>
-              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[hsl(var(--energy)/0.35)]">
                 <span
-                  className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
+                  className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--energy)/0.1)]"
                 >
                   <n.icon className="h-4 w-4" style={{ color: ACCENT }} />
                 </span>

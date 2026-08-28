@@ -148,16 +148,16 @@ This needs a **product decision** before any code changes: is the deadline being
 - **No fabricated automation copy found** anywhere in this audit — Founding Circle and Creative Circle both already gate their "you earned/completed" language on real server state. The Founding Circle deadline bug is a **staleness** bug (an honest system with a constant nobody updated), not a fabrication bug.
 - **Passport boundary**: only one direct dependency found (`HoloCard` for Match), documented above with a reuse-not-modify resolution.
 
-## What's actually ready to implement now vs. blocked
+## Final status — all seven surfaces
 
-| Surface | Ready now | Blocked on |
-|---|---|---|
-| Stage/Circle | Tabs conversion, Kreto·Circle removal | — |
-| Creative Circle | Emoji→icon swap, card restyle | Product decision: commission state buckets |
-| Match | Visual/label pass | Needs `SwipeFeature` deep-read before deck rebuild |
-| Events | (composer already done) | Backend: real event search query |
-| Spotlight | (token cleanup already done) | Product decision: Studio grammar vs. editorial grammar; content-source truth check |
-| Founding Circle | — | Product decision: extend deadline or ship an expired state |
-| Verified Credits | — | Needs a data-flow decision: conditional mount vs. route-tabs, before touching JSX |
+| Surface | Status |
+|---|---|
+| Stage/Circle | **Done.** In-page Match/Browse/Network tabs, Kreto·Circle removed, `FeaturePageHeader` (corrected from a wrong `StudioFeatureHeader` detour — see the correction note above). |
+| Creative Circle | **Done.** Emoji tier icons → real lucide icons (local mapping, `referralEngine.ts`'s own data untouched since Passport-adjacent `CreativeCircleBadge` still consumes it), honest single "commission earned" stat per product decision. |
+| Founding Circle | **Done.** Expired deadline (`2026-06-01`, already past) extended to `2026-12-31` as a placeholder pending a firm date, per product decision. |
+| Verified Credits | **Done.** Anchor-scroll `CreditsSectionNav` replaced with real `StudioSectionTabs` (Radix ARIA + keyboard nav), verified zero page-scroll on tab change. |
+| Match | **Done** for the scoped pass: `FeaturePageHeader` + real tabs, dropped dating-app labels ("Swipe"→"Discover", "Likes you"→"Interested", fixed consistently in both the tab and `LikesYouGrid`'s own internal eyebrow). HoloCard visual swap and keyboard pass/connect alternatives deliberately deferred — `HingeStyleCard` likely owns its own pointer-based drag gesture, and wrapping it in `HoloCard` (which also tracks pointer events) needs that code read first, not a blind wrap. |
+| Events | **Done.** Root cause was two real bugs: the default "Discover" tab never read the search-filtered list at all (searching produced no visible effect on the tab users land on by default), and the search that did apply was a client-side scan capped at the first 100 upcoming rows. Fixed with a real debounced server-side query directly against `creative_jams` (no backend/migration needed — RLS applies per-row regardless of filter columns), shown regardless of active tab. |
+| Spotlight | **Done.** Hero (`EditorialPageHero`) was already correct — confirmed to wrap the same `CinematicHeaderPlate` as `FeaturePageHeader`, identical to Studio's real hero. Converted the body from `EditorialChapter` (roman-numeral serif chapters, scroll-reveal) to Studio's flat-card grammar, per product decision. `SpotlightBoard`'s raw rgba tokens and hand-rolled tab buttons replaced with `border-border`/`bg-card` and real Radix tabs. Content sources confirmed real (`magazine_articles` table, `fetch-youtube-playlist` edge function) — no fabricated data. |
 
-Given three of seven surfaces are genuinely blocked on a product decision or backend work (not implementation effort), the recommendation is to proceed now with the two surfaces that are fully unblocked — **Stage/Circle** and **Creative Circle** — plus Match's visual/label pass short of the full deck rebuild, and hold Events/Spotlight/Founding Circle/Verified Credits' deeper work for explicit direction on the flagged decisions.
+Every surface above is regression-gate clean (typecheck, full test suite, build, lint) and verified live in the browser, not just read from source.

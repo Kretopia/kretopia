@@ -199,7 +199,7 @@ function Chip({
       className={cn(
         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
         tone === "warn"
-          ? "border-[hsl(var(--signal-magenta)/0.35)] text-[hsl(var(--signal-magenta))] bg-[hsl(var(--signal-magenta)/0.08)]"
+          ? "border-[hsl(var(--energy)/0.35)] text-[hsl(var(--energy))] bg-[hsl(var(--energy)/0.08)]"
           : "border-border text-foreground bg-muted/40 hover:bg-muted",
         active && "ring-1 ring-ring",
       )}

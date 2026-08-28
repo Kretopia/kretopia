@@ -105,8 +105,8 @@ export const NearbyInline = () => {
     return (
       <Card>
         <CardContent className="py-10 text-center space-y-4">
-          <div className="mx-auto h-12 w-12 rounded-full bg-[hsl(var(--signal-magenta))]/10 flex items-center justify-center">
-            <MapPin className="h-6 w-6 text-[hsl(var(--signal-magenta))]" />
+          <div className="mx-auto h-12 w-12 rounded-full bg-[hsl(var(--energy))]/10 flex items-center justify-center">
+            <MapPin className="h-6 w-6 text-[hsl(var(--energy))]" />
           </div>
           <div className="space-y-1">
             <p className="font-semibold text-sm">See who's working near you</p>
@@ -137,7 +137,7 @@ export const NearbyInline = () => {
         <span>{creators.length} within 50km</span>
         <button
           onClick={() => navigate("/nearby")}
-          className="font-semibold text-[hsl(var(--signal-magenta))] hover:underline"
+          className="font-semibold text-[hsl(var(--energy))] hover:underline"
         >
           Open full atlas →
         </button>

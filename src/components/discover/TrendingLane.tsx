@@ -99,7 +99,7 @@ export const TrendingLane = () => {
       {/* Rising creators */}
       <section className="space-y-2">
         <div className="flex items-center gap-2 px-1">
-          <TrendingUp className="h-4 w-4 text-[hsl(var(--signal-magenta))]" />
+          <TrendingUp className="h-4 w-4 text-[hsl(var(--energy))]" />
           <h3 className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground">
             Rising this fortnight
           </h3>
@@ -117,7 +117,7 @@ export const TrendingLane = () => {
                 <Link
                   key={c.user_id}
                   to={`/u/${c.user_id}`}
-                  className="shrink-0 w-[160px] rounded-2xl border border-border bg-card hover:border-[hsl(var(--signal-magenta))]/40 transition-colors p-3 text-center"
+                  className="shrink-0 w-[160px] rounded-2xl border border-border bg-card hover:border-[hsl(var(--energy))]/40 transition-colors p-3 text-center"
                 >
                   <Avatar className="h-14 w-14 mx-auto mb-2">
                     <AvatarImage src={c.avatar_url || undefined} />
@@ -174,16 +174,16 @@ export const TrendingLane = () => {
       </section>
 
       {/* Co-sign nudge */}
-      <Card className="border-[hsl(var(--signal-magenta))]/30 bg-[hsl(var(--signal-magenta))]/5">
+      <Card className="border-[hsl(var(--energy))]/30 bg-[hsl(var(--energy))]/5">
         <CardContent className="p-4 space-y-2">
           <div className="flex items-center gap-2">
-            <Handshake className="h-4 w-4 text-[hsl(var(--signal-magenta))]" />
+            <Handshake className="h-4 w-4 text-[hsl(var(--energy))]" />
             <p className="font-semibold text-sm">Give a co-sign</p>
           </div>
           <p className="text-xs text-muted-foreground">
             Vouching for collaborators boosts their standing and yours. See who you've worked with on your Passport.
           </p>
-          <Link to="/profile" className="text-xs font-semibold text-[hsl(var(--signal-magenta))] hover:underline">
+          <Link to="/profile" className="text-xs font-semibold text-[hsl(var(--energy))] hover:underline">
             Open your Passport →
           </Link>
         </CardContent>

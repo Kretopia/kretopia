@@ -3,25 +3,32 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Copy, CheckCircle2, QrCode, Link2, TrendingUp, Users, Zap, ArrowRight, Share2, Gift } from "lucide-react";
+import { Copy, CheckCircle2, QrCode, Link2, TrendingUp, Users, Zap, ArrowRight, Share2, Gift, User, Flame, Globe, Crown, Gem } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "@/hooks/useAuth";
 import { useReferralNetwork } from "@/hooks/useReferralNetwork";
-import { getAllNetworkTiers, getReferralsToNextTier, getProRewardText, getCommissionExplanation, type NetworkTierMeta } from "@/lib/referralEngine";
+import { getAllNetworkTiers, getReferralsToNextTier, getProRewardText, getCommissionExplanation, type NetworkTier, type NetworkTierMeta } from "@/lib/referralEngine";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { SEO } from "@/components/SEO";
 import { useNavigate } from "react-router-dom";
-import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
-import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+import { StudioFeatureHeader } from "@/components/studio-reference/StudioFeatureHeader";
 
-const CREATIVE_CIRCLE_TUTORIAL: TutorialStep[] = [
-  { icon: Users, title: "Invite creatives", body: "Using your personal link, QR code, or direct share." },
-  { icon: TrendingUp, title: "Level up your tier", body: "As more people join through you — unlock free Pro, reduced fees, and status points." },
-  { icon: Gift, title: "Earn passive commission", body: "From Kretopia's service fee when your referrals complete paid gigs — they keep 100% of their earnings." },
-];
+// referralEngine.ts's tier icons are emoji strings, still used as-is by
+// InviteCircleCard, dashboard/InviteCard and the Passport-adjacent
+// CreativeCircleBadge -- none of that shared data is touched here. This is a
+// local, page-only mapping to the app's real icon system for this surface only.
+const TIER_ICON: Record<NetworkTier, React.ComponentType<{ className?: string }>> = {
+  none: User,
+  spark: Zap,
+  connector: Link2,
+  catalyst: Flame,
+  networker: Globe,
+  mogul: Crown,
+  icon: Gem,
+};
 
 const CreativeCircle = () => {
   const { user } = useAuth();
@@ -77,6 +84,7 @@ const CreativeCircle = () => {
 
   const nextTierInfo = getReferralsToNextTier(network.referralCount);
   const allTiers = getAllNetworkTiers().filter(t => t.tier !== "none");
+  const CurrentTierIcon = TIER_ICON[network.tier.tier];
 
   const progressPercent = nextTierInfo
     ? Math.min(100, ((network.referralCount - network.tier.minReferrals) / (nextTierInfo.next.minReferrals - network.tier.minReferrals)) * 100)
@@ -86,12 +94,10 @@ const CreativeCircle = () => {
     <div className="pb-24">
       <SEO title="Creative Circle | Kretopia" description="Grow your creative network, unlock rewards, and earn passive income by inviting creatives to Kretopia." />
 
-      <FeaturePageHeader
+      <StudioFeatureHeader
         eyebrow="Creative Circle"
         title="Creative Circle."
-        accentTitle="Earn as it grows."
         subtitle="Invite creatives, climb tiers, and earn passive commission — all from one link."
-        tutorial={{ featureKey: "creative-circle", label: "How Creative Circle works", steps: CREATIVE_CIRCLE_TUTORIAL }}
       />
 
       <div className="container mx-auto px-4 pt-4 max-w-2xl space-y-6">
@@ -99,7 +105,7 @@ const CreativeCircle = () => {
       {/* Hero — Current Tier */}
       <div className={cn("rounded-2xl p-6 bg-gradient-to-br border", network.tier.gradient, "border-border/50")}>
         <div className="flex items-center gap-4 mb-4">
-          <div className="text-4xl">{network.tier.icon}</div>
+          <CurrentTierIcon className={cn("h-9 w-9 shrink-0", network.tier.color)} />
           <div className="flex-1">
             <p className={cn("text-sm font-semibold", network.tier.color)}>
               {network.tier.label} — {network.tier.tagline}
@@ -150,8 +156,10 @@ const CreativeCircle = () => {
         )}
       </div>
 
-      {/* Network Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Network Stats — commission is shown as one honest lifetime-earned
+          total. The schema has no pending/eligible/approved/paid breakdown,
+          so no such split is claimed here — see STUDIO_REFERENCE_SURFACE_AUDIT.md. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="p-4 text-center rounded-2xl shadow-none border-border/60">
           <div className="text-2xl font-bold">{network.referralCount}</div>
           <div className="text-xs text-muted-foreground">Direct Invites</div>
@@ -163,6 +171,10 @@ const CreativeCircle = () => {
         <Card className="p-4 text-center rounded-2xl shadow-none border-border/60">
           <div className="text-2xl font-bold">{network.longestChain}</div>
           <div className="text-xs text-muted-foreground">Extended Circle</div>
+        </Card>
+        <Card className="p-4 text-center rounded-2xl shadow-none border-border/60">
+          <div className="text-2xl font-bold text-[hsl(var(--energy))]">${network.commissionEarned.toFixed(2)}</div>
+          <div className="text-xs text-muted-foreground">Commission Earned</div>
         </Card>
       </div>
 
@@ -242,6 +254,7 @@ const CreativeCircle = () => {
         {allTiers.map((tier) => {
           const isActive = tier.tier === network.tier.tier;
           const isUnlocked = network.referralCount >= tier.minReferrals;
+          const TierIcon = TIER_ICON[tier.tier];
           return (
             <Card
               key={tier.tier}
@@ -254,7 +267,7 @@ const CreativeCircle = () => {
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xl">{tier.icon}</span>
+                  <TierIcon className={cn("h-5 w-5 shrink-0", isActive ? tier.color : "text-muted-foreground")} />
                   <div>
                     <span className={cn("font-bold", isActive ? tier.color : "text-foreground")}>{tier.label}</span>
                     <span className="text-xs text-muted-foreground ml-2">{tier.minReferrals}+ invites</span>

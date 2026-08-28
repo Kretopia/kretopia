@@ -13,9 +13,10 @@ import { CreditsHireMePanel, type HireMeProfile } from "@/components/credits/Cre
 import { CreditsActivityTimeline } from "@/components/credits/CreditsActivityTimeline";
 import { CreditsAIInsights } from "@/components/credits/CreditsAIInsights";
 import { CreditsErrorState } from "@/components/credits/CreditsPrimitives";
-import { CreditsSectionNav } from "@/components/credits/CreditsSectionNav";
-import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { CreditsFullRecord } from "@/components/credits/CreditsFullRecord";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
+import { User, Briefcase, Award, Activity, FileText, Sparkles as SparklesIcon } from "lucide-react";
 
 type OwnProfile = IdentityProfile & HireMeProfile;
 
@@ -111,6 +112,44 @@ export default function CreditsDashboard() {
 
   if (userId === null) return <CreditsPermissionState />;
 
+  const identityErrorState = (
+    <CreditsErrorState
+      message="We couldn't load your identity details."
+      onRetry={() => userId && loadProfile(userId)}
+    />
+  );
+
+  const creditsTabs: StudioSectionTab[] = [
+    {
+      id: "identity",
+      label: "Identity",
+      icon: User,
+      content: profileError ? identityErrorState : <CreditsIdentityPanel profile={profile} />,
+    },
+    {
+      id: "hire-me",
+      label: "Hire Me",
+      icon: Briefcase,
+      content: profileError ? identityErrorState : <CreditsHireMePanel profile={profile} />,
+    },
+    { id: "stamps", label: "Stamps", icon: Award, content: <CreditsStampsPanel credits={credits} loading={loading} query={query} /> },
+    { id: "activity", label: "Activity", icon: Activity, content: <CreditsActivityTimeline credits={credits} loading={loading} /> },
+    { id: "record", label: "Full Record", icon: FileText, content: <CreditsFullRecord /> },
+    {
+      id: "insights",
+      label: "Next Steps",
+      icon: SparklesIcon,
+      content: (
+        <CreditsAIInsights
+          userId={userId}
+          onApplied={() => {
+            loadProfile(userId).catch(() => setProfileError(true));
+          }}
+        />
+      ),
+    },
+  ];
+
   return (
     <>
       <Helmet>
@@ -131,8 +170,6 @@ export default function CreditsDashboard() {
         />
 
         <main className="container relative mx-auto max-w-3xl px-4 pt-6">
-          <CreditsSectionNav />
-
           <div className="mb-5">
             <PersonalCreditsSearch
               value={rawQuery}
@@ -141,7 +178,6 @@ export default function CreditsDashboard() {
               resultCount={credits.length}
             />
           </div>
-
 
           {error === "auth" ? (
             <CreditsErrorState
@@ -159,28 +195,7 @@ export default function CreditsDashboard() {
                 loading={loading}
               />
 
-              {profileError ? (
-                <CreditsErrorState
-                  message="We couldn't load your identity details."
-                  onRetry={() => userId && loadProfile(userId)}
-                />
-              ) : (
-                <>
-                  <CreditsIdentityPanel profile={profile} index={0} />
-                  <CreditsHireMePanel profile={profile} index={1} />
-                </>
-              )}
-
-              <CreditsStampsPanel credits={credits} loading={loading} query={query} index={2} />
-              <CreditsActivityTimeline credits={credits} loading={loading} index={3} />
-              <CreditsFullRecord index={5} />
-              <CreditsAIInsights
-                userId={userId}
-                index={4}
-                onApplied={() => {
-                  loadProfile(userId).catch(() => setProfileError(true));
-                }}
-              />
+              <StudioSectionTabs queryParam="tab" defaultTabId="identity" tabs={creditsTabs} />
             </div>
           )}
         </main>

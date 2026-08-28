@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ACCENT = "#FF2DA1";
+const ACCENT = "hsl(var(--energy))";
 
 interface TalentMatch {
   user_id: string;
@@ -116,7 +116,7 @@ export default function TalentFinder() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 85) return "text-[#FF2DA1] bg-[#FF2DA1]/10 border-[#FF2DA1]/25";
+    if (score >= 85) return "text-[hsl(var(--energy))] bg-[hsl(var(--energy)/0.1)] border-[hsl(var(--energy)/0.25)]";
     if (score >= 70) return "text-[hsl(var(--signal-teal))] bg-[hsl(var(--signal-teal))]/10 border-[hsl(var(--signal-teal))]/25";
     return "text-amber-500 bg-amber-500/10 border-amber-500/20";
   };
@@ -166,10 +166,10 @@ export default function TalentFinder() {
         >
           {/* Brief Input */}
           {!hasSearched || matches.length === 0 ? (
-            <Card className="overflow-hidden border-white/10">
+            <Card className="overflow-hidden rounded-2xl shadow-none border-border/60">
               <div
                 className="p-5 space-y-4"
-                style={{ background: "radial-gradient(120% 100% at 0% 0%, rgba(255,45,161,0.08), transparent 60%)" }}
+                style={{ background: "radial-gradient(120% 100% at 0% 0%, hsl(var(--energy) / 0.08), transparent 60%)" }}
               >
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium flex items-center gap-1.5">
@@ -216,7 +216,7 @@ export default function TalentFinder() {
             </Card>
           ) : (
             /* Brief summary bar when results are showing */
-            <Card className="p-3">
+            <Card className="p-3 rounded-2xl shadow-none border-border/60">
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground mb-0.5">Your brief:</p>
@@ -281,7 +281,7 @@ export default function TalentFinder() {
               {matches.map((talent, idx) => (
                 <Card
                   key={talent.user_id}
-                  className="p-3 hover:border-primary/30 transition-all cursor-pointer"
+                  className="p-3 rounded-2xl shadow-none border-border/60 hover:border-[hsl(var(--energy)/0.35)] transition-colors cursor-pointer"
                   onClick={() => navigate(`/profile/${talent.user_id}`)}
                 >
                   <div className="flex items-start gap-3">
@@ -367,9 +367,9 @@ export default function TalentFinder() {
               ))}
 
               {/* Post as Gig CTA */}
-              <Card className="p-4 border-dashed" style={{ borderColor: "rgba(255,45,161,0.3)", backgroundColor: "rgba(255,45,161,0.05)" }}>
+              <Card className="p-4 rounded-2xl shadow-none border-dashed" style={{ borderColor: "hsl(var(--energy) / 0.3)", backgroundColor: "hsl(var(--energy) / 0.05)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg shrink-0" style={{ backgroundColor: "rgba(255,45,161,0.1)" }}>
+                  <div className="p-2 rounded-xl shrink-0" style={{ backgroundColor: "hsl(var(--energy) / 0.1)" }}>
                     <FileText className="h-5 w-5" style={{ color: ACCENT }} />
                   </div>
                   <div className="flex-1 min-w-0">

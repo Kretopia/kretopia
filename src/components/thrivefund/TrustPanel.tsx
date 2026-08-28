@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Star, Award, Users, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -50,8 +49,8 @@ export const TrustPanel = ({ creatorId }: TrustPanelProps) => {
 
   if (isLoading || !data?.profile) {
     return (
-      <Card className="p-6 border-primary/20 animate-pulse">
-        <div className="h-32 bg-muted rounded" />
+      <Card className="p-6 rounded-2xl border-border/60 shadow-none animate-pulse">
+        <div className="h-32 bg-muted rounded-xl" />
       </Card>
     );
   }
@@ -61,13 +60,13 @@ export const TrustPanel = ({ creatorId }: TrustPanelProps) => {
     profile.verification_status === "verified" || (profile as any).id_verified;
 
   return (
-    <Card className="p-6 border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5">
+    <Card className="p-6 rounded-2xl border-border/60 shadow-none bg-card">
       <div className="flex items-center gap-2 mb-4">
         <ShieldCheck className="h-5 w-5 text-primary" />
-        <h3 className="font-bold text-lg">Trust Panel</h3>
-        <Badge variant="secondary" className="ml-auto text-[10px]">
-          Kretopia Verified
-        </Badge>
+        <h3 className="text-lg font-black tracking-tight">Trust Panel</h3>
+        <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border backdrop-blur-sm bg-energy/15 text-energy border-energy/35">
+          Verified
+        </span>
       </div>
 
       {/* Creator identity */}
@@ -146,7 +145,7 @@ export const TrustPanel = ({ creatorId }: TrustPanelProps) => {
 };
 
 const Stat = ({ icon: Icon, value, label }: { icon: any; value: number; label: string }) => (
-  <div className="text-center bg-background/60 rounded-lg p-2.5">
+  <div className="text-center bg-card/80 border border-border/60 rounded-xl p-2.5 backdrop-blur-sm">
     <Icon className="h-4 w-4 mx-auto mb-1 text-primary" />
     <p className="font-bold text-base">{value}</p>
     <p className="text-[10px] text-muted-foreground leading-tight">{label}</p>

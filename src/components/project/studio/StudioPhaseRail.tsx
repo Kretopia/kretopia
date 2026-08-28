@@ -129,17 +129,29 @@ export const StudioPhaseRail = memo(({ flow, onPhaseClick, onPinStage, onValidat
       </div>
 
       {/* Explicit validation — the phase only ever advances on this
-          click, never silently. Hidden once Complete is reached. */}
+          click, never silently. Compact and right-aligned rather than
+          spanning the full width, since it's one action among several in
+          this header, not the page's primary CTA. Disabled (with a
+          one-line reason) until the current stage's own requirement is
+          actually met, so it can't be used to skip ahead of real
+          progress — reuses the exact rule deriveStage() itself walks. */}
       {onValidateStep && flow.currentPhaseId !== "complete" && (
-        <Button
-          type="button"
-          size="sm"
-          onClick={onValidateStep}
-          className="mt-2.5 w-full gap-1.5"
-        >
-          Validate "{currentPhaseLabel}" & continue
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Button>
+        <div className="mt-2.5 flex items-center justify-end gap-2">
+          {!flow.canAdvance && (
+            <span className="text-[10px] text-muted-foreground truncate">{flow.nextStep.title}</span>
+          )}
+          <Button
+            type="button"
+            size="sm"
+            onClick={onValidateStep}
+            disabled={!flow.canAdvance}
+            title={flow.canAdvance ? undefined : flow.nextStep.description}
+            className="gap-1.5 shrink-0"
+          >
+            Validate "{currentPhaseLabel}"
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       )}
     </div>
   );
@@ -149,11 +161,9 @@ StudioPhaseRail.displayName = "StudioPhaseRail";
 
 function phaseTabStages(phaseId: StudioPhaseId): ProjectFlowStageId[] {
   const map: Record<StudioPhaseId, ProjectFlowStageId[]> = {
-    discuss: ["discussion"],
-    define: ["brief"],
+    kickoff: ["discussion", "brief"],
     build: ["tasks", "work"],
-    review: ["review"],
-    commit: ["agreement", "payment"],
+    wrap: ["review", "agreement", "payment"],
     complete: ["complete"],
   };
   return map[phaseId];

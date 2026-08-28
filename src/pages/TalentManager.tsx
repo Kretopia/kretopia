@@ -161,22 +161,26 @@ export default function TalentManager() {
     <div className="container mx-auto px-4 py-6 max-w-4xl pb-24 md:pb-6">
       <SEO title="Talent Manager | Kretopia" description="Manage your talent network, post jobs for clients, and earn commissions on bookings." />
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Talent Manager</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-6 space-y-3">
+        <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">
+          Referral network
+        </p>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05]">Talent Manager</h1>
+        <p className="text-sm text-muted-foreground max-w-md">
           Manage your roster, post jobs for clients, and earn {manager?.commission_rate || 10}% on every booking.
         </p>
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </div>
 
       {!manager ? (
         <div className="space-y-6">
           {/* Revenue Protection Messaging */}
-          <Card className="border-primary/30 bg-primary/5">
+          <Card className="rounded-2xl shadow-none" style={{ borderColor: "hsl(var(--energy) / 0.3)", backgroundColor: "hsl(var(--energy) / 0.05)" }}>
             <CardContent className="pt-6">
               <div className="flex gap-4">
-                <ShieldCheck className="h-8 w-8 text-primary shrink-0 mt-1" />
+                <ShieldCheck className="h-8 w-8 shrink-0 mt-1" style={{ color: "hsl(var(--energy))" }} />
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-lg">Your revenue is protected</h3>
+                  <h3 className="font-bold text-lg tracking-tight">Your revenue is protected</h3>
                   <ul className="space-y-1.5 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <span className="text-primary font-bold">•</span>
@@ -200,9 +204,9 @@ export default function TalentManager() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-2xl shadow-none border-border/60">
             <CardHeader>
-              <CardTitle>Activate Your Manager Dashboard</CardTitle>
+              <CardTitle className="text-lg font-bold tracking-tight">Activate Your Manager Dashboard</CardTitle>
               <CardDescription>
                 Get your unique referral link. When talent signs up through your link and books gigs, you earn ongoing commission on every job.
               </CardDescription>
@@ -229,28 +233,28 @@ export default function TalentManager() {
         <div className="space-y-6">
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
+            <Card className="rounded-2xl shadow-none border-border/60">
               <CardContent className="pt-6 text-center">
-                <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <Users className="h-6 w-6 mx-auto mb-2" style={{ color: "hsl(var(--energy))" }} />
                 <div className="text-2xl font-bold">{referrals.length}</div>
                 <p className="text-xs text-muted-foreground">Talents Referred</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl shadow-none border-border/60">
               <CardContent className="pt-6 text-center">
-                <DollarSign className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <DollarSign className="h-6 w-6 mx-auto mb-2" style={{ color: "hsl(var(--energy))" }} />
                 <div className="text-2xl font-bold">${totalEarned.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground">Total Earned</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl shadow-none border-border/60">
               <CardContent className="pt-6 text-center">
-                <TrendingUp className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <TrendingUp className="h-6 w-6 mx-auto mb-2" style={{ color: "hsl(var(--energy))" }} />
                 <div className="text-2xl font-bold">${pendingEarnings.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground">Pending</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl shadow-none border-border/60">
               <CardContent className="pt-6 text-center">
                 <Badge variant="secondary" className="text-lg px-3 py-1">
                   {manager.commission_rate}%
@@ -262,13 +266,13 @@ export default function TalentManager() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={copyLink}>
+            <Card className="rounded-2xl shadow-none border-border/60 cursor-pointer hover:border-[hsl(var(--energy)/0.4)] transition-colors" onClick={copyLink}>
               <CardContent className="pt-6 flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Link2 className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 rounded-full bg-[hsl(var(--energy)/0.12)] flex items-center justify-center shrink-0">
+                  <Link2 className="h-6 w-6" style={{ color: "hsl(var(--energy))" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">Share Referral Link</p>
+                  <p className="font-semibold text-sm">Share Referral Link</p>
                   <p className="text-xs text-muted-foreground truncate font-mono">
                     /join/{manager.referral_code}
                   </p>
@@ -276,16 +280,16 @@ export default function TalentManager() {
                 <Copy className="h-4 w-4 text-muted-foreground shrink-0" />
               </CardContent>
             </Card>
-            <Card 
-              className="cursor-pointer hover:border-primary/50 transition-colors"
+            <Card
+              className="rounded-2xl shadow-none border-border/60 cursor-pointer hover:border-[hsl(var(--energy)/0.4)] transition-colors"
               onClick={() => navigate("/post-opportunity")}
             >
               <CardContent className="pt-6 flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Briefcase className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 rounded-full bg-[hsl(var(--energy)/0.12)] flex items-center justify-center shrink-0">
+                  <Briefcase className="h-6 w-6" style={{ color: "hsl(var(--energy))" }} />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-sm">Post Job for Client</p>
+                  <p className="font-semibold text-sm">Post Job for Client</p>
                   <p className="text-xs text-muted-foreground">
                     List gigs on behalf of your clients
                   </p>
@@ -296,9 +300,9 @@ export default function TalentManager() {
           </div>
 
           {/* Referral Link Details */}
-          <Card>
+          <Card className="rounded-2xl shadow-none border-border/60">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-base font-bold tracking-tight">
                 <Link2 className="h-5 w-5" />
                 Your Referral Link
               </CardTitle>
@@ -322,14 +326,14 @@ export default function TalentManager() {
 
           {/* Recent Commissions */}
           {commissions.length > 0 && (
-            <Card>
+            <Card className="rounded-2xl shadow-none border-border/60">
               <CardHeader>
-                <CardTitle className="text-base">Recent Commissions</CardTitle>
+                <CardTitle className="text-base font-bold tracking-tight">Recent Commissions</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {commissions.slice(0, 10).map((c) => (
-                    <div key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
                       <div>
                         <p className="font-medium capitalize">{c.source_type} Booking</p>
                         <p className="text-sm text-muted-foreground">
@@ -351,14 +355,14 @@ export default function TalentManager() {
 
           {/* Referred Talents */}
           {referrals.length > 0 && (
-            <Card>
+            <Card className="rounded-2xl shadow-none border-border/60">
               <CardHeader>
-                <CardTitle className="text-base">Your Talent Roster ({referrals.length})</CardTitle>
+                <CardTitle className="text-base font-bold tracking-tight">Your Talent Roster ({referrals.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {referrals.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div key={r.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
                       <p className="text-sm">Talent joined {new Date(r.referred_at).toLocaleDateString()}</p>
                       <Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge>
                     </div>
@@ -369,10 +373,10 @@ export default function TalentManager() {
           )}
 
           {/* Revenue Protection Info */}
-          <Card className="border-primary/20 bg-primary/5">
+          <Card className="rounded-2xl shadow-none" style={{ borderColor: "hsl(var(--energy) / 0.25)", backgroundColor: "hsl(var(--energy) / 0.05)" }}>
             <CardContent className="pt-6">
               <div className="flex gap-3 items-start">
-                <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "hsl(var(--energy))" }} />
                 <div>
                   <p className="font-medium text-sm mb-1">How your revenue is protected</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">

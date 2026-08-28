@@ -18,32 +18,33 @@ export const PROJECT_FLOW_STAGES = [
 export type ProjectFlowStageId = (typeof PROJECT_FLOW_STAGES)[number]["id"];
 
 /**
- * Six-phase user-facing model (Studio overhaul v2). Purely a display
- * grouping over the existing 8 stages above — the stages themselves,
- * their tab ids, and deriveStage()'s activity-based logic are untouched,
- * since every stage id is load-bearing elsewhere (StudioToolBar,
- * DeskTabContent, the CTA "tab" targets below). No DB column stores a
- * phase; it's derived the same way currentStageId already is.
+ * Four-phase user-facing model (Studio overhaul v3, consolidated from an
+ * earlier six-phase version — Discuss+Define merged into Kickoff, and
+ * Review+Commit merged into Wrap, since each pair was really one decision
+ * split across two markers). Purely a display grouping over the existing
+ * 8 stages above — the stages themselves, their tab ids, and
+ * deriveStage()'s activity-based logic are untouched, since every stage id
+ * is load-bearing elsewhere (StudioToolBar, DeskTabContent, the CTA "tab"
+ * targets below). No DB column stores a phase; it's derived the same way
+ * currentStageId already is.
  */
 export const STUDIO_PHASES = [
-  { id: "discuss", label: "Discuss" },
-  { id: "define", label: "Define" },
+  { id: "kickoff", label: "Kickoff" },
   { id: "build", label: "Build" },
-  { id: "review", label: "Review" },
-  { id: "commit", label: "Commit" },
+  { id: "wrap", label: "Wrap" },
   { id: "complete", label: "Complete" },
 ] as const;
 
 export type StudioPhaseId = (typeof STUDIO_PHASES)[number]["id"];
 
 const STAGE_TO_PHASE: Record<ProjectFlowStageId, StudioPhaseId> = {
-  discussion: "discuss",
-  brief: "define",
+  discussion: "kickoff",
+  brief: "kickoff",
   tasks: "build",
   work: "build",
-  review: "review",
-  agreement: "commit",
-  payment: "commit",
+  review: "wrap",
+  agreement: "wrap",
+  payment: "wrap",
   complete: "complete",
 };
 
@@ -88,6 +89,30 @@ export interface ProjectFlow {
   nextStep: NextStep;
   currentPhaseId: StudioPhaseId;
   phaseStatus: Record<StudioPhaseId, "complete" | "current" | "todo">;
+  /** Whether the current stage's own requirement is actually met yet — gates
+   * the phase rail's "Validate & continue" button so it can't be used to
+   * skip ahead of real progress. Same rules deriveStage() walks below,
+   * exposed per-stage instead of only as a full-signal derivation. */
+  canAdvance: boolean;
+}
+
+/**
+ * Stage satisfaction rules — intentionally loose so users feel progress
+ * fast. Exported (not just used internally by deriveStage) so the phase
+ * rail's validate button can check "is *this* stage's requirement met"
+ * without re-deriving the whole flow.
+ */
+export function isStageSatisfied(stageId: ProjectFlowStageId, s: ProjectFlowSignals): boolean {
+  switch (stageId) {
+    case "discussion": return s.messageCount >= 1;
+    case "brief": return s.noteCount >= 1;
+    case "tasks": return s.taskCount >= 1;
+    case "work": return s.fileCount >= 1;
+    case "review": return s.approvalApprovedCount >= 1 || (s.approvalPendingCount === 0 && s.fileCount >= 1 && s.taskDoneCount >= 1 && s.taskCount > 0);
+    case "agreement": return s.contractCount >= 1;
+    case "payment": return s.invoicePaidCount >= 1 || (s.milestoneCount > 0 && s.invoiceCount >= 1);
+    case "complete": return s.projectStatus === "completed";
+  }
 }
 
 /**
@@ -97,21 +122,8 @@ export interface ProjectFlow {
  */
 function deriveStage(s: ProjectFlowSignals): ProjectFlowStageId {
   if (s.projectStatus === "completed") return "complete";
-
-  // Stage satisfaction rules — intentionally loose so users feel progress fast.
-  const satisfied: Record<ProjectFlowStageId, boolean> = {
-    discussion: s.messageCount >= 1,
-    brief: s.noteCount >= 1,
-    tasks: s.taskCount >= 1,
-    work: s.fileCount >= 1,
-    review: s.approvalApprovedCount >= 1 || (s.approvalPendingCount === 0 && s.fileCount >= 1 && s.taskDoneCount >= 1 && s.taskCount > 0),
-    agreement: s.contractCount >= 1,
-    payment: s.invoicePaidCount >= 1 || (s.milestoneCount > 0 && s.invoiceCount >= 1),
-    complete: s.projectStatus === "completed",
-  };
-
   for (const stage of PROJECT_FLOW_STAGES) {
-    if (!satisfied[stage.id]) return stage.id;
+    if (!isStageSatisfied(stage.id, s)) return stage.id;
   }
   return "complete";
 }
@@ -252,6 +264,7 @@ export function useProjectFlow(signals: ProjectFlowSignals): ProjectFlow {
       nextStep: buildNextStep(currentStageId, signals),
       currentPhaseId: stageToPhase(currentStageId),
       phaseStatus,
+      canAdvance: isStageSatisfied(currentStageId, signals),
     };
   }, [signals]);
 }

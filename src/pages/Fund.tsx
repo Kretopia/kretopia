@@ -24,21 +24,20 @@ const Fund = () => {
       </Helmet>
 
       {/* Hero */}
-      <section className="relative overflow-hidden border-b">
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-energy/15" />
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-energy/20 blur-3xl pointer-events-none" />
-        <div className="relative max-w-6xl mx-auto px-4 py-12 md:py-20">
-          <div className="flex items-center gap-2 mb-4">
-            <Rocket className="h-5 w-5 text-energy" />
-            <span className="text-xs uppercase tracking-widest text-energy font-semibold">
+        <div className="relative max-w-6xl mx-auto px-4 pt-10 pb-8 md:pt-16 md:pb-10">
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">
               ThriveFund
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-energy/15 border border-energy/50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-energy">
-              <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse shadow-[0_0_8px_hsl(var(--energy))]" />
+            </p>
+            <span className="inline-flex items-center gap-1.5 shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-sm bg-energy/15 text-energy border-energy/35">
+              <span className="h-1.5 w-1.5 rounded-full bg-energy shadow-[0_0_8px_hsl(var(--energy)/0.8)]" />
               Live
             </span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight max-w-3xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-[-0.03em] leading-[1.05] max-w-3xl">
             Fund creatives you can <span className="text-energy">verify</span>.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground mt-4 max-w-2xl">
@@ -48,14 +47,13 @@ const Fund = () => {
 
           <div className="flex flex-wrap items-center gap-3 mt-6">
             <Button
-              size="lg"
               onClick={() => navigate(user ? "/fund/new" : "/auth?redirect=/fund/new")}
-              className="gap-2 bg-energy text-energy-foreground hover:bg-energy/90 shadow-[0_0_30px_hsl(var(--energy)/0.4)]"
+              className="gap-2 bg-energy text-energy-foreground hover:bg-energy/90"
             >
               <Plus className="h-4 w-4" />
               Launch a Campaign
             </Button>
-            <Button size="lg" variant="outline" asChild>
+            <Button variant="outline" asChild>
               <a href="#explore">Browse Campaigns</a>
             </Button>
           </div>
@@ -79,13 +77,19 @@ const Fund = () => {
             />
           </div>
         </div>
+
+        {/* Bottom hairline — subtle violet glow to anchor the hero */}
+        <div className="relative h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </section>
 
       {/* Live campaigns */}
       <section id="explore" className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold">Live campaigns</h2>
+            <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase mb-1">
+              Explore
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.02em]">Live campaigns</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Verified creators raising right now
             </p>
@@ -102,11 +106,11 @@ const Fund = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="aspect-[4/5] animate-pulse" />
+              <Card key={i} className="aspect-[4/5] rounded-2xl border-border/60 shadow-none animate-pulse" />
             ))}
           </div>
         ) : !campaigns || campaigns.length === 0 ? (
-          <Card className="p-12 text-center border-dashed">
+          <Card className="p-12 text-center rounded-2xl border-border/60 border-dashed shadow-none">
             <Rocket className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
             <h3 className="font-semibold text-lg">Be the first to launch</h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -133,7 +137,7 @@ const Fund = () => {
 };
 
 const Pillar = ({ icon: Icon, title, body }: { icon: any; title: string; body: string }) => (
-  <Card className="p-4 bg-background/60 backdrop-blur-none">
+  <Card className="p-4 rounded-xl border-border/60 bg-card/80 backdrop-blur-sm shadow-none">
     <Icon className="h-5 w-5 text-primary mb-2" />
     <p className="font-semibold text-sm">{title}</p>
     <p className="text-xs text-muted-foreground mt-1">{body}</p>

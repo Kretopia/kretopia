@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import {
   Plus, Trash2, Rocket, Loader2, Lock, Sparkles, Wand2, ImagePlus, ChevronLeft, ChevronRight, Upload, Check,
 } from "lucide-react";
@@ -16,6 +16,7 @@ import { hasProAccess, hasCreatorProAccess, type SubscriptionTier } from "@/lib/
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { FUND_CATEGORIES } from "@/lib/fundCategories";
 
 interface TierDraft {
@@ -35,6 +36,7 @@ const STEPS = [
 const FundNew = () => {
   const { user, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
+  const reducedMotion = useReducedMotion();
   const [params] = useSearchParams();
   const projectId = params.get("project") || null;
   const tier = (subscriptionInfo.tier || "free") as SubscriptionTier;
@@ -279,47 +281,96 @@ const FundNew = () => {
       </Helmet>
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Rocket className="h-5 w-5 text-primary" />
-            <span className="text-xs uppercase tracking-widest text-primary font-semibold">
-              ThriveFund · New Campaign
-            </span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold">Launch your campaign</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+        <div className="mb-5 space-y-3">
+          <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">
+            ThriveFund · New Campaign
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05]">
+            Launch your campaign
+          </h1>
+          <p className="text-sm text-muted-foreground">
             All-or-nothing: cards are only charged if you hit your goal by the deadline.
           </p>
         </div>
 
-        {/* Stepper */}
+        {/* Bottom hairline under the header, before the phase rail */}
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-5" />
+
+        {/* Phase rail — same "single gradient progress track + labeled,
+            sequentially-gated markers" pattern as Studio's StudioPhaseRail,
+            adapted to this campaign wizard's own 4 real steps instead of
+            the project lifecycle's phases. Markers let you step back into
+            an already-completed step; a step ahead of the current one stays
+            locked (dimmed, lock glyph) until canAdvance() clears it via the
+            Next button below — no new progression system, just this
+            wizard's existing `step` state rendered the Studio way. */}
         <div className="mb-6">
-          <Progress value={progressPct} className="h-1.5" />
-          <div className="flex justify-between mt-2">
-            {STEPS.map((s, i) => (
-              <div
-                key={s.key}
-                className={cn(
-                  "flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider",
-                  i < step ? "text-energy" : i === step ? "text-primary" : "text-muted-foreground"
-                )}
-              >
-                {i < step ? (
-                  <Check className="h-3 w-3" />
-                ) : (
-                  <span className={cn(
-                    "h-4 w-4 rounded-full border flex items-center justify-center text-[9px]",
-                    i === step ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30"
-                  )}>{i + 1}</span>
-                )}
-                <span className="hidden sm:inline">{s.label}</span>
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              {Math.round(progressPct)}% through setup
+            </span>
+          </div>
+          <div className="relative h-1.5 w-full rounded-full bg-muted overflow-hidden">
+            <motion.div
+              className="absolute inset-y-0 left-0 rounded-full"
+              style={{
+                background: "linear-gradient(90deg, hsl(var(--muted-foreground) / 0.5), hsl(var(--energy)))",
+                boxShadow: "0 0 12px hsl(var(--energy) / 0.5)",
+              }}
+              initial={false}
+              animate={{ width: `${Math.max(progressPct, 3)}%` }}
+              transition={reducedMotion ? { duration: 0 } : { duration: 0.5, ease: [0.2, 0.65, 0.3, 0.95] }}
+            />
+          </div>
+          <div className="mt-2 flex items-start justify-between gap-0.5">
+            {STEPS.map((s, i) => {
+              const locked = i > step;
+              const status = i < step ? "complete" : i === step ? "current" : "todo";
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  disabled={locked}
+                  aria-current={status === "current" ? "step" : undefined}
+                  aria-disabled={locked}
+                  onClick={() => !locked && setStep(i)}
+                  className={cn(
+                    "flex flex-1 flex-col items-center gap-1 py-0.5 rounded-md transition-colors",
+                    locked ? "cursor-not-allowed" : "cursor-pointer hover:bg-muted/60"
+                  )}
+                  title={locked ? `${s.label} — complete the earlier steps first` : s.label}
+                >
+                  <span
+                    className={cn(
+                      "h-4 w-4 rounded-full border flex items-center justify-center text-[9px] font-bold transition-colors",
+                      status === "current" && "ring-2 ring-[hsl(var(--energy)/0.25)]"
+                    )}
+                    style={{
+                      backgroundColor: status === "todo" ? "transparent" : "hsl(var(--energy))",
+                      borderColor: status === "todo" ? "hsl(var(--muted-foreground) / 0.3)" : "hsl(var(--energy))",
+                      color: status === "todo" ? "hsl(var(--muted-foreground))" : "hsl(var(--energy-foreground))",
+                    }}
+                  >
+                    {status === "complete" ? <Check className="h-2.5 w-2.5" /> : locked ? <Lock className="h-2 w-2" /> : i + 1}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[9px] font-semibold uppercase tracking-wide leading-tight text-center",
+                      status === "current" && "text-foreground",
+                      status === "complete" && "text-muted-foreground",
+                      status === "todo" && "text-muted-foreground/40"
+                    )}
+                  >
+                    {s.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {!gated && yearlyCap !== -1 && (
-          <Card className="p-3 mb-4 border-primary/20 bg-primary/5">
+          <Card className="p-3 mb-4 rounded-xl border-primary/20 bg-primary/5 shadow-none">
             <p className="text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">{yearlyCount} of {yearlyCap}</span> ThriveFund campaigns used this year on the {isPro ? "Creator" : "Spark"} plan.
               {!isCreatorPro && (
@@ -332,7 +383,7 @@ const FundNew = () => {
         )}
 
         {gated && (
-          <Card className="p-5 mb-5 border-primary/40 bg-gradient-to-br from-primary/10 to-energy/10">
+          <Card className="p-5 mb-5 rounded-2xl border-primary/40 bg-gradient-to-br from-primary/10 to-energy/10 shadow-none">
             <div className="flex items-start gap-3">
               <div className="rounded-full bg-primary/15 p-2">
                 <Lock className="h-4 w-4 text-primary" />
@@ -364,7 +415,7 @@ const FundNew = () => {
 
         {/* ── STEP 0: Basics ── */}
         {step === 0 && (
-          <Card className="p-5 space-y-4">
+          <Card className="p-5 space-y-4 rounded-2xl border-border/60 shadow-none">
             <div>
               <Label>Title *</Label>
               <Input
@@ -419,7 +470,7 @@ const FundNew = () => {
         {/* ── STEP 1: Story + Cover ── */}
         {step === 1 && (
           <div className="space-y-4">
-            <Card className="p-5 space-y-4">
+            <Card className="p-5 space-y-4 rounded-2xl border-border/60 shadow-none">
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <Label>Cover image</Label>
@@ -456,11 +507,11 @@ const FundNew = () => {
                   </div>
                 </div>
                 {coverUrl ? (
-                  <div className="relative rounded-lg overflow-hidden border border-border aspect-video bg-muted">
+                  <div className="relative rounded-xl overflow-hidden border border-border aspect-video bg-muted">
                     <img src={coverUrl} alt="Campaign cover" className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed border-border aspect-video bg-muted/30 flex items-center justify-center">
+                  <div className="rounded-xl border border-dashed border-border aspect-video bg-muted/30 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground">Upload an image or let Smart generate one</p>
                   </div>
                 )}
@@ -497,10 +548,10 @@ const FundNew = () => {
 
         {/* ── STEP 2: Tiers ── */}
         {step === 2 && (
-          <Card className="p-5 space-y-3">
+          <Card className="p-5 space-y-3 rounded-2xl border-border/60 shadow-none">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-semibold">Pledge tiers</h2>
+                <h2 className="text-lg font-black tracking-tight">Pledge tiers</h2>
                 <p className="text-xs text-muted-foreground">Rewards backers can choose from</p>
               </div>
               <div className="flex gap-1">
@@ -521,7 +572,7 @@ const FundNew = () => {
             </div>
 
             {tiers.map((t, i) => (
-              <Card key={i} className="p-3 bg-muted/30">
+              <Card key={i} className="p-3 rounded-xl border-border/60 bg-muted/30 shadow-none">
                 <div className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
                   <div>
                     <Label className="text-[10px]">Amount $</Label>
@@ -575,7 +626,7 @@ const FundNew = () => {
 
         {/* ── STEP 3: Goal & Launch ── */}
         {step === 3 && (
-          <Card className="p-5 space-y-4">
+          <Card className="p-5 space-y-4 rounded-2xl border-border/60 shadow-none">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Funding goal (USD) *</Label>
@@ -598,8 +649,8 @@ const FundNew = () => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-energy/30 bg-energy/5 p-4">
-              <p className="text-xs font-semibold text-energy uppercase tracking-wider mb-2">Review</p>
+            <div className="rounded-xl border border-energy/30 bg-energy/5 p-4">
+              <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase mb-2">Review</p>
               <div className="space-y-1 text-sm">
                 <p><span className="text-muted-foreground">Title:</span> <span className="font-medium">{title || "—"}</span></p>
                 <p><span className="text-muted-foreground">Category:</span> {category}</p>
@@ -611,7 +662,7 @@ const FundNew = () => {
 
             {/* Verification gate */}
             <div className={cn(
-              "rounded-lg border p-4 space-y-3",
+              "rounded-xl border p-4 space-y-3",
               ageVerified ? "border-energy/40 bg-energy/5" : "border-destructive/40 bg-destructive/5"
             )}>
               <div className="flex items-center justify-between">
@@ -658,30 +709,30 @@ const FundNew = () => {
         )}
 
         {/* ── Footer nav ── */}
-        <div className="flex flex-wrap gap-3 mt-6 items-center">
+        <div className="flex flex-wrap gap-2 mt-6 items-center">
           <Button
             variant="outline"
-            size="lg"
+            size="sm"
             disabled={step === 0}
             onClick={() => setStep((s) => Math.max(0, s - 1))}
-            className="gap-1"
+            className="gap-1.5"
           >
-            <ChevronLeft className="h-4 w-4" /> Back
+            <ChevronLeft className="h-3.5 w-3.5" /> Back
           </Button>
 
           {step < STEPS.length - 1 ? (
             <Button
-              size="lg"
+              size="sm"
               onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
               disabled={!canAdvance()}
-              className="gap-1 ml-auto"
+              className="gap-1.5 ml-auto"
             >
-              Next <ChevronRight className="h-4 w-4" />
+              Next <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           ) : (
             <div className="flex gap-2 ml-auto">
               <Button
-                size="lg"
+                size="sm"
                 variant="outline"
                 onClick={() => handleSubmit(false)}
                 disabled={createMut.isPending}
@@ -689,13 +740,13 @@ const FundNew = () => {
                 Save draft
               </Button>
               <Button
-                size="lg"
+                size="sm"
                 onClick={() => handleSubmit(true)}
                 disabled={createMut.isPending || gated || !ageVerified}
-                className="gap-2"
+                className="gap-1.5"
               >
                 {createMut.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                {gated ? <><Lock className="h-4 w-4" /> Upgrade to launch</> : !ageVerified ? <><Lock className="h-4 w-4" /> Verify age to launch</> : <>Launch <Rocket className="h-4 w-4" /></>}
+                {gated ? <><Lock className="h-3.5 w-3.5" /> Upgrade to launch</> : !ageVerified ? <><Lock className="h-3.5 w-3.5" /> Verify age to launch</> : <>Launch <Rocket className="h-3.5 w-3.5" /></>}
               </Button>
             </div>
           )}

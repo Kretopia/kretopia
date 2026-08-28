@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BookOpen, Headphones, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Reveal } from "./Reveal";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export type SpotlightTab = "magazine" | "podcast";
 
@@ -46,61 +46,48 @@ export function SpotlightBoard({
   const active = TABS.find((t) => t.value === value) ?? TABS[0];
 
   return (
-    <Reveal className={cn("w-full", className)}>
-      <div
-        className="rounded-2xl border overflow-hidden"
-        style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.02)" }}
-      >
-        {/* Board header */}
-        <div className="px-4 sm:px-5 pt-4 pb-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-sm font-semibold text-white">The Spotlight desk</h2>
-            <span className="text-[11px] text-white/40">Read it or hear it</span>
-          </div>
+    <div className={cn("w-full rounded-2xl border border-border bg-card overflow-hidden", className)}>
+      {/* Board header */}
+      <div className="px-4 sm:px-5 pt-4 pb-3 border-b border-border">
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 className="text-sm font-semibold text-foreground">The Spotlight desk</h3>
+          <span className="text-[11px] text-muted-foreground">Read it or hear it</span>
+        </div>
 
-          <p className="mt-1.5 text-[11px] leading-relaxed text-white/50">
-            Everything published by Kretopia lives here: written stories on one side, recorded
-            conversations on the other. Pick a side — the content loads straight away, no sign-up needed.
-          </p>
+        <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+          Everything published by Kretopia lives here: written stories on one side, recorded
+          conversations on the other. Pick a side — the content loads straight away, no sign-up needed.
+        </p>
 
-          <div className="mt-3 flex flex-wrap gap-1.5">
+        <Tabs value={value} onValueChange={(v) => onValueChange(v as SpotlightTab)} className="mt-3">
+          <TabsList className="h-auto gap-1.5 rounded-full bg-transparent p-0">
             {TABS.map((t) => {
               const Icon = t.icon;
-              const isActive = t.value === value;
               return (
-                <button
+                <TabsTrigger
                   key={t.value}
-                  type="button"
-                  onClick={() => onValueChange(t.value)}
-                  aria-pressed={isActive}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors border",
-                    isActive ? "text-white" : "text-white/55 hover:text-white/80",
-                  )}
-                  style={{
-                    borderColor: isActive ? "rgba(255,45,161,0.4)" : "rgba(255,255,255,0.08)",
-                    backgroundColor: isActive ? "rgba(255,45,161,0.10)" : "transparent",
-                  }}
+                  value={t.value}
+                  className="gap-1.5 rounded-full border border-border px-3 py-1.5 text-[11px] font-medium text-muted-foreground data-[state=active]:border-[hsl(var(--energy)/0.4)] data-[state=active]:bg-[hsl(var(--energy)/0.1)] data-[state=active]:text-foreground"
                 >
                   <Icon className="h-3 w-3" />
                   {t.label}
-                </button>
+                </TabsTrigger>
               );
             })}
-          </div>
+          </TabsList>
+        </Tabs>
 
-          <p className="mt-2.5 flex items-start gap-1.5 text-[11px] text-white/45">
-            <Info className="h-3 w-3 shrink-0 mt-[2px]" />
-            {active.hint}
-          </p>
-        </div>
-
-        {/* Board body */}
-        <div className="p-3 sm:p-5">
-          {value === "magazine" ? magazine : podcast}
-        </div>
+        <p className="mt-2.5 flex items-start gap-1.5 text-[11px] text-muted-foreground">
+          <Info className="h-3 w-3 shrink-0 mt-[2px]" />
+          {active.hint}
+        </p>
       </div>
-    </Reveal>
+
+      {/* Board body */}
+      <div className="p-3 sm:p-5">
+        {value === "magazine" ? magazine : podcast}
+      </div>
+    </div>
   );
 }
 

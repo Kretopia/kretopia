@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Search, Send, Target, Users, TrendingUp, Mail, Crown, Lock, Kanban, BarChart3 } from "lucide-react";
 import LeadsTab from "@/components/thrive-ai/LeadsTab";
 import OutreachTab from "@/components/thrive-ai/OutreachTab";
@@ -115,21 +114,19 @@ const SalesDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-4 max-w-5xl pb-24 md:pb-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
-            <Target className="h-6 w-6 text-primary" />
-          </div>
-           <div>
-            <h1 className="text-xl font-bold">ThriveFunnel</h1>
-            <p className="text-xs text-muted-foreground">Find leads, automate outreach, close deals</p>
-          </div>
+      <div className="mb-5 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">
+            Sales
+          </p>
+          {!isPro && (
+            <span className="inline-flex items-center gap-1.5 shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-sm bg-muted/60 text-muted-foreground border-border">
+              Spark Plan
+            </span>
+          )}
         </div>
-        {!isPro && (
-          <Badge variant="outline" className="gap-1 text-muted-foreground border-border">
-            Spark Plan
-          </Badge>
-        )}
+        <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05]">ThriveFunnel</h1>
+        <p className="text-sm text-muted-foreground">Find leads, automate outreach, close deals</p>
       </div>
 
       {/* Stats Grid */}
@@ -139,8 +136,8 @@ const SalesDashboard = () => {
           return (
             <Card
               key={stat.label}
-              className={`p-3 relative overflow-hidden transition-all ${
-                isLocked ? "opacity-60" : "hover:shadow-md"
+              className={`p-3 relative overflow-hidden rounded-xl border-border/60 shadow-none transition-all ${
+                isLocked ? "opacity-60" : ""
               }`}
             >
               {isLocked && (
@@ -158,9 +155,12 @@ const SalesDashboard = () => {
         })}
       </div>
 
+      {/* Bottom hairline — separates summary from the tool tabs */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-4" />
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 mb-4">
+        <TabsList className="grid w-full grid-cols-4 mb-4 rounded-xl bg-card/80 border border-border/60 backdrop-blur-sm">
           <TabsTrigger value="leads" className="gap-1.5 text-xs sm:text-sm">
             <Search className="h-4 w-4" />
             <span className="hidden sm:inline">Lead Scout</span>

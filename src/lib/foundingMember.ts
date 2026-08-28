@@ -32,9 +32,14 @@ export const FOUNDING_QUESTS: FoundingQuest[] = [
   },
 ];
 
-// Founding Member program closes June 1, 2026 — or earlier if all 100 active spots fill first.
+// Founding Member program closes — or earlier if all 100 active spots fill
+// first. The original 2026-06-01 deadline passed with no post-deadline state
+// anywhere in the UI (foundingDaysLeft() clamps to 0 rather than going
+// negative, so the page was silently stuck at "0 days left" for months);
+// extended here per product decision. Update this constant when a firm final
+// date is set — it is the only place the deadline is defined.
 // Format: ISO date (UTC) — used for display + countdown only.
-export const FOUNDING_MEMBER_DEADLINE_ISO = "2026-06-01T23:59:59Z";
+export const FOUNDING_MEMBER_DEADLINE_ISO = "2026-12-31T23:59:59Z";
 export const FOUNDING_MEMBER_CAP = 100;
 
 export function foundingDeadlineLabel(): string {

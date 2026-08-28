@@ -61,28 +61,29 @@ const Inbox = () => {
     <div className="min-h-screen bg-background pb-24 accent-match">
       <SEO title="Inbox - Kretopia" description="What needs you, and what's good to know." />
       <div className="container mx-auto max-w-2xl px-4 pt-6">
-        <div className="flex items-center justify-between border-b-2 border-primary/20 pb-4 mb-4">
-          <div className="space-y-1">
-            <p className="brand-eyebrow">Your inbox</p>
-            <h1 className="text-3xl font-black tracking-[-0.03em] flex items-center gap-3">
-              <Bell className="h-7 w-7 text-[hsl(var(--signal-teal))]" />
+        <div className="flex items-center justify-between gap-2 pb-4">
+          <div className="space-y-1.5 min-w-0">
+            <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">Your inbox</p>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05] flex items-center gap-3">
+              <Bell className="h-7 w-7 text-[hsl(var(--energy))]" />
               Inbox
             </h1>
             <p className="text-sm text-muted-foreground">Two lanes — what needs you, and what's good to know.</p>
           </div>
           {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={markAllAsRead} className="gap-1.5">
+            <Button variant="outline" size="sm" onClick={markAllAsRead} className="gap-1.5 shrink-0">
               <CheckCheck className="h-4 w-4" />
               Mark read
             </Button>
           )}
         </div>
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-5" />
 
         {/* Tabs */}
         <div
           role="tablist"
           aria-label="Inbox sections"
-          className="inline-flex items-center gap-1 p-1 rounded-full border border-border bg-card mb-5"
+          className="inline-flex items-center gap-1 p-1 rounded-full border border-border bg-card/80 backdrop-blur-sm mb-5"
         >
           <button
             role="tab"
@@ -91,13 +92,13 @@ const Inbox = () => {
             className={cn(
               "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
               tab === "needs"
-                ? "bg-background text-[hsl(var(--signal-teal))] shadow-sm ring-1 ring-[hsl(var(--signal-teal))]"
+                ? "bg-background text-[hsl(var(--energy))] shadow-sm ring-1 ring-[hsl(var(--energy))]"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             Needs you
             {needsYouCount > 0 && (
-              <Badge className="h-4 px-1.5 text-[10px] bg-[hsl(var(--signal-teal))] text-background">
+              <Badge className="h-4 px-1.5 text-[10px] bg-[hsl(var(--energy))] text-background">
                 {needsYouCount}
               </Badge>
             )}
@@ -145,7 +146,7 @@ const Inbox = () => {
           </div>
         ) : list.length === 0 ? (
           <div className="text-center py-12 px-4">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50 mb-4">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-card border border-border/60 mb-4">
               <InboxIcon className="h-7 w-7 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-bold tracking-tight mb-1">
@@ -163,10 +164,10 @@ const Inbox = () => {
               <div key={n.id}>
                 <div
                   className={cn(
-                    "group relative rounded-xl p-4 transition-all cursor-pointer",
+                    "group relative rounded-xl border p-4 transition-colors cursor-pointer",
                     n.read
-                      ? "bg-muted/30 hover:bg-muted/50"
-                      : "bg-primary/5 hover:bg-primary/10 border border-primary/20"
+                      ? "bg-card/50 border-border/60 hover:bg-muted/40"
+                      : "bg-card border-[hsl(var(--energy)/0.35)] hover:bg-muted/20"
                   )}
                   onClick={() => handleClick(n)}
                 >
@@ -178,7 +179,7 @@ const Inbox = () => {
                           {n.priority === "high" && (
                             <Badge variant="destructive" className="text-[10px] h-5">Urgent</Badge>
                           )}
-                          {!n.read && <div className="h-2 w-2 rounded-full bg-primary" />}
+                          {!n.read && <div className="h-2 w-2 rounded-full bg-[hsl(var(--energy))]" />}
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">{n.message}</p>

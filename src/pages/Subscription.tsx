@@ -274,7 +274,7 @@ export default function Subscription() {
           <div className="flex flex-col items-center gap-3 text-center">
             {/* View mode is derived from account_type — companies see Brand tiers, creators see Creator tiers.
                 Manual toggle removed: account type is set during onboarding and edited from profile settings. */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-card/40 text-xs font-semibold text-muted-foreground">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs font-semibold text-muted-foreground">
               {viewMode === "brand" ? (
                 <><Briefcase className="h-3.5 w-3.5" /> Brand plans</>
               ) : (
@@ -307,7 +307,7 @@ export default function Subscription() {
       <div className="container mx-auto px-4 pt-8">
       {hasPaidSub && (
         <div className="flex justify-end mb-6">
-          <Button onClick={handleManageSubscription} variant="outline" disabled={loading === "portal"}>
+          <Button size="sm" onClick={handleManageSubscription} variant="outline" disabled={loading === "portal"}>
             {loading === "portal" ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
             ) : (
@@ -320,9 +320,9 @@ export default function Subscription() {
       {/* Founder Circle Card — only show on Creator view */}
       {viewMode === "creator" && (
         <div className="max-w-2xl mx-auto mb-12">
-          <Card className={`relative border-2 overflow-visible ${
-            isFounder 
-              ? 'border-accent bg-gradient-to-br from-accent/10 via-background to-accent/5' 
+          <Card className={`relative rounded-2xl border-2 shadow-none overflow-visible ${
+            isFounder
+              ? 'border-accent bg-gradient-to-br from-accent/10 via-background to-accent/5'
               : 'border-accent/50 bg-gradient-to-br from-accent/5 via-background to-accent/3'
           }`}>
             {isFounder && (
@@ -419,16 +419,16 @@ export default function Subscription() {
           return (
             <Card
               key={tier.tier}
-              className={`relative ${
+              className={`relative rounded-2xl shadow-none ${
                 tier.popular
-                  ? "border-primary shadow-lg scale-[1.03]"
+                  ? "border-primary"
                   : tier.tier === "creator_pro"
-                  ? "border-primary/70 shadow-md"
+                  ? "border-primary/70"
                   : tier.tier === "brand_enterprise"
-                  ? "border-primary/50 shadow-md"
+                  ? "border-primary/50"
                   : isCurrentTier
                   ? "border-success"
-                  : ""
+                  : "border-border/60"
               }`}
             >
               {tier.popular && !isCurrentTier && (

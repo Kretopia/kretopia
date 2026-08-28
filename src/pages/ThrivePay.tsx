@@ -427,7 +427,7 @@ export default function ThrivePay() {
             you). Every section's own internal logic/handlers are
             unchanged — this is a layout regrouping, not a rewrite. */}
         <Tabs defaultValue="get-paid" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-3 h-auto p-1">
+          <TabsList className="w-full grid grid-cols-3 h-auto p-1 rounded-xl bg-card/80 border border-border/60 backdrop-blur-sm">
             <TabsTrigger value="get-paid" className="gap-1.5 py-2 text-xs sm:text-sm">
               <Send className="h-3.5 w-3.5" /> Get Paid
             </TabsTrigger>
@@ -453,7 +453,7 @@ export default function ThrivePay() {
             spec's "misplaced Scan button." */}
         <SnapReceiptFAB />
         <section className="space-y-3">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" /> Invoices & Earnings
           </h2>
           <FreeTierGate
@@ -467,7 +467,7 @@ export default function ThrivePay() {
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
               <Wallet className="h-5 w-5 text-primary" /> Recent Activity
             </h2>
             <Button variant="link" size="sm" onClick={() => navigate("/payment-history")}>
@@ -476,7 +476,7 @@ export default function ThrivePay() {
           </div>
           <div className="space-y-2">
             {recentTransactions.length === 0 ? (
-              <Card>
+              <Card className="rounded-2xl border-border/60 shadow-none">
                 <EmptyState
                   icon={Wallet}
                   eyebrow="Your creative finances"
@@ -495,7 +495,7 @@ export default function ThrivePay() {
                 return (
                   <Card
                     key={tx.id}
-                    className="hover:bg-accent/5 transition-smooth cursor-pointer"
+                    className="rounded-xl border-border/60 shadow-none hover:bg-accent/5 transition-smooth cursor-pointer"
                     role="button"
                     tabIndex={0}
                     onClick={() => setSelectedTransaction(tx as TransactionDetail)}
@@ -504,15 +504,15 @@ export default function ThrivePay() {
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                          <div className={`rounded-full p-1.5 sm:p-2 flex-shrink-0 ${isIn ? "bg-green-500/10" : "bg-red-500/10"}`}>
-                            {isIn ? <ArrowDownRight className="h-4 w-4 text-green-500" /> : <ArrowUpRight className="h-4 w-4 text-red-500" />}
+                          <div className={`rounded-full p-1.5 sm:p-2 flex-shrink-0 ${isIn ? "bg-success/10" : "bg-destructive/10"}`}>
+                            {isIn ? <ArrowDownRight className="h-4 w-4 text-success" /> : <ArrowUpRight className="h-4 w-4 text-destructive" />}
                           </div>
                           <div className="min-w-0">
                             <p className="font-medium text-sm truncate">{tx.description || tx.type}</p>
                             <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
                           </div>
                         </div>
-                        <span className={`text-sm sm:text-lg font-semibold flex-shrink-0 ${isIn ? "text-green-500" : "text-red-500"}`}>
+                        <span className={`text-sm sm:text-lg font-semibold flex-shrink-0 ${isIn ? "text-success" : "text-destructive"}`}>
                           {isIn ? "+" : "-"}${tx.amount}
                         </span>
                       </div>
@@ -528,12 +528,12 @@ export default function ThrivePay() {
           {/* 3. Payouts & Fees — Stripe Connect + fee rate */}
           <TabsContent value="payouts" className="mt-0 space-y-6">
         <section className="space-y-3">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" /> Payouts to your bank
           </h2>
 
           {connectStatus === "not_connected" && (
-            <Card className="border-primary/20">
+            <Card className="rounded-2xl border-border/60 shadow-none">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Shield className="h-5 w-5 text-primary" />
@@ -569,10 +569,10 @@ export default function ThrivePay() {
           )}
 
           {(connectStatus === "pending" || connectStatus === "restricted") && (
-            <Card className="border-yellow-500/30 bg-yellow-500/5">
+            <Card className="rounded-2xl border-warning/30 bg-warning/5 shadow-none">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400 text-base">
+                  <CardTitle className="flex items-center gap-2 text-warning text-base">
                     {connectStatus === "restricted" ? <AlertCircle className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
                     {connectStatus === "restricted" ? "Action Required" : "Setup Incomplete"}
                   </CardTitle>
@@ -593,8 +593,8 @@ export default function ThrivePay() {
                     { label: "Charges Enabled", ok: connectDetails?.chargesEnabled },
                     { label: "Payouts Enabled", ok: connectDetails?.payoutsEnabled },
                   ].map((item) => (
-                    <div key={item.label} className={`flex items-center gap-2 rounded-lg border p-3 ${item.ok ? "border-green-500/30 bg-green-500/5" : "border-yellow-500/30 bg-yellow-500/5"}`}>
-                      {item.ok ? <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" /> : <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />}
+                    <div key={item.label} className={`flex items-center gap-2 rounded-lg border p-3 ${item.ok ? "border-success/30 bg-success/5" : "border-warning/30 bg-warning/5"}`}>
+                      {item.ok ? <CheckCircle className="h-4 w-4 text-success flex-shrink-0" /> : <AlertCircle className="h-4 w-4 text-warning flex-shrink-0" />}
                       <span className="text-sm font-medium">{item.label}</span>
                     </div>
                   ))}
@@ -605,7 +605,7 @@ export default function ThrivePay() {
                     <div className="grid gap-2 sm:grid-cols-2">
                       {connectDetails.requirements.map((req, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <div className="h-1.5 w-1.5 rounded-full bg-yellow-500 flex-shrink-0" />
+                          <div className="h-1.5 w-1.5 rounded-full bg-warning flex-shrink-0" />
                           {req}
                         </div>
                       ))}
@@ -620,7 +620,7 @@ export default function ThrivePay() {
           )}
 
           {connectStatus === "active" && (
-            <Card>
+            <Card className="rounded-2xl border-border/60 shadow-none">
               <CardHeader>
                 <CardTitle className="text-base">Payouts active</CardTitle>
                 <CardDescription>Your bank is connected. Stripe transfers your balance automatically.</CardDescription>
@@ -637,7 +637,7 @@ export default function ThrivePay() {
 
         {/* Trust & controls */}
         <section className="space-y-3">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" /> Trust & security
           </h2>
           <TrustControlsCard />
@@ -645,10 +645,10 @@ export default function ThrivePay() {
 
         {/* 5. Fees */}
         <section className="mb-6 space-y-3">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
             <Percent className="h-5 w-5 text-primary" /> Your fee rate
           </h2>
-          <Card>
+          <Card className="rounded-2xl border-border/60 shadow-none">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <div className="text-3xl font-bold text-primary">{getFeeDisplayText(subscriptionTier)}</div>

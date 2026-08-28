@@ -25,7 +25,7 @@ import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 import { VibePicker } from "@/components/onboarding/VibePicker";
 import { Palette } from "lucide-react";
 import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
-import { StaggerHeading } from "@/components/typography/StaggerReveal";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -1014,41 +1014,40 @@ const Settings = ({ embedded = false }: SettingsProps = {}) => {
   if (embedded) return sections;
 
   return (
-    <div className="min-h-screen p-4 md:p-6 pb-24 md:pb-6">
-      <div className="container mx-auto max-w-4xl">
-        <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex-1">
-              <p className="brand-eyebrow mb-1">Account</p>
-              <h1 className="text-3xl font-black tracking-[-0.03em] mb-2 flex items-center gap-2">
-                <SettingsIcon className="h-8 w-8 text-primary" />
-                <StaggerHeading as="span" text="Settings" className="inline" />
-              </h1>
-              <p className="text-muted-foreground">
-                Manage your account preferences and security
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/circle")}
-              className="shrink-0"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+    <div className="min-h-screen">
+      <StudioFeatureShell>
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 -ml-2 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/circle")}
+            className="shrink-0"
+            aria-label="Close settings"
+          >
+            <X className="h-5 w-5" />
+          </Button>
         </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase flex items-center gap-1.5">
+            <SettingsIcon className="h-3 w-3" />
+            Account
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05]">Settings</h1>
+          <p className="text-sm text-muted-foreground">Manage your account preferences and security</p>
+        </div>
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
         {sections}
-      </div>
+      </StudioFeatureShell>
     </div>
   );
 };

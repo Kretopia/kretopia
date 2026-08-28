@@ -3,7 +3,8 @@ import { SEO } from "@/components/SEO";
 import { Sparkles, LayoutGrid, Loader2, Users } from "lucide-react";
 import { SwipeFeature } from "@/components/swipe";
 import { KretoTip } from "@/components/agent/KretoTip";
-import { StudioFeatureHeader } from "@/components/studio-reference/StudioFeatureHeader";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { MATCH_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 
 const LikesYouGrid = lazy(() =>
@@ -81,10 +82,12 @@ export default function Match() {
         title="Match — Find your collaborators | Kretopia"
         description="Swipe or browse creators whose work proves they can do the brief."
       />
-      <StudioFeatureHeader
+      <FeaturePageHeader
         eyebrow="Collaborators"
         title="Match."
+        accentTitle="Find your people."
         subtitle="Discover the deck or browse the grid — connect by skill, city, and the people you've already made things with."
+        tutorial={{ featureKey: "match", label: "How Match works", steps: MATCH_TUTORIAL }}
       />
 
       <div className="max-w-2xl mx-auto px-4 pt-3">

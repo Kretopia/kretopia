@@ -22,7 +22,8 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
-import { StudioFeatureHeader } from "@/components/studio-reference/StudioFeatureHeader";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { SOUNDSTAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { StudioPrimaryCard } from "@/components/studio-reference/StudioPrimaryCard";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 import { StudioEmptyState } from "@/components/studio-reference/StudioEmptyState";
@@ -286,10 +287,12 @@ export default function Circle() {
           description="Find collaborators, jump into live sessions, and grow your creative circle."
         />
 
-        <StudioFeatureHeader
-          eyebrow="Stage"
-          title="Stage."
-          subtitle="Match with collaborators, browse the grid, or drop into a live session."
+        <FeaturePageHeader
+          eyebrow="Stages"
+          title="Stages."
+          accentTitle="Where creators meet, live."
+          subtitle="Drop into a live session, match with collaborators, or browse the network."
+          tutorial={{ featureKey: "stages", label: "How Stages works", steps: SOUNDSTAGES_TUTORIAL }}
         />
 
         <div className="container mx-auto px-3 sm:px-4 py-4 space-y-4">

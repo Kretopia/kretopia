@@ -14,7 +14,7 @@ import { CreditsActivityTimeline } from "@/components/credits/CreditsActivityTim
 import { CreditsAIInsights } from "@/components/credits/CreditsAIInsights";
 import { CreditsErrorState } from "@/components/credits/CreditsPrimitives";
 import { CreditsFullRecord } from "@/components/credits/CreditsFullRecord";
-import { StudioFeatureHeader } from "@/components/studio-reference/StudioFeatureHeader";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 import { User, Briefcase, Award, Activity, FileText, Sparkles as SparklesIcon } from "lucide-react";
 
@@ -162,9 +162,10 @@ export default function CreditsDashboard() {
       </Helmet>
 
       <div className="accent-passport relative min-h-screen bg-background pb-24">
-        <StudioFeatureHeader
+        <FeaturePageHeader
           eyebrow="Credits"
-          title="Verified Credits."
+          title="Credits."
+          accentTitle="Your record, verified."
           subtitle="Your professional identity and the verified creative work behind it — in one private place."
         />
 

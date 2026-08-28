@@ -14,7 +14,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { SEO } from "@/components/SEO";
 import { useNavigate } from "react-router-dom";
-import { StudioFeatureHeader } from "@/components/studio-reference/StudioFeatureHeader";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+
+const CREATIVE_CIRCLE_TUTORIAL: TutorialStep[] = [
+  { icon: Users, title: "Invite creatives", body: "Using your personal link, QR code, or direct share." },
+  { icon: TrendingUp, title: "Level up your tier", body: "As more people join through you — unlock free Pro, reduced fees, and status points." },
+  { icon: Gift, title: "Earn passive commission", body: "From Kretopia's service fee when your referrals complete paid gigs — they keep 100% of their earnings." },
+];
 
 // referralEngine.ts's tier icons are emoji strings, still used as-is by
 // InviteCircleCard, dashboard/InviteCard and the Passport-adjacent
@@ -94,10 +101,12 @@ const CreativeCircle = () => {
     <div className="pb-24">
       <SEO title="Creative Circle | Kretopia" description="Grow your creative network, unlock rewards, and earn passive income by inviting creatives to Kretopia." />
 
-      <StudioFeatureHeader
+      <FeaturePageHeader
         eyebrow="Creative Circle"
         title="Creative Circle."
+        accentTitle="Earn as it grows."
         subtitle="Invite creatives, climb tiers, and earn passive commission — all from one link."
+        tutorial={{ featureKey: "creative-circle", label: "How Creative Circle works", steps: CREATIVE_CIRCLE_TUTORIAL }}
       />
 
       <div className="container mx-auto px-4 pt-4 max-w-2xl space-y-6">

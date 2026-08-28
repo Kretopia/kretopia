@@ -4,11 +4,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { SEO } from "@/components/SEO";
-import { CheckCircle2, ArrowLeft, Trophy, Calendar } from "lucide-react";
+import { Star, CheckCircle2, ArrowLeft, Trophy, Calendar, ListChecks } from "lucide-react";
 import { useFoundingMemberProgress } from "@/hooks/useFoundingMemberProgress";
 import { FOUNDING_QUESTS, foundingDeadlineLabel, foundingDaysLeft } from "@/lib/foundingMember";
 import { useAuth } from "@/hooks/useAuth";
-import { StudioFeatureHeader } from "@/components/studio-reference/StudioFeatureHeader";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+
+const FOUNDING_TUTORIAL: TutorialStep[] = [
+  { icon: ListChecks, title: "Complete 3 milestones", body: "Verify your profile, log a credit, and invite a friend — each one moves your progress bar." },
+  { icon: Star, title: "Race for one of 100 spots", body: "Only 100 Founding Member badges exist. First 100 to finish all 3 milestones get one." },
+  { icon: Trophy, title: "Wear it on your Passport", body: "Once earned, the badge is permanent and shows on your public Passport as an early member." },
+];
 
 const QUEST_CTA: Record<string, { label: string; to: string }> = {
   claim_profile: { label: "Verify profile", to: "/profile" },
@@ -33,19 +40,23 @@ export default function FoundingMember() {
         description="Earn one of 100 Founding Member badges by completing 3 short milestones."
       />
 
-      <StudioFeatureHeader
-        eyebrow="Founding Circle"
-        title="Founding Circle."
-        subtitle="Complete 3 milestones before the deadline and earn a permanent Founding Member badge."
-      >
+      <div className="max-w-2xl mx-auto px-4 pt-4">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[hsl(var(--energy))] transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[hsl(var(--energy))] transition-colors mb-2"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
-      </StudioFeatureHeader>
+      </div>
+
+      <FeaturePageHeader
+        eyebrow="Founding Circle"
+        title="Founding Circle."
+        accentTitle="100 spots, one badge."
+        subtitle="Complete 3 milestones before the deadline and earn a permanent Founding Member badge."
+        tutorial={{ featureKey: "founding-circle", label: "How the Founding Circle works", steps: FOUNDING_TUTORIAL }}
+      />
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
         <div className="flex justify-end mb-3">

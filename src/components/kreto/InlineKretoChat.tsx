@@ -72,7 +72,7 @@ export function InlineKretoChat({ seedPrompt }: { seedPrompt?: string | null }) 
   };
 
   return (
-    <div className="rounded-2xl border border-[#FF2DA1]/30 bg-white/[0.03] overflow-hidden">
+    <div className="rounded-2xl border border-[hsl(var(--energy)/0.3)] bg-white/[0.03] backdrop-blur-sm overflow-hidden">
       {messages.length > 0 && (
         <div className="max-h-[46vh] overflow-y-auto px-4 py-4 space-y-3">
           {messages.map((m, i) => (
@@ -80,7 +80,7 @@ export function InlineKretoChat({ seedPrompt }: { seedPrompt?: string | null }) 
               key={i}
               className={
                 m.role === "user"
-                  ? "ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-[#FF2DA1]/15 border border-[#FF2DA1]/25 px-3.5 py-2 text-sm text-white"
+                  ? "ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-[hsl(var(--energy)/0.15)] border border-[hsl(var(--energy)/0.25)] px-3.5 py-2 text-sm text-white"
                   : "mr-auto max-w-[92%] rounded-2xl rounded-bl-sm bg-white/[0.05] border border-white/10 px-3.5 py-2 text-sm text-white/90 whitespace-pre-wrap"
               }
             >

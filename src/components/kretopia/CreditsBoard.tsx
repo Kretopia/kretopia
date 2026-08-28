@@ -101,8 +101,8 @@ export function CreditsBoard({
                     active ? "text-white" : "text-white/55 hover:text-white/80",
                   )}
                   style={{
-                    borderColor: active ? "rgba(255,45,161,0.4)" : "rgba(255,255,255,0.08)",
-                    backgroundColor: active ? "rgba(255,45,161,0.10)" : "transparent",
+                    borderColor: active ? "hsl(var(--energy) / 0.4)" : "rgba(255,255,255,0.08)",
+                    backgroundColor: active ? "hsl(var(--energy) / 0.1)" : "transparent",
                   }}
                 >
                   {f.label}
@@ -134,7 +134,7 @@ export function CreditsBoard({
 
         {loading ? (
           <div className="flex justify-center py-14">
-            <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#FF2DA1" }} />
+            <Loader2 className="h-5 w-5 animate-spin" style={{ color: "hsl(var(--energy))" }} />
           </div>
         ) : visible.length === 0 ? (
           <div className="py-14 text-center">
@@ -182,7 +182,7 @@ export function CreditsBoard({
                     {row.verified ? (
                       <span
                         className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                        style={{ backgroundColor: "rgba(255,45,161,0.12)", color: "#FF2DA1" }}
+                        style={{ backgroundColor: "hsl(var(--energy) / 0.12)", color: "hsl(var(--energy))" }}
                       >
                         <ShieldCheck className="h-3 w-3" />
                         Verified
@@ -190,7 +190,7 @@ export function CreditsBoard({
                     ) : row.isAI ? (
                       <span
                         className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                        style={{ backgroundColor: "rgba(255,45,161,0.10)", color: "#FF2DA1" }}
+                        style={{ backgroundColor: "hsl(var(--energy) / 0.1)", color: "hsl(var(--energy))" }}
                       >
                         <Sparkles className="h-3 w-3" />
                         AI found

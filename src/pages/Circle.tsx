@@ -27,6 +27,7 @@ import { SOUNDSTAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialCont
 import { StudioPrimaryCard } from "@/components/studio-reference/StudioPrimaryCard";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 import { StudioEmptyState } from "@/components/studio-reference/StudioEmptyState";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 
 type BrowseProfile = {
   user_id: string;
@@ -281,7 +282,7 @@ export default function Circle() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen pb-28 sm:pb-24 md:pb-8 bg-background accent-match">
+      <div className="min-h-screen bg-background accent-match">
         <SEO
           title="Circle — Match, Live & Network"
           description="Find collaborators, jump into live sessions, and grow your creative circle."
@@ -295,7 +296,7 @@ export default function Circle() {
           tutorial={{ featureKey: "stages", label: "How Stages works", steps: SOUNDSTAGES_TUTORIAL }}
         />
 
-        <div className="container mx-auto px-3 sm:px-4 py-4 space-y-4">
+        <StudioFeatureShell>
           <StudioPrimaryCard
             eyebrow="Live · Match · Network"
             title="Find your next collaborator"
@@ -351,7 +352,7 @@ export default function Circle() {
               </div>
             </div>
           </button>
-        </div>
+        </StudioFeatureShell>
 
         <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
         {matchedUser && (

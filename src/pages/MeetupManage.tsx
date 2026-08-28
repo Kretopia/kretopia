@@ -124,7 +124,7 @@ const MeetupManage = () => {
         <div className="relative container mx-auto max-w-6xl px-4 pt-4 pb-5 sm:pt-7 sm:pb-8">
           <button
             onClick={() => navigate("/meetup")}
-            className="inline-flex items-center gap-1 text-xs text-white/60 hover:text-[#FF2DA1] transition mb-3 uppercase tracking-wider font-bold"
+            className="inline-flex items-center gap-1 text-xs text-white/60 hover:text-[hsl(var(--energy))] transition mb-3 uppercase tracking-wider font-bold"
           >
             <ArrowLeft className="h-3 w-3" /> Back to Events
           </button>

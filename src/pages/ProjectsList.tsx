@@ -192,7 +192,7 @@ const ProjectsList = () => {
     { id: "completed", label: "Delivered" },
   ];
   const PAY_CHIPS: { id: typeof payFilter; label: string; dot: string }[] = [
-    { id: "unsent", label: "No invoice", dot: "bg-[hsl(var(--signal-magenta))]" },
+    { id: "unsent", label: "No invoice", dot: "bg-[hsl(var(--energy))]" },
     { id: "invoiced", label: "Invoiced", dot: "bg-[hsl(var(--signal-amber))]" },
     { id: "paid", label: "Paid", dot: "bg-[hsl(var(--accent-pay))]" },
   ];
@@ -298,7 +298,7 @@ const ProjectsList = () => {
             {filtersActive && (
               <button
                 onClick={() => { setQuery(""); setStatusFilter("all"); setPayFilter("all"); setFolderFilter("all"); }}
-                className="shrink-0 h-7 px-2.5 rounded-full text-[11px] font-semibold text-white/60 hover:text-[#FF2DA1] transition-colors"
+                className="shrink-0 h-7 px-2.5 rounded-full text-[11px] font-semibold text-white/60 hover:text-[hsl(var(--energy))] transition-colors"
               >
                 Clear
               </button>

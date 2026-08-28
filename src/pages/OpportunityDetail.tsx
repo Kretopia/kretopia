@@ -447,8 +447,13 @@ const OpportunityDetail = () => {
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 -ml-2 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
             Back
           </Button>
           <div className="flex gap-2">
@@ -542,26 +547,29 @@ const OpportunityDetail = () => {
         )}
 
         {/* Content Card */}
-        <div className="rounded-2xl border bg-card p-6 shadow-card">
+        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-none">
           {/* Title and Type */}
-          <div className="mb-4">
-            <Badge className="mb-2">
-              {opportunity.type.charAt(0).toUpperCase() + opportunity.type.slice(1)}
-            </Badge>
-            <h1 className="text-3xl font-bold">{opportunity.title}</h1>
+          <div className="mb-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-sm bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))] border-[hsl(var(--energy)/0.35)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--energy))]" />
+                {opportunity.type.charAt(0).toUpperCase() + opportunity.type.slice(1)}
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05]">{opportunity.title}</h1>
           </div>
 
           {/* Meta Info */}
-          <div className="mb-6 flex flex-wrap gap-4 text-sm">
+          <div className="mb-6 flex flex-wrap gap-2 text-sm">
             {opportunity.location && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-card/80 border border-border px-2.5 py-1 backdrop-blur-sm text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" />
                 {opportunity.location}
               </div>
             )}
             {opportunity.compensation && (
-              <div className={`flex items-center gap-2 font-semibold text-foreground ${!user ? 'relative' : ''}`}>
-                <DollarSign className="h-4 w-4 text-primary" />
+              <div className={`inline-flex items-center gap-1.5 rounded-full bg-card/80 border border-border px-2.5 py-1 backdrop-blur-sm font-semibold text-foreground ${!user ? 'relative' : ''}`}>
+                <DollarSign className="h-3.5 w-3.5 text-primary" />
                 {user ? (
                   <span>{opportunity.compensation}</span>
                 ) : (
@@ -575,8 +583,8 @@ const OpportunityDetail = () => {
               </div>
             )}
             {opportunity.duration && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-4 w-4" />
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-card/80 border border-border px-2.5 py-1 backdrop-blur-sm text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
                 {opportunity.duration}
               </div>
             )}

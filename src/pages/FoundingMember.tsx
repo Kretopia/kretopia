@@ -9,6 +9,7 @@ import { useFoundingMemberProgress } from "@/hooks/useFoundingMemberProgress";
 import { FOUNDING_QUESTS, foundingDeadlineLabel, foundingDaysLeft } from "@/lib/foundingMember";
 import { useAuth } from "@/hooks/useAuth";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const FOUNDING_TUTORIAL: TutorialStep[] = [
@@ -40,16 +41,6 @@ export default function FoundingMember() {
         description="Earn one of 100 Founding Member badges by completing 3 short milestones."
       />
 
-      <div className="max-w-2xl mx-auto px-4 pt-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[hsl(var(--energy))] transition-colors mb-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </button>
-      </div>
-
       <FeaturePageHeader
         eyebrow="Founding Circle"
         title="Founding Circle."
@@ -58,7 +49,15 @@ export default function FoundingMember() {
         tutorial={{ featureKey: "founding-circle", label: "How the Founding Circle works", steps: FOUNDING_TUTORIAL }}
       />
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+      <StudioFeatureShell>
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[hsl(var(--energy))] transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
+
         <div className="flex justify-end mb-3">
           <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-card border border-border rounded-full px-2.5 py-1 shrink-0">
             <Calendar className="h-3 w-3" />
@@ -164,7 +163,7 @@ export default function FoundingMember() {
         {loading && (
           <p className="text-xs text-muted-foreground text-center mt-4">Checking your progress…</p>
         )}
-      </div>
+      </StudioFeatureShell>
     </div>
   );
 }

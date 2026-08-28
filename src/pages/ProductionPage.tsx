@@ -267,7 +267,7 @@ const ProductionPage = () => {
               } else {
                 navigate('/');
               }
-            }} className="flex items-center gap-1 text-xs text-white/60 hover:text-[#FF2DA1] mb-4 transition-colors">
+            }} className="flex items-center gap-1 text-xs text-white/60 hover:text-[hsl(var(--energy))] mb-4 transition-colors">
               <ArrowLeft className="h-3.5 w-3.5" /> Back
             </button>
 
@@ -491,11 +491,11 @@ const ProductionPage = () => {
                                 ) : (
                                   <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
                                 )}
-                                <button onClick={() => navigate(`/profile/${claimed.user_id}`)} className="text-[10px] text-white hover:text-[#FF2DA1] hover:underline transition-colors">View</button>
+                                <button onClick={() => navigate(`/profile/${claimed.user_id}`)} className="text-[10px] text-white hover:text-[hsl(var(--energy))] hover:underline transition-colors">View</button>
                                 {user?.id === claimed.user_id && (
                                   <button
                                     onClick={() => setEndorseCredit({ id: claimed.id, project_name: projectName, role: claimed.role, year: production?.year ?? undefined })}
-                                    className="text-[10px] font-semibold text-white hover:text-[#FF2DA1] hover:underline transition-colors"
+                                    className="text-[10px] font-semibold text-white hover:text-[hsl(var(--energy))] hover:underline transition-colors"
                                   >
                                     Verify
                                   </button>
@@ -541,7 +541,7 @@ const ProductionPage = () => {
             ) : (
               <button
                 onClick={() => setAddingRole(true)}
-                className="w-full py-3 rounded-xl border-2 border-dashed border-white/15 text-xs font-semibold text-white/70 hover:border-[#FF2DA1]/50 hover:text-white transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl border-2 border-dashed border-white/15 text-xs font-semibold text-white/70 hover:border-[hsl(var(--energy)/0.5)] hover:text-white transition-colors flex items-center justify-center gap-2"
               >
                 <Plus className="h-3.5 w-3.5" /> Worked on this? Add your role
               </button>

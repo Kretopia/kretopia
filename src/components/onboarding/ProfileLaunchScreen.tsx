@@ -311,7 +311,7 @@ export function ProfileLaunchScreen({
           <button
             type="button"
             onClick={handleContinue}
-            className="w-full inline-flex items-center justify-center gap-2 text-sm text-white/50 hover:text-[#FF2DA1] transition-colors py-1"
+            className="w-full inline-flex items-center justify-center gap-2 text-sm text-white/50 hover:text-[hsl(var(--energy))] transition-colors py-1"
           >
             Skip for now — go to my home
             <ArrowRight className="h-3.5 w-3.5" />

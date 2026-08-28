@@ -30,7 +30,7 @@ const buttonVariants = cva(
         // a border doesn't make sense on it. White at rest, pink on hover
         // (text + underline) is the closest honest analog to the
         // scintillating-border signature for something that isn't a box.
-        link: "text-white underline-offset-4 hover:underline hover:text-[#FF2DA1] transition-colors",
+        link: "text-white underline-offset-4 hover:underline hover:text-[hsl(var(--energy))] transition-colors",
         gradient: "btn-glass btn-glass-primary font-bold",
         // Hero / Lime — loudest CTA. Same family, extra emphasis via
         // btn-glass-hero (stronger tint/border than plain primary) plus
@@ -45,7 +45,7 @@ const buttonVariants = cva(
         // than switching to .btn-glass, but text is forced white and the
         // hover/open accent is the same signature pink as every other
         // variant now, not a theme-dependent token.
-        glass: "glass-surface text-white hover:border-[#FF2DA1]/50 hover:text-white data-[state=open]:border-[#FF2DA1]/60 data-[state=open]:text-white",
+        glass: "glass-surface text-white hover:border-[hsl(var(--energy)/0.5)] hover:text-white data-[state=open]:border-[hsl(var(--energy)/0.6)] data-[state=open]:text-white",
       },
       size: {
         default: "h-10 px-4 py-2",

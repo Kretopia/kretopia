@@ -233,7 +233,7 @@ export default function CreditVerify() {
                 Confirm & co-sign
               </Button>
               <button
-                className="text-xs text-white/60 hover:text-[#FF2DA1] w-full text-center underline transition-colors"
+                className="text-xs text-white/60 hover:text-[hsl(var(--energy))] w-full text-center underline transition-colors"
                 onClick={() => setStep("decide")}
               >
                 Back
@@ -299,7 +299,7 @@ export default function CreditVerify() {
                 Confirm & claim my role <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
               <button
-                className="text-xs text-white/60 hover:text-[#FF2DA1] w-full text-center underline transition-colors"
+                className="text-xs text-white/60 hover:text-[hsl(var(--energy))] w-full text-center underline transition-colors"
                 onClick={() => setStep(outcome === "accepted" ? "done" : "decide")}
               >
                 Back

@@ -22,6 +22,7 @@ import { ApplicantPipeline } from "@/components/opportunity/ApplicantPipeline";
 import { CompBoard } from "@/components/opportunity/CompBoard";
 import { OpportunityAnalytics } from "@/components/opportunity/OpportunityAnalytics";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { cn } from "@/lib/utils";
 
 interface Applicant {
   id: string;
@@ -476,7 +477,7 @@ Return ONLY valid JSON array:
   if (opportunities.length === 0) {
     return (
       <div className="container mx-auto p-4 md:p-6">
-        <Card>
+        <Card className="border-border/60 shadow-none">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Briefcase className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Opportunities Posted</h3>
@@ -506,22 +507,29 @@ Return ONLY valid JSON array:
   const selectedOpp = opportunities.find(o => o.id === selectedOppId);
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <div className="mb-6 flex flex-col sm:flex-row items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Applicants</h1>
-          <p className="text-muted-foreground">
-            Review and manage applications for this opportunity
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          onClick={() => navigate('/manage-opportunities')}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Gig Manager
-        </Button>
+    <div className="container mx-auto p-4 md:p-6 max-w-5xl">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 -ml-2 mb-3 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+        onClick={() => navigate('/manage-opportunities')}
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Gig Manager
+      </Button>
+
+      <div className="mb-4 space-y-1">
+        <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">
+          Applicant Review
+        </p>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05]">
+          Applicants
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Review and manage applications for this opportunity
+        </p>
       </div>
+      <div className="mb-6 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       <div className="mb-6 flex flex-col sm:flex-row gap-2">
         <Select value={selectedOppId || undefined} onValueChange={handleOpportunityChange}>
@@ -550,28 +558,34 @@ Return ONLY valid JSON array:
       {selectedOpp && (
         <>
           {/* Dashboard Tab Toggle */}
-          <div className="mb-4 flex items-center gap-2">
-            <div className="flex rounded-md border border-input overflow-hidden">
-              <Button
-                variant={dashboardTab === 'applicants' ? 'default' : 'ghost'}
-                size="sm"
-                className="rounded-none"
-                onClick={() => setDashboardTab('applicants')}
-              >
-                <Users className="w-4 h-4 mr-1" />
-                Applicants
-              </Button>
-              <Button
-                variant={dashboardTab === 'analytics' ? 'default' : 'ghost'}
-                size="sm"
-                className="rounded-none"
-                onClick={() => setDashboardTab('analytics')}
-              >
-                <BarChart3 className="w-4 h-4 mr-1" />
-                Analytics
-                {!isPro && <Crown className="w-3 h-3 ml-1 text-primary" />}
-              </Button>
-            </div>
+          <div className="mb-4 inline-flex items-center gap-1 p-1 rounded-full border border-border bg-card">
+            <button
+              type="button"
+              onClick={() => setDashboardTab('applicants')}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
+                dashboardTab === 'applicants'
+                  ? "bg-background text-[hsl(var(--energy))] shadow-sm ring-1 ring-[hsl(var(--energy))]"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Users className="w-3.5 h-3.5" />
+              Applicants
+            </button>
+            <button
+              type="button"
+              onClick={() => setDashboardTab('analytics')}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
+                dashboardTab === 'analytics'
+                  ? "bg-background text-[hsl(var(--energy))] shadow-sm ring-1 ring-[hsl(var(--energy))]"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              Analytics
+              {!isPro && <Crown className="w-3 h-3 text-primary" />}
+            </button>
           </div>
 
           {dashboardTab === 'analytics' ? (
@@ -657,7 +671,7 @@ Return ONLY valid JSON array:
 
           {/* Top Pick Card - Pro only */}
           {isPro && applicants.length > 0 && applicants[0].ai_match_score ? (
-            <Card className="mb-6 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+            <Card className="mb-6 rounded-xl border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 shadow-none">
               <CardContent className="flex items-center gap-4 py-4">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <Trophy className="h-5 w-5 text-primary" />
@@ -679,7 +693,7 @@ Return ONLY valid JSON array:
               featureLabel="Smart Applicant Ranking"
               description="Upgrade to Pro for unlimited Smart applicant ranking, match scores, and shortlisting."
             >
-              <Card className="mb-6 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+              <Card className="mb-6 rounded-xl border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5 shadow-none">
                 <CardContent className="flex items-center gap-4 py-4">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <Trophy className="h-5 w-5 text-primary" />
@@ -825,7 +839,7 @@ const ApplicantCard = ({
   };
 
   return (
-    <Card className="hover:shadow-lg transition-all">
+    <Card className="rounded-xl border-border/60 shadow-none hover:border-primary/30 transition-all">
       <CardHeader>
         <div className="flex items-start gap-3 sm:gap-4">
           <Avatar

@@ -477,9 +477,9 @@ export default function Admin() {
         <TabsContent value="system" className="mt-4 sm:mt-6">
           <div className="space-y-6">
             {/* ODOS Import Card */}
-            <Card className="border-green-500/30 bg-green-500/5">
+            <Card className="rounded-2xl border-success/30 bg-success/5 shadow-none">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-600">
+                <CardTitle className="flex items-center gap-2 text-success">
                   <Leaf className="h-5 w-5" />
                   ODOS Community Import
                 </CardTitle>
@@ -488,10 +488,10 @@ export default function Admin() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button 
-                  onClick={importOdosMembers} 
+                <Button
+                  onClick={importOdosMembers}
                   disabled={importingOdos}
-                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                  className="w-full sm:w-auto bg-success hover:bg-success/90 text-success-foreground"
                 >
                   {importingOdos ? (
                     <>
@@ -509,24 +509,24 @@ export default function Admin() {
                 {/* Summary */}
                 {odosSummary && (
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4">
-                    <div className="bg-muted p-3 rounded-lg text-center">
+                    <div className="bg-muted p-3 rounded-xl text-center">
                       <div className="text-2xl font-bold">{odosSummary.totalMembers}</div>
                       <div className="text-xs text-muted-foreground">Total Found</div>
                     </div>
-                    <div className="bg-green-500/10 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-green-600">{odosSummary.imported}</div>
+                    <div className="bg-success/10 p-3 rounded-xl text-center">
+                      <div className="text-2xl font-bold text-success">{odosSummary.imported}</div>
                       <div className="text-xs text-muted-foreground">Imported</div>
                     </div>
-                    <div className="bg-primary/10 p-3 rounded-lg text-center">
+                    <div className="bg-primary/10 p-3 rounded-xl text-center">
                       <div className="text-2xl font-bold text-primary">{odosSummary.enriched}</div>
                       <div className="text-xs text-muted-foreground">Enriched</div>
                     </div>
-                    <div className="bg-yellow-500/10 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-yellow-600">{odosSummary.duplicates}</div>
+                    <div className="bg-warning/10 p-3 rounded-xl text-center">
+                      <div className="text-2xl font-bold text-warning">{odosSummary.duplicates}</div>
                       <div className="text-xs text-muted-foreground">Duplicates</div>
                     </div>
-                    <div className="bg-red-500/10 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-red-600">{odosSummary.errors}</div>
+                    <div className="bg-destructive/10 p-3 rounded-xl text-center">
+                      <div className="text-2xl font-bold text-destructive">{odosSummary.errors}</div>
                       <div className="text-xs text-muted-foreground">Errors</div>
                     </div>
                   </div>
@@ -534,25 +534,25 @@ export default function Admin() {
 
                 {/* Results List */}
                 {odosResults && odosResults.length > 0 && (
-                  <ScrollArea className="h-64 border rounded-lg p-2">
+                  <ScrollArea className="h-64 border border-border/60 rounded-xl p-2">
                     <div className="space-y-2">
                       {odosResults.map((result, index) => (
-                        <div 
-                          key={index} 
-                          className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
                         >
                           <div className="flex items-center gap-2">
                             {result.status === 'enriched' && (
                               <CheckCircle className="h-4 w-4 text-primary" />
                             )}
                             {result.status === 'imported' && (
-                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <CheckCircle className="h-4 w-4 text-success" />
                             )}
                             {result.status === 'duplicate' && (
-                              <AlertCircle className="h-4 w-4 text-yellow-500" />
+                              <AlertCircle className="h-4 w-4 text-warning" />
                             )}
                             {result.status === 'error' && (
-                              <AlertCircle className="h-4 w-4 text-red-500" />
+                              <AlertCircle className="h-4 w-4 text-destructive" />
                             )}
                             <span className="text-sm font-medium">{result.name}</span>
                           </div>
@@ -563,16 +563,16 @@ export default function Admin() {
                               </Badge>
                             )}
                             {result.awards && result.awards > 0 && (
-                              <Badge variant="secondary" className="text-xs bg-amber-500/20">
+                              <Badge variant="secondary" className="text-xs bg-warning/20">
                                 {result.awards} awards
                               </Badge>
                             )}
-                            <Badge 
+                            <Badge
                               variant={result.status === 'error' ? 'destructive' : 'outline'}
                               className={
                                 result.status === 'enriched' ? 'bg-primary/20 text-primary' :
-                                result.status === 'imported' ? 'bg-green-500/20 text-green-600' :
-                                result.status === 'duplicate' ? 'bg-yellow-500/20 text-yellow-600' :
+                                result.status === 'imported' ? 'bg-success/20 text-success' :
+                                result.status === 'duplicate' ? 'bg-warning/20 text-warning' :
                                 ''
                               }
                             >
@@ -588,9 +588,9 @@ export default function Admin() {
             </Card>
 
             {/* AI Discovery Agent Card */}
-            <Card className="border-primary/30 bg-primary/5">
+            <Card className="rounded-2xl border-primary/30 bg-primary/5 shadow-none">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-indigo-700">
+                <CardTitle className="flex items-center gap-2 text-primary">
                   <Bot className="h-5 w-5" />
                   AI Creative Discovery Agent
                 </CardTitle>
@@ -618,10 +618,10 @@ export default function Admin() {
                       </>
                     )}
                   </Button>
-                  <Button 
-                    onClick={() => runAIDiscovery(20)} 
+                  <Button
+                    onClick={() => runAIDiscovery(20)}
                     disabled={runningDiscovery}
-                    className="bg-indigo-700 hover:bg-indigo-800"
+                    className="bg-primary hover:bg-primary/90"
                   >
                     {runningDiscovery ? (
                       <>
@@ -666,28 +666,28 @@ export default function Admin() {
                 {/* Summary */}
                 {discoverySummary && (
                   <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 mt-4">
-                    <div className="bg-muted p-3 rounded-lg text-center">
+                    <div className="bg-muted p-3 rounded-xl text-center">
                       <div className="text-2xl font-bold">{discoverySummary.discovered}</div>
                       <div className="text-xs text-muted-foreground">Discovered</div>
                     </div>
-                    <div className="bg-primary/10 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-indigo-700">{discoverySummary.processed}</div>
+                    <div className="bg-primary/10 p-3 rounded-xl text-center">
+                      <div className="text-2xl font-bold text-primary">{discoverySummary.processed}</div>
                       <div className="text-xs text-muted-foreground">Processed</div>
                     </div>
-                    <div className="bg-green-500/10 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-green-600">{discoverySummary.imported}</div>
+                    <div className="bg-success/10 p-3 rounded-xl text-center">
+                      <div className="text-2xl font-bold text-success">{discoverySummary.imported}</div>
                       <div className="text-xs text-muted-foreground">Imported</div>
                     </div>
-                    <div className="bg-primary/10 p-3 rounded-lg text-center">
+                    <div className="bg-primary/10 p-3 rounded-xl text-center">
                       <div className="text-2xl font-bold text-primary">{discoverySummary.enriched}</div>
                       <div className="text-xs text-muted-foreground">Enriched</div>
                     </div>
-                    <div className="bg-yellow-500/10 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-yellow-600">{discoverySummary.duplicates}</div>
+                    <div className="bg-warning/10 p-3 rounded-xl text-center">
+                      <div className="text-2xl font-bold text-warning">{discoverySummary.duplicates}</div>
                       <div className="text-xs text-muted-foreground">Duplicates</div>
                     </div>
-                    <div className="bg-red-500/10 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-red-600">{discoverySummary.errors}</div>
+                    <div className="bg-destructive/10 p-3 rounded-xl text-center">
+                      <div className="text-2xl font-bold text-destructive">{discoverySummary.errors}</div>
                       <div className="text-xs text-muted-foreground">Errors</div>
                     </div>
                   </div>
@@ -695,22 +695,22 @@ export default function Admin() {
 
                 {/* Results List */}
                 {discoveryResults && discoveryResults.length > 0 && (
-                  <ScrollArea className="h-64 border rounded-lg p-2">
+                  <ScrollArea className="h-64 border border-border/60 rounded-xl p-2">
                     <div className="space-y-2">
                       {discoveryResults.map((result, index) => (
-                        <div 
-                          key={index} 
-                          className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
                         >
                           <div className="flex items-center gap-2">
                             {result.status === 'imported' && (
-                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <CheckCircle className="h-4 w-4 text-success" />
                             )}
                             {result.status === 'duplicate' && (
-                              <AlertCircle className="h-4 w-4 text-yellow-500" />
+                              <AlertCircle className="h-4 w-4 text-warning" />
                             )}
                             {result.status === 'error' && (
-                              <AlertCircle className="h-4 w-4 text-red-500" />
+                              <AlertCircle className="h-4 w-4 text-destructive" />
                             )}
                             <div>
                               <span className="text-sm font-medium">{result.name}</span>
@@ -726,11 +726,11 @@ export default function Admin() {
                                 Enriched
                               </Badge>
                             )}
-                            <Badge 
+                            <Badge
                               variant={result.status === 'error' ? 'destructive' : 'outline'}
                               className={
-                                result.status === 'imported' ? 'bg-green-500/20 text-green-600' :
-                                result.status === 'duplicate' ? 'bg-yellow-500/20 text-yellow-600' :
+                                result.status === 'imported' ? 'bg-success/20 text-success' :
+                                result.status === 'duplicate' ? 'bg-warning/20 text-warning' :
                                 ''
                               }
                             >
@@ -746,7 +746,7 @@ export default function Admin() {
             </Card>
 
             {/* Weekly Founder Note Card */}
-            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+            <Card className="rounded-2xl border-primary/30 bg-gradient-to-br from-primary/5 to-transparent shadow-none">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="h-5 w-5 text-primary" />
@@ -765,7 +765,7 @@ export default function Admin() {
             </Card>
 
             {/* Broadcast Email Card */}
-            <Card>
+            <Card className="rounded-2xl border-border/60 shadow-none">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Send className="h-5 w-5" />

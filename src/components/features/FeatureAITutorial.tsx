@@ -7,7 +7,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 import { cn } from "@/lib/utils";
 
-const ACCENT = "#FF2DA1";
+const ACCENT = "hsl(var(--energy))";
 
 interface FeatureAITutorialProps {
   /** Unique per feature, e.g. "studio". Gates the auto-open-once-for-new-users behavior. */

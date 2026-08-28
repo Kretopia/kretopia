@@ -21,7 +21,7 @@ export function PersonalCreditsSearch({ value, onChange, searching, resultCount 
         Search your own credits
       </label>
       <div className="relative flex w-full items-center">
-        <Search className="pointer-events-none absolute left-4 h-4 w-4 text-muted-foreground" aria-hidden />
+        <Search className="pointer-events-none absolute left-4 h-4 w-4 text-[hsl(var(--energy))]" aria-hidden />
         <input
           id="credits-search"
           type="search"
@@ -30,7 +30,8 @@ export function PersonalCreditsSearch({ value, onChange, searching, resultCount 
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Search your credits — project, role, client, year"
-          className="h-12 w-full min-w-0 rounded-full border border-border bg-muted/30 pl-11 pr-20 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-14 w-full min-w-0 rounded-2xl border bg-card/80 backdrop-blur-sm pl-11 pr-20 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all"
+          style={{ borderColor: "hsl(var(--energy) / 0.25)" }}
         />
         <div className="absolute right-3 flex items-center gap-1.5">
           {searching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden />}

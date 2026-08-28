@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Sparkles, Radar } from "lucide-react";
+import { Radar } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { EmptyState } from "@/components/ui/empty-state";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
-import { StaggerHeading } from "@/components/typography/StaggerReveal";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { analytics } from "@/lib/analytics";
 
 /**
@@ -36,46 +37,42 @@ export function SearchV2({ initialQuery = "" }: { initialQuery?: string } = {}) 
   }, [query]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div className="min-h-screen bg-background text-foreground">
       <SEO
         title="Search — Kretopia"
         description="Find your creative identity — search creators, productions & opportunities across the creative economy."
       />
 
-      <div className="container mx-auto max-w-2xl px-4 sm:px-6 pt-14 sm:pt-20 pb-6 text-center">
-        <p className="brand-eyebrow mb-3">Creative Record</p>
-        <StaggerHeading
-          text="Find your creative identity."
-          className="text-3xl sm:text-5xl font-black tracking-[-0.03em] text-foreground leading-[1.05] mb-3"
-        />
-        <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-8">
-          Search your name, a collaborator's, or any production — backed by verified credits
-          across the creative economy.
-        </p>
-
-        <UnifiedSearchDropdown
-          variant="hero"
-          placeholder="Search your name, a project, a production..."
-          value={query}
-          onValueChange={setQuery}
-          autoFocus
-          className="text-left"
-        />
-      </div>
-
-      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6" />
-
-      {query.trim().length < 2 && (
-        <div className="container mx-auto max-w-2xl px-4 sm:px-6">
-          <EmptyState
-            icon={Radar}
-            eyebrow="How it works"
-            title="Your work, wherever it lives"
-            description="Search pulls from Kretopia's own creator base and the open web — if your credits exist anywhere, we'll surface them and help you claim your Passport."
-            accent="purple"
+      <FeaturePageHeader
+        eyebrow="Creative Record"
+        title="Find your"
+        accentTitle="creative identity."
+        subtitle="Search your name, a collaborator's, or any production — backed by verified credits across the creative economy."
+        tabs={
+          <UnifiedSearchDropdown
+            variant="hero"
+            placeholder="Search your name, a project, a production..."
+            value={query}
+            onValueChange={setQuery}
+            autoFocus
+            className="text-left"
           />
-        </div>
-      )}
+        }
+      />
+
+      <StudioFeatureShell>
+        {query.trim().length < 2 && (
+          <div className="max-w-2xl mx-auto">
+            <EmptyState
+              icon={Radar}
+              eyebrow="How it works"
+              title="Your work, wherever it lives"
+              description="Search pulls from Kretopia's own creator base and the open web — if your credits exist anywhere, we'll surface them and help you claim your Passport."
+              accent="purple"
+            />
+          </div>
+        )}
+      </StudioFeatureShell>
     </div>
   );
 }

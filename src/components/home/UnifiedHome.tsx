@@ -61,6 +61,7 @@ import { normalizeIntents } from "@/lib/intents";
 import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import { ListChecks as ListChecksIcon } from "lucide-react";
 import { TodayCommandCenter } from "@/components/home/TodayCommandCenter";
@@ -511,8 +512,7 @@ export const UnifiedHome = () => {
             subtitle="Your highest-impact actions, latest movement and next decisions in one place."
             tutorial={{ featureKey: "today", label: "How Today works", steps: TODAY_TUTORIAL }}
           />
-          <div className="mx-auto px-3 sm:px-4 pt-4 max-w-7xl">
-            <div className="space-y-5">
+          <StudioFeatureShell>
               <ThrivePromptHero firstName={firstName} />
 
               <motion.div
@@ -538,8 +538,7 @@ export const UnifiedHome = () => {
               >
                 <Momentum />
               </motion.div>
-            </div>
-          </div>
+          </StudioFeatureShell>
         </>
       )}
 

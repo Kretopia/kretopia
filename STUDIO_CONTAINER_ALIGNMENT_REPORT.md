@@ -62,3 +62,9 @@ Section 5 of the implementation instructions specified `<StudioFeatureShell as="
 ### Known follow-up, not blocking
 
 Creative Circle and Match's content was authored for a narrower `max-w-2xl` well; widening to Studio's `max-w-6xl` is structurally correct (matches the canonical container) but leaves both surfaces' inner content visually looser than Studio's own dense grid layouts, since neither page's internal grid/spacing was redesigned for the wider well. This is a content-layout follow-up, not a container-alignment defect — flagging honestly rather than calling either surface fully finished cosmetically.
+
+## Eighth surface — Today, added under the Global Header UX task
+
+| Surface | Before body container | After body container | Header/body split | Desktop verified | Mobile verified | Regression risk | Status |
+|---|---|---|---|---|---|---|---|
+| Today (`src/components/home/UnifiedHome.tsx:514`, authenticated branch of `UnifiedHome`) | Two nested divs: `<div className="mx-auto px-3 sm:px-4 pt-4 max-w-7xl">` wrapping `<div className="space-y-5">` | Collapsed into one `<StudioFeatureShell>` | Correct — `FeaturePageHeader` (line 507) full-bleed above, unchanged | 1152px width, 0 overflow, 1 `<main>` (app-shell's); screenshot confirms header, prompt card, Today Focus panel all align to the same width | 390px width, 0 overflow; screenshot confirms same, no overlap with fixed bottom composer/nav | None found — outer wrapper (`bg-background min-h-screen accent-passport`) has no `pb-*` of its own, so no duplicate-padding cleanup was needed here (unlike Stage/Match/Events/Credits) | ALIGNED |

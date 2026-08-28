@@ -12,13 +12,13 @@ const ICON: Record<EvidenceState, LucideIcon> = {
   pending_review: Clock,
 };
 
-/** Restrained, accent-gated by tier — only "organization_confirmed" gets the full #FF2DA1 fill. */
+/** Restrained, accent-gated by tier — only "organization_confirmed" gets the full energy-token fill. */
 const TONE: Record<EvidenceState, string> = {
   claimed: "text-muted-foreground bg-muted/30 border-border",
   publicly_sourced: "text-muted-foreground bg-muted/30 border-border",
-  evidence_backed: "text-foreground bg-[#FF2DA1]/10 border-[#FF2DA1]/25",
-  co_signed: "text-foreground bg-[#FF2DA1]/15 border-[#FF2DA1]/35",
-  organization_confirmed: "text-foreground bg-[#FF2DA1] border-[#FF2DA1]",
+  evidence_backed: "text-foreground bg-[hsl(var(--energy)/0.1)] border-[hsl(var(--energy)/0.25)]",
+  co_signed: "text-foreground bg-[hsl(var(--energy)/0.15)] border-[hsl(var(--energy)/0.35)]",
+  organization_confirmed: "text-foreground bg-[hsl(var(--energy))] border-[hsl(var(--energy))]",
   pending_review: "text-muted-foreground bg-muted/30 border-border border-dashed",
 };
 

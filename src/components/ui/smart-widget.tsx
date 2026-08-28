@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 
-const ACCENT = "#FF2DA1";
+const ACCENT = "hsl(var(--energy))";
 
 interface SmartWidgetProps {
   children: ReactNode;

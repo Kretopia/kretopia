@@ -111,7 +111,7 @@ export const SpeedActionRail = (props: Props) => {
               <span className="text-[10px] uppercase tracking-wide text-white/60 font-bold">Try this</span>
               <button
                 onClick={onCycleIce}
-                className="text-[10px] text-white/70 hover:text-[#FF2DA1] transition-colors"
+                className="text-[10px] text-white/70 hover:text-[hsl(var(--energy))] transition-colors"
                 aria-label="Next prompt"
               >
                 Next →

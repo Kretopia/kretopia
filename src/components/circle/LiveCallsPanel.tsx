@@ -254,7 +254,7 @@ export function LiveCallsPanel() {
             }
             setScheduleOpen(true);
           }}
-          className="mt-2 w-full text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground hover:text-[#FF2DA1] py-2 transition-colors"
+          className="mt-2 w-full text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground hover:text-[hsl(var(--energy))] py-2 transition-colors"
         >
           <CalendarPlus className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
           Or schedule a Speed Session

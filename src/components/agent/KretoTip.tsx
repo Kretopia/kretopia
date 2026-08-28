@@ -183,7 +183,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
         <KretoAvatar size={compact ? "sm" : "md"} />
 
         <div className="min-w-0 flex-1 pr-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#FF2DA1] mb-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[hsl(var(--energy))] mb-1">
             Kreto · {tip.eyebrow}
           </p>
           <p className={cn("text-white/90 leading-snug", compact ? "text-sm" : "text-sm sm:text-[15px]")}>

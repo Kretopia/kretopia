@@ -184,7 +184,7 @@ const NearbyCreators = () => {
   return (
     <div className="min-h-screen pb-24 md:pb-6">
       {/* Clean sticky header */}
-      <div className="sticky top-0 z-20 bg-background border-b">
+      <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border/60">
         <div className="px-3 py-2.5 sm:px-4 space-y-2">
           {/* Title row */}
           <div className="flex items-center justify-between gap-2">
@@ -193,9 +193,10 @@ const NearbyCreators = () => {
                 <MapPin className="h-5 w-5 text-primary" />
                 <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-energy shadow-glow-lime animate-pulse" />
               </div>
-              <h1 className="text-xl font-black tracking-tight truncate">Discover</h1>
+              <h1 className="text-xl font-black tracking-[-0.03em] truncate">Discover</h1>
               {userLocation && discoverMode === 'nearby' && (
-                <span className="text-[10px] text-energy font-black uppercase tracking-wider whitespace-nowrap">
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border backdrop-blur-sm bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))] border-[hsl(var(--energy)/0.35)] whitespace-nowrap">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--energy))]" />
                   {totalResults} nearby
                 </span>
               )}
@@ -253,12 +254,16 @@ const NearbyCreators = () => {
           {discoverMode === 'nearby' && userLocation && (
             <>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search
+                  aria-hidden
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none"
+                  style={{ color: "hsl(var(--energy))" }}
+                />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search creators, events, studios..."
-                  className="pl-9 h-8 text-xs"
+                  className="pl-9 h-9 text-xs rounded-2xl border-border/60 bg-card/80 backdrop-blur-sm focus-visible:border-primary"
                 />
               </div>
               <div className="overflow-x-auto -mx-3 px-3 scrollbar-hide">

@@ -111,7 +111,7 @@ export default function Discover() {
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="w-full">
-        <div className="sticky top-0 z-20 bg-background border-b border-border/60 px-2 py-2 mt-3">
+        <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border/60 px-2 py-2 mt-3">
           <TabsList className="w-full grid grid-cols-4 h-10">
             <TabsTrigger value="people" className="gap-1 text-[11px]">
               <Users className="h-3.5 w-3.5" /> People
@@ -209,7 +209,7 @@ export default function Discover() {
           {oppsMode === "open" && <OpportunitiesFeed />}
           {oppsMode === "leads" && (
             <div className="space-y-3">
-              <Card className="border-[hsl(var(--signal-amber))]/30 bg-[hsl(var(--signal-amber))]/5">
+              <Card className="rounded-xl border-[hsl(var(--signal-amber))]/30 bg-[hsl(var(--signal-amber))]/5 shadow-none">
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
                     <Search className="h-4 w-4 text-[hsl(var(--signal-amber))]" />
@@ -223,7 +223,7 @@ export default function Discover() {
                   </Link>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="rounded-xl border-border/60 shadow-none">
                 <CardContent className="p-4 space-y-2">
                   <p className="font-semibold text-sm">Ask Kreto to find leads</p>
                   <p className="text-xs text-muted-foreground">

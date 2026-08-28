@@ -1,11 +1,10 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense } from "react";
 import { SEO } from "@/components/SEO";
-import { Sparkles, LayoutGrid, Loader2, Heart } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Sparkles, LayoutGrid, Loader2, Users } from "lucide-react";
 import { SwipeFeature } from "@/components/swipe";
 import { KretoTip } from "@/components/agent/KretoTip";
-import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
-import { MATCH_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
+import { StudioFeatureHeader } from "@/components/studio-reference/StudioFeatureHeader";
+import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 
 const LikesYouGrid = lazy(() =>
   import("@/components/swipe/LikesYouGrid").then((m) => ({ default: m.LikesYouGrid }))
@@ -15,14 +14,66 @@ const BrowseCreators = lazy(() =>
   import("@/components/discover/BrowseCreators").then((m) => ({ default: m.BrowseCreators }))
 );
 
-type Mode = "swipe" | "browse" | "likes";
+const loadingRow = (label: string) => (
+  <div className="flex items-center gap-2 text-xs text-muted-foreground py-10 justify-center">
+    <Loader2 className="h-3.5 w-3.5 animate-spin" /> {label}
+  </div>
+);
 
 /**
- * Match — standalone Hinge-style page.
- * Two modes only: Swipe deck + Browse grid. No Discover chrome.
+ * Match — one-card-at-a-time deck (Discover) + a grid (Browse) + real
+ * connection state (Connections) -- not dating-app labels. The deck itself
+ * (SwipeFeature -> HingeStyleCard, real server-authoritative swipe/match via
+ * useSwipeActions) and the HoloCard visual treatment are a separate, more
+ * involved pass: HingeStyleCard almost certainly owns its own pointer-based
+ * drag gesture for the swipe motion, and HoloCard also tracks pointer events
+ * for its tilt effect on the same element -- wrapping one in the other needs
+ * that gesture code read first to confirm they don't fight over the same
+ * pointer events, not a blind wrap. See STUDIO_REFERENCE_SURFACE_AUDIT.md.
  */
 export default function Match() {
-  const [mode, setMode] = useState<Mode>("swipe");
+  const matchTabs: StudioSectionTab[] = [
+    {
+      id: "discover",
+      label: "Discover",
+      icon: Sparkles,
+      content: (
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            <SwipeFeature />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "browse",
+      label: "Browse",
+      icon: LayoutGrid,
+      content: (
+        <Suspense fallback={loadingRow("Loading creators…")}>
+          <BrowseCreators />
+        </Suspense>
+      ),
+    },
+    {
+      // LikesYouGrid queries the swipes table for people who swiped right on
+      // you and you haven't responded to yet -- that's genuinely different
+      // from an accepted-connections list (Circle's Network tab uses the
+      // `connections` table for that). Labeled for what this tab actually
+      // shows rather than either the old dating-app "Likes you" or a
+      // "Connections" name that would misdescribe its real content. A real
+      // Connections tab reusing Circle's ConnectionList/connections-table
+      // data is a further enhancement, not done in this pass.
+      id: "interested",
+      label: "Interested",
+      icon: Users,
+      content: (
+        <Suspense fallback={loadingRow("Loading…")}>
+          <LikesYouGrid />
+        </Suspense>
+      ),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background pb-28 accent-match">
@@ -30,72 +81,18 @@ export default function Match() {
         title="Match — Find your collaborators | Kretopia"
         description="Swipe or browse creators whose work proves they can do the brief."
       />
-      <FeaturePageHeader
+      <StudioFeatureHeader
         eyebrow="Collaborators"
         title="Match."
-        accentTitle="Find your people."
-        subtitle="Swipe the deck or browse the grid — connect by skill, city, and the people you've already made things with."
-        tutorial={{ featureKey: "match", label: "How Match works", steps: MATCH_TUTORIAL }}
-        tabs={
-          <div className="inline-flex rounded-full border border-border bg-card p-0.5 w-full max-w-2xl">
-            {([
-              { id: "swipe", label: "Swipe", icon: Sparkles },
-              { id: "browse", label: "Browse", icon: LayoutGrid },
-              { id: "likes", label: "Likes you", icon: Heart },
-            ] as const).map((m) => {
-              const Icon = m.icon;
-              const active = mode === m.id;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => setMode(m.id)}
-                  className={cn(
-                    "flex-1 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors inline-flex items-center justify-center gap-1",
-                    active ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground",
-                  )}
-                >
-                  <Icon className="h-3 w-3" /> {m.label}
-                </button>
-              );
-            })}
-          </div>
-        }
+        subtitle="Discover the deck or browse the grid — connect by skill, city, and the people you've already made things with."
       />
 
       <div className="max-w-2xl mx-auto px-4 pt-3">
         <KretoTip surface="match" compact />
       </div>
 
-      <div className="px-3 py-3">
-        {mode === "swipe" && (
-          <div className="flex justify-center">
-            <div className="w-full max-w-md">
-              <SwipeFeature />
-            </div>
-          </div>
-        )}
-        {mode === "likes" && (
-          <Suspense
-            fallback={
-              <div className="flex items-center gap-2 text-xs text-muted-foreground py-10 justify-center">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading likes…
-              </div>
-            }
-          >
-            <LikesYouGrid />
-          </Suspense>
-        )}
-        {mode === "browse" && (
-          <Suspense
-            fallback={
-              <div className="flex items-center gap-2 text-xs text-muted-foreground py-10 justify-center">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading creators…
-              </div>
-            }
-          >
-            <BrowseCreators />
-          </Suspense>
-        )}
+      <div className="max-w-2xl mx-auto px-3 py-3">
+        <StudioSectionTabs tabs={matchTabs} defaultTabId="discover" queryParam="tab" />
       </div>
     </div>
   );

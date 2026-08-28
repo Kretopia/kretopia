@@ -10,7 +10,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Sparkles, X } from "lucide-react";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
 import { cn } from "@/lib/utils";
 
@@ -145,6 +145,11 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
   if (dismissed) return null;
 
   const tip = tips[idx] ?? FALLBACK;
+  // Studio's own card already renders a full KretoAvatar in its hero
+  // immediately above this one (StudioCreateHero) -- a second one here reads
+  // as a redundant identity portrait rather than a fresh signal. Every other
+  // surface keeps the avatar; this is the one deliberate exception.
+  const isStudio = tip.eyebrow === "Studio";
 
   const openKreto = (prompt?: string) => {
     window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: prompt ? { prompt } : {} }));
@@ -180,7 +185,20 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
       </button>
 
       <div className="relative flex items-start gap-3 sm:gap-4">
-        <KretoAvatar size={compact ? "sm" : "md"} />
+        {isStudio ? (
+          <span
+            aria-hidden
+            className={cn(
+              "shrink-0 rounded-full flex items-center justify-center",
+              compact ? "h-10 w-10" : "h-16 w-16",
+            )}
+            style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
+          >
+            <Sparkles className={compact ? "h-4 w-4 text-white" : "h-6 w-6 text-white"} />
+          </span>
+        ) : (
+          <KretoAvatar size={compact ? "sm" : "md"} />
+        )}
 
         <div className="min-w-0 flex-1 pr-6">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[hsl(var(--energy))] mb-1">

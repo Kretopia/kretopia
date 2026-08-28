@@ -91,13 +91,13 @@ export default function Discover() {
         {liveCount > 0 && tab !== "live" && (
           <button
             onClick={() => setTab("live")}
-            className="mt-3 w-full flex items-center gap-2.5 rounded-xl border border-[hsl(var(--signal-magenta))]/30 bg-[hsl(var(--signal-magenta))]/5 px-3 py-2.5 text-left hover:border-[hsl(var(--signal-magenta))]/60 transition-colors"
+            className="mt-3 w-full flex items-center gap-2.5 rounded-xl border border-[hsl(var(--energy))]/30 bg-[hsl(var(--energy))]/5 px-3 py-2.5 text-left hover:border-[hsl(var(--energy))]/60 transition-colors"
           >
             <span className="relative flex h-2 w-2 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[hsl(var(--signal-magenta))] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[hsl(var(--signal-magenta))]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[hsl(var(--energy))] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[hsl(var(--energy))]" />
             </span>
-            <Radio className="h-3.5 w-3.5 text-[hsl(var(--signal-magenta))]" />
+            <Radio className="h-3.5 w-3.5 text-[hsl(var(--energy))]" />
             <span className="text-xs font-semibold flex-1">
               {liveCount} stage{liveCount === 1 ? "" : "s"} on air now
             </span>
@@ -150,7 +150,7 @@ export default function Discover() {
                     setPeopleMode(m.id as PeopleMode);
                   }}
                   className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold rounded-full transition-colors inline-flex items-center justify-center gap-1 ${
-                    active ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground"
+                    active ? "bg-[hsl(var(--energy))] text-white" : "text-muted-foreground"
                   }`}
                 >
                   <Icon className="h-3 w-3" /> {m.label}

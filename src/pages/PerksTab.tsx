@@ -54,17 +54,17 @@ export default function PerksTab() {
         <div className="relative overflow-hidden -mx-4 px-4 pt-4 pb-2">
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
           <div className="relative flex flex-col items-center text-center">
-            <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FF2DA1] mb-3 px-2.5 py-1 rounded-full border border-[#FF2DA1]/30 bg-[#FF2DA1]/[0.06]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#FF2DA1] animate-pulse" />
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--energy))] mb-3 px-2.5 py-1 rounded-full border border-[hsl(var(--energy)/0.35)] bg-[hsl(var(--energy)/0.06)] backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--energy))] shadow-[0_0_8px_hsl(var(--energy)/0.8)]" />
               ThriveStatus
             </p>
             <div ref={titleWrapperRef} className="w-full max-w-3xl">
               <h1
                 ref={titleRef}
-                className="font-black tracking-[-0.035em] text-white leading-[0.95]"
+                className="font-black tracking-[-0.03em] text-white leading-[1.05]"
                 style={{ fontSize: "3rem" }}
               >
-                Perks. <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>Earned, not bought.</span>
+                Perks. <span className="pink-glow-breathe" style={{ color: "hsl(var(--energy))" }}>Earned, not bought.</span>
               </h1>
             </div>
             <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl mx-auto">
@@ -74,6 +74,9 @@ export default function PerksTab() {
             <FeatureAITutorial featureKey="perks" label="How Perks works" steps={PERKS_TUTORIAL} />
           </div>
         </div>
+
+        {/* Bottom hairline — anchors the hero, same treatment as Studio Room */}
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
         {loading ? (
           <div className="flex items-center gap-2 text-white/40 text-sm py-6">
@@ -89,14 +92,15 @@ export default function PerksTab() {
                 <div
                   key={tier.tier}
                   className={`flex flex-col min-h-[216px] rounded-xl border p-4 ${
-                    isCurrentTier ? "border-[#FF2DA1]/50 bg-[#FF2DA1]/[0.05]" : "border-white/10 bg-white/[0.03]"
+                    isCurrentTier ? "border-[hsl(var(--energy)/0.5)] bg-[hsl(var(--energy)/0.05)]" : "border-white/10 bg-white/[0.03]"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 mb-1">
-                    <Icon className={`h-4 w-4 shrink-0 ${isUnlocked ? "text-[#FF2DA1]" : "text-white/30"}`} aria-hidden />
+                    <Icon className={`h-4 w-4 shrink-0 ${isUnlocked ? "text-[hsl(var(--energy))]" : "text-white/30"}`} aria-hidden />
                     <h3 className="text-sm font-bold truncate">{tier.label}</h3>
                     {isCurrentTier && (
-                      <span className="ml-auto shrink-0 text-[9px] uppercase tracking-wider font-bold text-[#FF2DA1] bg-[#FF2DA1]/10 px-1.5 py-0.5 rounded">
+                      <span className="ml-auto shrink-0 inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-[hsl(var(--energy))] border border-[hsl(var(--energy)/0.35)] bg-[hsl(var(--energy)/0.1)] backdrop-blur-sm px-1.5 py-0.5 rounded-full">
+                        <span className="h-1 w-1 rounded-full bg-[hsl(var(--energy))]" />
                         Your status
                       </span>
                     )}
@@ -105,7 +109,7 @@ export default function PerksTab() {
                   <div className="space-y-1.5 mt-3">
                     {tier.perks.map((perk, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs">
-                        <Check className={`h-3 w-3 mt-0.5 shrink-0 ${isUnlocked ? "text-[#FF2DA1]" : "text-white/25"}`} aria-hidden />
+                        <Check className={`h-3 w-3 mt-0.5 shrink-0 ${isUnlocked ? "text-[hsl(var(--energy))]" : "text-white/25"}`} aria-hidden />
                         <span className={`line-clamp-1 ${isUnlocked ? "text-white/80" : "text-white/35"}`}>{perk}</span>
                       </div>
                     ))}

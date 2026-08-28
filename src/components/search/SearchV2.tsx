@@ -46,7 +46,7 @@ export function SearchV2({ initialQuery = "" }: { initialQuery?: string } = {}) 
         <p className="brand-eyebrow mb-3">Creative Record</p>
         <StaggerHeading
           text="Find your creative identity."
-          className="text-3xl sm:text-5xl font-semibold tracking-[-0.03em] text-foreground leading-[1.05] mb-3"
+          className="text-3xl sm:text-5xl font-black tracking-[-0.03em] text-foreground leading-[1.05] mb-3"
         />
         <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-8">
           Search your name, a collaborator's, or any production — backed by verified credits
@@ -62,6 +62,8 @@ export function SearchV2({ initialQuery = "" }: { initialQuery?: string } = {}) 
           className="text-left"
         />
       </div>
+
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6" />
 
       {query.trim().length < 2 && (
         <div className="container mx-auto max-w-2xl px-4 sm:px-6">

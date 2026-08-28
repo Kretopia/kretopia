@@ -113,17 +113,17 @@ export default function KretoTab() {
         <div className="relative overflow-hidden -mx-4 px-4 pt-4 pb-2">
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
           <div className="relative flex flex-col items-center text-center">
-            <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FF2DA1] mb-3 px-2.5 py-1 rounded-full border border-[#FF2DA1]/30 bg-[#FF2DA1]/[0.06]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#FF2DA1] animate-pulse" />
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--energy))] mb-3 px-2.5 py-1 rounded-full border border-[hsl(var(--energy)/0.35)] bg-[hsl(var(--energy)/0.06)] backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--energy))] shadow-[0_0_8px_hsl(var(--energy)/0.8)]" />
               AI Executive Producer
             </p>
             <div ref={titleWrapperRef} className="w-full max-w-3xl">
               <h1
                 ref={titleRef}
-                className="font-black tracking-[-0.035em] text-white leading-[0.95]"
+                className="font-black tracking-[-0.03em] text-white leading-[1.05]"
                 style={{ fontSize: "3rem" }}
               >
-                {BRAND.agentName}. <span className="pink-glow-breathe" style={{ color: "#FF2DA1" }}>Your creative career, run point.</span>
+                {BRAND.agentName}. <span className="pink-glow-breathe" style={{ color: "hsl(var(--energy))" }}>Your creative career, run point.</span>
               </h1>
             </div>
             <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl mx-auto">
@@ -133,6 +133,9 @@ export default function KretoTab() {
             <FeatureAITutorial featureKey="kreto" label="How Kreto works" steps={KRETO_TUTORIAL} />
           </div>
         </div>
+
+        {/* Bottom hairline — anchors the hero, same treatment as Studio Room */}
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
         {/* Primary surface — the live thread, answered right here on the page */}
         <InlineKretoChat key={seed?.n ?? 0} seedPrompt={seed?.text ?? null} />

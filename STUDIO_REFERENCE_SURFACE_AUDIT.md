@@ -2,6 +2,10 @@
 
 Read-only audit. No feature code was edited to produce this report — findings below are grounded in direct reads of the current source, not assumption.
 
+## Correction (post-implementation)
+
+This audit originally concluded `FeaturePageHeader` was *not* Studio's real header — that it rendered the cinematic landing-page plate instead, and that a new `StudioFeatureHeader` component (modeled on `VibeHeader.tsx`, Studio Room's flat per-project utility bar) was needed. **That conclusion was wrong**, caught live after shipping it: Studio's actual top-level hero (`StudioCreateHero.tsx`, what `/desk` renders) uses the exact same pattern as `FeaturePageHeader` — the same `landing-eyebrow` class, the same aurora/grid-quadrille/grain treatment (confirmed byte-for-byte identical inline SVG turbulence data URI in both files), the same centered pill eyebrow and italic-accent title. `FeaturePageHeader` was the correct, already-Studio-consistent header all along; `VibeHeader.tsx` is a different, page-internal pattern that doesn't apply at the feature-header level. Every `StudioFeatureHeader` reference below is stale — Stage, Creative Circle, Founding Circle, Verified Credits and Match were reverted back to `FeaturePageHeader` with their original content restored, and the component was deleted. Any remaining work on Events or Spotlight should keep using `FeaturePageHeader` as the header, not build a new one.
+
 ## Baseline (run before any Section 3+ editing)
 
 | Check | Result |

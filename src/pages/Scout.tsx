@@ -8,6 +8,7 @@ import { ShortlistedGigs } from "@/components/opportunity/ShortlistedGigs";
 import { Radar, Store, UserSearch, ArrowRight, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { KretoTip } from "@/components/agent/KretoTip";
 import { SCOUT_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 
@@ -39,7 +40,7 @@ const Scout = () => {
 
 
   return (
-    <div className="accent-scout min-h-screen bg-background pb-24">
+    <div className="accent-scout min-h-screen bg-background">
       <SEO
         title="Scout — Find your next gig & collaborator | Kretopia"
         description="One feed for the gigs and people that fit your work — scouted from across the web and curated by Kreto."
@@ -107,10 +108,10 @@ const Scout = () => {
       />
 
       {/* Body */}
-      <div className="container mx-auto max-w-5xl px-4 py-6">
-        <KretoTip compact className="mb-5" />
+      <StudioFeatureShell>
+        <KretoTip compact />
         {contextQuery && (
-          <div className="mb-4 rounded-xl border border-[hsl(var(--accent-scout))]/30 bg-[hsl(var(--accent-scout))]/5 p-3 text-xs flex items-start gap-2">
+          <div className="rounded-xl border border-[hsl(var(--accent-scout))]/30 bg-[hsl(var(--accent-scout))]/5 p-3 text-xs flex items-start gap-2">
             <Radar className="h-3.5 w-3.5 mt-0.5 text-[hsl(var(--accent-scout))] shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-foreground">From your Studio:</p>
@@ -118,11 +119,11 @@ const Scout = () => {
             </div>
           </div>
         )}
-        <SurfaceProactiveCards surface="scout" className="px-0 mb-4" />
+        <SurfaceProactiveCards surface="scout" className="px-0" />
         {tab === "scouted" && <ScoutedGigsSection />}
         {tab === "shortlist" && <ShortlistedGigs />}
         {tab === "marketplace" && <OpportunitiesFeed />}
-      </div>
+      </StudioFeatureShell>
     </div>
   );
 };

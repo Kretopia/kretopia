@@ -1,7 +1,13 @@
 /**
- * Spotlight — same cinematic language as the landing / About pages:
- * #05070D plate, magenta aurora, grain, serif chapter titles, scroll reveals.
- * Chapters: the desk (magazine + podcast), why it matters, invitation.
+ * Spotlight — the hero stays the same cinematic plate every standalone page
+ * uses (EditorialPageHero -> CinematicHeaderPlate, the same component
+ * FeaturePageHeader wraps, confirmed identical to Studio's own top-level
+ * hero in StudioCreateHero.tsx). The body below it, previously two
+ * EditorialChapter sections (roman-numeral serif kickers, scroll-triggered
+ * reveals — a landing-page convention, not one Studio Room's own body
+ * content ever uses), is now Studio's plain flat-card grammar instead, per
+ * product decision to prioritize Studio consistency over editorial framing
+ * here. See STUDIO_REFERENCE_SURFACE_AUDIT.md.
  */
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
@@ -12,11 +18,7 @@ import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { APP_URL } from "@/lib/constants";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
-import { EditorialChapter } from "@/components/kretopia/EditorialChapter";
-import { Reveal } from "@/components/kretopia/Reveal";
 import { SpotlightBoard, type SpotlightTab } from "@/components/kretopia/SpotlightBoard";
-
-const ACCENT = "#FF2DA1";
 
 const NOTES = [
   { icon: BookOpen, title: "The Magazine", body: "Long-form features and interviews with the people behind the work." },
@@ -65,7 +67,7 @@ const Spotlight = () => {
         </script>
       </Helmet>
 
-      <div className="dark min-h-screen" style={{ backgroundColor: "#05070D" }}>
+      <div className="dark min-h-screen bg-background">
         <EditorialPageHero
           kicker="The Spotlight"
           oneLine
@@ -74,43 +76,37 @@ const Spotlight = () => {
           subtitle="Interviews, features and podcast episodes from across the creative universe — the people behind the work, in their own words."
         />
 
-        {/* I — The desk */}
-        <EditorialChapter index="I" kicker="The desk" title="Read it, or" accentWord="hear it.">
-          <Reveal>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 space-y-10">
+          <section>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1.5">The desk</p>
+            <h2 className="text-xl font-bold text-foreground mb-4">Read it, or hear it.</h2>
             <SpotlightBoard
               value={activeTab}
               onValueChange={setActiveTab}
               magazine={<MagazineWall />}
               podcast={<PodcastPlayer />}
             />
-          </Reveal>
-        </EditorialChapter>
+          </section>
 
-        {/* II — Why it matters */}
-        <EditorialChapter index="II" kicker="Why it matters" title="Proof is the record." accentWord="Story is the reason.">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {NOTES.map((n, i) => (
-              <Reveal key={n.title} delayIndex={i}>
-                <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[rgba(255,45,161,0.35)]">
-                  <span
-                    className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl"
-                    style={{ backgroundColor: "rgba(255,45,161,0.1)" }}
-                  >
-                    <n.icon className="h-4 w-4" style={{ color: ACCENT }} />
+          <section>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1.5">Why it matters</p>
+            <h2 className="text-xl font-bold text-foreground mb-4">Proof is the record. Story is the reason.</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {NOTES.map((n) => (
+                <div key={n.title} className="h-full rounded-2xl border border-border bg-card p-5 transition-colors hover:border-[hsl(var(--energy)/0.35)]">
+                  <span className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--energy)/0.1)]">
+                    <n.icon className="h-4 w-4 text-[hsl(var(--energy))]" />
                   </span>
-                  <p className="text-white font-semibold text-sm mb-1.5">{n.title}</p>
-                  <p className="text-sm leading-relaxed text-white/55">{n.body}</p>
+                  <p className="text-foreground font-semibold text-sm mb-1.5">{n.title}</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{n.body}</p>
                 </div>
-              </Reveal>
-            ))}
-          </div>
-          <Reveal delayIndex={2}>
-            <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+              ))}
+            </div>
+            <p className="mt-8 max-w-2xl text-base leading-relaxed text-muted-foreground">
               "Credits show what you did. Spotlight shows how you did it — and why the next person should call you."
             </p>
-          </Reveal>
-        </EditorialChapter>
-
+          </section>
+        </div>
       </div>
     </PageTransition>
   );

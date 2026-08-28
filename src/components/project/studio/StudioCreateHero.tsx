@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Mic, FileText, ListChecks, Receipt, Sparkles } from "lucide-react";
 import { CtaButton } from "@/components/ui/cta-button";
 import { Button } from "@/components/ui/button";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface StudioCreateHeroProps {
@@ -71,7 +70,13 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
 
       <div className="relative p-6 sm:p-9">
         <div className="flex items-start gap-4">
-          <KretoAvatar size="sm" animated={!reducedMotion} state="idle" className="shrink-0 mt-0.5 hidden sm:inline-flex" />
+          <span
+            aria-hidden
+            className="hidden sm:inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full mt-0.5"
+            style={{ backgroundColor: "hsl(var(--energy) / 0.14)" }}
+          >
+            <Sparkles className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} />
+          </span>
           <div className="min-w-0">
             <span
               className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em]"

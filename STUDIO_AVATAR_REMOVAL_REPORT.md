@@ -2,7 +2,7 @@
 
 ## Scope
 
-Section 1 of `GLOBAL_HEADER_UX_AUDIT.md`: remove the `KretoAvatar` rendered on the "Kreto · Studio" card only, without affecting any other mount point of the shared `KretoTip` component or any other avatar in the app.
+Section 1 of `GLOBAL_HEADER_UX_AUDIT.md`: remove the `KretoAvatar` rendered on the "Kreto · Studio" card. Initially scoped to that one card; per explicit follow-up direction ("leave the top Kreto and remove the bottom avatar"), extended to the second avatar on the same `/desk` page — the "New Room" card directly below it — while continuing to leave every other `KretoAvatar` mount point in the app untouched.
 
 ## What was found
 
@@ -22,23 +22,32 @@ Nothing else in the file changed: no data fetching, no dismiss/rotation logic, n
 - `KretoAvatar.tsx` itself: untouched.
 - No other `KretoTip` mount point: untouched.
 - No participant/collaborator/user avatar anywhere in the app: untouched.
-- No accessibility label removed — the replacement is decorative (`aria-hidden`), same treatment the ambient glow div in this same component already uses.
+- No accessibility label removed — both replacements are decorative (`aria-hidden`), same treatment the ambient glow div in `KretoTip` already uses.
+
+## Second change — the "New Room" card (`StudioCreateHero.tsx`)
+
+`StudioCreateHero` is Studio-specific — confirmed via `grep` that only `WorkHome.tsx` actually imports and renders it (two other files matched the search string, but only in doc comments, not imports), so removing its avatar needed no branch/condition the way `KretoTip`'s shared-component removal did.
+
+`src/components/project/studio/StudioCreateHero.tsx`:
+- Removed the `KretoAvatar` import and its one usage (`size="sm"`, `hidden sm:inline-flex` — desktop/tablet only, matching the original's own responsive behavior).
+- Replaced with a compact signal-mark chip at the same `h-10 w-10` box size, matching this file's *own* pre-existing convention rather than copying `KretoTip`'s treatment verbatim: the mic-button in the same file already uses a `hsl(var(--energy) / 0.14)`-tinted circle with a centered icon, so the replacement reuses that exact pattern with `Sparkles` (already imported in this file for the "New Room" eyebrow badge, not a new icon import).
+- `useReducedMotion` import kept — still used elsewhere in the file for the prompt-rotation and proof-list animations, unrelated to the avatar.
 
 ## Verification
 
-- Live at `/desk`: "Kreto · Studio" card shows the new signal-mark chip; the separate "New Room" card directly below it (a different component) keeps its own avatar unaffected.
-- Live at `/scout`: "Kreto · Scout" card shows the unchanged `KretoAvatar` portrait.
-- Live at `/match`: "Kreto · Match" card shows the unchanged `KretoAvatar` portrait.
-- Console: no new errors (pre-existing sandbox network noise only, unrelated to this component).
-- `git diff` reviewed line by line: touches only `KretoTip.tsx`, 4 lines of intent + the conditional render block.
+- Live at `/desk` (desktop, 1440×900): both the "Kreto · Studio" card and the "New Room" card below it now show the same compact signal-mark treatment — consistent, balanced, no portrait duplication.
+- Live at `/desk` (mobile, 390×844): "Kreto · Studio" chip renders correctly; "New Room" card's chip is correctly absent, matching the original avatar's own `hidden` (mobile-hidden) behavior — no layout gap, no regression.
+- Live at `/scout` and `/match`: both surfaces' `KretoTip` cards still show the real, unchanged `KretoAvatar` portrait.
+- Console: one set of `ReferenceError: KretoAvatar is not defined` entries observed, traced to a stale Vite dependency-chunk reference from the exact moment of the edit (transient HMR churn) — confirmed non-reproducible: `tsc --noEmit` passed clean, a full fresh `npm run build` passed clean, and a subsequent page reload rendered correctly with no crash UI and no recurrence.
+- `git diff` reviewed line by line for both files: `KretoTip.tsx` touches only the conditional render block; `StudioCreateHero.tsx` touches only the one import + one element swap.
 
 ## Regression gate
 
 - typecheck: PASS
-- lint: PASS (2 pre-existing `no-empty` findings at unrelated lines, confirmed via diff to predate this change)
+- lint: PASS (2 pre-existing `no-empty` findings in `KretoTip.tsx` at unrelated lines, confirmed via diff to predate this change; 0 findings in `StudioCreateHero.tsx`)
 - build: PASS
 - tests: PASS (127/127)
 
 ## Status
 
-COMPLETE — avatar removed on the Studio branch only, verified live on three surfaces (Studio removed, Scout and Match unaffected), full regression gate clean.
+COMPLETE — both avatars on `/desk` addressed (Studio tip card via a conditional branch in the shared component, New Room card via a direct swap in its Studio-only component), verified live at desktop and mobile, confirmed every other `KretoAvatar` mount point (Scout, Match, and by extension Today/KrePay/Passport/Clients/Events/Circle/Recordings/Studios) unaffected, full regression gate clean.

@@ -304,7 +304,12 @@ const Messages = () => {
           <div className="hidden md:flex flex-1 items-center justify-center p-8 bg-background">
             <div className="w-full max-w-md">
               <div className="text-center mb-8">
-                <p className="text-xl font-semibold">Your Messages</p>
+                <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase mb-2">
+                  Messages
+                </p>
+                <h2 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05] mb-2">
+                  Your Conversations
+                </h2>
                 <p className="text-sm text-muted-foreground mt-1">Send messages to creators you've connected with</p>
               </div>
               <div className="dark-surface rounded-2xl p-1" style={{ backgroundColor: "#05070D" }}>

@@ -38,24 +38,30 @@ const Notifications = () => {
     <div className="min-h-screen bg-background pb-20 accent-match">
       <SEO title="Inbox - Kretopia" description="Notifications and approvals in one place" />
       <div className="container mx-auto max-w-2xl px-4 py-6 space-y-6">
-        <div className="flex items-center justify-between border-b-2 border-primary/20 pb-4">
-          <div className="space-y-1">
-            <p className="brand-eyebrow">Your inbox</p>
-            <h1 className="text-3xl font-black tracking-[-0.03em] flex items-center gap-3">
-              <Bell className="h-7 w-7 text-[hsl(var(--signal-teal))]" />
-              Inbox
-              {unreadCount > 0 && (
-                <Badge variant="destructive" className="text-xs">{unreadCount} unread</Badge>
-              )}
-            </h1>
-            <p className="text-sm text-muted-foreground">Notifications and Kreto approvals — all in one place.</p>
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">Your inbox</p>
+            {unreadCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-sm bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))] border-[hsl(var(--energy)/0.35)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--energy))]" />
+                {unreadCount} unread
+              </span>
+            )}
           </div>
-          {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={markAllAsRead} className="gap-1.5">
-              <CheckCheck className="h-4 w-4" />
-              Mark all read
-            </Button>
-          )}
+          <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] leading-[1.05] flex items-center gap-3 mt-1">
+            <Bell className="h-7 w-7 text-[hsl(var(--energy))]" />
+            Inbox
+          </h1>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <p className="text-sm text-muted-foreground">Notifications and Kreto approvals — all in one place.</p>
+            {unreadCount > 0 && (
+              <Button variant="outline" size="sm" onClick={markAllAsRead} className="gap-1.5 shrink-0">
+                <CheckCheck className="h-4 w-4" />
+                Mark all read
+              </Button>
+            )}
+          </div>
+          <div className="mt-4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
         </div>
 
         {loading ? (
@@ -111,10 +117,10 @@ const Notifications = () => {
             {notifications.map((notification, index) => (
               <div key={notification.id}>
                 <div
-                  className={`group relative rounded-xl p-4 transition-all cursor-pointer ${
+                  className={`group relative rounded-xl border p-4 transition-colors cursor-pointer ${
                     notification.read
-                      ? 'bg-muted/30 hover:bg-muted/50'
-                      : 'bg-primary/5 hover:bg-primary/10 border border-primary/20'
+                      ? 'bg-card/50 border-border/60 hover:bg-muted/40'
+                      : 'bg-card border-[hsl(var(--energy)/0.35)] hover:bg-muted/20'
                   }`}
                   onClick={() => handleClick(notification)}
                 >
@@ -130,7 +136,7 @@ const Notifications = () => {
                             <Badge variant="destructive" className="text-[10px] h-5">Urgent</Badge>
                           )}
                           {!notification.read && (
-                            <div className="h-2 w-2 rounded-full bg-primary" />
+                            <div className="h-2 w-2 rounded-full bg-[hsl(var(--energy))]" />
                           )}
                         </div>
                       </div>

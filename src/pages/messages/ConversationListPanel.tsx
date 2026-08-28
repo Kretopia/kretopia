@@ -59,11 +59,11 @@ export const ConversationListPanel = ({
 
   return (
     <div className={`${hidden ? "hidden md:flex" : "flex"} w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0`}>
-      <div className="p-3 sm:p-4 border-b-2 border-primary/20 space-y-2.5 sm:space-y-4">
+      <div className="p-3 sm:p-4 space-y-2.5 sm:space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1 min-w-0">
-            <p className="brand-eyebrow">Your inbox</p>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em]">Messages</h1>
+            <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">Your inbox</p>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] leading-[1.05]">Messages</h1>
           </div>
           <QuickCallButton label="Start a call" className="rounded-full gap-2 shrink-0 mt-1" />
         </div>
@@ -73,29 +73,35 @@ export const ConversationListPanel = ({
           message="Match with creators in Circle first, then come here to chat. Tip: mention something specific from their profile to break the ice!"
         />
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-          <TabsList className="w-full">
-            <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm data-[state=active]:text-match data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--accent-match))]/20">Direct</TabsTrigger>
-            <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm data-[state=active]:text-match data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--accent-match))]/20">Groups</TabsTrigger>
-            <TabsTrigger value="calls" className="flex-1 text-xs sm:text-sm data-[state=active]:text-match data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--accent-match))]/20">
+          <TabsList className="w-full rounded-full bg-card/80 backdrop-blur-sm border border-border p-1">
+            <TabsTrigger value="inbox" className="flex-1 rounded-full text-xs sm:text-sm data-[state=active]:text-match data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--accent-match))]/20">Direct</TabsTrigger>
+            <TabsTrigger value="groups" className="flex-1 rounded-full text-xs sm:text-sm data-[state=active]:text-match data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--accent-match))]/20">Groups</TabsTrigger>
+            <TabsTrigger value="calls" className="flex-1 rounded-full text-xs sm:text-sm data-[state=active]:text-match data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--accent-match))]/20">
               Calls {missedCount > 0 && <Badge variant="destructive" className="ml-1">{missedCount}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="requests" className="flex-1 text-xs sm:text-sm data-[state=active]:text-match data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--accent-match))]/20">
+            <TabsTrigger value="requests" className="flex-1 rounded-full text-xs sm:text-sm data-[state=active]:text-match data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--accent-match))]/20">
               Requests {requestCount > 0 && <Badge variant="destructive" className="ml-1">{requestCount}</Badge>}
             </TabsTrigger>
           </TabsList>
         </Tabs>
         {activeTab === 'inbox' && (
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search
+              aria-hidden
+              className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-[hsl(var(--energy))]"
+            />
             <Input
               placeholder="Search messages..."
+              aria-label="Search messages"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 rounded-full h-9 sm:h-10 text-sm"
+              className="pl-11 h-11 rounded-2xl bg-card/80 backdrop-blur-sm text-sm border-[hsl(var(--energy)/0.25)] focus-visible:ring-1 focus-visible:ring-[hsl(var(--energy))]"
             />
           </div>
         )}
       </div>
+
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       {activeTab === 'calls' ? (
         <CallHistoryPanel />

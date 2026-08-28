@@ -121,8 +121,11 @@ export default function Recordings() {
       </div>
 
       <div className="flex items-center justify-between px-4 pt-4">
-        <Link to="/messages" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-3 w-3" /> Back
+        <Link
+          to="/messages"
+          className="inline-flex items-center gap-1 h-8 px-2 -ml-2 rounded-md text-xs text-muted-foreground hover:text-[hsl(var(--energy))] transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Back
         </Link>
         <Button type="button" size="sm" variant="outline" onClick={handleSync} disabled={syncing} className="gap-1.5 shrink-0">
           <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
@@ -138,7 +141,7 @@ export default function Recordings() {
         {loading ? (
           <p className="text-center text-sm text-muted-foreground py-12">Loading…</p>
         ) : rows.length === 0 ? (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center rounded-2xl shadow-none border-dashed border-border/60">
             <FileVideo className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
             <p className="font-semibold text-sm">No recordings yet</p>
             <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
@@ -152,9 +155,9 @@ export default function Recordings() {
             const kindLabel = KIND_LABEL[r.call_kind] ?? r.call_kind;
             const processing = r.status === "pending" || r.status === "transcribing";
             return (
-              <Card key={r.id} className="p-4 flex items-start gap-3">
-                <span className="h-10 w-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-                  <Video className="h-4 w-4 text-primary" />
+              <Card key={r.id} className="p-4 flex items-start gap-3 rounded-2xl shadow-none border-border/60">
+                <span className="h-10 w-10 rounded-xl bg-[hsl(var(--energy)/0.12)] flex items-center justify-center shrink-0">
+                  <Video className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} />
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -164,7 +167,7 @@ export default function Recordings() {
                         Kreto listening…
                       </Badge>
                     ) : r.status === "ready" ? (
-                      <Badge className="h-4 px-1.5 text-[10px] bg-emerald-500/15 text-emerald-700 border-0">
+                      <Badge className="h-4 px-1.5 text-[10px] bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))] border-0">
                         Ready
                       </Badge>
                     ) : r.status === "failed" ? (

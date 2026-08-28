@@ -16,12 +16,15 @@ import { useAgentRole } from "@/hooks/useAgentRole";
 
 import { MobileProjectHub } from "@/components/project/mobile/MobileProjectHub";
 import { StudioRoom } from "@/components/project/studio/StudioRoom";
+import { StudioPhaseRail } from "@/components/project/studio/StudioPhaseRail";
+import { ProjectCompleteDialog } from "@/components/project/studio/ProjectCompleteDialog";
 import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
 import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
 import { ArrowLeft } from "lucide-react";
 import { useProjectData } from "@/hooks/useProjectData";
-import { useProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
+import { useProjectFlow, PROJECT_FLOW_STAGES, STUDIO_PHASES, stageToPhase, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
 import { useProjectFlowExtras } from "@/hooks/useProjectFlowExtras";
+import { notifyPhaseAdvanced } from "@/lib/notifyPhaseAdvanced";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -46,6 +49,7 @@ const ThriveDesk = () => {
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   // Studio Room is the default for "today" tab on BOTH mobile and desktop now
   const isStudioRoom = activeTab === "today";
 
@@ -146,6 +150,40 @@ const ThriveDesk = () => {
     }
     toast.success(stageId ? "Stage pinned" : "Stage unpinned");
     fetchProjectData();
+  };
+
+  // Explicit step validation — advancing the phase rail is a deliberate
+  // click, not just derived from activity. Reuses the existing
+  // pinned_stage override (handlePinStage) so "validate" and "pin" are the
+  // same underlying mechanism instead of two competing ones. Lives here
+  // (not in StudioRoom) so the rail — and this handler — stay available
+  // on every tab, not just "today". Also navigates straight into the
+  // newly-unlocked phase's tab, instead of just relabeling the marker and
+  // leaving the person wherever they already were.
+  const handleValidateStep = () => {
+    const currentIdx = PROJECT_FLOW_STAGES.findIndex((s) => s.id === flow.currentStageId);
+    if (currentIdx < 0 || currentIdx >= PROJECT_FLOW_STAGES.length - 1) return;
+    // Advance to the first stage that belongs to a *different* phase, so the
+    // phase rail actually moves (Build = tasks+work, Wrap = review+agreement+payment).
+    const currentPhase = stageToPhase(flow.currentStageId);
+    const nextStage =
+      PROJECT_FLOW_STAGES.slice(currentIdx + 1).find((s) => stageToPhase(s.id) !== currentPhase) ??
+      PROJECT_FLOW_STAGES[currentIdx + 1];
+    const nextPhaseLabel = STUDIO_PHASES.find((p) => p.id === stageToPhase(nextStage.id))?.label ?? nextStage.label;
+
+    handlePinStage(nextStage.id);
+    toast.success(`${nextPhaseLabel} unlocked`, { description: `${project?.title} moved into ${nextPhaseLabel}.` });
+    goToTabWithIntent(nextStage.tab);
+
+    notifyPhaseAdvanced({
+      projectId: projectId!,
+      projectTitle: project?.title ?? "",
+      phaseLabel: nextPhaseLabel,
+      collaboratorIds: collaborators.map((c: any) => c.id),
+      actorId: user?.id || "",
+    }).catch(() => { /* non-blocking */ });
+
+    if (nextStage.id === "complete") setCompleteDialogOpen(true);
   };
 
   if (loading) {
@@ -255,6 +293,20 @@ const ThriveDesk = () => {
           />
         </header>
 
+        {/* Phase rail — a real header row (not a sticky trick over a
+            scrolling child), so it's genuinely always visible: same
+            instance across every tab, including rolling back to an
+            earlier one, instead of only existing on the "today" tab and
+            vanishing the moment its own markers navigate you elsewhere. */}
+        <div className="bg-background/95 backdrop-blur-xl border-b border-border/60 shrink-0">
+          <StudioPhaseRail
+            flow={flow}
+            onPhaseClick={goToTabWithIntent}
+            onPinStage={handlePinStage}
+            onValidateStep={handleValidateStep}
+          />
+        </div>
+
         {/* Unified tool bar — same on mobile and desktop when drilled into a tool */}
         {!isStudioRoom && (
           <StudioToolBar
@@ -294,7 +346,6 @@ const ThriveDesk = () => {
               onUpdated={fetchProjectData}
               onNavigateToTab={goToTabWithIntent}
               flow={flow}
-              onPinStage={handlePinStage}
             />
           ) : (
             <DeskTabContent
@@ -355,6 +406,11 @@ const ThriveDesk = () => {
         onVoiceCommand={() => setVoiceCmdOpen(true)}
       />
       <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
+      <ProjectCompleteDialog
+        open={completeDialogOpen}
+        onOpenChange={setCompleteDialogOpen}
+        projectTitle={project.title}
+      />
     </div>
   );
 };

@@ -152,31 +152,31 @@ const CreativeCircle = () => {
 
       {/* Network Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="p-4 text-center">
+        <Card className="p-4 text-center rounded-2xl shadow-none border-border/60">
           <div className="text-2xl font-bold">{network.referralCount}</div>
           <div className="text-xs text-muted-foreground">Direct Invites</div>
         </Card>
-        <Card className="p-4 text-center">
+        <Card className="p-4 text-center rounded-2xl shadow-none border-border/60">
           <div className="text-2xl font-bold">{network.totalNetworkSize}</div>
           <div className="text-xs text-muted-foreground">Your Reach</div>
         </Card>
-        <Card className="p-4 text-center">
+        <Card className="p-4 text-center rounded-2xl shadow-none border-border/60">
           <div className="text-2xl font-bold">{network.longestChain}</div>
           <div className="text-xs text-muted-foreground">Extended Circle</div>
         </Card>
       </div>
 
       {/* Invite Action */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden rounded-2xl shadow-none border-border/60">
         <div className="p-5 space-y-4">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
+          <h2 className="font-bold text-lg tracking-tight flex items-center gap-2">
+            <Users className="h-5 w-5" style={{ color: "hsl(var(--energy))" }} />
             Invite Creatives
           </h2>
 
           {personalLink ? (
             <>
-              <div className="rounded-xl border bg-muted/30 p-3">
+              <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
                 <p className="text-[11px] text-muted-foreground mb-2 flex items-center gap-1">
                   <Link2 className="h-3 w-3" /> Your personal invite link
                 </p>
@@ -213,22 +213,22 @@ const CreativeCircle = () => {
       </Card>
 
       {/* How It Works */}
-      <Card className="p-5 border-primary/10 bg-primary/5">
-        <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
-          <Zap className="h-4 w-4 text-primary" />
+      <Card className="p-5 rounded-2xl shadow-none" style={{ borderColor: "hsl(var(--energy) / 0.15)", backgroundColor: "hsl(var(--energy) / 0.05)" }}>
+        <h3 className="font-bold text-sm tracking-tight mb-3 flex items-center gap-2">
+          <Zap className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} />
           How Creative Circle Works
         </h3>
         <div className="space-y-3 text-sm text-muted-foreground">
           <div className="flex gap-3">
-            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">1</div>
+            <div className="h-7 w-7 rounded-full bg-[hsl(var(--energy)/0.12)] flex items-center justify-center shrink-0 text-xs font-bold" style={{ color: "hsl(var(--energy))" }}>1</div>
             <div><span className="font-medium text-foreground">Invite creatives</span> using your personal link, QR code, or direct share</div>
           </div>
           <div className="flex gap-3">
-            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">2</div>
+            <div className="h-7 w-7 rounded-full bg-[hsl(var(--energy)/0.12)] flex items-center justify-center shrink-0 text-xs font-bold" style={{ color: "hsl(var(--energy))" }}>2</div>
             <div><span className="font-medium text-foreground">Level up your tier</span> as more people join through you — unlock free Pro, reduced fees, and status points</div>
           </div>
           <div className="flex gap-3">
-            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">3</div>
+            <div className="h-7 w-7 rounded-full bg-[hsl(var(--energy)/0.12)] flex items-center justify-center shrink-0 text-xs font-bold" style={{ color: "hsl(var(--energy))" }}>3</div>
             <div><span className="font-medium text-foreground">Earn passive commission</span> from Kretopia's service fee when your referrals complete paid gigs — they keep 100% of their earnings</div>
           </div>
         </div>
@@ -236,7 +236,7 @@ const CreativeCircle = () => {
 
       {/* All Tiers */}
       <div className="space-y-3">
-        <h2 className="font-bold text-lg">Tier Rewards</h2>
+        <h2 className="font-bold text-lg tracking-tight">Tier Rewards</h2>
         <p className="text-sm text-muted-foreground">Each tier unlocks more rewards. Invite creatives to climb the ranks.</p>
 
         {allTiers.map((tier) => {
@@ -246,8 +246,8 @@ const CreativeCircle = () => {
             <Card
               key={tier.tier}
               className={cn(
-                "p-4 transition-all",
-                isActive && "border-primary/40 bg-primary/5 ring-1 ring-primary/20",
+                "p-4 rounded-2xl shadow-none border-border/60 transition-colors",
+                isActive && "border-[hsl(var(--energy)/0.4)] bg-[hsl(var(--energy)/0.05)] ring-1 ring-[hsl(var(--energy)/0.2)]",
                 isUnlocked && !isActive && "bg-muted/10",
                 !isUnlocked && "opacity-50"
               )}

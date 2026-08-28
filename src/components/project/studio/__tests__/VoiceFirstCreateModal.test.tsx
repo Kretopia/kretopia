@@ -123,25 +123,29 @@ describe("VoiceFirstCreateModal", () => {
     expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();
   });
 
-  it("selecting a starter intent switches to text mode with the matching example pre-filled", () => {
+  it("selecting a starter intent fills the always-visible composer with the matching example", () => {
     renderModal();
     fireEvent.click(screen.getByText("Photo Shoot"));
-    const textarea = screen.getByPlaceholderText(/Editorial shoot|60-second product reel/i) as HTMLTextAreaElement;
-    expect(textarea).toBeInTheDocument();
-    expect(textarea.value.length).toBeGreaterThan(0);
+    const input = screen.getByLabelText("Describe your project to Kreto") as HTMLInputElement;
+    expect(input.value.length).toBeGreaterThan(0);
+    expect(input.value).toMatch(/Editorial shoot/i);
   });
 
-  it("offers a text fallback entry point alongside voice", () => {
+  it("the Kreto composer is the primary entry point, always visible with no mode toggle needed", () => {
     renderModal();
-    expect(screen.getByText("Or type it instead")).toBeInTheDocument();
+    // Text entry is not hidden behind a "type it instead" click, and voice
+    // is a secondary icon inside the same bar rather than a separate screen.
+    expect(screen.getByLabelText("Describe your project to Kreto")).toBeInTheDocument();
+    expect(screen.getByLabelText("Describe it by voice instead")).toBeInTheDocument();
+    expect(screen.queryByText("Or type it instead")).not.toBeInTheDocument();
   });
 
   it("creates exactly one project even if Create is double-clicked", async () => {
     renderModal();
     fireEvent.click(screen.getByText("Photo Shoot"));
-    const textarea = screen.getByPlaceholderText(/Editorial shoot/i);
-    fireEvent.change(textarea, { target: { value: "A real editorial shoot brief for testing." } });
-    fireEvent.click(screen.getByText("Let Kreto draft my Project"));
+    const input = screen.getByLabelText("Describe your project to Kreto");
+    fireEvent.change(input, { target: { value: "A real editorial shoot brief for testing." } });
+    fireEvent.click(screen.getByLabelText("Send to Kreto"));
 
     await screen.findByText("Kreto structured your project — review and edit", {}, { timeout: 3000 });
     // The "Money involved?" gate is required -- both Create buttons stay

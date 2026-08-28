@@ -5,7 +5,6 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -120,7 +119,7 @@ const FundCampaign = () => {
       </Helmet>
 
       {params.get("pledge") === "success" && (
-        <div className="bg-primary/10 border-b border-primary/20 py-3 px-4 text-center text-sm font-medium">
+        <div className="bg-success/10 border-b border-success/20 py-3 px-4 text-center text-sm font-medium">
           Pledge confirmed! Your card will only be charged if the campaign reaches its goal.
         </div>
       )}
@@ -144,7 +143,7 @@ const FundCampaign = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main column */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="aspect-[16/9] rounded-lg overflow-hidden bg-muted">
+            <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-muted border border-border/60">
               {campaign.cover_image_url ? (
                 <img
                   src={campaign.cover_image_url}
@@ -162,11 +161,11 @@ const FundCampaign = () => {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   {campaign.category && (
-                    <Badge variant="secondary" className="mb-2">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border backdrop-blur-sm bg-card/80 border-border text-muted-foreground mb-2">
                       {campaign.category}
-                    </Badge>
+                    </span>
                   )}
-                  <h1 className="text-2xl md:text-4xl font-bold">{campaign.title}</h1>
+                  <h1 className="text-3xl md:text-4xl font-black tracking-[-0.03em] leading-[1.05]">{campaign.title}</h1>
                   {campaign.tagline && (
                     <p className="text-base md:text-lg text-muted-foreground mt-2">{campaign.tagline}</p>
                   )}
@@ -181,8 +180,8 @@ const FundCampaign = () => {
             </div>
 
             {campaign.story && (
-              <Card className="p-5">
-                <h2 className="font-semibold mb-2">About this campaign</h2>
+              <Card className="p-5 rounded-2xl border-border/60 shadow-none">
+                <h2 className="text-lg font-black tracking-tight mb-2">About this campaign</h2>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{campaign.story}</p>
               </Card>
             )}
@@ -190,9 +189,9 @@ const FundCampaign = () => {
 
           {/* Sidebar */}
           <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-            <Card className="p-5">
+            <Card className="p-5 rounded-2xl border-border/60 shadow-none">
               <div className="space-y-1">
-                <p className="text-3xl font-bold text-primary">
+                <p className="text-3xl font-black tracking-[-0.02em] text-primary">
                   {formatCurrency(campaign.total_raised, campaign.currency)}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -223,8 +222,8 @@ const FundCampaign = () => {
             <TrustPanel creatorId={campaign.creator_id} />
 
             {tiers && tiers.length > 0 && (
-              <Card className="p-5">
-                <h3 className="font-semibold mb-3">Pledge tiers</h3>
+              <Card className="p-5 rounded-2xl border-border/60 shadow-none">
+                <h3 className="text-lg font-black tracking-tight mb-3">Pledge tiers</h3>
                 <div className="space-y-3">
                   {tiers.map((t) => {
                     const soldOut = t.max_backers && t.claimed_count >= t.max_backers;
@@ -296,7 +295,7 @@ const FundCampaign = () => {
               />
               <span className="text-sm">Pledge anonymously</span>
             </label>
-            <div className="text-[11px] text-muted-foreground bg-muted/50 rounded-md p-3">
+            <div className="text-[11px] text-muted-foreground bg-muted/50 rounded-xl p-3">
               Your card is authorized now but only charged if the campaign reaches its goal by the
               deadline. Kretopia takes a 5% platform fee on funded campaigns.
             </div>
@@ -331,7 +330,7 @@ const FundCampaign = () => {
 };
 
 const Stat = ({ value, label, icon: Icon }: { value: string; label: string; icon?: any }) => (
-  <div className="bg-muted/40 rounded-md p-2">
+  <div className="bg-card/80 border border-border/60 rounded-xl p-2 backdrop-blur-sm">
     {Icon && <Icon className="h-3 w-3 mx-auto text-muted-foreground mb-0.5" />}
     <p className="font-bold text-sm">{value}</p>
     <p className="text-[10px] text-muted-foreground leading-tight">{label}</p>

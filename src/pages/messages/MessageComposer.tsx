@@ -1,6 +1,5 @@
 import { forwardRef } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { MessageAttachments, AttachmentPreview } from "@/components/messages/MessageAttachments";
 import { VoiceNoteRecorder } from "@/components/messages/VoiceNoteRecorder";
@@ -45,17 +44,17 @@ export const MessageComposer = forwardRef<HTMLInputElement, Props>(
             value={newMessage}
             onChange={onChange}
             placeholder={replyTo ? "Reply..." : "Type a message..."}
-            className="flex-1 rounded-full pr-10 bg-muted/50"
+            className="flex-1 rounded-2xl pr-4 bg-card/80 backdrop-blur-sm border-[hsl(var(--energy)/0.25)] focus-visible:ring-1 focus-visible:ring-[hsl(var(--energy))]"
           />
         </div>
-        <Button
+        <button
           type="submit"
-          size="icon"
           disabled={!newMessage.trim() && !attachment}
-          className="rounded-full h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 shadow-sm"
+          aria-label="Send message"
+          className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-colors bg-[hsl(var(--energy))] hover:bg-[hsl(var(--energy)/0.9)]"
         >
           <Send className="h-4 w-4" />
-        </Button>
+        </button>
       </form>
     </div>
   )

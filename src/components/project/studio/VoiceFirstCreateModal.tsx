@@ -2,12 +2,11 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mic, Square, Loader2, X, ArrowRight, Type, Search, Sparkles,
+  Mic, Square, Loader2, X, ArrowRight, Sparkles,
   MessageSquareText, FileEdit, Rocket, Upload, Link2, ShieldCheck,
   Wand2, FolderPlus, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CtaButton } from "@/components/ui/cta-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { KretoAvatar } from "@/components/brand/KretoAvatar";
@@ -120,7 +119,6 @@ export const VoiceFirstCreateModal = ({
   const reducedMotion = useReducedMotion();
 
   const [mode, setMode] = useState<Mode>("prompt");
-  const [showText, setShowText] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [creating, setCreating] = useState(false);
@@ -168,7 +166,6 @@ export const VoiceFirstCreateModal = ({
       mediaRef.current = null;
       chunksRef.current = [];
       setMode("prompt");
-      setShowText(false);
       setTextInput("");
       setSeconds(0);
       setBrief(null);
@@ -270,7 +267,6 @@ export const VoiceFirstCreateModal = ({
         title: "Mic not available",
         description: "Type what you're making instead.",
       });
-      setShowText(true);
     }
   };
 
@@ -338,7 +334,6 @@ export const VoiceFirstCreateModal = ({
         description: await describeFunctionError(err, "Try typing it instead."),
         variant: "destructive",
       });
-      setShowText(true);
       setMode("prompt");
     }
   };
@@ -439,7 +434,6 @@ export const VoiceFirstCreateModal = ({
         variant: "destructive",
       });
       setMode("prompt");
-      setShowText(true);
     } finally {
       setUploadingFile(false);
     }
@@ -773,40 +767,61 @@ export const VoiceFirstCreateModal = ({
                   </Button>
                 </div>
               </div>
-            ) : !showText ? (
-              <>
+            ) : (
+              <div className="w-full max-w-md">
+                {/* Unified Kreto composer — one persistent search-bar-styled
+                    entry point instead of a giant mic circle that hid text
+                    entry behind an extra "Or type it instead" click. Typing
+                    + Enter/the arrow button talks to Kreto in text; the mic
+                    icon lives inside the bar as a secondary affordance, same
+                    visual language as UnifiedSearchDropdown's hero variant
+                    (the app's own canonical search bar) instead of a
+                    bespoke shape. */}
                 <div className="relative">
-                  <span
+                  <Sparkles
                     aria-hidden
-                    className="absolute inset-0 rounded-full animate-ping pointer-events-none"
-                    style={{ backgroundColor: "hsl(var(--energy) / 0.18)" }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
+                    style={{ color: "hsl(var(--energy))" }}
+                  />
+                  <input
+                    type="text"
+                    autoFocus
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && textInput.trim()) {
+                        e.preventDefault();
+                        submitText();
+                      }
+                    }}
+                    placeholder={`Describe it to Kreto — e.g. "${EXAMPLE_PROMPTS[workspaceType]}"`}
+                    aria-label="Describe your project to Kreto"
+                    className="w-full h-14 rounded-2xl border bg-card/80 backdrop-blur-sm pl-11 pr-24 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-all"
+                    style={{ borderColor: "hsl(var(--energy) / 0.25)" }}
                   />
                   <button
                     type="button"
                     onClick={startRecording}
-                    aria-label="Start recording"
-                    style={{ backgroundColor: "hsl(var(--energy))" }}
-                    className={cn(
-                      "relative h-24 w-24 rounded-full text-white",
-                      "flex items-center justify-center",
-                      "shadow-[0_0_40px_hsl(var(--energy)/0.45)] ring-8 ring-[hsl(var(--energy)/0.15)]",
-                      "transition-transform hover:scale-105 active:scale-95"
-                    )}
+                    aria-label="Describe it by voice instead"
+                    title="Talk to Kreto"
+                    className="absolute right-12 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
                   >
-                    <Mic className="h-9 w-9" />
+                    <Mic className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={submitText}
+                    disabled={!textInput.trim()}
+                    aria-label="Send to Kreto"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl flex items-center justify-center text-white disabled:opacity-40 transition-colors"
+                    style={{ backgroundColor: "hsl(var(--energy))" }}
+                  >
+                    <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowText(true)}
-                  className="mt-6 text-sm text-muted-foreground inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-                >
-                  <Type className="h-3.5 w-3.5" />
-                  Or type it instead
-                </button>
 
-                {/* Inspiration chips — real examples, tap to jump into text mode pre-filled */}
-                <div className="mt-8 w-full max-w-md">
+                {/* Inspiration chips — real examples, tap to fill the bar above */}
+                <div className="mt-8 w-full">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
                     Examples to get you started
                   </p>
@@ -822,7 +837,6 @@ export const VoiceFirstCreateModal = ({
                             analytics.featureUsed('new_room_starter_intent', { workspace_type: t });
                             setWorkspaceType(t);
                             setTextInput(EXAMPLE_PROMPTS[t]);
-                            setShowText(true);
                           }}
                           className="glass-surface inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                         >
@@ -838,7 +852,7 @@ export const VoiceFirstCreateModal = ({
                     stickers: extract-brief already supports source="doc"
                     (upload) and source="sheet" (Google Sheet link), just
                     newly wired up here. */}
-                <div className="mt-6 w-full max-w-md">
+                <div className="mt-6 w-full">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
                     More ways to start
                   </p>
@@ -867,64 +881,6 @@ export const VoiceFirstCreateModal = ({
                       </p>
                     </button>
                   </div>
-                </div>
-              </>
-            ) : (
-              <div className="w-full max-w-md space-y-3">
-                {/* AI-search-styled entry surface */}
-                <div
-                  className="rounded-2xl border transition-shadow focus-within:shadow-lg"
-                  style={{
-                    borderColor: "hsl(var(--energy) / 0.25)",
-                    boxShadow: "0 0 0 1px hsl(var(--energy) / 0.08)",
-                  }}
-                >
-                  <div className="flex items-center gap-1.5 px-3.5 pt-3">
-                    <Search className="h-3 w-3" style={{ color: "hsl(var(--energy))" }} />
-                    <span
-                      className="text-[9px] font-semibold uppercase tracking-[0.18em]"
-                      style={{ color: "hsl(var(--energy))" }}
-                    >
-                      Describe your project
-                    </span>
-                  </div>
-                  <Textarea
-                    autoFocus
-                    value={textInput}
-                    onChange={(e) => setTextInput(e.target.value)}
-                    placeholder={EXAMPLE_PROMPTS[workspaceType]}
-                    className="min-h-[130px] text-base text-left border-0 bg-transparent focus-visible:ring-0 shadow-none resize-none"
-                  />
-                </div>
-
-                {/* Tappable example — quick-fill, still fully editable before submit */}
-                <button
-                  type="button"
-                  onClick={() => setTextInput(EXAMPLE_PROMPTS[workspaceType])}
-                  className="w-full rounded-lg border border-dashed border-border/60 px-3 py-1.5 text-left text-[11px] text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors inline-flex items-center gap-1.5"
-                >
-                  <Sparkles className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--energy))" }} />
-                  <span className="truncate">Try: "{EXAMPLE_PROMPTS[workspaceType]}"</span>
-                </button>
-
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setShowText(false)}
-                    className="text-xs text-muted-foreground inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-                  >
-                    <Mic className="h-3.5 w-3.5" />
-                    Use voice instead
-                  </button>
-                  <CtaButton
-                    onClick={submitText}
-                    disabled={!textInput.trim()}
-                    size="default"
-                    className="w-auto gap-1.5"
-                  >
-                    Let Kreto draft my Project
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </CtaButton>
                 </div>
               </div>
             )}

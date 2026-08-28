@@ -48,13 +48,13 @@ const Clients = () => {
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : clients.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-8 text-center">
+        <div className="rounded-2xl border border-dashed border-border/60 p-8 text-center">
           <Building2 className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-          <p className="font-semibold">No clients yet</p>
+          <p className="font-bold">No clients yet</p>
           <p className="text-sm text-muted-foreground mb-4">
             Add a client to group all their projects, briefs and invoices in one place.
           </p>
-          <Button onClick={() => { setDraft(null); setDraftKey((k) => k + 1); setShowForm(true); }}>
+          <Button onClick={() => { setDraft(null); setDraftKey((k) => k + 1); setShowForm(true); }} size="sm" className="rounded-full">
             <Plus className="h-4 w-4 mr-1" /> Add your first client
           </Button>
         </div>
@@ -65,9 +65,9 @@ const Clients = () => {
               key={c.id}
               type="button"
               onClick={() => navigate(`/clients/${c.id}`)}
-              className="w-full flex items-center gap-3 rounded-xl border border-border bg-card hover:bg-accent/40 transition-colors p-3 text-left"
+              className="w-full flex items-center gap-3 rounded-xl border border-border/60 bg-card hover:border-[hsl(var(--energy)/0.35)] transition-colors p-3 text-left"
             >
-              <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <div className="h-10 w-10 rounded-full bg-[hsl(var(--energy)/0.12)] text-[hsl(var(--energy))] flex items-center justify-center font-bold shrink-0">
                 {(c.company_name || c.name).charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">

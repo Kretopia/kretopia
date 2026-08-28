@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   PenLine, IdCard, Compass, Send, ArrowUpRight,
@@ -7,9 +7,9 @@ import {
 import { BRAND } from "@/lib/brandLexicon";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { KRETO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
-import { useFitTitleOneLine } from "@/hooks/useFitTitleOneLine";
 import { InlineKretoChat } from "@/components/kreto/InlineKretoChat";
 
 const QUICK_ACTIONS = [
@@ -71,9 +71,6 @@ export default function KretoTab() {
   const [loadingContext, setLoadingContext] = useState(true);
   const [seed, setSeed] = useState<{ text: string; n: number } | null>(null);
   const ask = (text: string) => setSeed((s) => ({ text, n: (s?.n ?? 0) + 1 }));
-  const titleWrapperRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  useFitTitleOneLine(titleWrapperRef, titleRef, []);
 
   useEffect(() => {
     if (!user) { setLoadingContext(false); return; }
@@ -106,37 +103,15 @@ export default function KretoTab() {
 
   return (
     <div className="min-h-[calc(100vh-56px)] bg-[#05070D] text-white">
-      <div className="mx-auto max-w-3xl px-4 py-10 space-y-6">
-        {/* Identity + purpose — same eyebrow/title/subtitle/tutorial pattern as every
-            other overhauled feature, kept in this page's own dark palette since it
-            (like Auth/EditorialFooter) is deliberately dark regardless of theme. */}
-        <div className="relative overflow-hidden -mx-4 px-4 pt-4 pb-2">
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
-          <div className="relative flex flex-col items-center text-center">
-            <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--energy))] mb-3 px-2.5 py-1 rounded-full border border-[hsl(var(--energy)/0.35)] bg-[hsl(var(--energy)/0.06)] backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--energy))] shadow-[0_0_8px_hsl(var(--energy)/0.8)]" />
-              AI Executive Producer
-            </p>
-            <div ref={titleWrapperRef} className="w-full max-w-3xl">
-              <h1
-                ref={titleRef}
-                className="font-black tracking-[-0.03em] text-white leading-[1.05]"
-                style={{ fontSize: "3rem" }}
-              >
-                {BRAND.agentName}. <span className="pink-glow-breathe" style={{ color: "hsl(var(--energy))" }}>Your creative career, run point.</span>
-              </h1>
-            </div>
-            <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl mx-auto">
-              {BRAND.agentRole}. Finds opportunities, drafts pitches, keeps your Passport sharp,
-              and closes the loop from search to paid credit — with your approval at every step.
-            </p>
-            <FeatureAITutorial featureKey="kreto" label="How Kreto works" steps={KRETO_TUTORIAL} />
-          </div>
-        </div>
+      <FeaturePageHeader
+        eyebrow="AI Executive Producer"
+        title={`${BRAND.agentName}.`}
+        accentTitle="Your creative career, run point."
+        subtitle={`${BRAND.agentRole}. Finds opportunities, drafts pitches, keeps your Passport sharp, and closes the loop from search to paid credit — with your approval at every step.`}
+        tutorial={{ featureKey: "kreto", label: "How Kreto works", steps: KRETO_TUTORIAL }}
+      />
 
-        {/* Bottom hairline — anchors the hero, same treatment as Studio Room */}
-        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-
+      <StudioFeatureShell>
         {/* Primary surface — the live thread, answered right here on the page */}
         <InlineKretoChat key={seed?.n ?? 0} seedPrompt={seed?.text ?? null} />
 
@@ -227,7 +202,7 @@ export default function KretoTab() {
           money, or send something on your behalf waits for your approval first — {BRAND.agentName}
           only acts on its own for safe, reversible steps.
         </p>
-      </div>
+      </StudioFeatureShell>
     </div>
   );
 }

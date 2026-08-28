@@ -155,7 +155,7 @@ const Shortlists = () => {
         <SEO title={`${activeList.name} · Shortlist`} />
         <button
           onClick={() => setActiveList(null)}
-          className="text-xs text-white/60 hover:text-[#FF2DA1] transition-colors"
+          className="text-xs text-white/60 hover:text-[hsl(var(--energy))] transition-colors"
         >
           ← All shortlists
         </button>

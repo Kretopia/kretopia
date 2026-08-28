@@ -198,7 +198,7 @@ const DashboardContent = () => {
                 onClick={onClick}
                 className="btn-glass btn-glass-outline group flex items-start gap-2.5 rounded-xl p-3 text-left"
               >
-                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-[#FF2DA1] mt-0.5 shrink-0 transition-colors" />
+                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-[hsl(var(--energy))] mt-0.5 shrink-0 transition-colors" />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold leading-tight">{label}</p>
                   {hint && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{hint}</p>}
@@ -417,9 +417,9 @@ const ShortcutCard = ({ icon: Icon, label, onClick }: { icon: typeof Inbox; labe
     onClick={onClick}
     className="btn-glass btn-glass-outline group flex items-center gap-2.5 rounded-xl p-3 text-left"
   >
-    <Icon className="h-4 w-4 text-muted-foreground group-hover:text-[#FF2DA1] transition-colors" />
+    <Icon className="h-4 w-4 text-muted-foreground group-hover:text-[hsl(var(--energy))] transition-colors" />
     <span className="text-xs font-semibold">{label}</span>
-    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/60 ml-auto group-hover:text-[#FF2DA1] group-hover:translate-x-0.5 transition-all" />
+    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/60 ml-auto group-hover:text-[hsl(var(--energy))] group-hover:translate-x-0.5 transition-all" />
   </button>
 );
 

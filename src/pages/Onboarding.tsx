@@ -960,7 +960,7 @@ export default function Onboarding() {
                       <button
                         type="button"
                         onClick={() => document.getElementById("avatar-upload")?.click()}
-                        className="text-xs text-white hover:text-[#FF2DA1] font-medium inline-flex items-center gap-1.5 transition-colors text-left"
+                        className="text-xs text-white hover:text-[hsl(var(--energy))] font-medium inline-flex items-center gap-1.5 transition-colors text-left"
                       >
                         <Sparkles className="h-3 w-3 shrink-0" />
                         <span>Add a photo — profiles with photos get 3× more matches</span>
@@ -975,7 +975,7 @@ export default function Onboarding() {
                   {showCustomRole || (!isRoleInOptions && role) ? (
                     <div className="space-y-1.5">
                       <Input id="review-role-trigger" value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />
-                      <button type="button" className="text-xs text-white hover:text-[#FF2DA1] hover:underline transition-colors" onClick={() => { setShowCustomRole(false); setRole(""); }}>
+                      <button type="button" className="text-xs text-white hover:text-[hsl(var(--energy))] hover:underline transition-colors" onClick={() => { setShowCustomRole(false); setRole(""); }}>
                         Choose from list
                       </button>
                     </div>
@@ -1043,7 +1043,7 @@ export default function Onboarding() {
                           setGeneratingBio(false);
                         }
                       }}
-                      className="text-xs font-medium inline-flex items-center gap-1 text-white hover:text-[#FF2DA1] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="text-xs font-medium inline-flex items-center gap-1 text-white hover:text-[hsl(var(--energy))] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       {generatingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                       {bio ? "Rewrite for me" : "Suggest a bio"}
@@ -1121,7 +1121,7 @@ export default function Onboarding() {
                 </Button>
 
                 {/* Back */}
-                <button onClick={() => setPhase("discover")} className="block w-full text-center text-xs text-white/60 hover:text-[#FF2DA1] transition-colors py-1">
+                <button onClick={() => setPhase("discover")} className="block w-full text-center text-xs text-white/60 hover:text-[hsl(var(--energy))] transition-colors py-1">
                   ← Back to search
                 </button>
               </div>

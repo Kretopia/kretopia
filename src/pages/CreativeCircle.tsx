@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import { SEO } from "@/components/SEO";
 import { useNavigate } from "react-router-dom";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const CREATIVE_CIRCLE_TUTORIAL: TutorialStep[] = [
@@ -98,7 +99,7 @@ const CreativeCircle = () => {
     : 100;
 
   return (
-    <div className="pb-24">
+    <div>
       <SEO title="Creative Circle | Kretopia" description="Grow your creative network, unlock rewards, and earn passive income by inviting creatives to Kretopia." />
 
       <FeaturePageHeader
@@ -109,7 +110,7 @@ const CreativeCircle = () => {
         tutorial={{ featureKey: "creative-circle", label: "How Creative Circle works", steps: CREATIVE_CIRCLE_TUTORIAL }}
       />
 
-      <div className="container mx-auto px-4 pt-4 max-w-2xl space-y-6">
+      <StudioFeatureShell>
 
       {/* Hero — Current Tier */}
       <div className={cn("rounded-2xl p-6 bg-gradient-to-br border", network.tier.gradient, "border-border/50")}>
@@ -301,7 +302,7 @@ const CreativeCircle = () => {
           Commission is earned from Kretopia's platform fee — your referrals keep 100% of their earnings. This isn't MLM — it's supporting each other to grow.
         </p>
       </div>
-      </div>
+      </StudioFeatureShell>
     </div>
   );
 };

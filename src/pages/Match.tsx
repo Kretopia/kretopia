@@ -4,6 +4,7 @@ import { Sparkles, LayoutGrid, Loader2, Users } from "lucide-react";
 import { SwipeFeature } from "@/components/swipe";
 import { KretoTip } from "@/components/agent/KretoTip";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { MATCH_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 
@@ -77,7 +78,7 @@ export default function Match() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-28 accent-match">
+    <div className="min-h-screen bg-background accent-match">
       <SEO
         title="Match — Find your collaborators | Kretopia"
         description="Swipe or browse creators whose work proves they can do the brief."
@@ -90,13 +91,10 @@ export default function Match() {
         tutorial={{ featureKey: "match", label: "How Match works", steps: MATCH_TUTORIAL }}
       />
 
-      <div className="max-w-2xl mx-auto px-4 pt-3">
+      <StudioFeatureShell>
         <KretoTip surface="match" compact />
-      </div>
-
-      <div className="max-w-2xl mx-auto px-3 py-3">
         <StudioSectionTabs tabs={matchTabs} defaultTabId="discover" queryParam="tab" />
-      </div>
+      </StudioFeatureShell>
     </div>
   );
 }

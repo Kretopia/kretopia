@@ -15,6 +15,7 @@ import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { AIHostEventCard } from "@/components/sessions/AIHostEventCard";
 import type { ScannedEventDetails } from "@/components/sessions/ScanFlyerDialog";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { KretoTip } from "@/components/agent/KretoTip";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
@@ -178,7 +179,7 @@ const Meetup = () => {
   }, [events, myCountry]);
 
   return (
-    <div className="min-h-screen bg-background pb-24 accent-scout">
+    <div className="min-h-screen bg-background accent-scout">
       <Helmet>
         <title>Events — Meetups, Workshops & Creative Gatherings | Kretopia</title>
         <meta name="description" content="Discover creative events, meetups, workshops and gatherings near you. Host your own event and reach thousands of creators." />
@@ -223,8 +224,8 @@ const Meetup = () => {
         }
       />
 
-      <div className="container mx-auto max-w-5xl px-4 py-6">
-        <KretoTip compact className="mb-5" />
+      <StudioFeatureShell>
+        <KretoTip compact />
         <div className="mb-6">
           <AIHostEventCard
             hostingCount={hostingCount}
@@ -314,7 +315,7 @@ const Meetup = () => {
             ))}
           </Tabs>
         )}
-      </div>
+      </StudioFeatureShell>
 
       <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={load} initialDetails={prefill} />
     </div>

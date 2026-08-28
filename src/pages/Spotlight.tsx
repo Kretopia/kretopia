@@ -18,6 +18,7 @@ import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { APP_URL } from "@/lib/constants";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { SpotlightBoard, type SpotlightTab } from "@/components/kretopia/SpotlightBoard";
 
 const NOTES = [
@@ -76,7 +77,7 @@ const Spotlight = () => {
           subtitle="Interviews, features and podcast episodes from across the creative universe — the people behind the work, in their own words."
         />
 
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 space-y-10">
+        <StudioFeatureShell>
           <section>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1.5">The desk</p>
             <h2 className="text-xl font-bold text-foreground mb-4">Read it, or hear it.</h2>
@@ -106,7 +107,7 @@ const Spotlight = () => {
               "Credits show what you did. Spotlight shows how you did it — and why the next person should call you."
             </p>
           </section>
-        </div>
+        </StudioFeatureShell>
       </div>
     </PageTransition>
   );

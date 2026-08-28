@@ -15,6 +15,7 @@ import { CreditsAIInsights } from "@/components/credits/CreditsAIInsights";
 import { CreditsErrorState } from "@/components/credits/CreditsPrimitives";
 import { CreditsFullRecord } from "@/components/credits/CreditsFullRecord";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 import { User, Briefcase, Award, Activity, FileText, Sparkles as SparklesIcon } from "lucide-react";
 
@@ -161,7 +162,7 @@ export default function CreditsDashboard() {
         <meta name="robots" content="noindex" />
       </Helmet>
 
-      <div className="accent-passport relative min-h-screen bg-background pb-24">
+      <div className="accent-passport relative min-h-screen bg-background">
         <FeaturePageHeader
           eyebrow="Credits"
           title="Credits."
@@ -169,7 +170,7 @@ export default function CreditsDashboard() {
           subtitle="Your professional identity and the verified creative work behind it — in one private place."
         />
 
-        <main className="container relative mx-auto max-w-3xl px-4 pt-6">
+        <StudioFeatureShell className="relative">
           <div className="mb-5">
             <PersonalCreditsSearch
               value={rawQuery}
@@ -198,7 +199,7 @@ export default function CreditsDashboard() {
               <StudioSectionTabs queryParam="tab" defaultTabId="identity" tabs={creditsTabs} />
             </div>
           )}
-        </main>
+        </StudioFeatureShell>
       </div>
     </>
   );

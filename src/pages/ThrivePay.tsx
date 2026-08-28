@@ -36,6 +36,7 @@ import { KrePayAIInsights } from "@/components/thrivepay/KrePayAIInsights";
 import { TransactionDetailDrawer, type TransactionDetail } from "@/components/thrivepay/TransactionDetailDrawer";
 import { TrustControlsCard } from "@/components/thrivepay/TrustControlsCard";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { KretoTip } from "@/components/agent/KretoTip";
 import { KREPAY_BRAND_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
@@ -276,14 +277,14 @@ export default function ThrivePay() {
 
   if (loading) {
     return (
-      <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
-        <Skeleton className="h-8 sm:h-12 w-48 sm:w-64 mb-4 sm:mb-8" />
-        <div className="grid gap-3 grid-cols-2 mb-4">
+      <StudioFeatureShell>
+        <Skeleton className="h-8 sm:h-12 w-48 sm:w-64" />
+        <div className="grid gap-3 grid-cols-2">
           <Skeleton className="h-20 sm:h-32 col-span-2 sm:col-span-1" />
           <Skeleton className="h-20 sm:h-32" />
           <Skeleton className="h-20 sm:h-32" />
         </div>
-      </div>
+      </StudioFeatureShell>
     );
   }
 
@@ -296,12 +297,12 @@ export default function ThrivePay() {
 
       <FeaturePageHeader
         eyebrow="Your money, daily"
-        title="Kreto"
-        accentTitle="KrePay."
+        title="KrePay."
+        accentTitle="Without the spreadsheet."
         subtitle={
           isBrand
-            ? "Everything about paying the creators you hire, without the spreadsheet."
-            : "Everything about getting paid for your creative work, without the spreadsheet."
+            ? "Everything about paying the creators you hire, in one place."
+            : "Everything about getting paid for your creative work, in one place."
         }
         tutorial={
           isBrand
@@ -378,8 +379,9 @@ export default function ThrivePay() {
         }
       />
 
-      <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
-        <KretoTip compact className="mb-5" />
+      <div className="accent-pay min-h-screen">
+      <StudioFeatureShell>
+        <KretoTip compact />
 
         {/* Get Paid dashboard — the unified summary (metrics + trend chart
             + weekly insights) required by the overhaul spec, replacing the
@@ -668,6 +670,7 @@ export default function ThrivePay() {
         </section>
           </TabsContent>
         </Tabs>
+      </StudioFeatureShell>
       </div>
 
       <TransactionDetailDrawer

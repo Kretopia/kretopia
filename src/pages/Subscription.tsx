@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Zap, Crown, Briefcase, User } from "lucide-react";
+import { Loader2, Sparkles, Zap, Crown, Briefcase, User, Check } from "lucide-react";
 import {
   SUBSCRIPTION_PRODUCTS,
   type AccountType, type BillingInterval,
@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
-import { PlanDetailsModal } from "@/components/subscription/PlanDetailsModal";
+import { HoloCard } from "@/components/passport/HoloCard";
 import { cn } from "@/lib/utils";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
@@ -33,7 +33,6 @@ export default function Subscription() {
   const [billingInterval, setBillingInterval] = useState<BillingInterval>("monthly");
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [founderSpotsTaken, setFounderSpotsTaken] = useState(0);
-  const [detailsPlan, setDetailsPlan] = useState<PlanCard | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -147,12 +146,6 @@ export default function Subscription() {
   };
 
   const confirmPlan = (plan: PlanCard) => {
-    if (!plan.priceId && !plan.isFounder) {
-      // Free tier — handleSubscribe just shows an informational toast, keep the modal open to read it.
-      handleSubscribe(plan.priceId, plan.tier);
-      return;
-    }
-    setDetailsPlan(null);
     if (plan.isFounder) {
       handleFounderCheckout();
     } else {
@@ -176,7 +169,7 @@ export default function Subscription() {
   const plans = viewMode === "brand" ? getBrandPlans(billingInterval) : getCreatorPlans(billingInterval, founderSpotsRemaining);
 
   const isCurrentPlan = (plan: PlanCard) => (plan.isFounder ? isFounder : plan.tier === currentTier);
-  const isPlanLoading = (plan: PlanCard) => loading === (plan.isFounder ? "founder" : plan.priceId);
+  const isPlanLoading = (plan: PlanCard) => loading !== null && loading === (plan.isFounder ? "founder" : plan.priceId);
 
   return (
     <div className="min-h-screen">
@@ -213,7 +206,15 @@ export default function Subscription() {
                 Yearly
               </Label>
               {billingInterval === 'yearly' && (
-                <Badge variant="secondary" className="bg-success/10 text-success border-success/20 text-xs">
+                <Badge
+                  variant="secondary"
+                  className="text-xs border"
+                  style={{
+                    backgroundColor: "hsl(var(--energy) / 0.1)",
+                    color: "hsl(var(--energy))",
+                    borderColor: "hsl(var(--energy) / 0.3)",
+                  }}
+                >
                   Save up to 17%
                 </Badge>
               )}
@@ -237,49 +238,96 @@ export default function Subscription() {
 
         <div
           className={cn(
-            "grid grid-cols-1 gap-4 items-stretch mx-auto",
-            plans.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4 max-w-5xl" : "sm:grid-cols-3 max-w-4xl",
+            "grid grid-cols-1 gap-6 items-stretch mx-auto",
+            plans.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4 max-w-6xl" : "sm:grid-cols-3 max-w-5xl",
           )}
         >
           {plans.map((plan) => {
             const Icon = plan.icon;
             const current = isCurrentPlan(plan);
+            const showFounderProgress = plan.isFounder && SUBSCRIPTION_PRODUCTS.founder.maxSpots > 0;
+            const founderPct = showFounderProgress
+              ? (founderSpotsTaken / SUBSCRIPTION_PRODUCTS.founder.maxSpots) * 100
+              : 0;
+
             return (
-              <div
-                key={plan.tier}
-                className={cn(
-                  "relative flex h-full flex-col rounded-2xl border bg-card p-5 sm:p-6",
-                  plan.popular ? "border-primary" : current ? "border-success" : "border-border",
-                )}
-              >
-                {plan.popular && !current && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Most Popular</Badge>
-                )}
-                {current && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-success text-success-foreground">
-                    Your Plan
-                  </Badge>
-                )}
-
-                <Icon className="h-6 w-6 mb-3 shrink-0" style={{ color: "hsl(var(--energy))" }} aria-hidden />
-                <h3 className="text-lg font-bold text-foreground leading-tight">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1 mb-4">{plan.tagline}</p>
-
-                <div className="mb-5">
-                  <span className="text-3xl font-black text-foreground">{plan.displayPrice}</span>
-                  {!plan.oneTime && plan.price > 0 && <span className="text-sm text-muted-foreground ml-1">/mo</span>}
-                  {plan.oneTime && <span className="text-sm text-muted-foreground ml-1">one-time</span>}
-                </div>
-
-                <Button
-                  onClick={() => setDetailsPlan(plan)}
-                  disabled={current || plan.soldOut}
-                  variant={plan.popular ? "default" : "outline"}
-                  className="w-full mt-auto"
+              <HoloCard key={plan.tier} className="h-full">
+                <div
+                  className={cn(
+                    "relative flex h-full flex-col rounded-2xl border bg-card p-5 sm:p-6",
+                    plan.popular || current ? "border-[hsl(var(--energy))]" : "border-border",
+                  )}
                 >
-                  {current ? "Current Plan" : plan.soldOut ? "Sold Out" : plan.ctaLabel}
-                </Button>
-              </div>
+                  {plan.popular && !current && (
+                    <Badge
+                      className="absolute top-3 right-3 border-transparent text-white"
+                      style={{ backgroundColor: "hsl(var(--energy))" }}
+                    >
+                      Most Popular
+                    </Badge>
+                  )}
+                  {current && (
+                    <Badge
+                      className="absolute top-3 right-3 border-transparent text-white"
+                      style={{ backgroundColor: "hsl(var(--energy))" }}
+                    >
+                      Your Plan
+                    </Badge>
+                  )}
+
+                  <Icon className="h-6 w-6 mb-3 shrink-0" style={{ color: "hsl(var(--energy))" }} aria-hidden />
+                  <h3 className="text-lg font-bold text-foreground leading-tight">{plan.name}</h3>
+                  <p className="text-sm text-muted-foreground mt-1 mb-4">{plan.tagline}</p>
+
+                  <div className="mb-5">
+                    <span className="text-3xl font-black text-foreground">{plan.displayPrice}</span>
+                    {!plan.oneTime && plan.price > 0 && <span className="text-sm text-muted-foreground ml-1">/mo</span>}
+                    {plan.oneTime && <span className="text-sm text-muted-foreground ml-1">one-time</span>}
+                  </div>
+
+                  {showFounderProgress && (
+                    <div className="mb-5">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>{founderSpotsTaken} claimed</span>
+                        <span>{SUBSCRIPTION_PRODUCTS.founder.maxSpots} total</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${founderPct}%`, backgroundColor: "hsl(var(--energy))" }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <ul className="space-y-2.5 mb-6 flex-1">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm text-foreground/80">
+                        <Check className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--energy))" }} aria-hidden />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Button
+                    onClick={() => confirmPlan(plan)}
+                    disabled={current || plan.soldOut || isPlanLoading(plan)}
+                    variant={plan.popular ? "default" : "outline"}
+                    className="w-full mt-auto"
+                    style={plan.popular ? { backgroundColor: "hsl(var(--energy))", borderColor: "hsl(var(--energy))" } : undefined}
+                  >
+                    {current ? (
+                      "Current Plan"
+                    ) : plan.soldOut ? (
+                      "Sold Out"
+                    ) : isPlanLoading(plan) ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      plan.ctaLabel
+                    )}
+                  </Button>
+                </div>
+              </HoloCard>
             );
           })}
         </div>
@@ -300,17 +348,6 @@ export default function Subscription() {
           <p className="mt-2">Save 17% with annual billing · No hidden fees</p>
         </div>
       </StudioFeatureShell>
-
-      <PlanDetailsModal
-        plan={detailsPlan}
-        open={detailsPlan !== null}
-        onClose={() => setDetailsPlan(null)}
-        onConfirm={() => detailsPlan && confirmPlan(detailsPlan)}
-        isCurrentTier={detailsPlan ? isCurrentPlan(detailsPlan) : false}
-        isLoading={detailsPlan ? isPlanLoading(detailsPlan) : false}
-        founderSpotsTaken={founderSpotsTaken}
-        founderMaxSpots={SUBSCRIPTION_PRODUCTS.founder.maxSpots}
-      />
     </div>
   );
 }

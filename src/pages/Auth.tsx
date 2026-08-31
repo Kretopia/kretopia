@@ -81,7 +81,8 @@ const Auth = () => {
     const tab = searchParams.get("tab");
     const isReturning = (() => {
       try {
-        return localStorage.getItem("kretopia_has_signed_in") === "1";
+        // Set by setLastSignInMethod() after any successful sign-in.
+        return !!localStorage.getItem("thrivein_last_signin_method");
       } catch {
         return false;
       }

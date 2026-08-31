@@ -44,6 +44,9 @@ export const LandingBelowFold = () => {
       {/* Search — the Hero above already IS the live feature; this is just its tutorial */}
       <SearchTutorialSection />
 
+      {/* First conversion beat — most visitors never reach the closing CTA */}
+      <InlineSignupBar />
+
       {/* Passport */}
       <ChapterSection
         id="chapter-passport"

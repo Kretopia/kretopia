@@ -12,12 +12,14 @@
  * Nothing here reimplements search, and nothing fakes a result.
  */
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { analytics } from "@/lib/analytics";
+import { trackLandingCta } from "@/lib/landingFunnel";
 
 const ACCENT = "#FF2DA1";
 // Submitted through the same name-based web search as any real query — must

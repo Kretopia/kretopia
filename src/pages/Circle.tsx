@@ -5,7 +5,6 @@ import { AuthGate } from "@/components/AuthGate";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { SwipeFeature } from "@/components/swipe";
@@ -17,14 +16,13 @@ import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Sparkles, Users, LayoutGrid, UserPlus, Radio } from "lucide-react";
+import { Sparkles, Users, LayoutGrid, UserPlus } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { SOUNDSTAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
-import { StudioPrimaryCard } from "@/components/studio-reference/StudioPrimaryCard";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 import { StudioEmptyState } from "@/components/studio-reference/StudioEmptyState";
 import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
@@ -297,22 +295,11 @@ export default function Circle() {
         />
 
         <StudioFeatureShell>
-          <StudioPrimaryCard
-            eyebrow="Live · Match · Network"
-            title="Find your next collaborator"
-            description="Match with creators, browse the grid, or catch a live session — all from Stage."
-            icon={<Radio className="h-5 w-5" />}
-            action={
-              <Button size="sm" className="gap-1.5" onClick={() => setActiveTab("match")}>
-                <Sparkles className="h-3.5 w-3.5" /> Start matching
-              </Button>
-            }
-          />
-
           <StudioSectionTabs
             tabs={circleTabs}
             defaultTabId={initialTab}
             queryParam="tab"
+            activeId={activeTab}
             onTabChange={(id) => setActiveTab(id as CircleTabId)}
           />
 
@@ -324,7 +311,14 @@ export default function Circle() {
             surfaceLabel="Stage"
           >
             {user ? (
-              <LiveCallsPanel />
+              <LiveCallsPanel
+                onFindCollaborator={() => {
+                  setActiveTab("match");
+                  const next = new URLSearchParams(searchParams);
+                  next.set("tab", "match");
+                  navigate(`/circle?${next.toString()}`, { replace: true });
+                }}
+              />
             ) : (
               <AuthGate>
                 <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />

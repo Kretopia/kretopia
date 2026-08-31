@@ -4,17 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import {
   LinkIcon,
   Loader2,
-  Plus,
+  Radio,
   Calendar,
   Sparkles,
   CalendarPlus,
 } from "lucide-react";
+import { HoloCard } from "@/components/passport/HoloCard";
 import { SoundStagesRail, type SoundStage } from "./SoundStagesRail";
 import { GoLiveSheet } from "./GoLiveSheet";
 import { CallSheetUpcoming } from "./CallSheetUpcoming";
@@ -22,11 +22,19 @@ import { CuratedStagesRail } from "./CuratedStagesRail";
 import { CreateStageSheet } from "./CreateStageSheet";
 import { SoundStageRoom } from "./SoundStageRoom";
 
+interface LiveCallsPanelProps {
+  /** Jumps the parent page to its Match tab — lets "Find a Collaborator"
+   * live inside Sound Stages instead of a separate card above it. */
+  onFindCollaborator?: () => void;
+}
+
 /**
- * Sound Stages — the live tab on /circle.
- * The Hollywood lot: Open Stages (spontaneous) + Speed Sessions (scheduled).
+ * Sound Stages — the live tab on /circle (and the standalone /discover
+ * page). One unified card: live rail, the two primary actions, curated
+ * stages, and the upcoming call sheet, all inside the same Studio-grammar
+ * surface instead of a stack of independently-styled sections.
  */
-export function LiveCallsPanel() {
+export function LiveCallsPanel({ onFindCollaborator }: LiveCallsPanelProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -162,111 +170,95 @@ export function LiveCallsPanel() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-8">
-      {/* Signature Header — On Air Now */}
-      <div className="flex items-end justify-between px-1 pt-2">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span
-                className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                style={{ background: "hsl(var(--signal-pink))" }}
-              />
-              <span
-                className="relative inline-flex rounded-full h-2 w-2"
-                style={{ background: "hsl(var(--signal-pink))" }}
-              />
-            </span>
+    <div className="mx-auto w-full max-w-2xl rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-6">
+      {/* Header */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2 shrink-0">
             <span
-              className="text-[10px] font-bold uppercase tracking-[0.25em]"
-              style={{ color: "hsl(var(--signal-pink))" }}
-            >
-              On Air Now
-            </span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black italic tracking-tighter text-foreground">
-            SOUND STAGES
-          </h2>
+              className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+              style={{ background: "hsl(var(--energy))" }}
+            />
+            <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "hsl(var(--energy))" }} />
+          </span>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">On air now</p>
         </div>
+        <h2 className="text-lg font-bold text-foreground">Sound Stages</h2>
       </div>
 
       {/* On Air rail — the headliner */}
       <SoundStagesRail onJoin={handleJoinStage} />
 
-      {/* Match Strike — Go Live CTA */}
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => {
-            if (!user) {
-              toast({ title: "Sign in to open a stage" });
-              navigate("/auth?redirect=/discover?tab=live");
-              return;
-            }
-            setGoLiveOpen(true);
-          }}
-          className="relative w-full group overflow-hidden rounded-[24px] p-[1.5px] cursor-pointer"
-        >
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{ background: "hsl(var(--signal-teal))" }}
-          />
-          <span className="pointer-events-none relative flex bg-card rounded-[22px] py-5 px-6 items-center justify-between">
-            <span className="flex items-center gap-4">
-              <span
-                className="w-12 h-12 rounded-2xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform"
-                style={{
-                  background: "hsl(var(--signal-teal))",
-                  boxShadow: "0 0 25px hsl(var(--signal-teal) / 0.5)",
-                }}
-              >
-                <Plus className="w-6 h-6 text-white" strokeWidth={3} />
-              </span>
-              <span className="text-left">
-                <span className="block text-xl font-black italic tracking-tighter text-foreground leading-none">
-                  START STAGE
-                </span>
-                <span
-                  className="block text-[10px] font-bold uppercase tracking-[0.2em] mt-1"
-                  style={{ color: "hsl(var(--signal-amber))" }}
-                >
-                  Light the spark
-                </span>
-              </span>
-            </span>
-            <span className="bg-muted w-9 h-9 rounded-full flex items-center justify-center border border-border group-hover:translate-x-1 transition-transform">
-              <Plus
-                className="w-4 h-4 rotate-45"
-                style={{ color: "hsl(var(--signal-pink))" }}
-                strokeWidth={2.5}
-              />
-            </span>
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (!user) {
-              toast({ title: "Sign in to schedule a Speed Session" });
-              navigate("/auth?redirect=/discover?tab=live");
-              return;
-            }
-            setScheduleOpen(true);
-          }}
-          className="mt-2 w-full text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground hover:text-[hsl(var(--energy))] py-2 transition-colors"
-        >
-          <CalendarPlus className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
-          Or schedule a Speed Session
-        </button>
+      {/* Primary actions — same row-card shape as the "Grow your circle" card,
+          holo-wrapped so Start a Stage carries Passport's signature shine. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <HoloCard maxTilt={4}>
+          <button
+            type="button"
+            onClick={() => {
+              if (!user) {
+                toast({ title: "Sign in to open a stage" });
+                navigate("/auth?redirect=/discover?tab=live");
+                return;
+              }
+              setGoLiveOpen(true);
+            }}
+            className="w-full text-left rounded-2xl border border-border bg-card p-4 hover:border-[hsl(var(--energy))]/40 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-[hsl(var(--energy))]/15 text-[hsl(var(--energy))] flex items-center justify-center shrink-0">
+                <Radio className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">Go live</p>
+                <p className="font-semibold text-sm">Start a Stage</p>
+                <p className="text-xs text-muted-foreground">Open the room and let people walk on.</p>
+              </div>
+            </div>
+          </button>
+        </HoloCard>
+
+        <HoloCard maxTilt={4}>
+          <button
+            type="button"
+            onClick={() => onFindCollaborator?.()}
+            className="w-full text-left rounded-2xl border border-border bg-card p-4 hover:border-[hsl(var(--energy))]/40 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-[hsl(var(--energy))]/15 text-[hsl(var(--energy))] flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">Match</p>
+                <p className="font-semibold text-sm">Find a Collaborator</p>
+                <p className="text-xs text-muted-foreground">Swipe through creators from Stage.</p>
+              </div>
+            </div>
+          </button>
+        </HoloCard>
       </div>
 
+      <button
+        type="button"
+        onClick={() => {
+          if (!user) {
+            toast({ title: "Sign in to schedule a Speed Session" });
+            navigate("/auth?redirect=/discover?tab=live");
+            return;
+          }
+          setScheduleOpen(true);
+        }}
+        className="w-full text-center text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground hover:text-[hsl(var(--energy))] py-1 transition-colors"
+      >
+        <CalendarPlus className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
+        Or schedule a Speed Session
+      </button>
 
       {/* Curated Stages (Scout + Showcase) */}
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3" style={{ color: "hsl(var(--signal-teal))" }} />{" "}
+            <Sparkles className="h-3 w-3" style={{ color: "hsl(var(--energy))" }} />{" "}
             Scout &amp; Showcase Stages
           </h3>
         </div>
@@ -284,32 +276,30 @@ export function LiveCallsPanel() {
       </section>
 
       {/* Join via link */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <LinkIcon className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
-            <p className="font-semibold text-sm">Have an invite link?</p>
-          </div>
-          <div className="flex gap-2">
-            <Input
-              value={joinUrl}
-              onChange={(e) => setJoinUrl(e.target.value)}
-              placeholder="https://…daily.co/your-room"
-              className="text-sm"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") joinFromLink();
-              }}
-            />
-            <Button
-              onClick={joinFromLink}
-              disabled={joining || !joinUrl.trim()}
-              variant="outline"
-            >
-              {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Join"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <LinkIcon className="h-4 w-4 text-[hsl(var(--energy))]" />
+          <p className="font-semibold text-sm">Have an invite link?</p>
+        </div>
+        <div className="flex gap-2">
+          <Input
+            value={joinUrl}
+            onChange={(e) => setJoinUrl(e.target.value)}
+            placeholder="https://…daily.co/your-room"
+            className="text-sm"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") joinFromLink();
+            }}
+          />
+          <Button
+            onClick={joinFromLink}
+            disabled={joining || !joinUrl.trim()}
+            variant="outline"
+          >
+            {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Join"}
+          </Button>
+        </div>
+      </div>
 
       <p className="text-[11px] text-center text-muted-foreground">
         Audience &amp; Scout Stages are coming. Scheduled IRL meetups live in{" "}

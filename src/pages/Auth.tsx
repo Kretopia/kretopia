@@ -70,14 +70,29 @@ const Auth = () => {
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 
-  // Set initial tab from URL
+  // Set initial tab from URL.
+  //
+  // With no explicit ?tab, first-time visitors now land on Sign Up rather
+  // than Sign In: sign-in attempts massively outnumbered new accounts, so
+  // defaulting to Sign In was asking brand-new visitors to complete the one
+  // form they cannot complete. Anyone who has signed in on this device
+  // before still lands on Sign In.
   useEffect(() => {
     const tab = searchParams.get("tab");
+    const isReturning = (() => {
+      try {
+        // Set by setLastSignInMethod() after any successful sign-in.
+        return !!localStorage.getItem("thrivein_last_signin_method");
+      } catch {
+        return false;
+      }
+    })();
+
     if (tab === "signin") setActiveTab("signin");
     else if (tab === "signup" || searchParams.get("claim") || searchParams.get("invite") || searchParams.get("inviteCode")) {
       setActiveTab("signup");
     } else {
-      setActiveTab("signin");
+      setActiveTab(isReturning ? "signin" : "signup");
     }
   }, [searchParams]);
 

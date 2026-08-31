@@ -19864,6 +19864,10 @@ export type Database = {
           status: string
         }[]
       }
+      get_landing_funnel: {
+        Args: { _end?: string; _start?: string }
+        Returns: Json
+      }
       get_milestone_financials: {
         Args: { _milestone_id: string }
         Returns: Json

@@ -13,6 +13,7 @@
  * anywhere else.
  */
 import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutorialSection";
+import { InlineSignupBar } from "@/components/landing/kretopia/InlineSignupBar";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
 import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
 import { TrustSection } from "@/components/landing/kretopia/TrustSection";

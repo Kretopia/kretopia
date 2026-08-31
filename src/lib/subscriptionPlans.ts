@@ -11,8 +11,6 @@ const FOUNDER_FEATURES = [
   "5,000 bonus XP on activation",
   "Only 10% platform fees (vs 20% free / 15% Creator)",
   "Free & discounted event access",
-  "Founding member badge & recognition",
-  "Priority support & early access",
 ];
 
 /** Card-facing plan shape — same fields drive the simplified card and the details modal. */

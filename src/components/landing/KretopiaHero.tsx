@@ -240,11 +240,31 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
             ))}
           </div>
 
+          {/* Direct path to signup, above the fold. Deliberately typographic
+              rather than a second big button so it never competes with the
+              search bar's own submit — but 82% of landing visitors were
+              never reaching /auth at all, and search alone was the only
+              route there. */}
           <p
-            className="mt-5 text-center text-xs text-white/45"
+            className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-xs text-white/45"
             style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
-            Free to claim. No card required.
+            <span>Free to claim. No card required.</span>
+            <Link
+              to="/auth?tab=signup&intent=hero"
+              onClick={() => trackLandingCta("hero_claim_passport", "hero")}
+              className="group inline-flex items-center gap-1 font-semibold text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+            >
+              Claim your Passport
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </Link>
+            <Link
+              to="/auth?tab=signin"
+              onClick={() => trackLandingCta("hero_signin", "hero")}
+              className="text-white/40 underline decoration-white/15 underline-offset-4 transition-colors hover:text-white/70"
+            >
+              Sign in
+            </Link>
           </p>
 
           <p

@@ -102,6 +102,7 @@ export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
 
       <ChapterProgressNav ready={showRest} />
       <ScrollToTopButton />
+      <LandingFunnelTracker />
     </div>
   );
 };

@@ -112,6 +112,16 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
+    // stripe_account_id alone only means Connect onboarding was started -- Stripe
+    // doesn't grant the `transfers` capability a destination charge requires until
+    // the account is fully verified (a rejected/disabled account still keeps its
+    // id on file). Verify live so a bad account fails clearly instead of leaking
+    // Stripe's raw capability error to the payer mid-checkout.
+    const ownerAccount = await stripe.accounts.retrieve(ownerProfile.stripe_account_id);
+    if (ownerAccount.capabilities?.transfers !== "active") {
+      throw new Error("Circle owner hasn't finished setting up payouts yet — please try again later.");
+    }
+
     // Get or create Stripe customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;

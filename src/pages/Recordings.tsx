@@ -185,7 +185,11 @@ export default function Recordings() {
                     <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{r.summary}</p>
                   )}
                   <div className="flex items-center gap-2 mt-2">
-                    <WatchReplayButton transcriptId={r.id} />
+                    <WatchReplayButton
+                      transcriptId={r.id}
+                      title={kindLabel}
+                      subtitle={`${formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}${dur ? ` · ${dur}` : ""}`}
+                    />
                     <Button
                       type="button"
                       size="sm"

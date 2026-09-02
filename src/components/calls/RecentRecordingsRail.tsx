@@ -121,7 +121,16 @@ export const RecentRecordingsRail = () => {
                 <Sparkles className="h-3 w-3 text-[hsl(var(--color-accent))]" />
                 Notes
               </button>
-              {r.recording_id && <WatchReplayButton transcriptId={r.id} variant="ghost" size="sm" label="Watch" />}
+              {r.recording_id && (
+                <WatchReplayButton
+                  transcriptId={r.id}
+                  variant="ghost"
+                  size="sm"
+                  label="Watch"
+                  title={KIND_LABEL[r.call_kind] || "Call"}
+                  subtitle={`${formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}${fmtDur(r.duration_seconds) ? ` · ${fmtDur(r.duration_seconds)}` : ""}`}
+                />
+              )}
             </div>
           </div>
           </CarouselItem>

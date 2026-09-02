@@ -136,25 +136,25 @@ export function StagePrimaryCard({ onJoinSoundStage, onStartStage }: StagePrimar
   if (!primary) {
     return (
       <HoloCard maxTilt={4}>
-        <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-4">
-          <div className="h-12 w-12 rounded-full bg-[hsl(var(--energy))]/15 text-[hsl(var(--energy))] flex items-center justify-center mx-auto">
+        <div className="rounded-2xl border border-border bg-card p-6 flex flex-col sm:flex-row sm:items-center gap-5 text-center sm:text-left">
+          <div className="h-12 w-12 rounded-full bg-[hsl(var(--energy))]/15 text-[hsl(var(--energy))] flex items-center justify-center mx-auto sm:mx-0 shrink-0">
             <Radio className="h-6 w-6" aria-hidden />
           </div>
-          <div>
+          <div className="sm:flex-1 min-w-0">
             <p className="font-bold text-base">Nothing live right now</p>
             <p className="text-sm text-muted-foreground mt-1">Check what's scheduled, or open your own stage.</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <div className="flex flex-col sm:flex-row gap-2 justify-center sm:justify-end shrink-0">
             <a
               href="#stage-grid"
-              className="inline-flex items-center justify-center rounded-xl border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider hover:border-[hsl(var(--energy))]/50 transition-colors"
+              className="inline-flex items-center justify-center rounded-xl border border-border px-4 py-2 text-xs font-bold uppercase tracking-wider hover:border-[hsl(var(--energy))]/50 transition-colors whitespace-nowrap"
             >
               Browse upcoming sessions
             </a>
             <button
               type="button"
               onClick={onStartStage}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:scale-[1.02]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:scale-[1.02] whitespace-nowrap"
               style={{ background: "hsl(var(--energy))" }}
             >
               <Radio className="h-3.5 w-3.5" aria-hidden /> Start a Stage

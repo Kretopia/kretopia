@@ -180,7 +180,7 @@ export function LiveCallsPanel({ onFindCollaborator }: LiveCallsPanelProps) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-6">
+    <div className="w-full rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-6">
       {/* Header */}
       <div className="space-y-1">
         <h2 className="text-lg font-bold text-foreground">Sound Stages</h2>

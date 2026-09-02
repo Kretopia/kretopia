@@ -15,12 +15,13 @@ import {
   CalendarPlus,
 } from "lucide-react";
 import { HoloCard } from "@/components/passport/HoloCard";
-import { SoundStagesRail, type SoundStage } from "./SoundStagesRail";
+import type { SoundStage } from "./SoundStagesRail";
 import { GoLiveSheet } from "./GoLiveSheet";
 import { CallSheetUpcoming } from "./CallSheetUpcoming";
-import { CuratedStagesRail } from "./CuratedStagesRail";
 import { CreateStageSheet } from "./CreateStageSheet";
 import { SoundStageRoom } from "./SoundStageRoom";
+import { StagePrimaryCard } from "./StagePrimaryCard";
+import { StageGrid } from "./StageGrid";
 
 interface LiveCallsPanelProps {
   /** Jumps the parent page to its Match tab — lets "Find a Collaborator"
@@ -141,6 +142,15 @@ export function LiveCallsPanel({ onFindCollaborator }: LiveCallsPanelProps) {
     if (!next) setActiveRoom(null);
   };
 
+  const requestGoLive = () => {
+    if (!user) {
+      toast({ title: "Sign in to open a stage" });
+      navigate("/auth?redirect=/discover?tab=live");
+      return;
+    }
+    setGoLiveOpen(true);
+  };
+
   const joinFromLink = async () => {
     const url = joinUrl.trim();
     if (!/^https?:\/\/.+\.daily\.co\//i.test(url)) {
@@ -173,21 +183,12 @@ export function LiveCallsPanel({ onFindCollaborator }: LiveCallsPanelProps) {
     <div className="mx-auto w-full max-w-2xl rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-6">
       {/* Header */}
       <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2 shrink-0">
-            <span
-              className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-              style={{ background: "hsl(var(--energy))" }}
-            />
-            <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "hsl(var(--energy))" }} />
-          </span>
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">On air now</p>
-        </div>
         <h2 className="text-lg font-bold text-foreground">Sound Stages</h2>
       </div>
 
-      {/* On Air rail — the headliner */}
-      <SoundStagesRail onJoin={handleJoinStage} />
+      {/* Primary card — the one thing this page has to answer: what's live,
+          where to join, what's next, and what to do if nothing is live. */}
+      <StagePrimaryCard onJoinSoundStage={handleJoinStage} onStartStage={requestGoLive} />
 
       {/* Primary actions — same row-card shape as the "Grow your circle" card,
           holo-wrapped so Start a Stage carries Passport's signature shine. */}
@@ -195,14 +196,7 @@ export function LiveCallsPanel({ onFindCollaborator }: LiveCallsPanelProps) {
         <HoloCard maxTilt={4}>
           <button
             type="button"
-            onClick={() => {
-              if (!user) {
-                toast({ title: "Sign in to open a stage" });
-                navigate("/auth?redirect=/discover?tab=live");
-                return;
-              }
-              setGoLiveOpen(true);
-            }}
+            onClick={requestGoLive}
             className="w-full text-left rounded-2xl border border-border bg-card p-4 hover:border-[hsl(var(--energy))]/40 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -254,15 +248,16 @@ export function LiveCallsPanel({ onFindCollaborator }: LiveCallsPanelProps) {
         Or schedule a Speed Session
       </button>
 
-      {/* Curated Stages (Scout + Showcase) */}
-      <section className="space-y-2">
+      {/* Every joinable Stage — one balanced grid, one card shape, live
+          Sound Stages and scheduled/live Curated Stages together. */}
+      <section id="stage-grid" className="space-y-2 scroll-mt-20">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground flex items-center gap-1.5">
             <Sparkles className="h-3 w-3" style={{ color: "hsl(var(--energy))" }} />{" "}
-            Scout &amp; Showcase Stages
+            All Stages
           </h3>
         </div>
-        <CuratedStagesRail />
+        <StageGrid onJoinSoundStage={handleJoinStage} />
       </section>
 
       {/* Call Sheet — upcoming Speed Sessions */}

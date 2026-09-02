@@ -16,7 +16,7 @@ import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Sparkles, Users, LayoutGrid, UserPlus } from "lucide-react";
+import { Sparkles, Users, LayoutGrid, UserPlus, Radio } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -35,14 +35,21 @@ type BrowseProfile = {
   location: string | null;
 };
 
-type CircleTabId = "match" | "browse" | "network";
+type CircleTabId = "stages" | "match" | "browse" | "network";
 
 export default function Circle() {
   const { user, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const initialTab: CircleTabId = tabParam === "browse" ? "browse" : tabParam === "network" ? "network" : "match";
+  // "live" is the old deep-link value from when Stage content rendered
+  // unconditionally below the tabs rather than as a tab of its own — still
+  // honored here so existing links keep landing on the right place.
+  const initialTab: CircleTabId =
+    tabParam === "browse" ? "browse" :
+    tabParam === "network" ? "network" :
+    tabParam === "match" ? "match" :
+    "stages";
   const [activeTab, setActiveTab] = useState<CircleTabId>(initialTab);
   const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
   const [connections, setConnections] = useState<any[]>([]);
@@ -165,6 +172,33 @@ export default function Circle() {
   };
 
   const circleTabs: StudioSectionTab[] = [
+    {
+      id: "stages",
+      label: "Stages",
+      icon: Radio,
+      content: (
+        <ProfileActivationGate
+          isVisible={profileVisibility.isVisible}
+          missingFields={profileVisibility.missingFields}
+          surfaceLabel="Stage"
+        >
+          {user ? (
+            <LiveCallsPanel
+              onFindCollaborator={() => {
+                setActiveTab("match");
+                const next = new URLSearchParams(searchParams);
+                next.set("tab", "match");
+                navigate(`/circle?${next.toString()}`, { replace: true });
+              }}
+            />
+          ) : (
+            <AuthGate>
+              <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
+            </AuthGate>
+          )}
+        </ProfileActivationGate>
+      ),
+    },
     {
       id: "match",
       label: "Match",
@@ -302,29 +336,6 @@ export default function Circle() {
             activeId={activeTab}
             onTabChange={(id) => setActiveTab(id as CircleTabId)}
           />
-
-          {/* Contextual feed — live sessions stay visible below the tabs,
-              matching every existing "tab=live" deep link into this page. */}
-          <ProfileActivationGate
-            isVisible={profileVisibility.isVisible}
-            missingFields={profileVisibility.missingFields}
-            surfaceLabel="Stage"
-          >
-            {user ? (
-              <LiveCallsPanel
-                onFindCollaborator={() => {
-                  setActiveTab("match");
-                  const next = new URLSearchParams(searchParams);
-                  next.set("tab", "match");
-                  navigate(`/circle?${next.toString()}`, { replace: true });
-                }}
-              />
-            ) : (
-              <AuthGate>
-                <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
-              </AuthGate>
-            )}
-          </ProfileActivationGate>
 
           <button
             type="button"

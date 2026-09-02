@@ -18,7 +18,7 @@ import {
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { TutorialStepper } from "./TutorialStepper";
@@ -181,9 +181,7 @@ export const MeetKretoSection = () => {
                 className="flex items-center gap-3 px-4 py-3"
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
               >
-                {/* The avatar's own halo already breathes — no need for a
-                    second, uncoordinated pulse on the wrapper. */}
-                <KretoAvatar size="sm" />
+                <KretoMark size="md" />
                 <div className="min-w-0">
                   <p
                     className="text-sm font-semibold text-white"

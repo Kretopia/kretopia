@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -147,7 +147,7 @@ Return as a JSON array of strings only, e.g. ["Skill 1","Skill 2"].`,
   if (stage === "building") {
     return (
       <div className="flex flex-col items-center gap-6 py-10 px-6 text-center">
-        <KretoAvatar size="sm" />
+        <KretoMark size="md" state="active" />
         <div className="space-y-3 w-full max-w-xs text-left">
           <StageRow label={`Organizing ${confirmedCredits.length} confirmed credit${confirmedCredits.length === 1 ? "" : "s"}`} status={creditsStatus} />
           <StageRow label="Drafting your professional story" status={bioStatus} />

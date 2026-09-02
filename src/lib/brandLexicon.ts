@@ -8,7 +8,7 @@
  *   Thrive Collective  → parent company (legal / footer)
  *   Kretopia           → the platform (the Creative Economy OS)
  *   Community          → events, magazine, IRL pillar (lives inside Kretopia)
- *   Kreto              → the AI Executive Producer (the agent)
+ *   Kreto              → the Executive Producer (the agent)
  *
  * Routes, tables, edge functions still use thrive_* / izzy_* / etc.
  * That's intentional — those are infrastructure names, not user-facing.
@@ -40,8 +40,8 @@ export const BRAND = {
   // Kreto is the agent. Kretopia is the platform. Keep them distinct.
   // Internal code may say "thrive-agent" / "izzy" — never surface those.
   agentName: "Kreto",
-  agentRole: "Your AI Executive Producer",
-  agentTagline: "Meet Kreto. Your AI Executive Producer.",
+  agentRole: "Your Executive Producer",
+  agentTagline: "Meet Kreto. Your Executive Producer.",
   agentVoice: "Producer, manager, connector, strategist, mentor.",
 
   // ── Profile / EPK ───────────────────────────────────────────────────────

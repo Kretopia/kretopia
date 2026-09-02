@@ -14,20 +14,25 @@ import kMarkAsset from "@/assets/brand/kretopia-k-mark.png.asset.json";
 import { cn } from "@/lib/utils";
 
 type Variant = "default" | "compact" | "interactive" | "muted" | "status";
-type Size = "xs" | "sm" | "md" | "lg";
-type ActivityState = "idle" | "active" | "pending";
+type Size = "xs" | "sm" | "md" | "lg" | "xl";
+/** "recording" is a deliberate, distinct fourth state -- not folded into
+ *  "active" -- because a live mic is a safety-relevant signal (matching
+ *  KretoAvatar's own prior red-halo treatment), not a branding moment. */
+type ActivityState = "idle" | "active" | "pending" | "recording";
 
 const SIZE: Record<Size, { box: string; mark: string }> = {
   xs: { box: "h-6 w-6", mark: "h-3 w-3" },
   sm: { box: "h-8 w-8", mark: "h-4 w-4" },
   md: { box: "h-10 w-10", mark: "h-5 w-5" },
   lg: { box: "h-14 w-14", mark: "h-7 w-7" },
+  xl: { box: "h-20 w-20", mark: "h-10 w-10" },
 };
 
 const STATE_LABEL: Record<ActivityState, string> = {
   idle: "",
   active: "Kreto is working on this",
   pending: "Kreto is waiting on you",
+  recording: "Kreto is recording",
 };
 
 interface KretoMarkProps {
@@ -81,7 +86,7 @@ export const KretoMark = ({
     className,
   );
 
-  const content = (
+  const visual = (
     <>
       <span aria-hidden className={s.mark} style={markStyle} />
       {showPulse && (
@@ -89,31 +94,44 @@ export const KretoMark = ({
           aria-hidden
           className={cn(
             "absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-background motion-safe:animate-pulse",
-            state === "pending" ? "bg-amber-400" : "bg-[hsl(var(--energy))]",
+            state === "pending" ? "bg-amber-400" : state === "recording" ? "bg-destructive" : "bg-[hsl(var(--energy))]",
           )}
         />
       )}
-      {showPulse && <span className="sr-only">{STATE_LABEL[state]}</span>}
     </>
   );
+
+  // The state announcement always renders as real, non-hidden text -- never
+  // nested inside a decorative aria-hidden wrapper -- so "state is
+  // represented in text, not color/motion alone" holds even when this mark
+  // is used with no adjacent caption of its own.
+  const stateAnnouncement = showPulse ? <span className="sr-only">{STATE_LABEL[state]}</span> : null;
 
   if (isInteractive) {
     return (
       <button type="button" onClick={onClick} aria-label={label || "Open Kreto"} className={surfaceClass}>
-        {content}
+        {visual}
+        {stateAnnouncement}
       </button>
     );
   }
 
+  // sr-only is `position: absolute`, so it never affects the caller's flex/grid
+  // layout regardless of nesting -- no extra layout wrapper needed here, and
+  // `className` (spacing/sizing utilities the caller passed in) stays on the
+  // actual visible box rather than an intermediary element.
   return (
-    <span
-      className={surfaceClass}
-      aria-hidden={!label}
-      role={label ? "img" : undefined}
-      aria-label={label}
-    >
-      {content}
-    </span>
+    <>
+      <span
+        className={surfaceClass}
+        aria-hidden={!label}
+        role={label ? "img" : undefined}
+        aria-label={label}
+      >
+        {visual}
+      </span>
+      {stateAnnouncement}
+    </>
   );
 };
 

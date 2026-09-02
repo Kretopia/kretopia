@@ -27,7 +27,7 @@ interface SEOProps {
 
 export const SEO = ({
   title = "Kretopia — Where Creativity Lives. Passport · Scout · Kreto.",
-  description = "Kretopia is the Creative Economy OS. Build your Creative Passport, claim verified credits, find opportunities with Scout, and act with Kreto — your AI Executive Producer.",
+  description = "Kretopia is the Creative Economy OS. Build your Creative Passport, claim verified credits, find opportunities with Scout, and act with Kreto — your Executive Producer.",
   type = "website",
   image = "https://www.kretopia.com/og-image.png",
   url,

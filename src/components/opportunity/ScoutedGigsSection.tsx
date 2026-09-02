@@ -19,7 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
 import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 
 interface ScoutedGig {
   id: string;
@@ -373,7 +373,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
             <span className="ml-1.5 text-xs hidden sm:inline">Tune</span>
           </Button>
           <Button size="sm" variant="outline" onClick={scanNow} disabled={scanning}>
-            {scanning ? <KretoAvatar size="xs" state="thinking" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            {scanning ? <KretoMark size="xs" state="active" /> : <RefreshCw className="h-3.5 w-3.5" />}
             <span className="ml-1.5 text-xs">Scan now</span>
           </Button>
         </div>
@@ -394,7 +394,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
 
       {scanning && (
         <Card className="p-3 border-energy/30 bg-energy/[0.04] flex items-center gap-3">
-          <KretoAvatar size="xs" state="thinking" className="shrink-0" />
+          <KretoMark size="xs" state="active" className="shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-semibold text-foreground">Searching gig boards, LinkedIn, Instagram and ATS pages…</p>
             <p className="text-[11px] text-muted-foreground">{scanElapsed}s elapsed — usually takes 20-40s</p>
@@ -615,7 +615,7 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                       </Button>
                       {!coverLetter && (
                         <Button size="sm" variant="outline" className="h-7 text-xs px-2" onClick={draftLetter} disabled={drafting}>
-                          {drafting ? <KretoAvatar size="xs" state="thinking" className="mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                          {drafting ? <KretoMark size="xs" state="active" className="mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
                           Draft
                         </Button>
                       )}

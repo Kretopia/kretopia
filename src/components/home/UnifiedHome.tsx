@@ -481,7 +481,7 @@ export const UnifiedHome = () => {
     <div className="bg-background min-h-screen accent-passport">
       <SEO
         title="Kretopia — Where Creativity Lives. The Creative Economy OS."
-        description="Kretopia is the Creative Economy OS. Build your Creative Passport, find opportunities, meet collaborators, and get paid — with Kreto, your AI Executive Producer."
+        description="Kretopia is the Creative Economy OS. Build your Creative Passport, find opportunities, meet collaborators, and get paid — with Kreto, your Executive Producer."
         url="https://www.kretopia.com/"
       />
 

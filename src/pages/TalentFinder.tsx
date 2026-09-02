@@ -14,7 +14,7 @@ import { FreeTierGate } from "@/components/FreeTierGate";
 import { useToast } from "@/hooks/use-toast";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { TALENT_FINDER_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import {
   Sparkles, MapPin, Star,
@@ -244,13 +244,12 @@ export default function TalentFinder() {
             </Card>
           )}
 
-          {/* Loading State — Kreto's own "thinking" presence, the same
-              avatar/halo used everywhere else the AI is actively working,
-              instead of a generic spinner. */}
+          {/* Loading State — Kreto's own identity mark, used everywhere else
+              Kreto is actively working, instead of a generic spinner. */}
           {loading && (
             <div className="space-y-3 py-4">
               <div className="flex flex-col items-center gap-3 text-center">
-                <KretoAvatar size="md" state="thinking" />
+                <KretoMark size="md" state="active" />
                 <div>
                   <p className="font-medium text-sm">Searching Kretopia's live creator network...</p>
                   <p className="text-xs text-muted-foreground">Scoring real profiles by skills, experience & fit against your brief</p>

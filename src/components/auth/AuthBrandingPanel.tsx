@@ -1,6 +1,6 @@
 import { Sparkles, Compass, ShieldCheck, Zap } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { TutorialStepper } from "@/components/landing/kretopia/TutorialStepper";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -73,13 +73,11 @@ export const AuthBrandingPanel = () => {
       </h2>
         <p className="text-white/65 mb-6 max-w-md leading-relaxed">
           One Passport. Every credit. Every opportunity. Kretopia is the professional
-          home for creators — and Kreto, your AI Executive Producer, runs point.
+          home for creators — and Kreto, your Executive Producer, runs point.
         </p>
 
-        {/* Kreto whisper card — the avatar's own halo already breathes, so the
-            card wrapper doesn't need a second, uncoordinated pulse. */}
         <div className="mb-7 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-3.5 max-w-md">
-          <KretoAvatar size="sm" />
+          <KretoMark size="md" />
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF2DA1] mb-0.5">Kreto</p>
             <p className="text-sm text-white/90 leading-snug">

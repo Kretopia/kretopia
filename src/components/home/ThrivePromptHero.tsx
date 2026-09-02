@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { normalizeIntents, type PrimaryIntent } from "@/lib/intents";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 
 interface RouteResponse {
   intent: "create_workspace" | "find_people" | "find_gigs" | "outreach" | "profile_epk" | "summarize" | "chat";
@@ -418,7 +418,7 @@ export function ThrivePromptHero({ firstName }: { firstName?: string } = {}) {
               exit={{ opacity: 0 }}
               className="mt-3 text-xs text-muted-foreground inline-flex items-center gap-1.5"
             >
-              <KretoAvatar size="xs" state="thinking" /> Kreto is figuring out the right move…
+              <KretoMark size="xs" state="active" /> Kreto is figuring out the right move…
             </motion.p>
           )}
         </AnimatePresence>

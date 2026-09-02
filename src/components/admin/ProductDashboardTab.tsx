@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Activity, Users, MessageSquare, Briefcase, FileText, Wallet, Trophy, Sparkles, TrendingUp } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { CreativeActionFunnels } from "./CreativeActionFunnels";
+import { LandingFunnelPanel } from "./LandingFunnelPanel";
 
 type KPIs = {
   growth?: { signups_7d: number; signups_30d: number; total_users: number };
@@ -358,6 +359,7 @@ export const ProductDashboardTab = () => {
       </Card>
 
       <CreativeActionFunnels />
+      <LandingFunnelPanel />
     </div>
   );
 };

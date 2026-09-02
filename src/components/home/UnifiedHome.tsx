@@ -38,7 +38,7 @@ import { useLandingVariant } from "@/hooks/useLandingVariant";
 const KretopiaLanding = lazy(
   () => import("@/components/landing/KretopiaLanding").then((m) => ({ default: m.KretopiaLanding })),
 );
-// StickyMobileCTA removed — dismissible popup handles guest CTA
+import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
 // Prune: NewMemberStarterCard, FoundingMemberCard, MagicHomeHero, OpportunityIntelCard,
@@ -566,7 +566,7 @@ export const UnifiedHome = () => {
         </div>
       )}
       {user && <FirstWinSheet open={showFirstWin} onOpenChange={setShowFirstWin} />}
-      {/* Sticky mobile CTA removed — dismissible popup banner handles guest CTA */}
+      {!user && <StickyMobileCTA />}
     </div>
   );
 };

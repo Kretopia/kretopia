@@ -83,7 +83,8 @@ export type LandingCtaDestination = "auth" | "internal" | "external";
 
 export function trackLandingCtaClick(params: {
   ctaId: string;
-  section: LandingSectionId;
+  /** A real content section, or "sticky_mobile" for the persistent mobile CTA chrome. */
+  section: LandingSectionId | "sticky_mobile";
   label: string;
   variant?: string;
   destinationType: LandingCtaDestination;

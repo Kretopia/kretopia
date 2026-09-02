@@ -35,6 +35,7 @@ import { PaymentLinksSection } from "@/components/thrivepay/PaymentLinksSection"
 import { KrePayAIInsights } from "@/components/thrivepay/KrePayAIInsights";
 import { TransactionDetailDrawer, type TransactionDetail } from "@/components/thrivepay/TransactionDetailDrawer";
 import { TrustControlsCard } from "@/components/thrivepay/TrustControlsCard";
+import { InvoiceSepaBeneficiaryCard } from "@/components/thrivepay/InvoiceSepaBeneficiaryCard";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { KretoTip } from "@/components/agent/KretoTip";
@@ -53,6 +54,7 @@ import {
   Shield,
   Zap,
   Percent,
+  Landmark,
   Plus,
   Loader2,
   Wallet,
@@ -635,6 +637,16 @@ export default function ThrivePay() {
               </CardContent>
             </Card>
           )}
+        </section>
+
+        {/* Sandbox manual-SEPA extension — separate from the wallet payout
+            setup above: that's how Kretopia pays you, this is how a client
+            can pay you directly for one invoice, bypassing the wallet. */}
+        <section className="space-y-3">
+          <h2 className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
+            <Landmark className="h-5 w-5 text-primary" /> Bank transfer for invoices
+          </h2>
+          <InvoiceSepaBeneficiaryCard />
         </section>
 
         {/* Trust & controls */}

@@ -48,6 +48,12 @@ type ActionItem = {
   status: "pending" | "accepted" | "dismissed" | "pushed";
 };
 
+const RECAP_KIND_LABEL: Record<Transcript["call_kind"], string> = {
+  project: "Studio call",
+  direct: "1:1 call",
+  circle: "Circle call",
+};
+
 const KIND_META: Record<ActionItem["kind"], { label: string; icon: any; color: string }> = {
   task:     { label: "Task",      icon: ListChecks, color: "bg-primary/15 text-primary" },
   credit:   { label: "Credit",    icon: Sparkles,   color: "bg-amber-500/15 text-amber-600" },
@@ -158,7 +164,15 @@ export const CallRecapSheet = ({ open, onOpenChange, transcriptId }: Props) => {
               </p>
             </div>
             {transcriptId && (
-              <WatchReplayButton transcriptId={transcriptId} />
+              <WatchReplayButton
+                transcriptId={transcriptId}
+                title={t ? RECAP_KIND_LABEL[t.call_kind] : undefined}
+                subtitle={
+                  t?.created_at
+                    ? `${formatDistanceToNow(new Date(t.created_at), { addSuffix: true })}${t.duration_seconds ? ` · ${Math.round(t.duration_seconds / 60)}m` : ""}`
+                    : undefined
+                }
+              />
             )}
           </div>
         </SheetHeader>

@@ -1,6 +1,6 @@
 /**
  * KretoAvatar — the single visual representation of Kreto,
- * the Kretopia AI Executive Producer. Use everywhere Kreto appears
+ * Kretopia's Executive Producer. Use everywhere Kreto appears
  * (landing, FAB, agent drawer, proactive cards, doc-engine headers).
  *
  * Visual: silhouette portrait + animated sunset halo.
@@ -133,7 +133,7 @@ export const KretoAvatar = ({
       <span className={cn("relative rounded-full overflow-hidden bg-[#0B0B10] ring-1 ring-white/10", s.box)}>
         <img
           src={kretoSrc}
-          alt="Kreto, your AI Executive Producer"
+          alt="Kreto, your Executive Producer"
           width={256}
           height={256}
           loading="lazy"

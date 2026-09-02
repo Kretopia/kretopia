@@ -361,6 +361,7 @@ export const ProductDashboardTab = () => {
       <LandingFunnelPanel />
 
       <CreativeActionFunnels />
+      <LandingFunnelPanel />
     </div>
   );
 };

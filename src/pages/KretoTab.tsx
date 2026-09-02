@@ -56,7 +56,7 @@ interface PassportSnapshot {
 }
 
 /**
- * /kreto — live AI workspace. Auto-opens the real Copilot (Sheet, mounted
+ * /kreto — Kreto's live workspace. Auto-opens the real Copilot (Sheet, mounted
  * globally in App.tsx) on arrival, and surfaces real account context
  * (Passport snapshot, most recent Scout match, recent proposed actions)
  * so the page reads as an active dashboard rather than an empty pitch for
@@ -104,7 +104,7 @@ export default function KretoTab() {
   return (
     <div className="min-h-[calc(100vh-56px)] bg-[#05070D] text-white">
       <FeaturePageHeader
-        eyebrow="AI Executive Producer"
+        eyebrow="Executive Producer"
         title={`${BRAND.agentName}.`}
         accentTitle="Your creative career, run point."
         subtitle={`${BRAND.agentRole}. Finds opportunities, drafts pitches, keeps your Passport sharp, and closes the loop from search to paid credit — with your approval at every step.`}

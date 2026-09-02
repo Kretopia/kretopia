@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -914,7 +914,7 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "thinking" && (
           <div className="flex flex-col items-center">
-            <KretoAvatar size="xl" state="thinking" animated />
+            <KretoMark size="xl" state="active" />
 
             <div className="mt-7 h-7 relative w-full max-w-xs">
               <AnimatePresence mode="wait">

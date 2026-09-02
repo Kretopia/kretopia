@@ -24,6 +24,11 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { FunnelStepper } from "@/components/onboarding/FunnelStepper";
 import { computePostAuthRedirect } from "@/lib/eventAuthRedirect";
+import {
+  resolveAuthEntrySource, categorizeAuthError,
+  trackSignupAttempt, trackSignupSuccess, trackSignupError,
+  trackSigninAttempt, trackSigninSuccess, trackSigninError,
+} from "@/lib/landingMetrics";
 
 const Auth = () => {
   const reducedMotion = useReducedMotion();
@@ -64,11 +69,13 @@ const Auth = () => {
   const redirectTo = computePostAuthRedirect({
     eventId,
     claimProfileId,
+    nextParam: searchParams.get("next"),
     redirectParam: searchParams.get("redirect"),
     stashedRedirect,
   });
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
+  const authEntrySource = resolveAuthEntrySource(searchParams);
 
   // Set initial tab from URL.
   //
@@ -238,6 +245,7 @@ const Auth = () => {
 
     const { trackEvent, EventCategory } = await import("@/lib/analytics");
     trackEvent({ eventName: 'signin_attempt', eventCategory: EventCategory.AUTH, properties: { time_on_page_ms: Date.now() - authLoadTime } });
+    trackSigninAttempt(authEntrySource, "email");
 
     try {
       try {
@@ -260,6 +268,7 @@ const Auth = () => {
           : "other";
         // Always include the raw message so we can debug the 'other' bucket
         errAnalytics.errorOccurred('signin_failed', errorType, 'auth');
+        trackSigninError(authEntrySource, "email", categorizeAuthError(error));
 
         if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
           toast({ title: "Connection Error", description: "Please check your internet connection and try again.", variant: "destructive" });
@@ -283,6 +292,7 @@ const Auth = () => {
       } else {
         const { analytics } = await import("@/lib/analytics");
         analytics.signIn('email');
+        trackSigninSuccess(authEntrySource, "email");
         const { setLastSignInMethod } = await import("@/lib/authProviderHints");
         setLastSignInMethod("email");
 
@@ -310,6 +320,9 @@ const Auth = () => {
 
     const { analytics } = await import("@/lib/analytics");
     analytics.featureUsed(`${provider}_signin_attempt`);
+    const isSignupIntent = activeTab === "signup";
+    if (isSignupIntent) trackSignupAttempt(authEntrySource, provider);
+    else trackSigninAttempt(authEntrySource, provider);
 
     try {
       const siteUrl = import.meta.env.VITE_SITE_URL || 'https://kretopia.com';
@@ -322,18 +335,26 @@ const Auth = () => {
         if (errorMsg.includes("cancelled")) { setLoadingFn(false); return; }
         if (errorMsg.includes("Popup was blocked") || errorMsg.includes("blocked")) {
           analytics.errorOccurred(`${provider}_signin`, "popup_blocked", "auth");
+          if (isSignupIntent) trackSignupError(authEntrySource, provider, "provider_error");
+          else trackSigninError(authEntrySource, provider, "provider_error");
           toast({ title: "Pop-up Blocked", description: "Please allow pop-ups for this site or try opening the app in a new tab.", variant: "destructive" });
           setLoadingFn(false); return;
         }
         if (errorMsg.includes("Preview mode") || errorMsg.includes("not supported")) {
+          if (isSignupIntent) trackSignupError(authEntrySource, provider, "provider_error");
+          else trackSigninError(authEntrySource, provider, "provider_error");
           toast({ title: "Open in New Tab", description: `${provider === "google" ? "Google" : "Apple"} sign-in works best when the app is opened directly.`, variant: "destructive" });
           setLoadingFn(false); return;
         }
         analytics.errorOccurred(`${provider}_signin`, errorMsg, "auth");
+        if (isSignupIntent) trackSignupError(authEntrySource, provider, categorizeAuthError(result.error));
+        else trackSigninError(authEntrySource, provider, categorizeAuthError(result.error));
         toast({ title: `${provider === "google" ? "Google" : "Apple"} Sign-In Failed`, description: errorMsg, variant: "destructive" });
         setLoadingFn(false); return;
       } else {
         analytics.signIn(provider);
+        if (isSignupIntent) trackSignupSuccess(authEntrySource, provider);
+        else trackSigninSuccess(authEntrySource, provider);
         const { setLastSignInMethod } = await import("@/lib/authProviderHints");
         setLastSignInMethod(provider);
         toast({ title: "Welcome!", description: `Signed in with ${provider === "google" ? "Google" : "Apple"} successfully.` });
@@ -351,6 +372,7 @@ const Auth = () => {
 
     const { trackEvent, EventCategory } = await import("@/lib/analytics");
     trackEvent({ eventName: 'signup_attempt', eventCategory: EventCategory.AUTH, properties: { time_on_page_ms: Date.now() - authLoadTime, account_type: accountType, has_invite_code: !!inviteCode } });
+    trackSignupAttempt(authEntrySource, "email");
 
     const { data: signUpData, error } = await supabase.auth.signUp({
       email, password,
@@ -372,6 +394,7 @@ const Auth = () => {
         : msg.includes("Failed to fetch") ? "network_error"
         : "other";
       errAnalytics.errorOccurred('signup_failed', errorType, 'auth');
+      trackSignupError(authEntrySource, "email", categorizeAuthError(error));
 
       if (msg.includes("already registered")) {
         toast({ title: "Account Exists", description: "This email is already registered. Switching to sign in.", variant: "destructive" });
@@ -386,6 +409,7 @@ const Auth = () => {
     } else {
       // Detect Supabase "fake user" when email already exists (identities is empty)
       if (signUpData?.user && (!signUpData.user.identities || signUpData.user.identities.length === 0)) {
+        trackSignupError(authEntrySource, "email", "account_exists");
         toast({ title: "Account Exists", description: "This email is already registered. Please sign in instead.", variant: "destructive" });
         setActiveTab("signin");
         setLoading(false);
@@ -395,6 +419,7 @@ const Auth = () => {
       const { analytics } = await import("@/lib/analytics");
       analytics.signUp('email');
       analytics.onboardingStart();
+      trackSignupSuccess(authEntrySource, "email");
 
       if (signUpData?.user && inviteCode) {
         try {

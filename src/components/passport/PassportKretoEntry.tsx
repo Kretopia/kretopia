@@ -1,13 +1,13 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { cn } from "@/lib/utils";
 
 /**
  * Passport's dedicated Kreto entry point — deliberately not the generic
  * KretoTip whisper card used on Today/Discover/Match/Stages. Those surfaces
  * already work well and stay untouched; Passport gets its own framing
- * ("Your AI Career Assistant", violet --accent-passport styling, entrance
+ * ("Your Executive Producer", violet --accent-passport styling, entrance
  * animation) so it reads as integrated to this specific surface rather than
  * a rotating tip that happens to be here. Same underlying mechanism though —
  * the existing `thrive-copilot:open` event and Copilot drawer, zero new
@@ -41,11 +41,11 @@ export function PassportKretoEntry({ className }: PassportKretoEntryProps) {
       />
 
       <div className="relative flex items-center gap-3 sm:gap-4">
-        <KretoAvatar size="md" animated />
+        <KretoMark size="md" />
 
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[hsl(var(--accent-passport))] mb-1">
-            Your AI Career Assistant
+            Your Executive Producer
           </p>
           <p className="text-sm sm:text-[15px] text-foreground/90 leading-snug">
             Kreto knows your whole Passport. Want the three highest-leverage things to fix, in order?

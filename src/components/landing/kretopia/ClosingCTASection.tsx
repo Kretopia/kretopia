@@ -36,13 +36,25 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { FixedProgressiveCard } from "@/components/landing/kretopia/FixedProgressiveCard";
 import { Button } from "@/components/ui/button";
-import { analytics } from "@/lib/analytics";
+import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
 import { supabase } from "@/integrations/supabase/client";
 
 const ACCENT = "#FF2DA1";
 
-const trackSignupClick = () => analytics.ctaClick("claim_your_creative_passport", "closing_cta");
-const trackSigninClick = () => analytics.ctaClick("closing_cta_signin", "closing_cta");
+const trackSignupClick = () =>
+  trackLandingCtaClick({
+    ctaId: "claim_your_creative_passport",
+    section: "closing_cta",
+    label: "Claim Your Creative Passport",
+    destinationType: "auth",
+  });
+const trackSigninClick = () =>
+  trackLandingCtaClick({
+    ctaId: "closing_cta_signin",
+    section: "closing_cta",
+    label: "Already have an account? Sign in",
+    destinationType: "auth",
+  });
 
 /** Real, live creator count from public-stats (same source the rest of the
  *  app already trusts for stats). Null until loaded or if the fetch fails
@@ -70,9 +82,11 @@ function useCreatorCount() {
 
 export const ClosingCTASection = () => {
   const creatorCount = useCreatorCount();
+  const sectionViewRef = useLandingSectionView("closing_cta");
 
   return (
     <section
+      ref={sectionViewRef}
       className="landing-section relative border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="closing-cta-title"
@@ -101,7 +115,7 @@ export const ClosingCTASection = () => {
               className="btn-glass-hero group relative h-auto rounded-full px-8 py-4 text-base font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              <Link to="/auth?tab=signup&intent=closing_cta" onClick={trackSignupClick}>
+              <Link to="/auth?tab=signup&intent=closing_cta&src=closing_cta" onClick={trackSignupClick}>
                 Claim Your Creative Passport
                 <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden />
               </Link>
@@ -115,7 +129,7 @@ export const ClosingCTASection = () => {
         }
         cta={
           <Link
-            to="/auth"
+            to="/auth?src=closing_cta"
             onClick={trackSigninClick}
             className="text-xs font-medium text-white/40 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white/70"
             style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}

@@ -1,5 +1,5 @@
 /**
- * KretoTip — contextual whisper card from Kreto, your AI Executive Producer.
+ * KretoTip — contextual whisper card from Kreto, Kretopia's Executive Producer.
  *
  * Reads the current route to pick a relevant tip + seed prompt. Tapping
  * "Ask Kreto" opens the global Copilot FAB pre-loaded with the prompt
@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { ArrowRight, Sparkles, X } from "lucide-react";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { cn } from "@/lib/utils";
 
 type Tip = { eyebrow: string; line: string; cta: string; prompt: string };
@@ -145,10 +145,9 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
   if (dismissed) return null;
 
   const tip = tips[idx] ?? FALLBACK;
-  // Studio's own card already renders a full KretoAvatar in its hero
-  // immediately above this one (StudioCreateHero) -- a second one here reads
-  // as a redundant identity portrait rather than a fresh signal. Every other
-  // surface keeps the avatar; this is the one deliberate exception.
+  // Deliberate exception: the Studio surface keeps its own inline Sparkles
+  // signal rather than the identity mark, matching StudioCreateHero's own
+  // established mic-button chip convention immediately above it on that page.
   const isStudio = tip.eyebrow === "Studio";
 
   const openKreto = (prompt?: string) => {
@@ -197,7 +196,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
             <Sparkles className={compact ? "h-4 w-4 text-white" : "h-6 w-6 text-white"} />
           </span>
         ) : (
-          <KretoAvatar size={compact ? "sm" : "md"} />
+          <KretoMark variant="default" size={compact ? "sm" : "md"} />
         )}
 
         <div className="min-w-0 flex-1 pr-6">

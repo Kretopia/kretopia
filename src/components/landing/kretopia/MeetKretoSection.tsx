@@ -18,9 +18,10 @@ import {
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
-import { KretoAvatar } from "@/components/brand/KretoAvatar";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
 import { TutorialStepper } from "./TutorialStepper";
 import { KRETO_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
@@ -62,10 +63,12 @@ export const MeetKretoSection = () => {
   // The rotating message reflects whichever tutorial step is active, rather
   // than cycling on its own independent timer.
   const i = activeStep % LINES.length;
+  const sectionViewRef = useLandingSectionView("meet_kreto");
 
   return (
     <section
       id="chapter-kreto"
+      ref={sectionViewRef}
       className="landing-section relative overflow-hidden border-t border-white/[0.06]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="kreto-title"
@@ -153,7 +156,17 @@ export const MeetKretoSection = () => {
               className="group mt-9 h-auto w-fit rounded-full px-6 py-3 text-sm font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              <Link to="/auth?next=/circle">
+              <Link
+                to="/auth?next=/circle&tab=signup&src=meet_kreto"
+                onClick={() =>
+                  trackLandingCtaClick({
+                    ctaId: "meet_kreto",
+                    section: "meet_kreto",
+                    label: "Meet Kreto",
+                    destinationType: "auth",
+                  })
+                }
+              >
                 Meet Kreto
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
               </Link>
@@ -181,9 +194,7 @@ export const MeetKretoSection = () => {
                 className="flex items-center gap-3 px-4 py-3"
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
               >
-                {/* The avatar's own halo already breathes — no need for a
-                    second, uncoordinated pulse on the wrapper. */}
-                <KretoAvatar size="sm" />
+                <KretoMark size="md" />
                 <div className="min-w-0">
                   <p
                     className="text-sm font-semibold text-white"

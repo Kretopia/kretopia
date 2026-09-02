@@ -107,6 +107,21 @@ serve(async (req) => {
     if (!host?.stripe_account_id)
       throw new Error("Host has not connected payouts yet");
 
+    const stripe = new Stripe(resolveStripeSecretKey(), {
+      apiVersion: "2025-08-27.basil",
+    });
+
+    // stripe_account_id alone only means Connect onboarding was started -- Stripe
+    // doesn't grant the `transfers` capability a destination charge requires until
+    // the account is fully verified (a rejected/disabled account still keeps its
+    // id on file). Skip for free tickets: no charge, nothing to transfer.
+    if (total > 0) {
+      const account = await stripe.accounts.retrieve(host.stripe_account_id);
+      if (account.capabilities?.transfers !== "active") {
+        throw new Error("Host hasn't finished setting up payouts yet — please try again later.");
+      }
+    }
+
     const platformFeePct = PLATFORM_FEES[host.subscription_tier || "free"] || 0.15;
     const totalCents = Math.round(total * 100);
     const applicationFee = Math.round(totalCents * platformFeePct);
@@ -132,10 +147,6 @@ serve(async (req) => {
       .select()
       .single();
     if (orderErr) throw new Error(orderErr.message);
-
-    const stripe = new Stripe(resolveStripeSecretKey(), {
-      apiVersion: "2025-08-27.basil",
-    });
 
     const origin = req.headers.get("origin") || "https://www.thrivein.io";
 

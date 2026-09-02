@@ -11,6 +11,7 @@ import {
   PartyPopper, Video, Wrench, UtensilsCrossed, Cpu, Sparkles,
 } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useLandingSectionView } from "@/lib/landingMetrics";
 
 const ACCENT = "#FF2DA1";
 
@@ -31,9 +32,11 @@ const CATEGORIES = [
 
 export const CreativeUniverseSection = () => {
   const reducedMotion = useReducedMotion();
+  const sectionViewRef = useLandingSectionView("creative_universe");
 
   return (
     <section
+      ref={sectionViewRef}
       className="landing-section relative border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="creative-universe-title"

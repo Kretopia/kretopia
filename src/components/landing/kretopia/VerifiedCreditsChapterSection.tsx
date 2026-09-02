@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
 import { EVIDENCE_STATE_ORDER, type EvidenceState } from "@/lib/creditEvidence";
+import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
 import { TutorialStepper } from "./TutorialStepper";
 import { VERIFIED_CREDITS_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
@@ -52,9 +53,12 @@ export const VerifiedCreditsChapterSection = () => {
   // starts auto-advancing on its own.
   const [inView, setInView] = useState(false);
 
+  const sectionViewRef = useLandingSectionView("verified_credits");
+
   return (
     <section
       id="chapter-verified-credits"
+      ref={sectionViewRef}
       className="landing-section relative overflow-hidden border-t border-white/[0.06]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="verified-credits-title"
@@ -116,7 +120,17 @@ export const VerifiedCreditsChapterSection = () => {
               className="group mt-9 h-auto w-fit rounded-full px-6 py-3 text-sm font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              <Link to="/credits">
+              <Link
+                to="/credits"
+                onClick={() =>
+                  trackLandingCtaClick({
+                    ctaId: "explore_verified_credits",
+                    section: "verified_credits",
+                    label: "Explore Verified Credits",
+                    destinationType: "internal",
+                  })
+                }
+              >
                 Explore Verified Credits
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
               </Link>

@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import { Search, IdCard, Megaphone, Users2, CheckCircle2, Briefcase, Handshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { analytics } from "@/lib/analytics";
+import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
 
 const ACCENT = "#FF2DA1";
 
@@ -27,9 +27,11 @@ const CAPABILITIES = [
 
 export const ForOrganisationsSection = () => {
   const reducedMotion = useReducedMotion();
+  const sectionViewRef = useLandingSectionView("for_organisations");
 
   return (
     <section
+      ref={sectionViewRef}
       className="relative border-t border-white/[0.05] py-16 sm:py-20"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="for-orgs-title"
@@ -78,13 +80,33 @@ export const ForOrganisationsSection = () => {
           className="mt-8 flex flex-wrap items-center gap-3"
         >
           <Button asChild className="h-auto w-fit rounded-full px-5 py-2.5 text-sm font-semibold" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
-            <Link to="/post-opportunity" onClick={() => analytics.ctaClick("hire_through_kretopia", "for_organisations")}>
+            <Link
+              to="/post-opportunity"
+              onClick={() =>
+                trackLandingCtaClick({
+                  ctaId: "hire_through_kretopia",
+                  section: "for_organisations",
+                  label: "Hire Through Kretopia",
+                  destinationType: "internal",
+                })
+              }
+            >
               <Briefcase className="h-4 w-4" aria-hidden />
               Hire Through Kretopia
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto w-fit rounded-full px-5 py-2.5 text-sm font-semibold" style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}>
-            <Link to="/auth?tab=signup" onClick={() => analytics.ctaClick("partner_with_us", "for_organisations")}>
+            <Link
+              to="/auth?tab=signup&src=for_organisations"
+              onClick={() =>
+                trackLandingCtaClick({
+                  ctaId: "partner_with_us",
+                  section: "for_organisations",
+                  label: "Partner With Us",
+                  destinationType: "auth",
+                })
+              }
+            >
               <Handshake className="h-4 w-4" aria-hidden />
               Partner With Us
             </Link>

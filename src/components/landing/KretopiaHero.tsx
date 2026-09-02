@@ -18,6 +18,7 @@ import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { analytics } from "@/lib/analytics";
+import { trackLandingSectionViewed } from "@/lib/landingMetrics";
 
 const ACCENT = "#FF2DA1";
 // Submitted through the same name-based web search as any real query — must
@@ -42,6 +43,9 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
 
   useEffect(() => {
     analytics.featureUsed("landing_hero_viewed", { location: "hero" });
+    // Hero is above the fold at load, so mount ≈ view -- no need for an
+    // IntersectionObserver here the way every other section below uses.
+    trackLandingSectionViewed("hero");
   }, []);
 
   const handleFocusChange = (open: boolean) => {

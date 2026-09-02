@@ -31,6 +31,7 @@ import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { KretopiaHero } from "@/components/landing/KretopiaHero";
 import { ChapterProgressNav } from "@/components/landing/kretopia/ChapterProgressNav";
 import { ScrollToTopButton } from "@/components/landing/kretopia/ScrollToTopButton";
+import { useLandingScrollDepth } from "@/lib/landingMetrics";
 
 const LandingBelowFold = lazy(
   () => import("@/components/landing/kretopia/LandingBelowFold"),
@@ -43,6 +44,7 @@ interface KretopiaLandingProps {
 export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [showRest, setShowRest] = useState(false);
+  useLandingScrollDepth();
 
   useEffect(() => {
     if (showRest) return;

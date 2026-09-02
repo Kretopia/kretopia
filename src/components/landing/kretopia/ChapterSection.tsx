@@ -10,7 +10,7 @@ import type { TutorialStep } from "./FeatureTutorial";
 import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { analytics } from "@/lib/analytics";
+import { useLandingSectionView, trackLandingCtaClick, type LandingSectionId } from "@/lib/landingMetrics";
 
 export interface ChapterProps {
   index: string;        // "I", "II", "III"…
@@ -40,9 +40,12 @@ export const ChapterSection = ({
   ctaLabel, concepts, closingLine,
 }: ChapterProps) => {
   const reducedMotion = useReducedMotion();
+  const sectionId = (id ?? kicker.toLowerCase()) as LandingSectionId;
+  const sectionViewRef = useLandingSectionView(sectionId);
   return (
     <section
       id={id}
+      ref={sectionViewRef}
       className="relative overflow-hidden border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
     >
@@ -161,8 +164,15 @@ export const ChapterSection = ({
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               <Link
-                to={href}
-                onClick={() => analytics.ctaClick(`${kicker.toLowerCase()}_chapter_cta`, "landing_chapter")}
+                to={`${href}${href.includes("?") ? "&" : "?"}tab=signup&src=${sectionId}`}
+                onClick={() =>
+                  trackLandingCtaClick({
+                    ctaId: `${kicker.toLowerCase()}_chapter_cta`,
+                    section: sectionId,
+                    label: ctaLabel ?? `Enter ${kicker}`,
+                    destinationType: "auth",
+                  })
+                }
               >
                 {ctaLabel ?? `Enter ${kicker}`}
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />

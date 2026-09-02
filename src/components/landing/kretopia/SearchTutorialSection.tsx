@@ -11,7 +11,7 @@
 import { Search, FileSearch, Fingerprint } from "lucide-react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { analytics } from "@/lib/analytics";
+import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
 import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
 import { SearchVisual } from "./featureVisuals";
 import { SEARCH_TUTORIAL } from "./tutorialContent";
@@ -24,7 +24,12 @@ const STEPS = [
 ];
 
 const scrollToHeroSearch = () => {
-  analytics.ctaClick("search_your_name", "discovery_section");
+  trackLandingCtaClick({
+    ctaId: "search_your_name",
+    section: "search_tutorial",
+    label: "Search Your Name",
+    destinationType: "internal",
+  });
   const hero = document.getElementById("kretopia-hero");
   hero?.scrollIntoView({ behavior: "smooth", block: "start" });
   window.setTimeout(() => {
@@ -34,9 +39,11 @@ const scrollToHeroSearch = () => {
 
 export const SearchTutorialSection = () => {
   const reducedMotion = useReducedMotion();
+  const sectionViewRef = useLandingSectionView("search_tutorial");
 
   return (
     <section
+      ref={sectionViewRef}
       className="landing-section relative border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="search-tutorial-title"

@@ -57,9 +57,16 @@ serve(async (req) => {
       cancel_url: `${origin}/pay/invoice/${invoice_id}?status=cancelled`,
       metadata: { kind: "invoice", invoice_id, recipient_user_id: invoice.issued_by },
     };
-    // See create-payment-link-checkout for why payouts_enabled must be checked
-    // alongside stripe_account_id before attempting a destination charge.
+    // payouts_enabled is our own stored flag and can go stale relative to Stripe's
+    // live state (e.g. a capability got revoked after we last synced it — see
+    // create-payment-link-checkout), so it's necessary but not sufficient — verify
+    // the actual capability with Stripe right before deciding to attempt a
+    // destination charge.
     if (wallet?.stripe_account_id && wallet?.payouts_enabled) {
+      const account = await stripe.accounts.retrieve(wallet.stripe_account_id);
+      if (account.capabilities?.transfers !== "active") {
+        throw new Error("This creator hasn't finished setting up payouts yet — please try again later.");
+      }
       params.payment_intent_data = {
         transfer_data: { destination: wallet.stripe_account_id },
         on_behalf_of: wallet.stripe_account_id,

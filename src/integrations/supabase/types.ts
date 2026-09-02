@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -8610,9 +8610,73 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_sepa_beneficiaries: {
+        Row: {
+          beneficiary_name: string
+          bic: string | null
+          created_at: string
+          iban: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          beneficiary_name: string
+          bic?: string | null
+          created_at?: string
+          iban: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          beneficiary_name?: string
+          bic?: string | null
+          created_at?: string
+          iban?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_sepa_beneficiaries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "invoice_sepa_beneficiaries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "invoice_sepa_beneficiaries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "invoice_sepa_beneficiaries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "invoice_sepa_beneficiaries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
+          bank_transfer_reported_at: string | null
           brand_address: string | null
           brand_color: string | null
           brand_email: string | null
@@ -8658,6 +8722,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          bank_transfer_reported_at?: string | null
           brand_address?: string | null
           brand_color?: string | null
           brand_email?: string | null
@@ -8703,6 +8768,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          bank_transfer_reported_at?: string | null
           brand_address?: string | null
           brand_color?: string | null
           brand_email?: string | null
@@ -19864,6 +19930,10 @@ export type Database = {
           status: string
         }[]
       }
+      get_landing_funnel: {
+        Args: { _end?: string; _start?: string }
+        Returns: Json
+      }
       get_milestone_financials: {
         Args: { _milestone_id: string }
         Returns: Json
@@ -20515,6 +20585,10 @@ export type Database = {
       send_opportunity_alerts: {
         Args: { opportunity_id_param: string }
         Returns: undefined
+      }
+      set_invoice_sepa_beneficiary: {
+        Args: { p_beneficiary_name: string; p_bic?: string; p_iban: string }
+        Returns: Json
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }

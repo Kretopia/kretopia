@@ -358,6 +358,8 @@ export const ProductDashboardTab = () => {
         </CardContent>
       </Card>
 
+      <LandingFunnelPanel />
+
       <CreativeActionFunnels />
       <LandingFunnelPanel />
     </div>

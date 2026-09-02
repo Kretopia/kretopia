@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CardCarousel } from "@/components/kretopia/CardCarousel";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Loader2, Sparkles, Zap, Crown, Building2, User, Briefcase, Globe } from "lucide-react";
-import { 
-  SUBSCRIPTION_PRODUCTS, BRAND_SUBSCRIPTION_PRODUCTS,
-  PRO_FEATURES, FREE_FEATURES, CREATOR_PRO_FEATURES,
-  type AccountType, type BillingInterval, hasProAccess, isBrandTier,
-  getYearlySavings, getEffectiveMonthlyPrice,
+import { Loader2, Sparkles, Zap, Crown, Briefcase, User, Check } from "lucide-react";
+import {
+  SUBSCRIPTION_PRODUCTS,
+  type AccountType, type BillingInterval,
 } from "@/lib/subscriptionConfig";
-// Tabs import removed — Creator/Brand toggle deprecated; view derives from account_type
+import { getCreatorPlans, getBrandPlans, type PlanCard } from "@/lib/subscriptionPlans";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
+import { HoloCard } from "@/components/passport/HoloCard";
+import { cn } from "@/lib/utils";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
 
 const SUBSCRIPTION_TUTORIAL: TutorialStep[] = [
@@ -24,103 +23,6 @@ const SUBSCRIPTION_TUTORIAL: TutorialStep[] = [
   { icon: Sparkles, title: "Try Pro risk-free", body: "Monthly plans start with a 7-day free trial, and every plan cancels anytime." },
   { icon: Crown, title: "Manage it anytime", body: "Once you're subscribed, open Manage Subscription here to update your card, change plans, or cancel." },
 ];
-
-const FOUNDER_FEATURES = [
-  "Exclusive Founder Circle badge",
-  "Lifetime Pro access — never pay again",
-  "5,000 Bonus XP on activation",
-  "Only 10% platform fees (vs 20% free / 15% Pro)",
-  "Free & discounted event access",
-  "Premium Partner Membership (when launched)",
-  "All Creator Pro features included forever",
-  "Priority support & early feature access",
-  "All Smart tools & analytics unlocked",
-  "Founding member recognition",
-];
-
-function getCreatorTiers(interval: BillingInterval) {
-  const isYearly = interval === 'yearly';
-  return [
-    {
-      name: "Spark",
-      tier: "free" as const,
-      price: 0,
-      displayPrice: "$0",
-      priceId: null,
-      productId: null,
-      icon: Zap,
-      description: "Perfect for getting started",
-      features: FREE_FEATURES.individual,
-    },
-    {
-      name: SUBSCRIPTION_PRODUCTS.pro.name,
-      tier: SUBSCRIPTION_PRODUCTS.pro.tier,
-      price: isYearly ? SUBSCRIPTION_PRODUCTS.pro.yearlyPrice : SUBSCRIPTION_PRODUCTS.pro.price,
-      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('pro')}` : `$${SUBSCRIPTION_PRODUCTS.pro.price}`,
-      priceId: isYearly ? SUBSCRIPTION_PRODUCTS.pro.yearlyPriceId : SUBSCRIPTION_PRODUCTS.pro.priceId,
-      productId: isYearly ? SUBSCRIPTION_PRODUCTS.pro.yearlyProductId : SUBSCRIPTION_PRODUCTS.pro.productId,
-      icon: Sparkles,
-      popular: true,
-      description: "For serious creators — includes your own website",
-      features: PRO_FEATURES.individual,
-      savings: isYearly ? getYearlySavings('pro') : 0,
-    },
-    {
-      name: SUBSCRIPTION_PRODUCTS.creator_pro.name,
-      tier: SUBSCRIPTION_PRODUCTS.creator_pro.tier,
-      price: isYearly ? SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPrice : SUBSCRIPTION_PRODUCTS.creator_pro.price,
-      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('creator_pro')}` : `$${SUBSCRIPTION_PRODUCTS.creator_pro.price}`,
-      priceId: isYearly ? SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPriceId : SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
-      productId: isYearly ? SUBSCRIPTION_PRODUCTS.creator_pro.yearlyProductId : SUBSCRIPTION_PRODUCTS.creator_pro.productId,
-      icon: Globe,
-      description: "For power users & agencies",
-      features: CREATOR_PRO_FEATURES.individual,
-      savings: isYearly ? getYearlySavings('creator_pro') : 0,
-    },
-  ];
-}
-
-function getBrandTiers(interval: BillingInterval) {
-  const isYearly = interval === 'yearly';
-  return [
-    {
-      name: "Spark",
-      tier: "free" as const,
-      price: 0,
-      displayPrice: "$0",
-      priceId: null,
-      productId: null,
-      icon: Zap,
-      description: "Get started hiring",
-      features: FREE_FEATURES.company,
-    },
-    {
-      name: BRAND_SUBSCRIPTION_PRODUCTS.pro.name,
-      tier: BRAND_SUBSCRIPTION_PRODUCTS.pro.tier,
-      price: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyPrice : BRAND_SUBSCRIPTION_PRODUCTS.pro.price,
-      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('brand_pro')}` : `$${BRAND_SUBSCRIPTION_PRODUCTS.pro.price}`,
-      priceId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyPriceId : BRAND_SUBSCRIPTION_PRODUCTS.pro.priceId,
-      productId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyProductId : BRAND_SUBSCRIPTION_PRODUCTS.pro.productId,
-      icon: Sparkles,
-      popular: true,
-      description: "For brands & studios hiring talent",
-      features: PRO_FEATURES.company,
-      savings: isYearly ? getYearlySavings('brand_pro') : 0,
-    },
-    {
-      name: BRAND_SUBSCRIPTION_PRODUCTS.enterprise.name,
-      tier: BRAND_SUBSCRIPTION_PRODUCTS.enterprise.tier,
-      price: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice : BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price,
-      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('brand_enterprise')}` : `$${BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price}`,
-      priceId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyPriceId : BRAND_SUBSCRIPTION_PRODUCTS.enterprise.priceId,
-      productId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyProductId : BRAND_SUBSCRIPTION_PRODUCTS.enterprise.productId,
-      icon: Building2,
-      description: "For agencies & large teams",
-      features: CREATOR_PRO_FEATURES.company,
-      savings: isYearly ? getYearlySavings('brand_enterprise') : 0,
-    },
-  ];
-}
 
 export default function Subscription() {
   const [loading, setLoading] = useState<string | null>(null);
@@ -169,7 +71,7 @@ export default function Subscription() {
         .select("subscription_tier, subscription_product_id, subscription_status, account_type")
         .eq("user_id", session.user.id)
         .single();
-      
+
       if (profile?.subscription_tier) setCurrentTier(profile.subscription_tier);
       if (profile?.subscription_status) setSubscriptionStatus(profile.subscription_status);
       if (profile?.account_type) setAccountType(profile.account_type as AccountType);
@@ -243,6 +145,14 @@ export default function Subscription() {
     }
   };
 
+  const confirmPlan = (plan: PlanCard) => {
+    if (plan.isFounder) {
+      handleFounderCheckout();
+    } else {
+      handleSubscribe(plan.priceId, plan.tier);
+    }
+  };
+
   if (checkingSubscription) {
     return (
       <div className="container mx-auto px-4 py-16">
@@ -253,17 +163,20 @@ export default function Subscription() {
     );
   }
 
-  const tiers = viewMode === "brand" ? getBrandTiers(billingInterval) : getCreatorTiers(billingInterval);
   const founderSpotsRemaining = SUBSCRIPTION_PRODUCTS.founder.maxSpots - founderSpotsTaken;
   const isFounder = currentTier === 'founder';
   const hasPaidSub = currentTier !== "free" && (subscriptionStatus === "active" || subscriptionStatus === "trialing") && currentTier !== "founder";
+  const plans = viewMode === "brand" ? getBrandPlans(billingInterval) : getCreatorPlans(billingInterval, founderSpotsRemaining);
+
+  const isCurrentPlan = (plan: PlanCard) => (plan.isFounder ? isFounder : plan.tier === currentTier);
+  const isPlanLoading = (plan: PlanCard) => loading !== null && loading === (plan.isFounder ? "founder" : plan.priceId);
 
   return (
-    <div className="pb-16">
+    <div className="min-h-screen">
       <FeaturePageHeader
         eyebrow="Pricing"
-        title="Choose your plan."
-        accentTitle="Start free, upgrade anytime."
+        title="Choose your"
+        accentTitle="plan."
         subtitle={
           viewMode === "brand"
             ? "Find, hire & manage top creative talent."
@@ -272,8 +185,6 @@ export default function Subscription() {
         tutorial={{ featureKey: "subscription", label: "How Pricing works", steps: SUBSCRIPTION_TUTORIAL }}
         tabs={
           <div className="flex flex-col items-center gap-3 text-center">
-            {/* View mode is derived from account_type — companies see Brand tiers, creators see Creator tiers.
-                Manual toggle removed: account type is set during onboarding and edited from profile settings. */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs font-semibold text-muted-foreground">
               {viewMode === "brand" ? (
                 <><Briefcase className="h-3.5 w-3.5" /> Brand plans</>
@@ -283,7 +194,7 @@ export default function Subscription() {
             </div>
 
             <div className="flex items-center justify-center gap-3">
-              <Label htmlFor="billing-toggle" className={`text-sm ${billingInterval === 'monthly' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+              <Label htmlFor="billing-toggle" className={cn("text-sm", billingInterval === 'monthly' ? 'font-semibold text-foreground' : 'text-muted-foreground')}>
                 Monthly
               </Label>
               <Switch
@@ -291,11 +202,19 @@ export default function Subscription() {
                 checked={billingInterval === 'yearly'}
                 onCheckedChange={(checked) => setBillingInterval(checked ? 'yearly' : 'monthly')}
               />
-              <Label htmlFor="billing-toggle" className={`text-sm ${billingInterval === 'yearly' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+              <Label htmlFor="billing-toggle" className={cn("text-sm", billingInterval === 'yearly' ? 'font-semibold text-foreground' : 'text-muted-foreground')}>
                 Yearly
               </Label>
               {billingInterval === 'yearly' && (
-                <Badge variant="secondary" className="bg-success/10 text-success border-success/20 text-xs">
+                <Badge
+                  variant="secondary"
+                  className="text-xs border"
+                  style={{
+                    backgroundColor: "hsl(var(--energy) / 0.1)",
+                    color: "hsl(var(--energy))",
+                    borderColor: "hsl(var(--energy) / 0.3)",
+                  }}
+                >
                   Save up to 17%
                 </Badge>
               )}
@@ -304,235 +223,131 @@ export default function Subscription() {
         }
       />
 
-      <div className="container mx-auto px-4 pt-8">
-      {hasPaidSub && (
-        <div className="flex justify-end mb-6">
-          <Button size="sm" onClick={handleManageSubscription} variant="outline" disabled={loading === "portal"}>
-            {loading === "portal" ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
-            ) : (
-              "Manage Subscription"
-            )}
-          </Button>
-        </div>
-      )}
-
-      {/* Founder Circle Card — only show on Creator view */}
-      {viewMode === "creator" && (
-        <div className="max-w-2xl mx-auto mb-12">
-          <Card className={`relative rounded-2xl border-2 shadow-none overflow-visible ${
-            isFounder
-              ? 'border-accent bg-gradient-to-br from-accent/10 via-background to-accent/5'
-              : 'border-accent/50 bg-gradient-to-br from-accent/5 via-background to-accent/3'
-          }`}>
-            {isFounder && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
-                ⭕ Your Plan — Lifetime Member
-              </Badge>
-            )}
-            {!isFounder && founderSpotsRemaining > 0 && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-accent to-accent/80 text-accent-foreground">
-                ⭕ Limited Edition — {founderSpotsRemaining} spots left
-              </Badge>
-            )}
-
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg">
-                <Crown className="h-7 w-7 text-accent-foreground" />
-              </div>
-              <CardTitle className="text-2xl">Founder Circle <span className="text-accent">⭕</span></CardTitle>
-              <CardDescription>
-                Join the founding members. Lifetime Creator+ access with exclusive perks.
-              </CardDescription>
-              <div className="mt-3">
-                <span className="text-4xl font-bold">$499</span>
-                <span className="text-muted-foreground ml-2">one-time payment</span>
-              </div>
-               <p className="text-xs text-muted-foreground mt-1">
-                That's less than 9 months of Creator Pro — yours forever
-              </p>
-            </CardHeader>
-
-            <CardContent>
-              <div className="grid sm:grid-cols-2 gap-2">
-                {FOUNDER_FEATURES.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              {!isFounder && founderSpotsRemaining > 0 && (
-                <div className="mt-6">
-                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>{founderSpotsTaken} claimed</span>
-                    <span>{SUBSCRIPTION_PRODUCTS.founder.maxSpots} total</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div 
-                      className="h-full rounded-full gradient-primary transition-all"
-                      style={{ width: `${(founderSpotsTaken / SUBSCRIPTION_PRODUCTS.founder.maxSpots) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-
-            <CardFooter>
-              {isFounder ? (
-                <Button className="w-full" variant="outline" disabled>⭕ Lifetime Member</Button>
-              ) : founderSpotsRemaining <= 0 ? (
-                <Button className="w-full" variant="outline" disabled>Sold Out</Button>
+      <StudioFeatureShell>
+        {hasPaidSub && (
+          <div className="flex justify-end">
+            <Button size="sm" onClick={handleManageSubscription} variant="outline" disabled={loading === "portal"}>
+              {loading === "portal" ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
               ) : (
-                <Button
-                  className="btn-glass btn-glass-primary w-full text-energy-foreground"
-                  onClick={handleFounderCheckout}
-                  disabled={loading === "founder"}
-                >
-                  {loading === "founder" ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
-                  ) : (
-                    "Claim Your Spot — $499"
+                "Manage Subscription"
+              )}
+            </Button>
+          </div>
+        )}
+
+        <div
+          className={cn(
+            "grid grid-cols-1 gap-6 items-stretch mx-auto",
+            plans.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4 max-w-6xl" : "sm:grid-cols-3 max-w-5xl",
+          )}
+        >
+          {plans.map((plan) => {
+            const Icon = plan.icon;
+            const current = isCurrentPlan(plan);
+            const showFounderProgress = plan.isFounder && SUBSCRIPTION_PRODUCTS.founder.maxSpots > 0;
+            const founderPct = showFounderProgress
+              ? (founderSpotsTaken / SUBSCRIPTION_PRODUCTS.founder.maxSpots) * 100
+              : 0;
+
+            return (
+              <HoloCard key={plan.tier} className="h-full">
+                <div
+                  className={cn(
+                    "relative flex h-full flex-col rounded-2xl border bg-card p-5 sm:p-6",
+                    plan.popular || current ? "border-[hsl(var(--energy))]" : "border-border",
                   )}
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-        </div>
-      )}
+                >
+                  {plan.popular && !current && (
+                    <Badge
+                      className="absolute top-3 right-3 border-transparent text-white"
+                      style={{ backgroundColor: "hsl(var(--energy))" }}
+                    >
+                      Most Popular
+                    </Badge>
+                  )}
+                  {current && (
+                    <Badge
+                      className="absolute top-3 right-3 border-transparent text-white"
+                      style={{ backgroundColor: "hsl(var(--energy))" }}
+                    >
+                      Your Plan
+                    </Badge>
+                  )}
 
-      {viewMode === "creator" && (
-        <div className="text-center mb-8">
-          <p className="text-sm text-muted-foreground">— or choose a {billingInterval} plan —</p>
-        </div>
-      )}
+                  <Icon className="h-6 w-6 mb-3 shrink-0" style={{ color: "hsl(var(--energy))" }} aria-hidden />
+                  <h3 className="text-lg font-bold text-foreground leading-tight">{plan.name}</h3>
+                  <p className="text-sm text-muted-foreground mt-1 mb-4">{plan.tagline}</p>
 
-      <CardCarousel label="Plans" className="max-w-5xl mx-auto">
-        {tiers.map((tier) => {
-          const Icon = tier.icon;
-          const isCurrentTier = tier.tier === currentTier;
-          const isLoading = loading === tier.priceId;
-          const isBrand = tier.tier.startsWith('brand_');
-          const savings = 'savings' in tier ? tier.savings : 0;
-
-          return (
-            <Card
-              key={tier.tier}
-              className={`relative rounded-2xl shadow-none ${
-                tier.popular
-                  ? "border-primary"
-                  : tier.tier === "creator_pro"
-                  ? "border-primary/70"
-                  : tier.tier === "brand_enterprise"
-                  ? "border-primary/50"
-                  : isCurrentTier
-                  ? "border-success"
-                  : "border-border/60"
-              }`}
-            >
-              {tier.popular && !isCurrentTier && (
-                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2`}>
-                  {isBrand ? "Best for Hiring" : "Most Popular"}
-                </Badge>
-              )}
-              {tier.tier === "creator_pro" && !isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
-                  {isBrand ? "Full Suite" : "🔗 Custom Domain"}
-                </Badge>
-              )}
-              {isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-success text-success-foreground">
-                  Your Plan
-                </Badge>
-              )}
-
-              <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                  <Icon className={`h-8 w-8 ${
-                    tier.tier === 'pro' || tier.tier === 'brand_pro' || tier.tier === 'creator_pro' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
-                    'text-muted-foreground'
-                  }`} />
-                  <div className="text-right">
-                    <div className="text-3xl font-bold">{tier.displayPrice}</div>
-                    {tier.tier !== "free" && (
-                      <div className="text-sm text-muted-foreground">/month</div>
-                    )}
-                    {billingInterval === 'yearly' && tier.tier !== "free" && savings > 0 && (
-                      <div className="text-xs text-success font-semibold">Save ${savings}/yr</div>
-                    )}
-                    {billingInterval === 'monthly' && tier.tier !== "free" && !isCurrentTier && (
-                      <div className="text-xs text-primary font-medium">7 days free</div>
-                    )}
-                    {billingInterval === 'yearly' && tier.tier !== "free" && (
-                      <div className="text-[10px] text-muted-foreground">
-                        ${tier.price}/yr billed annually
-                      </div>
-                    )}
+                  <div className="mb-5">
+                    <span className="text-3xl font-black text-foreground">{plan.displayPrice}</span>
+                    {!plan.oneTime && plan.price > 0 && <span className="text-sm text-muted-foreground ml-1">/mo</span>}
+                    {plan.oneTime && <span className="text-sm text-muted-foreground ml-1">one-time</span>}
                   </div>
-                </div>
-                <CardTitle>{tier.name}</CardTitle>
-                <CardDescription>{tier.description}</CardDescription>
-              </CardHeader>
 
-              <CardContent>
-                <ul className="space-y-3">
-                  {tier.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 text-primary`} />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
+                  {showFounderProgress && (
+                    <div className="mb-5">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>{founderSpotsTaken} claimed</span>
+                        <span>{SUBSCRIPTION_PRODUCTS.founder.maxSpots} total</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${founderPct}%`, backgroundColor: "hsl(var(--energy))" }}
+                        />
+                      </div>
+                    </div>
+                  )}
 
-              <CardFooter>
-                {isCurrentTier ? (
-                  <Button className="w-full" variant="outline" disabled>Current Plan</Button>
-                ) : (
+                  <ul className="space-y-2.5 mb-6 flex-1">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm text-foreground/80">
+                        <Check className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--energy))" }} aria-hidden />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+
                   <Button
-                    className={`w-full ${
-                      tier.tier === 'creator_pro' || tier.tier === 'brand_enterprise'
-                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
-                        : isBrand && tier.popular
-                        ? 'bg-success hover:bg-success/90 text-success-foreground'
-                        : ''
-                    }`}
-                    onClick={() => handleSubscribe(tier.priceId, tier.tier)}
-                    disabled={isLoading || tier.tier === "free"}
-                    variant={tier.popular ? "default" : (tier.tier === "creator_pro" || tier.tier === "brand_enterprise") ? "default" : "outline"}
+                    onClick={() => confirmPlan(plan)}
+                    disabled={current || plan.soldOut || isPlanLoading(plan)}
+                    variant={plan.popular ? "default" : "outline"}
+                    className="w-full mt-auto"
+                    style={plan.popular ? { backgroundColor: "hsl(var(--energy))", borderColor: "hsl(var(--energy))" } : undefined}
                   >
-                    {isLoading ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
-                    ) : tier.tier === "free" ? (
+                    {current ? (
                       "Current Plan"
+                    ) : plan.soldOut ? (
+                      "Sold Out"
+                    ) : isPlanLoading(plan) ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      billingInterval === 'yearly' ? "Start Annual Plan" : "Upgrade Now"
+                      plan.ctaLabel
                     )}
                   </Button>
-                )}
-              </CardFooter>
-            </Card>
-          );
-        })}
-      </CardCarousel>
-
-      {viewMode === "brand" && (
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground mb-2">
-            Brand subscriptions are separate from creator plans. You can have both active simultaneously.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Creators receive 100% of their rate. Service fees are charged to your brand on top.
-          </p>
+                </div>
+              </HoloCard>
+            );
+          })}
         </div>
-      )}
 
-      <div className="mt-12 text-center text-sm text-muted-foreground">
-        <p>Free forever to start · Cancel anytime · Secure payments · 24/7 support</p>
-        <p className="mt-2">Save 17% with annual billing · No hidden fees</p>
-      </div>
-      </div>
+        {viewMode === "brand" && (
+          <div className="text-center max-w-2xl mx-auto">
+            <p className="text-sm text-muted-foreground mb-2">
+              Brand subscriptions are separate from creator plans. You can have both active simultaneously.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Creators receive 100% of their rate. Service fees are charged to your brand on top.
+            </p>
+          </div>
+        )}
+
+        <div className="text-center text-sm text-muted-foreground">
+          <p>Free forever to start · Cancel anytime · Secure payments · 24/7 support</p>
+          <p className="mt-2">Save 17% with annual billing · No hidden fees</p>
+        </div>
+      </StudioFeatureShell>
     </div>
   );
 }

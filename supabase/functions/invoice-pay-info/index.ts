@@ -22,7 +22,7 @@ serve(async (req) => {
 
     const { data: invoice } = await admin
       .from("invoices")
-      .select("id, invoice_number, issued_by, recipient_name, total_amount, currency, status, due_date, notes, brand_name, brand_logo_url, brand_color, document_type, line_items")
+      .select("id, invoice_number, issued_by, recipient_name, total_amount, currency, status, due_date, notes, brand_name, brand_logo_url, brand_color, document_type, line_items, bank_transfer_reported_at")
       .eq("id", invoiceId)
       .maybeSingle();
     if (!invoice) {
@@ -43,7 +43,30 @@ serve(async (req) => {
       await admin.from("invoices").update({ viewed_at: new Date().toISOString() }).eq("id", invoiceId);
     }
 
-    return new Response(JSON.stringify({ invoice }), {
+    // Sandbox manual-SEPA extension: surface the issuer's own beneficiary
+    // details (if they've configured any via set_invoice_sepa_beneficiary)
+    // plus a stable, human-typable payment reference derived from the
+    // invoice's own id/number -- no new column needed for the reference
+    // itself. Money never routes through Kretopia for this path: the client
+    // sends the transfer directly to the issuer's own account.
+    let sepa: { beneficiaryName: string; iban: string; bic: string | null; reference: string } | null = null;
+    if (invoice.issued_by) {
+      const { data: beneficiary } = await admin
+        .from("invoice_sepa_beneficiaries")
+        .select("beneficiary_name, iban, bic")
+        .eq("user_id", invoice.issued_by)
+        .maybeSingle();
+      if (beneficiary) {
+        sepa = {
+          beneficiaryName: beneficiary.beneficiary_name,
+          iban: beneficiary.iban,
+          bic: beneficiary.bic,
+          reference: `KP-${(invoice.invoice_number ?? invoice.id.slice(0, 8)).toString().toUpperCase()}`,
+        };
+      }
+    }
+
+    return new Response(JSON.stringify({ invoice: { ...invoice, sepa } }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

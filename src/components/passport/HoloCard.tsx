@@ -62,7 +62,7 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
         ref={ref}
         onPointerMove={onMove}
         onPointerLeave={onLeave}
-        className="relative rounded-2xl transition-transform duration-300 ease-out will-change-transform [transform-style:preserve-3d]"
+        className="relative h-full rounded-2xl transition-transform duration-300 ease-out will-change-transform [transform-style:preserve-3d]"
         style={{
           transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translateZ(0)`,
         }}
@@ -80,7 +80,7 @@ export function HoloCard({ children, className, maxTilt = 8 }: HoloCardProps) {
         />
 
         {/* Card body */}
-        <div className="relative overflow-hidden rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.75),0_2px_0_0_rgba(255,255,255,0.06)_inset]">
+        <div className="relative h-full overflow-hidden rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.75),0_2px_0_0_rgba(255,255,255,0.06)_inset]">
           {/* Scan-line sweep along the top edge — same "actively scanning" motion as the AI tutorial surfaces */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px overflow-hidden z-10">
             <div

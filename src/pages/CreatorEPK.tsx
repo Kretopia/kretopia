@@ -156,10 +156,24 @@ const CreatorEPK = () => {
       }
 
       try {
-        // Fetch from profiles table directly - RLS allows public read
+        // Public read goes through the safe view — RLS on the base `profiles`
+        // table is owner-only as of migration 20260502224404 (deliberately
+        // hardened; the old "RLS allows public read" assumption this line
+        // used to rely on no longer holds). public_profiles_safe is the
+        // existing, already-granted-to-anon safe path (same one HandleResolver
+        // and Circle's Browse tab already use). Its column list is a subset
+        // of what this page used to request — see CreatorEPK's field-gap note
+        // in PASSPORT_AND_CONVERSION_AUDIT.md for what's temporarily absent
+        // (is_claimed, website, calendly_url, collab_intent, rate_range,
+        // average_rating, total_reviews, achievement_badges, passion_skills,
+        // icdb_creator_id, job_title, sub_roles, model_stats, mother_agency,
+        // model_unions, model_categories) until a follow-up migration extends
+        // the view. Every downstream usage of these fields already handles
+        // undefined gracefully (optional chaining / conditional rendering),
+        // confirmed by reading each call site before making this change.
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed, icdb_creator_id, cover_image_url, job_title, sub_roles, model_stats, mother_agency, model_unions, model_categories')
+          .from('public_profiles_safe')
+          .select('user_id, full_name, role, bio, location, avatar_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, verification_tier, verification_status, professional_skills, cover_image_url')
           .eq('user_id', userId)
           .maybeSingle();
 

@@ -19,6 +19,9 @@ interface StudioSectionTabsProps {
   /** Fires on every tab switch — for parents that need to lazy-fetch a
    * tab's data only once it's actually activated. */
   onTabChange?: (id: string) => void;
+  /** Drive the active tab from outside (e.g. a sibling "jump to Match" CTA).
+   * Omit to keep the default uncontrolled behavior. */
+  activeId?: string;
   className?: string;
 }
 
@@ -29,7 +32,7 @@ interface StudioSectionTabsProps {
  * reimplemented here) — content swaps in place under the active trigger,
  * never scrolls the page, never opens a Sheet/Dialog.
  */
-export function StudioSectionTabs({ tabs, defaultTabId, queryParam, onTabChange, className }: StudioSectionTabsProps) {
+export function StudioSectionTabs({ tabs, defaultTabId, queryParam, onTabChange, activeId, className }: StudioSectionTabsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const fromQuery = queryParam ? searchParams.get(queryParam) : null;
   const initial = (fromQuery && tabs.some((t) => t.id === fromQuery)) ? fromQuery : (defaultTabId ?? tabs[0]?.id);
@@ -45,7 +48,7 @@ export function StudioSectionTabs({ tabs, defaultTabId, queryParam, onTabChange,
 
   return (
     <Tabs
-      defaultValue={initial}
+      {...(activeId !== undefined ? { value: activeId } : { defaultValue: initial })}
       onValueChange={handleChange}
       className={cn("w-full", className)}
     >

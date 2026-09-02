@@ -84,7 +84,16 @@ serve(async (req) => {
     // the account is fully verified (payouts_enabled). Using transfer_data against
     // an account that isn't there yet fails at Stripe with a capability error the
     // payer sees mid-checkout; check readiness first and fail clearly instead.
+    //
+    // payouts_enabled is our own stored flag and can go stale relative to Stripe's
+    // live state (e.g. a capability got revoked after we last synced it), so it's
+    // necessary but not sufficient — verify the actual capability with Stripe right
+    // before deciding to attempt a destination charge.
     if (wallet?.stripe_account_id && wallet?.payouts_enabled) {
+      const account = await stripe.accounts.retrieve(wallet.stripe_account_id);
+      if (account.capabilities?.transfers !== "active") {
+        throw new Error("This creator hasn't finished setting up payouts yet — please try again later.");
+      }
       // 5% platform fee for free tier; settled by webhook later if needed
       sessionParams.payment_intent_data = {
         transfer_data: { destination: wallet.stripe_account_id },

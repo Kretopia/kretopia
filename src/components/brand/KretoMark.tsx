@@ -13,7 +13,10 @@ import type { CSSProperties } from "react";
 import kMarkAsset from "@/assets/brand/kretopia-k-mark.png.asset.json";
 import { cn } from "@/lib/utils";
 
-type Variant = "default" | "compact" | "interactive" | "muted" | "status";
+/** "bare" renders just the masked icon, no surrounding surface/ring at all --
+ *  for callers that already provide their own circular surface (e.g. a
+ *  launcher FAB) and would otherwise get a nested circle-in-circle look. */
+type Variant = "default" | "compact" | "interactive" | "muted" | "status" | "bare";
 type Size = "xs" | "sm" | "md" | "lg" | "xl";
 /** "recording" is a deliberate, distinct fourth state -- not folded into
  *  "active" -- because a live mic is a safety-relevant signal (matching
@@ -81,6 +84,7 @@ export const KretoMark = ({
     variant === "muted" && "bg-white/5 opacity-60",
     (variant === "default" || variant === "status") &&
       "bg-[hsl(var(--k-midnight))] ring-1 ring-white/10",
+    // "bare": no background/ring -- the caller supplies its own surface.
     isInteractive &&
       "transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--energy))] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     className,

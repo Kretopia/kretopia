@@ -8,6 +8,7 @@ import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle, ThumbsUp,
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { BrandLogo } from "@/components/BrandLogo";
 import { cn } from "@/lib/utils";
 
 export const NotificationCenter = ({ triggerClassName }: { triggerClassName?: string } = {}) => {
@@ -15,6 +16,11 @@ export const NotificationCenter = ({ triggerClassName }: { triggerClassName?: st
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [vouchingId, setVouchingId] = useState<string | null>(null);
+  // This quick panel shows only what still needs attention -- once
+  // "Mark all read" (or reading them one by one) clears the unread set, they
+  // disappear from here rather than lingering read-but-visible. Full history
+  // stays on /notifications via "View all notifications" below.
+  const unreadNotifications = notifications.filter((n) => !n.read);
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {
@@ -84,15 +90,16 @@ export const NotificationCenter = ({ triggerClassName }: { triggerClassName?: st
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle className="flex items-center justify-between">
+        <SheetHeader className="text-left">
+          <BrandLogo size="sm" showBeta />
+          <SheetTitle className="font-serif text-2xl font-normal mt-1 flex items-center justify-between">
             <span>Notifications</span>
             {unreadCount > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={markAllAsRead}
-                className="h-8 text-xs"
+                className="h-8 text-xs font-sans"
               >
                 <CheckCheck className="h-4 w-4 mr-1" />
                 Mark all read
@@ -112,17 +119,21 @@ export const NotificationCenter = ({ triggerClassName }: { triggerClassName?: st
             <div className="flex items-center justify-center py-8">
               <div className="text-muted-foreground">Loading...</div>
             </div>
-          ) : notifications.length === 0 ? (
+          ) : unreadNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">No notifications yet</p>
+              <p className="text-muted-foreground">
+                {notifications.length === 0 ? "No notifications yet" : "You're all caught up!"}
+              </p>
               <p className="text-sm text-muted-foreground/70 mt-1">
-                We'll notify you when something important happens
+                {notifications.length === 0
+                  ? "We'll notify you when something important happens"
+                  : "Nothing new to review right now."}
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              {notifications.map((notification, index) => (
+              {unreadNotifications.map((notification, index) => (
                 <div key={notification.id}>
                   <div
                     className={`group relative rounded-lg p-4 transition-all cursor-pointer ${
@@ -306,7 +317,7 @@ export const NotificationCenter = ({ triggerClassName }: { triggerClassName?: st
                       </div>
                     </div>
                   </div>
-                  {index < notifications.length - 1 && <Separator className="my-2" />}
+                  {index < unreadNotifications.length - 1 && <Separator className="my-2" />}
                 </div>
               ))}
             </div>

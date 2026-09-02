@@ -13,6 +13,7 @@
  * anywhere else.
  */
 import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutorialSection";
+import { InlineSignupBar } from "@/components/landing/kretopia/InlineSignupBar";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
 import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
 import { TrustSection } from "@/components/landing/kretopia/TrustSection";
@@ -43,6 +44,9 @@ export const LandingBelowFold = () => {
     <>
       {/* Search — the Hero above already IS the live feature; this is just its tutorial */}
       <SearchTutorialSection />
+
+      {/* First conversion beat — most visitors never reach the closing CTA */}
+      <InlineSignupBar />
 
       {/* Passport */}
       <ChapterSection

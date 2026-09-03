@@ -1,13 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { CreativeLoader } from "@/components/ui/creative-loader";
-import { Loader2, Ticket, Calendar, MapPin, Navigation, CalendarPlus, ArrowLeft } from "lucide-react";
-import { format } from "date-fns";
-import QRCodeStyling from "qr-code-styling";
+import { ArrowLeft } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { EventPassCard } from "@/components/sessions/EventPassCard";
 
 /**
  * Public guest boarding pass.
@@ -22,7 +20,6 @@ const GuestPass = () => {
 
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const qrRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!eventId) return;
@@ -39,20 +36,6 @@ const GuestPass = () => {
       }
     })().catch(() => setLoading(false));
   }, [eventId]);
-
-  useEffect(() => {
-    if (loading || !event || !token || !qrRef.current) return;
-    qrRef.current.innerHTML = "";
-    const qr = new QRCodeStyling({
-      width: 240,
-      height: 240,
-      data: token,
-      dotsOptions: { color: "#0F172A", type: "rounded" },
-      cornersSquareOptions: { color: "#9413D2", type: "extra-rounded" },
-      backgroundOptions: { color: "#ffffff" },
-    });
-    qr.append(qrRef.current);
-  }, [token, loading, event]);
 
   const buildIcs = () => {
     if (!event) return;
@@ -112,72 +95,17 @@ const GuestPass = () => {
           <ArrowLeft className="h-4 w-4" /> Back
         </Link>
 
-        <Card className="overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-5">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider opacity-90">
-              <Ticket className="h-3.5 w-3.5" /> Your pass
-            </div>
-            <h1 className="text-xl font-bold mt-1 leading-tight">{event.title}</h1>
-            {guestName && <p className="text-sm opacity-90 mt-0.5">{guestName}</p>}
-          </div>
-
-          {/* Perforated edge */}
-          <div className="relative h-3 bg-card">
-            <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-background" />
-            <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-background" />
-            <div className="border-t border-dashed border-border mx-3 mt-1.5" />
-          </div>
-
-          {/* QR */}
-          <div className="px-5 pb-5 pt-3 bg-card">
-            <div className="flex flex-col items-center">
-              <div className="rounded-xl border-2 border-border bg-white p-3" ref={qrRef} />
-              <p className="mt-3 text-sm text-muted-foreground text-center">
-                Show this to the host at the door
-              </p>
-              <p className="mt-1 text-[11px] text-muted-foreground/80 font-mono tracking-wide">
-                {token.slice(0, 8)}…{token.slice(-4)}
-              </p>
-            </div>
-
-            {/* Event meta */}
-            <div className="mt-5 space-y-2.5 pt-4 border-t border-dashed border-border">
-              <div className="flex items-center gap-2.5 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="font-medium">
-                  {format(new Date(event.start_time), "EEE, MMM d · h:mm a")}
-                </span>
-              </div>
-              {event.venue_name && (
-                <div className="flex items-start gap-2.5 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium">{event.venue_name}</div>
-                    {event.venue_address && <div className="text-muted-foreground text-xs">{event.venue_address}</div>}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mt-5">
-              <Button onClick={buildIcs} variant="secondary" size="sm">
-                <CalendarPlus className="h-4 w-4 mr-1.5" /> Calendar
-              </Button>
-              {directionsHref ? (
-                <a href={directionsHref} target="_blank" rel="noopener noreferrer">
-                  <Button variant="secondary" size="sm" className="w-full">
-                    <Navigation className="h-4 w-4 mr-1.5" /> Directions
-                  </Button>
-                </a>
-              ) : (
-                <Button variant="secondary" size="sm" disabled>
-                  <Navigation className="h-4 w-4 mr-1.5" /> Directions
-                </Button>
-              )}
-            </div>
-          </div>
-        </Card>
+        <EventPassCard
+          eventTitle={event.title}
+          guestName={guestName}
+          startTime={event.start_time}
+          venueName={event.venue_name}
+          venueAddress={event.venue_address}
+          token={token}
+          loading={false}
+          onDownloadCalendar={buildIcs}
+          directionsHref={directionsHref}
+        />
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           Save this page or screenshot the QR — no signal at the door? No problem.

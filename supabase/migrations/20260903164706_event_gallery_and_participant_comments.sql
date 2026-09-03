@@ -7,6 +7,8 @@ ALTER TABLE public.creative_jams
   ADD COLUMN IF NOT EXISTS gallery_image_urls TEXT[] NOT NULL DEFAULT '{}';
 
 ALTER TABLE public.creative_jams
+  DROP CONSTRAINT IF EXISTS creative_jams_gallery_max_6;
+ALTER TABLE public.creative_jams
   ADD CONSTRAINT creative_jams_gallery_max_6
   CHECK (array_length(gallery_image_urls, 1) IS NULL OR array_length(gallery_image_urls, 1) <= 6);
 
@@ -20,6 +22,7 @@ ALTER TABLE public.event_comments
 -- also require the commenter to actually be going/interested, or be the
 -- event's host (hosts comment on their own events without RSVPing to them).
 DROP POLICY IF EXISTS "Users can create comments" ON public.event_comments;
+DROP POLICY IF EXISTS "Participants and host can create comments" ON public.event_comments;
 CREATE POLICY "Participants and host can create comments"
   ON public.event_comments
   FOR INSERT

@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import QRCodeStyling from "qr-code-styling";
-import { Loader2, Ticket, Check, Calendar, MapPin } from "lucide-react";
-import { format } from "date-fns";
+import { EventPassCard } from "./EventPassCard";
 
 interface GuestPassDialogProps {
   open: boolean;
@@ -18,8 +16,8 @@ interface GuestPassDialogProps {
 }
 
 /**
- * Boarding-pass style screen guests show at the door.
- * Familiar UX for non-tech users — looks like a flight ticket.
+ * Boarding-pass style screen guests show at the door — full Kretopia
+ * branding (see EventPassCard), the same card everywhere a pass appears.
  */
 export const GuestPassDialog = ({
   open,
@@ -34,8 +32,6 @@ export const GuestPassDialog = ({
   const [token, setToken] = useState<string | null>(null);
   const [checkedIn, setCheckedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const qrRef = useRef<HTMLDivElement>(null);
-  const qrCode = useRef<QRCodeStyling | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -66,95 +62,26 @@ export const GuestPassDialog = ({
     };
   }, [open, eventId, userId]);
 
-  useEffect(() => {
-    if (!token || !qrRef.current || !open) return;
-    qrRef.current.innerHTML = "";
-    qrCode.current = new QRCodeStyling({
-      width: 220,
-      height: 220,
-      data: token,
-      dotsOptions: { color: "#0F172A", type: "rounded" },
-      cornersSquareOptions: { color: "#9413D2", type: "extra-rounded" },
-      backgroundOptions: { color: "#ffffff" },
-    });
-    qrCode.current.append(qrRef.current);
-  }, [token, open]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden">
+      <DialogContent className="max-w-sm p-0 overflow-hidden border-0 bg-transparent shadow-none">
         <DialogHeader className="sr-only">
           <DialogTitle>Your event pass</DialogTitle>
         </DialogHeader>
 
-        {/* Header strip */}
-        <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-5 pb-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider opacity-90">
-            <Ticket className="h-3.5 w-3.5" /> Your pass
-          </div>
-          <h2 className="text-lg font-bold mt-1 leading-tight">{eventTitle}</h2>
-          {guestName && <p className="text-sm opacity-90 mt-0.5">{guestName}</p>}
-        </div>
+        <EventPassCard
+          eventTitle={eventTitle}
+          guestName={guestName}
+          startTime={startTime}
+          venueName={venueName}
+          token={token}
+          loading={loading}
+          checkedIn={checkedIn}
+        />
 
-        {/* Perforated edge */}
-        <div className="relative h-3 bg-card">
-          <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-background" />
-          <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-background" />
-          <div className="border-t border-dashed border-border mx-3 mt-1.5" />
-        </div>
-
-        {/* Body */}
-        <div className="px-5 pb-5 pt-2 bg-card">
-          {/* QR */}
-          <div className="flex flex-col items-center">
-            {loading ? (
-              <div className="h-[220px] w-[220px] flex items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : token ? (
-              <>
-                <div className="rounded-xl border-2 border-border bg-white p-3" ref={qrRef} />
-                {checkedIn ? (
-                  <div className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-green-600">
-                    <Check className="h-4 w-4" /> You're checked in
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-muted-foreground text-center">
-                    Show this to the host at the door
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                We couldn't find your pass. Try refreshing the event.
-              </p>
-            )}
-          </div>
-
-          {/* Event meta */}
-          <div className="mt-5 space-y-2.5 pt-4 border-t border-dashed border-border">
-            <div className="flex items-center gap-2.5 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="font-medium">
-                {format(new Date(startTime), "EEE, MMM d · h:mm a")}
-              </span>
-            </div>
-            {venueName && (
-              <div className="flex items-center gap-2.5 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="font-medium truncate">{venueName}</span>
-              </div>
-            )}
-          </div>
-
-          <Button
-            variant="outline"
-            className="w-full mt-5"
-            onClick={() => onOpenChange(false)}
-          >
-            Close
-          </Button>
-        </div>
+        <Button variant="outline" className="w-full mt-3" onClick={() => onOpenChange(false)}>
+          Close
+        </Button>
       </DialogContent>
     </Dialog>
   );

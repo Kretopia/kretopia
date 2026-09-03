@@ -262,8 +262,9 @@ export const SignInForm = ({
 
       <Button
         type="button"
+        variant="outline"
         size="lg"
-        className={`w-full h-12 gap-2 bg-foreground text-background hover:bg-foreground/90 ${oauthOnlyProvider === "apple" ? "ring-2 ring-primary" : ""}`}
+        className={`w-full h-12 gap-2 bg-card hover:bg-muted/40 ${oauthOnlyProvider === "apple" ? "ring-2 ring-primary" : ""}`}
         onClick={() => handleOAuthClick("apple", onAppleSignIn)}
         disabled={appleLoading}
       >

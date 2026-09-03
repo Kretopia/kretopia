@@ -20,6 +20,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { KretoMark } from "@/components/brand/KretoMark";
+import { SmartWidget } from "@/components/ui/smart-widget";
 
 interface ScoutedGig {
   id: string;
@@ -179,6 +180,19 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
   };
 
   useEffect(() => () => { if (scanTimerRef.current) clearInterval(scanTimerRef.current); }, []);
+
+  // Scan automatically on first arrival when there's nothing scouted yet --
+  // waiting for a manual click was the whole complaint. Gated to once per
+  // mount (not on every empty state, e.g. after dismissing everything) so
+  // it can't loop or burn through the server-side weekly scan limit.
+  const hasAutoScannedRef = useRef(false);
+  useEffect(() => {
+    if (hasAutoScannedRef.current) return;
+    if (loading || scanning || !user || gigs.length > 0) return;
+    hasAutoScannedRef.current = true;
+    scanNow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, user, gigs.length]);
 
   const dismiss = async (gigId: string) => {
     if (!user) return;
@@ -385,21 +399,16 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
         onSaved={() => { /* user can hit Scan now to re-run */ }}
       />
 
-      <FirstTimeHint
-        storageKey="gigs.scouted-explainer"
-        title="How scouting works"
-        description="Tap Scan now and Kreto searches gig boards, LinkedIn, Instagram and ATS pages, then ranks results by fit. Tap a card to read the full brief inside the app."
-        tone="energy"
-      />
-
       {scanning && (
-        <Card className="p-3 border-energy/30 bg-energy/[0.04] flex items-center gap-3">
-          <KretoMark size="xs" state="active" className="shrink-0" />
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-foreground">Searching gig boards, LinkedIn, Instagram and ATS pages…</p>
-            <p className="text-[11px] text-muted-foreground">{scanElapsed}s elapsed — usually takes 20-40s</p>
+        <SmartWidget interactive={false} className="p-3">
+          <div className="flex items-center gap-3">
+            <KretoMark size="xs" state="active" className="shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-foreground">Searching gig boards, LinkedIn, Instagram and ATS pages…</p>
+              <p className="text-[11px] text-muted-foreground">{scanElapsed}s elapsed — usually takes 20-40s</p>
+            </div>
           </div>
-        </Card>
+        </SmartWidget>
       )}
 
       {gigs.length === 0 && !scanning ? (
@@ -668,6 +677,16 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Explainer, not the headline -- scanning now happens on its own and
+          the results above are the point of the page, so "how it works"
+          drops to a footnote instead of standing between arrival and them. */}
+      <FirstTimeHint
+        storageKey="gigs.scouted-explainer"
+        title="How scouting works"
+        description="Kreto scans gig boards, LinkedIn, Instagram and ATS pages automatically and ranks results by fit. Tap a card to read the full brief inside the app."
+        tone="energy"
+      />
     </div>
   );
 }

@@ -8,12 +8,16 @@
  * implies activity on its own -- pass `state` only when something real is
  * happening, and it always carries a paired sr-only label, never color or
  * motion alone.
+ *
+ * Renders the official multicolor K-mark asset as-is (same image BrandLogo
+ * uses in the navbar) rather than recoloring it -- Kreto's own mark used to
+ * be masked down to a flat brand-pink fill, which read as a different logo
+ * from the one in the navbar instead of the same mark in a smaller context.
  */
-import type { CSSProperties } from "react";
 import kMarkAsset from "@/assets/brand/kretopia-k-mark.png.asset.json";
 import { cn } from "@/lib/utils";
 
-/** "bare" renders just the masked icon, no surrounding surface/ring at all --
+/** "bare" renders just the icon, no surrounding surface/ring at all --
  *  for callers that already provide their own circular surface (e.g. a
  *  launcher FAB) and would otherwise get a nested circle-in-circle look. */
 type Variant = "default" | "compact" | "interactive" | "muted" | "status" | "bare";
@@ -61,22 +65,6 @@ export const KretoMark = ({
   const isInteractive = variant === "interactive" || !!onClick;
   const showPulse = state !== "idle";
 
-  // The K-mark art itself is recolored via mask-image so it reads correctly
-  // on any surface (solid chip fill, dark card, muted background) without
-  // guessing at the source asset's native color.
-  const markStyle: CSSProperties = {
-    WebkitMaskImage: `url(${kMarkAsset.url})`,
-    maskImage: `url(${kMarkAsset.url})`,
-    WebkitMaskSize: "contain",
-    maskSize: "contain",
-    WebkitMaskRepeat: "no-repeat",
-    maskRepeat: "no-repeat",
-    WebkitMaskPosition: "center",
-    maskPosition: "center",
-    backgroundColor:
-      variant === "compact" ? "white" : variant === "muted" ? "hsl(var(--muted-foreground))" : "hsl(var(--energy))",
-  };
-
   const surfaceClass = cn(
     "relative inline-flex shrink-0 select-none items-center justify-center rounded-full",
     s.box,
@@ -92,7 +80,13 @@ export const KretoMark = ({
 
   const visual = (
     <>
-      <span aria-hidden className={s.mark} style={markStyle} />
+      <img
+        aria-hidden
+        src={kMarkAsset.url}
+        alt=""
+        draggable={false}
+        className={cn(s.mark, "select-none object-contain", variant === "muted" && "opacity-70")}
+      />
       {showPulse && (
         <span
           aria-hidden

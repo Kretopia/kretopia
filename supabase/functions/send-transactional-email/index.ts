@@ -360,6 +360,33 @@ Deno.serve(async (req) => {
 
   console.log('Transactional email enqueued', { templateName, effectiveRecipient })
 
+  // The queue only actually gets drained by a pg_cron job (process-email-queue,
+  // every 5s) that lives outside version control -- it's created dynamically by
+  // Lovable's email setup tool via the Management API, not by any migration
+  // here, so it can silently be missing, misconfigured, or stalled with no
+  // trace in this repo. Don't make every transactional email depend on that
+  // cron alone: kick the dispatcher directly, right after enqueueing, so a
+  // message sends within this same request's lifetime instead of waiting on
+  // (or depending entirely on) an external job we have no visibility into.
+  // Fire-and-forget -- EdgeRuntime.waitUntil keeps it alive past the response
+  // without making the caller wait on a full queue-drain cycle.
+  const kickQueue = fetch(`${supabaseUrl}/functions/v1/process-email-queue`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+    },
+  }).catch((err) => {
+    console.warn('Failed to kick process-email-queue after enqueue', { error: String(err) })
+  })
+  try {
+    // @ts-ignore Deno Deploy global, not in the standard Deno lib types
+    EdgeRuntime?.waitUntil?.(kickQueue)
+  } catch {
+    // older runtimes without EdgeRuntime.waitUntil — the cron (if it's
+    // running) still picks this message up on its next tick regardless
+  }
+
   return new Response(
     JSON.stringify({ success: true, queued: true }),
     {

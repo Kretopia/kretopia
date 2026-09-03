@@ -13,7 +13,7 @@ import { useAccountTone } from "@/hooks/useAccountTone";
 const CREATIVE_ITEMS = [
   { path: "/", icon: Home, label: "Home", hint: "Today, insights, and Kreto's brief" },
   { path: "/profile", icon: BadgeCheck, label: "Passport", hint: "Your verified creative identity" },
-  { path: "/opportunities", icon: Briefcase, label: "Opportunities", hint: "Scouted gigs matched to you" },
+  { path: "/opportunities", icon: Briefcase, label: "Scout", hint: "Scouted gigs matched to you" },
   { path: "/desk", icon: LayoutGrid, label: "Studio", hint: "Projects, files, and collaborators" },
 ];
 

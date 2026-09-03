@@ -751,8 +751,17 @@ export const ThriveAgentFab = () => {
   const quickPrompts = QUICK_PROMPTS_BY_SURFACE[surface] ?? QUICK_PROMPTS_BY_SURFACE.home!;
   const surfaceLabel = SURFACE_LABEL[surface];
 
-  const chatHeader = (
-    <div className="px-5 pt-5 pb-3 border-b border-border shrink-0">
+  // showClose: the desktop panel has no other chrome around it, so it needs
+  // its own close button. It's positioned absolutely (not dropped into the
+  // action row below) because that row -- badge + "What can I do?" + Reset --
+  // is already close to the panel's 380px width; a fourth item pushed it
+  // past the panel's own right edge, clipped by its overflow-hidden. Fixed
+  // width/inset instead, with the header's own padding widened on the right
+  // so its content never runs under it. The mobile Sheet already renders its
+  // own top-right close affordance, so this stays false there to avoid a
+  // duplicate.
+  const chatHeader = (showClose: boolean) => (
+    <div className={cn("relative pl-5 pt-5 pb-3 border-b border-border shrink-0", showClose ? "pr-16" : "pr-5")}>
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
           <Sparkles className="h-4 w-4 text-primary" />
@@ -765,28 +774,46 @@ export const ThriveAgentFab = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
+            className={cn("h-7 gap-1 text-muted-foreground hover:text-foreground", showClose ? "w-7 px-0" : "px-2")}
             onClick={() => setCapsOpen(true)}
             aria-label="What can Copilot do?"
+            title={showClose ? "What can I do?" : undefined}
           >
             <HelpCircle className="h-3.5 w-3.5" />
-            <span className="text-[11px] font-medium">What can I do?</span>
+            {!showClose && <span className="text-[11px] font-medium">What can I do?</span>}
           </Button>
           {user && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
+              className={cn("h-7 gap-1 text-muted-foreground hover:text-foreground", showClose ? "w-7 px-0" : "px-2")}
               onClick={clearHistory}
               aria-label="Reset chat memory"
               title="Reset chat memory — next prompt starts fresh"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span className="text-[11px] font-medium">Reset</span>
+              {!showClose && <span className="text-[11px] font-medium">Reset</span>}
             </Button>
           )}
         </div>
       </div>
+      {showClose && (
+        <Button
+          variant="ghost"
+          size="icon"
+          // Inline position, not the `absolute` utility class: every ghost
+          // Button carries the global .btn-glass class (index.css), which
+          // sets `position: relative` outside Tailwind's cascade layers --
+          // unlayered CSS beats a plain utility class regardless of source
+          // order, so `className="absolute ..."` here silently loses.
+          style={{ position: "absolute" }}
+          className="right-3 top-3 h-7 w-7 text-muted-foreground hover:text-foreground"
+          onClick={() => setOpen(false)}
+          aria-label="Close Kreto"
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      )}
     </div>
   );
 
@@ -1077,16 +1104,7 @@ export const ThriveAgentFab = () => {
               height: "min(600px, 75vh)",
             }}
           >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-3 top-3 z-10 h-7 w-7 text-muted-foreground hover:text-foreground"
-              onClick={() => setOpen(false)}
-              aria-label="Close Kreto"
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-            {chatHeader}
+            {chatHeader(true)}
             {messagesArea}
             {composerArea}
           </div>
@@ -1097,7 +1115,7 @@ export const ThriveAgentFab = () => {
             side="bottom"
             className="rounded-t-3xl border-t border-border p-0 h-[85vh] flex flex-col"
           >
-            {chatHeader}
+            {chatHeader(false)}
             {messagesArea}
             {composerArea}
           </SheetContent>

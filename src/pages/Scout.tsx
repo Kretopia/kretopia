@@ -107,9 +107,11 @@ const Scout = () => {
         }
       />
 
-      {/* Body */}
+      {/* Body — the scan and its results are the reason someone opens Scout,
+          so they render first; the Kreto nudge (a generic, always-available
+          "or just chat" prompt, same as every other authed surface) drops to
+          the bottom instead of sitting above results on every visit. */}
       <StudioFeatureShell>
-        <KretoTip compact />
         {contextQuery && (
           <div className="rounded-xl border border-[hsl(var(--accent-scout))]/30 bg-[hsl(var(--accent-scout))]/5 p-3 text-xs flex items-start gap-2">
             <Radar className="h-3.5 w-3.5 mt-0.5 text-[hsl(var(--accent-scout))] shrink-0" />
@@ -119,10 +121,11 @@ const Scout = () => {
             </div>
           </div>
         )}
-        <SurfaceProactiveCards surface="scout" className="px-0" />
         {tab === "scouted" && <ScoutedGigsSection />}
         {tab === "shortlist" && <ShortlistedGigs />}
         {tab === "marketplace" && <OpportunitiesFeed />}
+        <SurfaceProactiveCards surface="scout" className="px-0" />
+        <KretoTip compact />
       </StudioFeatureShell>
     </div>
   );

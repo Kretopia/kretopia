@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { HoloCard } from "@/components/passport/HoloCard";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -687,7 +688,8 @@ export default function Onboarding() {
         <div className="absolute top-20 -left-32 w-64 h-64 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
         <div className="absolute top-40 -right-32 w-64 h-64 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
 
-        <Card className="w-full max-w-lg relative z-10 border-primary/10 shadow-xl shadow-primary/5 overflow-hidden">
+        <HoloCard className="w-full max-w-lg relative z-10">
+        <div className="relative overflow-hidden rounded-2xl border border-primary/10 bg-card shadow-xl shadow-primary/5">
 
           {/* Unified funnel header — stepper + live XP counter */}
           {phase !== "verify" && (() => {
@@ -724,6 +726,19 @@ export default function Onboarding() {
                 </h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
                   Drop your name (and a portfolio link if you have one) — Kreto will search the web and turn it into verified {BRAND.stamps.toLowerCase()} on your {BRAND.passport}. Then we'll get you matched and earning.
+                </p>
+              </div>
+
+              {/* A real welcome, not just instructional copy -- the request
+                  behind this card was "purify the UX: less pink, more warmth
+                  from the team," so it says so plainly instead of only
+                  explaining what to type. */}
+              <div className="flex items-start gap-3 rounded-xl border border-border/60 bg-muted/30 p-3.5">
+                <KretoMark size="sm" variant="bare" className="shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  <span className="text-foreground font-semibold">Welcome to Kretopia.</span>{" "}
+                  We built this so your work finally gets the credit it deserves — take your time, Kreto's got the search covered.
+                  <span className="block text-[11px] text-muted-foreground/70 mt-1">— The Kretopia Team</span>
                 </p>
               </div>
 
@@ -822,10 +837,10 @@ export default function Onboarding() {
 
               {/* Wave 2: Empty-search fallback — turn failure into guided success */}
               {notFound && (
-                <div className="rounded-xl border border-energy/30 bg-gradient-to-br from-energy/5 via-card to-primary/5 p-4 space-y-4 animate-fade-in">
+                <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-accent/5 p-4 space-y-4 animate-fade-in">
                   <div className="flex items-start gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-energy/15 flex items-center justify-center shrink-0">
-                      <Sparkles className="h-4 w-4 text-energy" />
+                    <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                      <Sparkles className="h-4 w-4 text-primary" />
                     </div>
                     <div className="space-y-0.5">
                       <p className="text-sm font-bold">We couldn't find your work yet — let's build it together.</p>
@@ -922,10 +937,10 @@ export default function Onboarding() {
               <div className="p-6 sm:p-8 space-y-5">
                 {/* Warm empty-state — shown when discovery returned nothing or timed out */}
                 {enteredEmpty && (
-                  <div className="rounded-xl border border-energy/30 bg-gradient-to-br from-energy/5 via-card to-primary/5 p-4 animate-fade-in">
+                  <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-accent/5 p-4 animate-fade-in">
                     <div className="flex items-start gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-energy/15 flex items-center justify-center shrink-0">
-                        <Sparkles className="h-4 w-4 text-energy" />
+                      <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                        <Sparkles className="h-4 w-4 text-primary" />
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-bold">We couldn't find your work online yet — that's okay.</p>
@@ -938,7 +953,7 @@ export default function Onboarding() {
                 {/* Photo + Name row */}
                 <div className="flex items-start gap-4">
                   <div className="relative shrink-0">
-                    <Avatar className={`h-20 w-20 ring-2 transition-all ${avatarUrl ? "ring-primary shadow-lg shadow-primary/20" : "ring-energy/60 ring-offset-2 ring-offset-background animate-pulse"}`}>
+                    <Avatar className={`h-20 w-20 ring-2 transition-all ${avatarUrl ? "ring-primary shadow-lg shadow-primary/20" : "ring-primary/60 ring-offset-2 ring-offset-background animate-pulse"}`}>
                       <AvatarImage src={avatarUrl} className="object-cover" />
                       <AvatarFallback className="bg-primary/5"><Camera className="h-7 w-7 text-muted-foreground" /></AvatarFallback>
                     </Avatar>
@@ -960,7 +975,7 @@ export default function Onboarding() {
                       <button
                         type="button"
                         onClick={() => document.getElementById("avatar-upload")?.click()}
-                        className="text-xs text-white hover:text-[hsl(var(--energy))] font-medium inline-flex items-center gap-1.5 transition-colors text-left"
+                        className="text-xs text-white hover:text-primary font-medium inline-flex items-center gap-1.5 transition-colors text-left"
                       >
                         <Sparkles className="h-3 w-3 shrink-0" />
                         <span>Add a photo — profiles with photos get 3× more matches</span>
@@ -975,7 +990,7 @@ export default function Onboarding() {
                   {showCustomRole || (!isRoleInOptions && role) ? (
                     <div className="space-y-1.5">
                       <Input id="review-role-trigger" value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />
-                      <button type="button" className="text-xs text-white hover:text-[hsl(var(--energy))] hover:underline transition-colors" onClick={() => { setShowCustomRole(false); setRole(""); }}>
+                      <button type="button" className="text-xs text-white hover:text-primary hover:underline transition-colors" onClick={() => { setShowCustomRole(false); setRole(""); }}>
                         Choose from list
                       </button>
                     </div>
@@ -1043,7 +1058,7 @@ export default function Onboarding() {
                           setGeneratingBio(false);
                         }
                       }}
-                      className="text-xs font-medium inline-flex items-center gap-1 text-white hover:text-[hsl(var(--energy))] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="text-xs font-medium inline-flex items-center gap-1 text-white hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       {generatingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                       {bio ? "Rewrite for me" : "Suggest a bio"}
@@ -1121,7 +1136,7 @@ export default function Onboarding() {
                 </Button>
 
                 {/* Back */}
-                <button onClick={() => setPhase("discover")} className="block w-full text-center text-xs text-white/60 hover:text-[hsl(var(--energy))] transition-colors py-1">
+                <button onClick={() => setPhase("discover")} className="block w-full text-center text-xs text-white/60 hover:text-primary transition-colors py-1">
                   ← Back to search
                 </button>
               </div>
@@ -1166,7 +1181,8 @@ export default function Onboarding() {
           )}
 
           <ImageCropDialog imageUrl={tempImageUrl} open={showCropDialog} onClose={() => { setShowCropDialog(false); setTempImageUrl(""); }} onCropComplete={uploadAvatar} loading={uploadingAvatar} />
-        </Card>
+        </div>
+        </HoloCard>
 
         <ProfileLaunchScreen
           open={showCelebration}

@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Lock, Sparkles } from "lucide-react";
+import { Lock, Sparkles, User, Briefcase } from "lucide-react";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
@@ -584,18 +584,24 @@ const Auth = () => {
               <TabsContent value="signup">
                 {signupMode === "claim" ? (
                   <>
-                    {/* Creator vs Brand toggle */}
-                    <div className="mb-4 grid grid-cols-2 gap-2 p-1 rounded-lg bg-muted/50 border border-border/60">
+                    {/* Creator vs Brand toggle -- same modern icon-card
+                        treatment as SignUpWizard's own toggle (below, once
+                        signupMode flips to "classic"), not the old emoji
+                        pill: switching between them mid-flow read as two
+                        different UIs for the same choice. */}
+                    <div className="mb-4 grid grid-cols-2 gap-2 p-1 rounded-xl bg-muted/50 border">
                       <button
                         type="button"
                         onClick={() => setAccountType("individual")}
-                        className={`h-9 rounded-md text-xs font-semibold transition-all ${
+                        className={`flex flex-col items-center gap-1 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
                           accountType === "individual"
                             ? "bg-background shadow-sm text-foreground"
                             : "text-muted-foreground hover:text-foreground"
                         }`}
+                        aria-pressed={accountType === "individual"}
                       >
-                        🎨 I'm a Creator
+                        <User className="h-4 w-4" />
+                        I'm a Creator
                       </button>
                       <button
                         type="button"
@@ -603,13 +609,15 @@ const Auth = () => {
                           setAccountType("company");
                           setSignupMode("classic");
                         }}
-                        className={`h-9 rounded-md text-xs font-semibold transition-all ${
+                        className={`flex flex-col items-center gap-1 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
                           accountType === "company"
                             ? "bg-background shadow-sm text-foreground"
                             : "text-muted-foreground hover:text-foreground"
                         }`}
+                        aria-pressed={accountType === "company"}
                       >
-                        🏢 I'm a Brand
+                        <Briefcase className="h-4 w-4" />
+                        I'm a Brand
                       </button>
                     </div>
 

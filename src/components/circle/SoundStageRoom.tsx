@@ -24,7 +24,9 @@ import {
   Share2,
   Check,
   Link2,
+  UserPlus,
 } from "lucide-react";
+import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -780,6 +782,7 @@ export function SoundStageRoom({
   const leave = () => onOpenChange(false);
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const stageShareUrl = stageId
     ? `${window.location.origin}/circle?tab=stages&join=${stageId}`
@@ -1325,6 +1328,20 @@ export function SoundStageRoom({
             <div className="flex items-center gap-2">
               {meSpeaker ? (
                 <>
+                  {/* Invite — host/speakers only, matching the brief's
+                      "authorized roles" requirement; audience members can
+                      still use Share (top bar) since the stage is already
+                      open to anyone. */}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full h-11 w-11"
+                    onClick={() => setInviteOpen(true)}
+                    aria-label="Invite someone to this Stage"
+                    title="Invite"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                  </Button>
                   {/* Screen share — desktop only (mobile browsers can't capture displays) */}
                   <Button
                     variant={sharingScreen ? "lime" : "outline"}
@@ -1433,6 +1450,26 @@ export function SoundStageRoom({
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Invite — distinct from Share above: resolves a real recipient
+            from the caller's own connections (never a guessed/typed
+            identity), sends one in-app message per person via the existing
+            messages table (no new backend needed -- shared_content_type is
+            a plain text column, no CHECK constraint to widen), no auto-send
+            without the explicit "Send" tap in the dialog itself. Reuses the
+            same connections-picker already used for sharing gigs/projects/
+            events elsewhere in the app, not a second one built for Stage. */}
+        {stageId && (
+          <ShareToMessageDialog
+            open={inviteOpen}
+            onOpenChange={setInviteOpen}
+            contentType="stage"
+            contentId={stageId}
+            contentMeta={{ title, subtitle: "Live now on Kretopia" }}
+            externalUrl={stageShareUrl ?? undefined}
+            externalText={`Join "${title}" live on Kretopia`}
+          />
+        )}
     </div>
   );
 }

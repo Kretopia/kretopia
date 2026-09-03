@@ -976,10 +976,16 @@ export function SoundStageRoom({
             focus trap, and Escape does nothing). Content itself carries
             the fullscreen styling instead of shadcn's centered/max-w
             DialogContent, and Escape closes it the same way the header's
-            X does -- restoring the Sheet's own prior behavior, not new. */}
+            X does -- restoring the Sheet's own prior behavior, not new.
+            Accessible name comes from the real DialogPrimitive.Title
+            below (wrapping the visible stage-title h1 via asChild, not a
+            second hidden element) -- an aria-label here was tried first
+            but Radix's own dev-mode warning ("DialogContent requires a
+            DialogTitle") confirmed aria-label alone doesn't satisfy its
+            internal check, caught live via console during this pass's
+            browser verification, not assumed. */}
         <DialogPrimitive.Content
           className="fixed inset-0 z-50 flex flex-col bg-background animate-in fade-in duration-200 focus:outline-none"
-          aria-label={`${title} — On Stage`}
           aria-describedby={undefined}
         >
         <span aria-live="polite" className="sr-only">{recordingAnnouncement}</span>
@@ -1013,7 +1019,9 @@ export function SoundStageRoom({
               </Badge>
             )}
             <div className="flex-1 min-w-0">
-              <h1 className="font-bold text-sm leading-tight truncate">{title}</h1>
+              <DialogPrimitive.Title asChild>
+                <h1 className="font-bold text-sm leading-tight truncate">{title}</h1>
+              </DialogPrimitive.Title>
               <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                 <span className="flex items-center gap-1">
                   <Users className="h-3 w-3" />

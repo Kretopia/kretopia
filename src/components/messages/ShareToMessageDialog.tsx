@@ -36,6 +36,7 @@ const LABELS: Record<SharedContentType, string> = {
   profile: "profile",
   credit: "credit",
   campaign: "campaign",
+  stage: "Stage",
 };
 
 export const ShareToMessageDialog = ({

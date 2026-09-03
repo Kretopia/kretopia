@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { Briefcase, Folder, Calendar, User, Award, Heart } from "lucide-react";
+import { Briefcase, Folder, Calendar, User, Award, Heart, Radio } from "lucide-react";
 
-export type SharedContentType = "gig" | "project" | "event" | "profile" | "credit" | "campaign";
+export type SharedContentType = "gig" | "project" | "event" | "profile" | "credit" | "campaign" | "stage";
 
 interface SharedContentCardProps {
   type: SharedContentType;
@@ -21,6 +21,7 @@ const ICONS: Record<SharedContentType, React.ComponentType<{ className?: string 
   profile: User,
   credit: Award,
   campaign: Heart,
+  stage: Radio,
 };
 
 const LABELS: Record<SharedContentType, string> = {
@@ -30,6 +31,7 @@ const LABELS: Record<SharedContentType, string> = {
   profile: "Profile",
   credit: "Credit",
   campaign: "Fund Campaign",
+  stage: "Stage",
 };
 
 const ROUTES: Record<SharedContentType, (id: string) => string> = {
@@ -39,6 +41,10 @@ const ROUTES: Record<SharedContentType, (id: string) => string> = {
   profile: (id) => `/profile/${id}`,
   credit: (id) => `/production?id=${id}`,
   campaign: (id) => `/fund/${id}`,
+  // Sound Stages have no dedicated per-stage route (confirmed in the On
+  // Stage audit) -- the same ?join= deep link the Share dialog's copy-link
+  // action produces, handled by LiveCallsPanel's joinStageId prop.
+  stage: (id) => `/circle?tab=stages&join=${id}`,
 };
 
 export const SharedContentCard = ({ type, id, meta, isOwn }: SharedContentCardProps) => {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,10 @@ interface LiveCallsPanelProps {
   /** Jumps the parent page to its Match tab — lets "Find a Collaborator"
    * live inside Sound Stages instead of a separate card above it. */
   onFindCollaborator?: () => void;
+  /** From a shared Stage link (?join=<stage_id>) — auto-joins on mount once.
+   * join-sound-stage re-validates is_live server-side regardless of how the
+   * caller learned the id, so this adds no new trust surface. */
+  joinStageId?: string | null;
 }
 
 /**
@@ -35,7 +39,7 @@ interface LiveCallsPanelProps {
  * stages, and the upcoming call sheet, all inside the same Studio-grammar
  * surface instead of a stack of independently-styled sections.
  */
-export function LiveCallsPanel({ onFindCollaborator }: LiveCallsPanelProps) {
+export function LiveCallsPanel({ onFindCollaborator, joinStageId }: LiveCallsPanelProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -128,6 +132,34 @@ export function LiveCallsPanel({ onFindCollaborator }: LiveCallsPanelProps) {
       });
     }
   };
+
+  // Deep-link from a shared Stage link (?join=<stage_id>) — fetch just enough
+  // of the row to call the same handleJoinStage path a rail-card click uses.
+  // join-sound-stage itself re-checks is_live server-side, so an expired/
+  // ended stage id fails there with a normal error toast, not a silent hang.
+  const joinedFromLinkRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!joinStageId || !user) return;
+    if (joinedFromLinkRef.current === joinStageId) return;
+    joinedFromLinkRef.current = joinStageId;
+    (async () => {
+      const { data, error } = await supabase
+        .from("sound_stages")
+        .select("id, host_user_id, title, vibe_tag, mode, format, participant_count, started_at, is_live")
+        .eq("id", joinStageId)
+        .maybeSingle();
+      if (error || !data) {
+        toast({ title: "Couldn't find that Stage", description: "The link may be expired.", variant: "destructive" });
+        return;
+      }
+      if (!data.is_live) {
+        toast({ title: "This Stage has ended" });
+        return;
+      }
+      handleJoinStage(data as SoundStage);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [joinStageId, user]);
 
   const handleCallClose = async (next: boolean) => {
     setCallOpen(next);

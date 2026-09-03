@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Mic,
   MicOff,
@@ -21,7 +23,12 @@ import {
   ScreenShareOff,
   Circle,
   Square,
+  Share2,
+  Check,
+  Link2,
+  UserPlus,
 } from "lucide-react";
+import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,13 +46,40 @@ import { destroyExistingDailyFrameAsync } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 /**
  * Clubhouse / Twitter-Spaces style Sound Stage room.
  * Audio-first. Stage (host + speakers) on top, audience grid below.
  * Audience can raise hand → host promotes to speaker.
+ *
+ * Fullscreen destination, not an overlay -- a fixed inset-0 layer above the
+ * app chrome (there is no dedicated route; the join/create data flow through
+ * LiveCallsPanel's own state was already correct per the Phase 1 audit, so
+ * this stays a takeover layer rather than a route change, to avoid touching
+ * that working data flow for a container-only ask).
+ *
+ * Primary actions (join/start, share, screen share, record) use the
+ * STAGE_CTA_PRIMARY class + STAGE_CTA_GRADIENT_STYLE style -- a controlled
+ * grey-to-pink gradient scoped to this component only, not a change to the
+ * shared Button variants used project-wide. Destructive actions (leave, end)
+ * stay on the existing outline/destructive Button variants so they never
+ * read as the primary CTA.
+ *
+ * The gradient is applied via inline `style`, not a Tailwind bg-gradient-*
+ * className: every non-link Button variant carries the global .btn-glass
+ * class (index.css), which sets its own background outside Tailwind's
+ * cascade layers -- unlayered CSS beats a plain utility class regardless of
+ * source order (confirmed earlier this session fixing the Auth page's Apple
+ * button, which broke the same way). Inline style is the one thing
+ * guaranteed to win.
  */
+const STAGE_CTA_PRIMARY =
+  "text-white border border-white/10 shadow-lg hover:shadow-[0_0_28px_-6px_hsl(var(--energy)/0.55)] hover:brightness-110 active:brightness-95 disabled:opacity-50 disabled:hover:shadow-lg transition-all";
+const STAGE_CTA_GRADIENT_STYLE = {
+  background: "linear-gradient(135deg, hsl(240 14% 18%), hsl(var(--energy)))",
+};
 
 interface SoundStageRoomProps {
   open: boolean;
@@ -114,6 +148,7 @@ export function SoundStageRoom({
 }: SoundStageRoomProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const callRef = useRef<DailyCall | null>(null);
   // Local backstage flag — flips to false when host taps "Open the doors".
   const [isBackstage, setIsBackstage] = useState(backstage);
@@ -144,6 +179,31 @@ export function SoundStageRoom({
   // to ALL participants so the indicator stays in sync.
   const [recording, setRecording] = useState(false);
   const [recordingBusy, setRecordingBusy] = useState(false);
+  // "unknown" until Daily's first network-quality-change event lands --
+  // never shown to the user as a state, since we have no real reading yet.
+  const [networkState, setNetworkState] = useState<"good" | "warning" | "bad" | "unknown">("unknown");
+  // Recording start/stop is otherwise only visible (the REC badge) -- a
+  // screen-reader user gets no signal that anything changed. Announce real
+  // transitions only, never on initial mount (both start at false/false,
+  // so the ref-vs-state comparison below is naturally silent then).
+  const [recordingAnnouncement, setRecordingAnnouncement] = useState("");
+  // Audience format rooms allow up to 200 people -- mounting an avatar tile
+  // per person unconditionally means up to 200 DOM nodes (with their own
+  // useMemo'd color calc each) rendered regardless of what's actually
+  // visible. Capped by default with an explicit expand, not virtualized:
+  // far simpler than pulling in a virtualization library for what's still
+  // plain avatar tiles (no video/audio track mounts happen for audience
+  // members either way -- see the render below), while still bounding
+  // worst-case DOM size for the common case.
+  const [showAllAudience, setShowAllAudience] = useState(false);
+  const AUDIENCE_PREVIEW_COUNT = 24;
+  const prevRecordingRef = useRef(false);
+  useEffect(() => {
+    if (prevRecordingRef.current !== recording) {
+      setRecordingAnnouncement(recording ? "Recording started" : "Recording stopped");
+      prevRecordingRef.current = recording;
+    }
+  }, [recording]);
   const localLevelRef = useRef(0);
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>
@@ -383,6 +443,7 @@ export function SoundStageRoom({
   useEffect(() => {
     if (!open || !roomUrl || phase !== "joining" || callRef.current) return;
     let cancelled = false;
+    let onAnyTimer: ReturnType<typeof setTimeout> | null = null;
 
     const init = async () => {
       setJoining(true);
@@ -401,6 +462,18 @@ export function SoundStageRoom({
           startVideoOff: mode !== "video" || !isHost,
           userName,
           subscribeToTracksAutomatically: true,
+          // HD-preferred, not HD-forced: 'adaptive-3-layers' asks Daily to
+          // simulcast low/medium/high encodings and let its own SFU pick the
+          // layer each receiver's real network can sustain, degrading and
+          // recovering automatically -- this is Daily's own adaptive-bitrate
+          // mechanism, not a hand-rolled one. No video call above forces a
+          // resolution; this is the real lever for "HD-preferred, adaptive
+          // quality" against this provider. 'detail-optimized' screen video
+          // favors legible slides/text over motion smoothness, the more
+          // common case for a Stage's screen share.
+          sendSettings: mode === "video"
+            ? { video: "adaptive-3-layers", screenVideo: "detail-optimized" }
+            : { screenVideo: "detail-optimized" },
         };
         try {
           call = DailyIframe.createCallObject(opts);
@@ -415,9 +488,21 @@ export function SoundStageRoom({
         }
         callRef.current = call;
 
+        // Daily fires participant-joined/updated/left and track-started/
+        // stopped independently per track per participant -- a group join
+        // or a burst of camera/mic startups can trigger this many times
+        // within milliseconds. Coalescing into one refresh per short window
+        // avoids a full members re-fetch (and the profile-cache lookups,
+        // React state update, and tile re-render that follow) per event.
+        // onAnyTimer lives in the effect's own scope (not a ref) so the
+        // effect's cleanup below can clear it directly.
         const onAny = () => {
-          refreshMembers().catch(() => {});
-          setScreenTick((t) => t + 1);
+          if (onAnyTimer) clearTimeout(onAnyTimer);
+          onAnyTimer = setTimeout(() => {
+            onAnyTimer = null;
+            refreshMembers().catch(() => {});
+            setScreenTick((t) => t + 1);
+          }, 150);
         };
         call.on("participant-joined", onAny);
         call.on("participant-updated", onAny);
@@ -445,6 +530,13 @@ export function SoundStageRoom({
             description: ev?.errorMsg || "Daily cloud recording isn't enabled on this workspace.",
             variant: "destructive",
           });
+        });
+
+        // Real network-quality signal from Daily's own SFU-side measurement
+        // (packet loss / bitrate), not a client-side guess. 'unknown' (the
+        // initial state) is never rendered -- see the networkState UI below.
+        call.on("network-quality-change", (ev) => {
+          setNetworkState(ev.networkState);
         });
 
         call.on(
@@ -583,6 +675,7 @@ export function SoundStageRoom({
 
     return () => {
       cancelled = true;
+      if (onAnyTimer) clearTimeout(onAnyTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, roomUrl, token, phase]);
@@ -726,7 +819,65 @@ export function SoundStageRoom({
     callRef.current?.updateParticipant(m.sessionId, { eject: true });
   };
 
-  const leave = () => onOpenChange(false);
+  // Recording/replay integration: SoundStageRoom already starts/stops Daily's
+  // cloud recording (below) and Recordings.tsx already lists + replays
+  // sound_stage recordings via the existing RecordingReplayDialog (built in
+  // a prior sprint) -- the missing link was purely that nothing here ever
+  // told the host where the recording goes. Daily's webhook resolves a
+  // "ss-" room to a call_transcripts row asynchronously (not ready the
+  // instant the call ends), so this can't open the replay directly -- it
+  // points at the surface that already handles "not ready yet" correctly,
+  // rather than polling or guessing readiness here. Host-only: the same
+  // known, pre-existing call_transcripts authorization only actually grants
+  // created_by (the host) access for this call_kind today (see
+  // docs/SECURITY_FINDINGS.md) -- showing this to non-hosts would promise
+  // access they may not get.
+  const leave = () => {
+    if (recording && isHost) {
+      toast({
+        title: "Recording saved",
+        description: "It'll appear in your Recordings once Daily finishes processing — usually a few minutes after a stage ends.",
+        action: (
+          <ToastAction altText="View Recordings" onClick={() => navigate("/recordings")}>
+            View Recordings
+          </ToastAction>
+        ),
+      });
+    }
+    onOpenChange(false);
+  };
+
+  const [shareOpen, setShareOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const stageShareUrl = stageId
+    ? `${window.location.origin}/circle?tab=stages&join=${stageId}`
+    : null;
+
+  const copyShareLink = async () => {
+    if (!stageShareUrl) return;
+    try {
+      await navigator.clipboard.writeText(stageShareUrl);
+      setShareCopied(true);
+      toast({ title: "Link copied" });
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      toast({ title: "Couldn't copy link", variant: "destructive" });
+    }
+  };
+
+  const nativeShare = async () => {
+    if (!stageShareUrl) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: `Join "${title}" on Kretopia`, url: stageShareUrl });
+      } catch {
+        // User cancelled the native share sheet — not an error.
+      }
+    } else {
+      await copyShareLink();
+    }
+  };
 
   const toggleRecording = async () => {
     const call = callRef.current;
@@ -816,24 +967,44 @@ export function SoundStageRoom({
   }, [list]);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="p-0 h-[100dvh] sm:h-[92vh] sm:max-w-2xl sm:mx-auto sm:rounded-t-3xl bg-background border-t-0 overflow-hidden flex flex-col [&>button.absolute]:hidden"
-      >
-        {/* Header */}
-        <div className="px-4 pt-4 pb-3 border-b border-border/60 shrink-0 space-y-2">
-          <div className="flex items-center gap-3">
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        {/* Real Radix Dialog primitives, not a bare div -- the Sheet this
+            replaced gave focus-trap and Escape-to-close for free, and a
+            plain fixed div silently drops both (confirmed while auditing
+            this rewrite for accessibility: a bare div has no role, no
+            focus trap, and Escape does nothing). Content itself carries
+            the fullscreen styling instead of shadcn's centered/max-w
+            DialogContent, and Escape closes it the same way the header's
+            X does -- restoring the Sheet's own prior behavior, not new.
+            Accessible name comes from the real DialogPrimitive.Title
+            below (wrapping the visible stage-title h1 via asChild, not a
+            second hidden element) -- an aria-label here was tried first
+            but Radix's own dev-mode warning ("DialogContent requires a
+            DialogTitle") confirmed aria-label alone doesn't satisfy its
+            internal check, caught live via console during this pass's
+            browser verification, not assumed. */}
+        <DialogPrimitive.Content
+          className="fixed inset-0 z-50 flex flex-col bg-background animate-in fade-in duration-200 focus:outline-none"
+          aria-describedby={undefined}
+        >
+        <span aria-live="polite" className="sr-only">{recordingAnnouncement}</span>
+        {/* Top bar */}
+        <div
+          className="px-3 sm:px-4 pt-3 pb-2.5 border-b border-border/60 shrink-0 space-y-2"
+          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 10px)" }}
+        >
+          <div className="flex items-center gap-2.5">
             {isBackstage ? (
               <Badge
-                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide bg-[hsl(var(--signal-amber))] text-[#05070D] hover:bg-[hsl(var(--signal-amber))]"
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide bg-[hsl(var(--signal-amber))] text-[#05070D] hover:bg-[hsl(var(--signal-amber))] shrink-0"
               >
                 <Radio className="h-2.5 w-2.5" /> Backstage
               </Badge>
             ) : (
               <Badge
                 variant="destructive"
-                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide"
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide shrink-0"
               >
                 <Radio className="h-2.5 w-2.5 animate-pulse" /> Live
               </Badge>
@@ -841,24 +1012,64 @@ export function SoundStageRoom({
             {recording && (
               <Badge
                 variant="destructive"
-                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide animate-pulse"
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide animate-pulse shrink-0"
                 title="This stage is being recorded"
               >
                 <Circle className="h-2.5 w-2.5 fill-current" /> Rec
               </Badge>
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm leading-tight truncate">{title}</p>
-              <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                <Users className="h-3 w-3" />{" "}
-                {isBackstage ? "Doors closed — only you" : `${totalCount} in the room`}
+              <DialogPrimitive.Title asChild>
+                <h1 className="font-bold text-sm leading-tight truncate">{title}</h1>
+              </DialogPrimitive.Title>
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                <span className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  {isBackstage ? "Doors closed — only you" : `${totalCount} in the room`}
+                </span>
+                {/* Real network-quality reading from Daily's own SFU-side
+                    measurement -- never shown before the first real event,
+                    and the word (Excellent/Good/Limited) always carries the
+                    state, not the dot color alone. */}
+                {phase === "in" && networkState !== "unknown" && (
+                  <span className="flex items-center gap-1">
+                    <span aria-hidden>·</span>
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full shrink-0",
+                        networkState === "good" && "bg-[hsl(var(--signal-teal))]",
+                        networkState === "warning" && "bg-[hsl(var(--signal-amber))]",
+                        networkState === "bad" && "bg-destructive",
+                      )}
+                    />
+                    <span className={cn(networkState === "bad" && "text-destructive font-medium")}>
+                      {networkState === "good" ? "Excellent" : networkState === "warning" ? "Good" : "Limited"}
+                    </span>
+                  </span>
+                )}
               </p>
             </div>
+
+            {!isBackstage && phase === "in" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-full shrink-0"
+                onClick={() => setShareOpen(true)}
+                aria-label="Share this Stage"
+                title="Share this Stage"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 rounded-full"
+              className="h-9 w-9 rounded-full shrink-0"
               onClick={leave}
+              aria-label="Leave Stage"
+              title="Leave"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -881,8 +1092,8 @@ export function SoundStageRoom({
               </div>
               <Button
                 size="sm"
-                variant="lime"
-                className="rounded-full h-8 text-[11px] font-bold shrink-0"
+                className={cn("rounded-full h-8 text-[11px] font-bold shrink-0", STAGE_CTA_PRIMARY)}
+                style={STAGE_CTA_GRADIENT_STYLE}
                 onClick={openTheDoors}
                 disabled={openingDoors}
               >
@@ -892,8 +1103,11 @@ export function SoundStageRoom({
           )}
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-7">
+        {/* Body — centered column even at full-screen width so text/roster
+            content doesn't stretch edge-to-edge on wide desktop viewports;
+            video/audience grids inside still use the full column width. */}
+        <div className="flex-1 overflow-y-auto px-4 py-5">
+          <div className="max-w-3xl mx-auto space-y-7">
           {phase === "miccheck" ? (
             <MicCheckScreen
               level={localLevel}
@@ -1096,7 +1310,7 @@ export function SoundStageRoom({
                     · {audience.length}
                   </h3>
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-2 gap-y-4">
-                    {audience.map((m) => (
+                    {(showAllAudience ? audience : audience.slice(0, AUDIENCE_PREVIEW_COUNT)).map((m) => (
                       <StageTile
                         key={m.sessionId}
                         member={m}
@@ -1111,10 +1325,20 @@ export function SoundStageRoom({
                       </p>
                     )}
                   </div>
+                  {!showAllAudience && audience.length > AUDIENCE_PREVIEW_COUNT && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllAudience(true)}
+                      className="text-xs font-semibold text-muted-foreground hover:text-foreground underline underline-offset-2"
+                    >
+                      +{audience.length - AUDIENCE_PREVIEW_COUNT} more
+                    </button>
+                  )}
                 </section>
               )}
             </>
           )}
+          </div>
         </div>
 
         {/* Phase 3C — Live captions overlay (rolling 3 lines) */}
@@ -1175,7 +1399,8 @@ export function SoundStageRoom({
               <Button
                 variant={recording ? "destructive" : "outline"}
                 size="sm"
-                className="rounded-full text-xs h-10 px-3 gap-1.5"
+                className={cn("rounded-full text-xs h-10 px-3 gap-1.5", !recording && STAGE_CTA_PRIMARY)}
+                style={!recording ? STAGE_CTA_GRADIENT_STYLE : undefined}
                 onClick={toggleRecording}
                 disabled={recordingBusy}
                 aria-label={recording ? "Stop recording" : "Start recording"}
@@ -1186,7 +1411,7 @@ export function SoundStageRoom({
                 ) : recording ? (
                   <Square className="h-3.5 w-3.5 fill-current" />
                 ) : (
-                  <Circle className="h-3.5 w-3.5 fill-current text-destructive" />
+                  <Circle className="h-3.5 w-3.5 fill-current" />
                 )}
                 <span>{recording ? "Recording" : "Record"}</span>
               </Button>
@@ -1194,11 +1419,26 @@ export function SoundStageRoom({
             <div className="flex items-center gap-2">
               {meSpeaker ? (
                 <>
+                  {/* Invite — host/speakers only, matching the brief's
+                      "authorized roles" requirement; audience members can
+                      still use Share (top bar) since the stage is already
+                      open to anyone. */}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full h-11 w-11"
+                    onClick={() => setInviteOpen(true)}
+                    aria-label="Invite someone to this Stage"
+                    title="Invite"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                  </Button>
                   {/* Screen share — desktop only (mobile browsers can't capture displays) */}
                   <Button
                     variant={sharingScreen ? "lime" : "outline"}
                     size="icon"
-                    className="rounded-full h-11 w-11 hidden sm:inline-flex"
+                    className={cn("rounded-full h-11 w-11 hidden sm:inline-flex", !sharingScreen && STAGE_CTA_PRIMARY)}
+                    style={!sharingScreen ? STAGE_CTA_GRADIENT_STYLE : undefined}
                     onClick={toggleScreenShare}
                     aria-label={sharingScreen ? "Stop sharing screen" : "Share screen"}
                     title={sharingScreen ? "Stop sharing" : "Share your screen / slides"}
@@ -1268,8 +1508,62 @@ export function SoundStageRoom({
             <RemoteAudio key={t.sessionId} track={t.track} />
           ))}
         </div>
-      </SheetContent>
-    </Sheet>
+
+        {/* Share this Stage — copy link + native share only. No attendee
+            list, no room token, no recording link exposed here; the shared
+            link only carries the stage id, which join-sound-stage
+            re-validates (is_live, capacity) server-side same as any other
+            join path. */}
+        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Share this Stage</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Anyone with this link can walk on to <span className="font-medium text-foreground">{title}</span> while it's live.
+              </p>
+              {stageShareUrl && (
+                <div className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 font-mono text-[11px] text-foreground/80 break-all">
+                  {stageShareUrl}
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" className="gap-1.5" onClick={copyShareLink}>
+                  {shareCopied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+                  {shareCopied ? "Copied" : "Copy link"}
+                </Button>
+                <Button className={cn("gap-1.5", STAGE_CTA_PRIMARY)} style={STAGE_CTA_GRADIENT_STYLE} onClick={nativeShare}>
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Invite — distinct from Share above: resolves a real recipient
+            from the caller's own connections (never a guessed/typed
+            identity), sends one in-app message per person via the existing
+            messages table (no new backend needed -- shared_content_type is
+            a plain text column, no CHECK constraint to widen), no auto-send
+            without the explicit "Send" tap in the dialog itself. Reuses the
+            same connections-picker already used for sharing gigs/projects/
+            events elsewhere in the app, not a second one built for Stage. */}
+        {stageId && (
+          <ShareToMessageDialog
+            open={inviteOpen}
+            onOpenChange={setInviteOpen}
+            contentType="stage"
+            contentId={stageId}
+            contentMeta={{ title, subtitle: "Live now on Kretopia" }}
+            externalUrl={stageShareUrl ?? undefined}
+            externalText={`Join "${title}" live on Kretopia`}
+          />
+        )}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
@@ -1371,6 +1665,15 @@ function StageTile({
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
   const showVideo = mode === "video" && member.videoOn && !!videoTrack;
+  // Accessible text for the same state the badges above show visually
+  // (role color, speaking glow, mute icon, hand emoji) -- never color/icon
+  // alone, per the brief's own accessibility requirement.
+  const statusText = [
+    member.role === "host" && "host",
+    speaking && "speaking",
+    !speaking && !member.audioOn && member.role !== "audience" && "muted",
+    member.handRaised && "hand raised",
+  ].filter(Boolean).join(", ");
   return (
     <div className="flex flex-col items-center gap-1.5 text-center min-w-0">
       <div className="relative">
@@ -1411,19 +1714,22 @@ function StageTile({
             />
           )}
         </div>
-        {/* Role / status badges */}
+        {/* Role / status badges -- decorative; the real, accessible status
+            text is the sr-only span below the name, not these icons/emoji
+            alone (active-speaker glow above is the same: color/shadow only,
+            backed by the same text). */}
         {member.role === "host" && (
-          <span className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-amber-500 text-white flex items-center justify-center">
+          <span aria-hidden="true" className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-amber-500 text-white flex items-center justify-center">
             <Crown className="h-3 w-3" />
           </span>
         )}
         {member.handRaised && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-energy text-energy-foreground flex items-center justify-center text-[10px]">
+          <span aria-hidden="true" className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-energy text-energy-foreground flex items-center justify-center text-[10px]">
             ✋
           </span>
         )}
         {!member.audioOn && member.role !== "audience" && (
-          <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-2 ring-background">
+          <span aria-hidden="true" className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-2 ring-background">
             <MicOff className="h-3 w-3" />
           </span>
         )}
@@ -1462,9 +1768,10 @@ function StageTile({
         )}
       >
         {member.isLocal ? "You" : member.name.split(" ")[0]}
+        {statusText && <span className="sr-only">, {statusText}</span>}
       </p>
       {member.role === "host" && large && (
-        <span className="text-[9px] text-amber-600 font-bold uppercase tracking-wide">
+        <span aria-hidden="true" className="text-[9px] text-amber-600 font-bold uppercase tracking-wide">
           Host
         </span>
       )}
@@ -1498,6 +1805,13 @@ function VideoStageTile({
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
   const showVideo = member.videoOn && !!videoTrack;
+  // Same rule as StageTile: the speaking glow (border/shadow) and the mute
+  // icon below are never the only signal -- text carries the state too.
+  const statusText = [
+    member.role === "host" && "host",
+    speaking && "speaking",
+    !speaking && !member.audioOn && "muted",
+  ].filter(Boolean).join(", ");
   // Deterministic per-user background so cam-off tiles never look "broken/
   // black" -- varies lightness within the single accent hue rather than a
   // full hue-wheel gradient, so it stays on-brand across every seed.
@@ -1566,10 +1880,10 @@ function VideoStageTile({
         </div>
       )}
 
-      {/* Top-left: host crown */}
+      {/* Top-left: host crown -- already carries real "Host" text, not just the icon */}
       {member.role === "host" && (
         <span className="absolute top-2 left-2 h-6 px-1.5 rounded-full bg-amber-500 text-white flex items-center gap-1 text-[10px] font-black uppercase">
-          <Crown className="h-3 w-3" /> Host
+          <Crown aria-hidden="true" className="h-3 w-3" /> Host
         </span>
       )}
 
@@ -1604,13 +1918,14 @@ function VideoStageTile({
       <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/80 to-transparent flex items-center gap-2">
         <p className="flex-1 text-xs font-bold text-white truncate drop-shadow">
           {member.isLocal ? "You" : member.name.split(" ")[0]}
+          {statusText && <span className="sr-only">, {statusText}</span>}
         </p>
         {!member.audioOn ? (
-          <span className="h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center">
+          <span aria-hidden="true" className="h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center">
             <MicOff className="h-3 w-3" />
           </span>
         ) : speaking ? (
-          <span className="h-6 w-6 rounded-full bg-[hsl(var(--signal-teal))] text-black flex items-center justify-center animate-pulse">
+          <span aria-hidden="true" className="h-6 w-6 rounded-full bg-[hsl(var(--signal-teal))] text-black flex items-center justify-center animate-pulse">
             <Mic className="h-3 w-3" />
           </span>
         ) : null}
@@ -1794,8 +2109,8 @@ function MicCheckScreen({
       <div className="flex flex-col gap-2 w-full max-w-xs">
         <Button
           size="lg"
-          variant="lime"
-          className="rounded-full h-12 text-sm font-bold"
+          className={cn("rounded-full h-12 text-sm font-bold", STAGE_CTA_PRIMARY)}
+          style={STAGE_CTA_GRADIENT_STYLE}
           onClick={onJoin}
           disabled={mode === "video" && !camStream}
         >

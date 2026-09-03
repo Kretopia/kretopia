@@ -184,6 +184,7 @@ export default function Circle() {
         >
           {user ? (
             <LiveCallsPanel
+              joinStageId={searchParams.get("join")}
               onFindCollaborator={() => {
                 setActiveTab("match");
                 const next = new URLSearchParams(searchParams);

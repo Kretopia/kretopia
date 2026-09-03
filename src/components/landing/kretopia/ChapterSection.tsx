@@ -10,7 +10,7 @@ import type { TutorialStep } from "./FeatureTutorial";
 import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { useLandingSectionView, trackLandingCtaClick, type LandingSectionId } from "@/lib/landingMetrics";
+import { trackLandingCtaClick, type LandingSectionId } from "@/lib/landingMetrics";
 
 export interface ChapterProps {
   index: string;        // "I", "II", "III"…
@@ -41,11 +41,9 @@ export const ChapterSection = ({
 }: ChapterProps) => {
   const reducedMotion = useReducedMotion();
   const sectionId = (id ?? kicker.toLowerCase()) as LandingSectionId;
-  const sectionViewRef = useLandingSectionView(sectionId);
   return (
     <section
       id={id}
-      ref={sectionViewRef}
       className="relative overflow-hidden border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
     >

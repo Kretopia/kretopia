@@ -44,9 +44,9 @@ export const KretopiaHero = ({ onSearchSubmit }: KretopiaHeroProps) => {
 
   useEffect(() => {
     analytics.featureUsed("landing_hero_viewed", { location: "hero" });
-    // Hero is above the fold at load, so mount ≈ view -- no need for an
-    // IntersectionObserver here the way every other section below uses.
-    trackLandingSectionViewed("hero");
+    // Section-view tracking for "kretopia-hero" is handled generically by
+    // LandingFunnelTracker (observes every real section[id] in the DOM) --
+    // not duplicated here.
   }, []);
 
   const handleFocusChange = (open: boolean) => {

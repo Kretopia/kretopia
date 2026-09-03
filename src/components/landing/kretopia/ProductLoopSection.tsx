@@ -12,7 +12,6 @@ import { motion } from "framer-motion";
 import { Fingerprint, Radar, Users, Clapperboard, CheckCircle2, Sparkles, RotateCw } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { analytics } from "@/lib/analytics";
-import { useLandingSectionView } from "@/lib/landingMetrics";
 
 const ACCENT = "#FF2DA1";
 
@@ -28,7 +27,6 @@ const STAGES = [
 export const ProductLoopSection = () => {
   const reducedMotion = useReducedMotion();
   const [active, setActive] = useState(0);
-  const sectionViewRef = useLandingSectionView("product_loop");
 
   const setStage = (i: number) => {
     setActive(i);
@@ -37,7 +35,7 @@ export const ProductLoopSection = () => {
 
   return (
     <section
-      ref={sectionViewRef}
+      id="chapter-loop"
       className="landing-section relative border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="product-loop-title"

@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import { Search, IdCard, Megaphone, Users2, CheckCircle2, Briefcase, Handshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
+import { trackLandingCtaClick } from "@/lib/landingMetrics";
 
 const ACCENT = "#FF2DA1";
 
@@ -27,11 +27,10 @@ const CAPABILITIES = [
 
 export const ForOrganisationsSection = () => {
   const reducedMotion = useReducedMotion();
-  const sectionViewRef = useLandingSectionView("for_organisations");
 
   return (
     <section
-      ref={sectionViewRef}
+      id="chapter-organisations"
       className="relative border-t border-white/[0.05] py-16 sm:py-20"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="for-orgs-title"

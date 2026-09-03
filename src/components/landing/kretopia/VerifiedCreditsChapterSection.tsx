@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EvidenceStateBadge } from "@/components/credits/EvidenceStateBadge";
 import { EVIDENCE_STATE_ORDER, type EvidenceState } from "@/lib/creditEvidence";
-import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
+import { trackLandingCtaClick } from "@/lib/landingMetrics";
 import { TutorialStepper } from "./TutorialStepper";
 import { VERIFIED_CREDITS_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
@@ -53,12 +53,9 @@ export const VerifiedCreditsChapterSection = () => {
   // starts auto-advancing on its own.
   const [inView, setInView] = useState(false);
 
-  const sectionViewRef = useLandingSectionView("verified_credits");
-
   return (
     <section
       id="chapter-verified-credits"
-      ref={sectionViewRef}
       className="landing-section relative overflow-hidden border-t border-white/[0.06]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="verified-credits-title"

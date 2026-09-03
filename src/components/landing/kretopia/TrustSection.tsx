@@ -11,17 +11,15 @@ import { motion } from "framer-motion";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EVIDENCE_STATE_ORDER, EVIDENCE_STATE_LABEL, EVIDENCE_STATE_DESCRIPTION } from "@/lib/creditEvidence";
-import { useLandingSectionView } from "@/lib/landingMetrics";
 
 const ACCENT = "#FF2DA1";
 
 export const TrustSection = () => {
   const reducedMotion = useReducedMotion();
-  const sectionViewRef = useLandingSectionView("trust");
 
   return (
     <section
-      ref={sectionViewRef}
+      id="chapter-trust"
       className="landing-section relative border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="trust-section-title"

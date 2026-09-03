@@ -76,7 +76,7 @@
   - [x] Refund on rejection
 
 ## 🚧 In Progress
-
+- [ ] Fix typecheck build errors (landing funnel instrumentation)
 
 ## 📋 High Priority (Next Sprint)
 

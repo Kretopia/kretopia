@@ -142,6 +142,21 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, start
           throw new Error("This event is full and isn't accepting a waitlist right now.");
         }
         waitlisted = result === "waitlisted";
+        if (!waitlisted) {
+          // rsvp_to_event returns only a status string, not the participant
+          // row -- without this lookup guestToken stays null for every
+          // logged-in RSVP, so the confirmation email below silently sends
+          // with no QR code (checkInToken: undefined). Guests get theirs
+          // from guest_rsvp_upsert's own return value below; this is the
+          // equivalent read for the signed-in path.
+          const { data: row } = await supabase
+            .from("jam_participants")
+            .select("check_in_token")
+            .eq("jam_id", eventId)
+            .eq("user_id", user.id)
+            .maybeSingle();
+          guestToken = row?.check_in_token ?? null;
+        }
       } else {
         const { data, error } = await (supabase as any).rpc("guest_rsvp_upsert", {
           p_event_id: eventId,

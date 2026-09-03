@@ -44,7 +44,6 @@ interface KretopiaLandingProps {
 export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [showRest, setShowRest] = useState(false);
-  useLandingScrollDepth();
 
   useEffect(() => {
     if (showRest) return;

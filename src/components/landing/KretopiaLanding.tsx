@@ -44,8 +44,6 @@ interface KretopiaLandingProps {
 export const KretopiaLanding = ({ onSearchSubmit }: KretopiaLandingProps) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [showRest, setShowRest] = useState(false);
-  // Scroll-depth tracking is handled generically by <LandingFunnelTracker />
-  // below, not duplicated here.
 
   useEffect(() => {
     if (showRest) return;

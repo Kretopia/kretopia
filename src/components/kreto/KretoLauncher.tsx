@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { KretoSphere } from "@/components/brand/KretoSphere";
+import { KretoMark } from "@/components/brand/KretoMark";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,15 +16,6 @@ import { cn } from "@/lib/utils";
  */
 export function KretoLauncher() {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
-    const onChange = () => setReducedMotion(mq.matches);
-    mq.addEventListener?.("change", onChange);
-    return () => mq.removeEventListener?.("change", onChange);
-  }, []);
 
   // Hide while any Sheet/Dialog (Kreto itself, menu, notifications,
   // messages, etc.) is open, so it never sits on top of a drawer.
@@ -68,7 +59,7 @@ export function KretoLauncher() {
         bottom: "max(1.25rem, env(safe-area-inset-bottom))",
       }}
     >
-      <KretoSphere size={30} animated={!reducedMotion} />
+      <KretoMark variant="bare" size="lg" />
       <span className="sr-only">Open Kreto</span>
     </button>
   );

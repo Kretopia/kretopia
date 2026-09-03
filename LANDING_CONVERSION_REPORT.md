@@ -4,6 +4,69 @@ Covers the Landing portion of the Kreto/Stage/Recordings/Landing sprint — the
 largest of the four areas. Built directly on the Phase 1 audit's findings
 (`KRETO_STAGE_RECORDINGS_CONVERSION_AUDIT.md` §D/§E).
 
+## Addendum — reconciled with independent parallel work
+
+After this report was originally written, a `git push` surfaced ~30 commits
+already on `origin/feature/reliability-overhaul` that this session didn't
+create — an independently-built implementation of the *same* feature
+(`src/lib/landingFunnel.ts`, `LandingFunnelTracker.tsx`, `InlineSignupBar.tsx`,
+a differently-shaped `get_landing_funnel` migration, a rewritten
+`LandingFunnelPanel.tsx`), authored via Lovable's own editor and following the
+identical instrument → funnel view → fix-the-two-leaks plan
+(`.lovable/plan/conversion-diagnosis-last-7-days-2026-08-31.md`, dated Aug 31 —
+predating this session's version). Real production data drove it: 282 weekly
+landing visitors, 82% never reaching `/auth`, 1 new account in 7 days.
+
+Merging surfaced two real bugs (both files edited by both sides: an import
+line survived from one side, the function call using it from the other) —
+`KretopiaHero.tsx` and `KretopiaLanding.tsx` both referenced now-unimported
+functions. Fixed by removing the dangling calls rather than re-importing,
+since their generic `LandingFunnelTracker` (observes every real `section[id]`
+in the DOM) already covers what those calls were duplicating.
+
+**Their system is now the sole section-view/scroll-depth tracker.** This
+session's `landingMetrics.ts` `useLandingSectionView`/`useLandingScrollDepth`
+and their corresponding calls were removed from all 9 section components that
+had them (running both would have double-counted every section). Six sections
+that only had a tracking `ref` and no real DOM `id` (`SearchTutorialSection`,
+`TrustSection`, `ProductLoopSection`, `ForOrganisationsSection`,
+`ClosingCTASection`, `CreativeUniverseSection`) gained one, so their generic
+observer picks them up too — checked `chapterRegistry.ts` first to confirm
+none of these six are part of the chapter-numbering system, so adding ids
+couldn't collide with `ChapterProgressNav`. Two sections
+(`VerifiedCreditsChapterSection` id `chapter-verified-credits`, the Community
+`ChapterSection` id `chapter-community`) don't match their `LANDING_SECTION_ORDER`
+list's expected names (`chapter-credits`/`chapter-soundstages`) — left
+unrenamed since `chapterRegistry.ts` uses these exact ids for chapter
+numbering and `ChapterProgressNav`; the mismatch only affects display
+ordering in their admin panel, not data collection.
+
+**This session's `LandingFunnelPanel.tsx` and its RPC migration
+(`20260902200000_landing_funnel_admin_rpc.sql`) are superseded and were
+deleted** — the merge already replaced the panel with theirs, and the
+migration, if ever applied, would have silently overwritten their
+already-live, differently-shaped `get_landing_funnel` function (`CREATE OR
+REPLACE`, same name) and broken it. `trackLandingCtaClick` and the entire
+auth-funnel section of `landingMetrics.ts` were kept — confirmed
+non-duplicative: their RPC's CTA/auth queries use `coalesce()` across both
+naming conventions (`cta_id`/`cta_name`, `section`/`location`,
+`signup_attempt`/`sign_up`), so both sides' events count correctly without
+double-counting.
+
+**The Auth default-tab question this report originally left open is
+resolved** — their side implemented it independently
+(`localStorage.getItem("thrivein_last_signin_method")` as the returning-visitor
+signal), and also fixed the `?next=` vs `?redirect=` redirect-param
+inconsistency this session's audit had flagged. Both match what this report
+proposed almost exactly.
+
+Verified after reconciling: `npm run typecheck` (0 errors — the pre-existing
+SEPA types-drift flagged all session is also gone, apparently fixed by their
+regenerated `types.ts`), `npm run test` (127/127), and live in-browser — all
+15 real sections carry a DOM id, `LandingFunnelTracker` mounts cleanly, no
+console/render errors, every landing CTA's `/auth` link carries the right
+`?src=`/`?tab=`/`?intent=` params from both systems side by side.
+
 ## Instrumentation (spec §6)
 
 **`src/lib/landingMetrics.ts`** (new) — a thin vocabulary layer over the

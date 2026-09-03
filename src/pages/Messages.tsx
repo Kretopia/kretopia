@@ -193,7 +193,13 @@ const Messages = () => {
 
   return (
     <PageTransition>
-      <div className="accent-match flex h-[calc(100dvh-4rem)] overflow-hidden lg:pb-24">
+      {/* No bottom padding on this outer row itself: KretopiaBottomNav/ThriveBar
+          are both lg:hidden (visible below 1024px, gone at lg:), so a bare
+          "lg:pb-24" here was backwards -- it added clearance only at the
+          width where nothing needs clearing. Each child (conversation list,
+          chat panel) already reserves its own bottom space correctly for
+          the <lg case; the outer row doesn't need to duplicate it. */}
+      <div className="accent-match flex h-[calc(100dvh-4rem)] overflow-hidden">
         <ConversationListPanel
           hidden={!!(selectedConversation || selectedGroup)}
           activeTab={activeTab}
@@ -301,7 +307,7 @@ const Messages = () => {
             />
           </div>
         ) : (
-          <div className="hidden md:flex flex-1 items-center justify-center p-8 bg-background">
+          <div className="hidden md:flex flex-1 items-center justify-center p-8 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8 bg-background">
             <div className="w-full max-w-md">
               <div className="text-center mb-8">
                 <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase mb-2">

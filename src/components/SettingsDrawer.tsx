@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Settings as SettingsIcon } from "lucide-react";
 import Settings from "@/pages/Settings";
+import { BrandLogo } from "@/components/BrandLogo";
 import { cn } from "@/lib/utils";
 
 /**
@@ -25,8 +26,9 @@ export const SettingsDrawer = ({ triggerClassName }: { triggerClassName?: string
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md p-0 flex flex-col">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-          <SheetTitle>Settings</SheetTitle>
+        <SheetHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0 text-left">
+          <BrandLogo size="sm" showBeta />
+          <SheetTitle className="font-serif text-2xl font-normal mt-1">Settings</SheetTitle>
         </SheetHeader>
         <ScrollArea className="flex-1 px-6 py-4">
           <Settings embedded />

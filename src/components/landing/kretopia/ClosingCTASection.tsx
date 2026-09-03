@@ -36,7 +36,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { FixedProgressiveCard } from "@/components/landing/kretopia/FixedProgressiveCard";
 import { Button } from "@/components/ui/button";
-import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
+import { trackLandingCtaClick } from "@/lib/landingMetrics";
 import { supabase } from "@/integrations/supabase/client";
 
 const ACCENT = "#FF2DA1";
@@ -82,11 +82,10 @@ function useCreatorCount() {
 
 export const ClosingCTASection = () => {
   const creatorCount = useCreatorCount();
-  const sectionViewRef = useLandingSectionView("closing_cta");
 
   return (
     <section
-      ref={sectionViewRef}
+      id="closing-cta"
       className="landing-section relative border-t border-white/[0.05]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="closing-cta-title"

@@ -116,12 +116,20 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, start
 
     setLoading(true);
     let guestToken: string | null = null;
+    let waitlisted = false;
     try {
       if (user) {
-        await supabase.from("jam_participants").upsert(
-          { jam_id: eventId, user_id: user.id, status: "going" },
-          { onConflict: "jam_id,user_id" }
-        );
+        // Route through the same server-side RPC EventPage's toggle button
+        // uses (SECURITY DEFINER — enforces capacity/waitlist and is the
+        // only path with a working ON CONFLICT target for user rows).
+        const { data: result, error } = await supabase.rpc("rsvp_to_event", {
+          p_event_id: eventId,
+        });
+        if (error) throw error;
+        if (result === "full_no_waitlist") {
+          throw new Error("This event is full and isn't accepting a waitlist right now.");
+        }
+        waitlisted = result === "waitlisted";
       } else {
         const { data, error } = await (supabase as any).rpc("guest_rsvp_upsert", {
           p_event_id: eventId,
@@ -134,7 +142,7 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, start
         guestToken = row.check_in_token ?? null;
       }
 
-      // Save answers (best-effort)
+      // Save answers (best-effort — must not abort an already-successful RSVP)
       const answerRows = Object.entries(answers)
         .filter(([_, v]) => v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && v.length === 0))
         .map(([qid, v]) => ({
@@ -145,7 +153,18 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, start
           answer: { value: v },
         }));
       if (answerRows.length > 0) {
-        await (supabase as any).from("event_rsvp_answers").insert(answerRows);
+        try {
+          await (supabase as any).from("event_rsvp_answers").insert(answerRows);
+        } catch {
+          // Non-critical — the RSVP itself already succeeded above.
+        }
+      }
+
+      if (waitlisted) {
+        onOpenChange(false);
+        toast({ title: "You're on the waitlist", description: "We'll email you the moment a spot opens." });
+        navigate(`/event/${eventId}`);
+        return;
       }
 
       const eventTimezone = "America/Port_of_Spain";

@@ -21,7 +21,7 @@ import {
 import { KretoMark } from "@/components/brand/KretoMark";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { useLandingSectionView, trackLandingCtaClick } from "@/lib/landingMetrics";
+import { trackLandingCtaClick } from "@/lib/landingMetrics";
 import { TutorialStepper } from "./TutorialStepper";
 import { KRETO_TUTORIAL } from "./tutorialContent";
 import { chapterRoman } from "./chapterRegistry";
@@ -63,12 +63,10 @@ export const MeetKretoSection = () => {
   // The rotating message reflects whichever tutorial step is active, rather
   // than cycling on its own independent timer.
   const i = activeStep % LINES.length;
-  const sectionViewRef = useLandingSectionView("meet_kreto");
 
   return (
     <section
       id="chapter-kreto"
-      ref={sectionViewRef}
       className="landing-section relative overflow-hidden border-t border-white/[0.06]"
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="kreto-title"

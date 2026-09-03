@@ -1,15 +1,22 @@
 /**
- * landingMetrics — Landing page instrumentation. A thin, purpose-built
+ * landingMetrics — Landing page instrumentation: CTA clicks and the auth
+ * funnel (signup/signin attempt/success/error). A thin, purpose-built
  * vocabulary layer over the existing trackEvent()/analytics_events pipeline
  * from analytics.ts -- same writer, same table, same session-id and
  * fail-safe behavior. Not a second analytics system (see the audit's note
  * on useLandingVariant's separate site_analytics table -- this deliberately
  * does not repeat that duplication).
  *
+ * Section-view and scroll-depth tracking used to live here too, but that's
+ * now handled generically by LandingFunnelTracker.tsx (observes every real
+ * `section[id]` in the DOM instead of a per-component hook) -- an
+ * independently-built parallel implementation that landed on the shared
+ * branch mid-sprint. Retired the overlapping pieces here rather than run
+ * two competing trackers double-counting the same sections.
+ *
  * Every tracker here fails silently (trackEvent already swallows errors)
  * and never blocks navigation or signup -- callers fire-and-forget.
  */
-import { useEffect, useRef } from "react";
 import { trackEvent } from "./analytics";
 
 const EVENT_CATEGORY = "landing";
@@ -37,46 +44,6 @@ export type LandingSectionId =
   | "for_organisations"
   | "closing_cta";
 
-// ---- Section views --------------------------------------------------------
-// Once per section per page view. Module-scoped Set, not persisted -- a hard
-// reload naturally resets it; within one SPA session a section already
-// counted won't double-fire.
-const viewedSections = new Set<string>();
-
-export function trackLandingSectionViewed(section: LandingSectionId, variant: string = "control") {
-  if (viewedSections.has(section)) return;
-  viewedSections.add(section);
-  trackEvent({
-    eventName: "landing_section_viewed",
-    eventCategory: EVENT_CATEGORY,
-    properties: { section, variant },
-  });
-}
-
-/** Attach the returned ref to a section's root element. Fires once, then stops observing. */
-export function useLandingSectionView<T extends HTMLElement = HTMLElement>(section: LandingSectionId, variant: string = "control") {
-  const ref = useRef<T>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || viewedSections.has(section)) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            trackLandingSectionViewed(section, variant);
-            observer.disconnect();
-            break;
-          }
-        }
-      },
-      { threshold: 0.35 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [section, variant]);
-  return ref;
-}
-
 // ---- CTA clicks -------------------------------------------------------------
 
 export type LandingCtaDestination = "auth" | "internal" | "external";
@@ -100,50 +67,6 @@ export function trackLandingCtaClick(params: {
       destination_type: params.destinationType,
     },
   });
-}
-
-// ---- Scroll depth -----------------------------------------------------------
-
-const SCROLL_MILESTONES = [25, 50, 75, 100] as const;
-const scrolledDepths = new Set<number>();
-
-function trackLandingScrollDepth(depth: number) {
-  if (scrolledDepths.has(depth)) return;
-  scrolledDepths.add(depth);
-  trackEvent({
-    eventName: "landing_scroll_depth",
-    eventCategory: EVENT_CATEGORY,
-    properties: { depth },
-  });
-}
-
-/** Mount once at the Landing page root. Fires each of 25/50/75/100 exactly once, rAF-throttled. */
-export function useLandingScrollDepth() {
-  useEffect(() => {
-    if (scrolledDepths.size >= SCROLL_MILESTONES.length) return;
-    let ticking = false;
-
-    const check = () => {
-      ticking = false;
-      const doc = document.documentElement;
-      const scrollable = doc.scrollHeight - window.innerHeight;
-      if (scrollable <= 0) return;
-      const pct = (window.scrollY / scrollable) * 100;
-      for (const m of SCROLL_MILESTONES) {
-        if (pct >= m) trackLandingScrollDepth(m);
-      }
-    };
-
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(check);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    check();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 }
 
 // ---- Auth funnel --------------------------------------------------------------

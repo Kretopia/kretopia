@@ -37,3 +37,6 @@ verify_jwt = false
 
 [functions.create-invoice-checkout]
 verify_jwt = false
+
+[functions.process-email-queue]
+verify_jwt = true

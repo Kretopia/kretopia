@@ -57,6 +57,18 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, start
   const [nameMatches, setNameMatches] = useState<Array<{ user_id: string; full_name: string | null; username: string | null; avatar_url: string | null; role: string | null; location: string | null }>>([]);
   const [matchDismissed, setMatchDismissed] = useState(false);
 
+  // This dialog is always mounted (its `open` prop just toggles the Dialog),
+  // so the email/emailConfirm useState initializers above ran at page-mount
+  // time, before auth had necessarily resolved user.email. Re-sync whenever
+  // the dialog opens with a resolved email, without clobbering anything the
+  // user already typed.
+  useEffect(() => {
+    if (open && user?.email) {
+      setEmail((prev) => prev || user.email!);
+      setEmailConfirm((prev) => prev || user.email!);
+    }
+  }, [open, user]);
+
   // Debounced fuzzy name lookup against public profiles
   useEffect(() => {
     if (user || matchDismissed) { setNameMatches([]); return; }

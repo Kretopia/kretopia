@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Mic,
   MicOff,
@@ -181,6 +182,28 @@ export function SoundStageRoom({
   // "unknown" until Daily's first network-quality-change event lands --
   // never shown to the user as a state, since we have no real reading yet.
   const [networkState, setNetworkState] = useState<"good" | "warning" | "bad" | "unknown">("unknown");
+  // Recording start/stop is otherwise only visible (the REC badge) -- a
+  // screen-reader user gets no signal that anything changed. Announce real
+  // transitions only, never on initial mount (both start at false/false,
+  // so the ref-vs-state comparison below is naturally silent then).
+  const [recordingAnnouncement, setRecordingAnnouncement] = useState("");
+  // Audience format rooms allow up to 200 people -- mounting an avatar tile
+  // per person unconditionally means up to 200 DOM nodes (with their own
+  // useMemo'd color calc each) rendered regardless of what's actually
+  // visible. Capped by default with an explicit expand, not virtualized:
+  // far simpler than pulling in a virtualization library for what's still
+  // plain avatar tiles (no video/audio track mounts happen for audience
+  // members either way -- see the render below), while still bounding
+  // worst-case DOM size for the common case.
+  const [showAllAudience, setShowAllAudience] = useState(false);
+  const AUDIENCE_PREVIEW_COUNT = 24;
+  const prevRecordingRef = useRef(false);
+  useEffect(() => {
+    if (prevRecordingRef.current !== recording) {
+      setRecordingAnnouncement(recording ? "Recording started" : "Recording stopped");
+      prevRecordingRef.current = recording;
+    }
+  }, [recording]);
   const localLevelRef = useRef(0);
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>
@@ -420,6 +443,7 @@ export function SoundStageRoom({
   useEffect(() => {
     if (!open || !roomUrl || phase !== "joining" || callRef.current) return;
     let cancelled = false;
+    let onAnyTimer: ReturnType<typeof setTimeout> | null = null;
 
     const init = async () => {
       setJoining(true);
@@ -464,9 +488,21 @@ export function SoundStageRoom({
         }
         callRef.current = call;
 
+        // Daily fires participant-joined/updated/left and track-started/
+        // stopped independently per track per participant -- a group join
+        // or a burst of camera/mic startups can trigger this many times
+        // within milliseconds. Coalescing into one refresh per short window
+        // avoids a full members re-fetch (and the profile-cache lookups,
+        // React state update, and tile re-render that follow) per event.
+        // onAnyTimer lives in the effect's own scope (not a ref) so the
+        // effect's cleanup below can clear it directly.
         const onAny = () => {
-          refreshMembers().catch(() => {});
-          setScreenTick((t) => t + 1);
+          if (onAnyTimer) clearTimeout(onAnyTimer);
+          onAnyTimer = setTimeout(() => {
+            onAnyTimer = null;
+            refreshMembers().catch(() => {});
+            setScreenTick((t) => t + 1);
+          }, 150);
         };
         call.on("participant-joined", onAny);
         call.on("participant-updated", onAny);
@@ -639,6 +675,7 @@ export function SoundStageRoom({
 
     return () => {
       cancelled = true;
+      if (onAnyTimer) clearTimeout(onAnyTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, roomUrl, token, phase]);
@@ -929,15 +966,23 @@ export function SoundStageRoom({
     return !!me && (me.role === "host" || me.role === "speaker");
   }, [list]);
 
-  if (!open) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col bg-background animate-in fade-in duration-200"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${title} — On Stage`}
-    >
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        {/* Real Radix Dialog primitives, not a bare div -- the Sheet this
+            replaced gave focus-trap and Escape-to-close for free, and a
+            plain fixed div silently drops both (confirmed while auditing
+            this rewrite for accessibility: a bare div has no role, no
+            focus trap, and Escape does nothing). Content itself carries
+            the fullscreen styling instead of shadcn's centered/max-w
+            DialogContent, and Escape closes it the same way the header's
+            X does -- restoring the Sheet's own prior behavior, not new. */}
+        <DialogPrimitive.Content
+          className="fixed inset-0 z-50 flex flex-col bg-background animate-in fade-in duration-200 focus:outline-none"
+          aria-label={`${title} — On Stage`}
+          aria-describedby={undefined}
+        >
+        <span aria-live="polite" className="sr-only">{recordingAnnouncement}</span>
         {/* Top bar */}
         <div
           className="px-3 sm:px-4 pt-3 pb-2.5 border-b border-border/60 shrink-0 space-y-2"
@@ -968,7 +1013,7 @@ export function SoundStageRoom({
               </Badge>
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm leading-tight truncate">{title}</p>
+              <h1 className="font-bold text-sm leading-tight truncate">{title}</h1>
               <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                 <span className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
@@ -1257,7 +1302,7 @@ export function SoundStageRoom({
                     · {audience.length}
                   </h3>
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-2 gap-y-4">
-                    {audience.map((m) => (
+                    {(showAllAudience ? audience : audience.slice(0, AUDIENCE_PREVIEW_COUNT)).map((m) => (
                       <StageTile
                         key={m.sessionId}
                         member={m}
@@ -1272,6 +1317,15 @@ export function SoundStageRoom({
                       </p>
                     )}
                   </div>
+                  {!showAllAudience && audience.length > AUDIENCE_PREVIEW_COUNT && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllAudience(true)}
+                      className="text-xs font-semibold text-muted-foreground hover:text-foreground underline underline-offset-2"
+                    >
+                      +{audience.length - AUDIENCE_PREVIEW_COUNT} more
+                    </button>
+                  )}
                 </section>
               )}
             </>
@@ -1499,7 +1553,9 @@ export function SoundStageRoom({
             externalText={`Join "${title}" live on Kretopia`}
           />
         )}
-    </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
@@ -1601,6 +1657,15 @@ function StageTile({
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
   const showVideo = mode === "video" && member.videoOn && !!videoTrack;
+  // Accessible text for the same state the badges above show visually
+  // (role color, speaking glow, mute icon, hand emoji) -- never color/icon
+  // alone, per the brief's own accessibility requirement.
+  const statusText = [
+    member.role === "host" && "host",
+    speaking && "speaking",
+    !speaking && !member.audioOn && member.role !== "audience" && "muted",
+    member.handRaised && "hand raised",
+  ].filter(Boolean).join(", ");
   return (
     <div className="flex flex-col items-center gap-1.5 text-center min-w-0">
       <div className="relative">
@@ -1641,19 +1706,22 @@ function StageTile({
             />
           )}
         </div>
-        {/* Role / status badges */}
+        {/* Role / status badges -- decorative; the real, accessible status
+            text is the sr-only span below the name, not these icons/emoji
+            alone (active-speaker glow above is the same: color/shadow only,
+            backed by the same text). */}
         {member.role === "host" && (
-          <span className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-amber-500 text-white flex items-center justify-center">
+          <span aria-hidden="true" className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-amber-500 text-white flex items-center justify-center">
             <Crown className="h-3 w-3" />
           </span>
         )}
         {member.handRaised && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-energy text-energy-foreground flex items-center justify-center text-[10px]">
+          <span aria-hidden="true" className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-energy text-energy-foreground flex items-center justify-center text-[10px]">
             ✋
           </span>
         )}
         {!member.audioOn && member.role !== "audience" && (
-          <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-2 ring-background">
+          <span aria-hidden="true" className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-2 ring-background">
             <MicOff className="h-3 w-3" />
           </span>
         )}
@@ -1692,9 +1760,10 @@ function StageTile({
         )}
       >
         {member.isLocal ? "You" : member.name.split(" ")[0]}
+        {statusText && <span className="sr-only">, {statusText}</span>}
       </p>
       {member.role === "host" && large && (
-        <span className="text-[9px] text-amber-600 font-bold uppercase tracking-wide">
+        <span aria-hidden="true" className="text-[9px] text-amber-600 font-bold uppercase tracking-wide">
           Host
         </span>
       )}
@@ -1728,6 +1797,13 @@ function VideoStageTile({
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
   const showVideo = member.videoOn && !!videoTrack;
+  // Same rule as StageTile: the speaking glow (border/shadow) and the mute
+  // icon below are never the only signal -- text carries the state too.
+  const statusText = [
+    member.role === "host" && "host",
+    speaking && "speaking",
+    !speaking && !member.audioOn && "muted",
+  ].filter(Boolean).join(", ");
   // Deterministic per-user background so cam-off tiles never look "broken/
   // black" -- varies lightness within the single accent hue rather than a
   // full hue-wheel gradient, so it stays on-brand across every seed.
@@ -1796,10 +1872,10 @@ function VideoStageTile({
         </div>
       )}
 
-      {/* Top-left: host crown */}
+      {/* Top-left: host crown -- already carries real "Host" text, not just the icon */}
       {member.role === "host" && (
         <span className="absolute top-2 left-2 h-6 px-1.5 rounded-full bg-amber-500 text-white flex items-center gap-1 text-[10px] font-black uppercase">
-          <Crown className="h-3 w-3" /> Host
+          <Crown aria-hidden="true" className="h-3 w-3" /> Host
         </span>
       )}
 
@@ -1834,13 +1910,14 @@ function VideoStageTile({
       <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/80 to-transparent flex items-center gap-2">
         <p className="flex-1 text-xs font-bold text-white truncate drop-shadow">
           {member.isLocal ? "You" : member.name.split(" ")[0]}
+          {statusText && <span className="sr-only">, {statusText}</span>}
         </p>
         {!member.audioOn ? (
-          <span className="h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center">
+          <span aria-hidden="true" className="h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center">
             <MicOff className="h-3 w-3" />
           </span>
         ) : speaking ? (
-          <span className="h-6 w-6 rounded-full bg-[hsl(var(--signal-teal))] text-black flex items-center justify-center animate-pulse">
+          <span aria-hidden="true" className="h-6 w-6 rounded-full bg-[hsl(var(--signal-teal))] text-black flex items-center justify-center animate-pulse">
             <Mic className="h-3 w-3" />
           </span>
         ) : null}

@@ -7,46 +7,33 @@ import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  MapPin, Calendar, Clock, Users, Loader2, Lock,
+import {
+  Loader2, Lock,
   Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine,
-  MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation, MessageCircle,
-  ArrowLeft, X, ChevronDown
+  MoreVertical, Crown, Ban, CheckCircle, Download,
+  X, ChevronDown
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { format } from "date-fns";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
-import { EventComments } from "@/components/sessions/EventComments";
 import { EventCohosts } from "@/components/sessions/EventCohosts";
 import { EventRecapButton } from "@/components/sessions/EventRecapButton";
-import { EventGroupChatCard } from "@/components/sessions/EventGroupChatCard";
-import { EventInlineChat } from "@/components/sessions/EventInlineChat";
-import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
+import { EventHeroCard } from "@/components/sessions/EventHeroCard";
+import { EventCommunityHub } from "@/components/sessions/EventCommunityHub";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
 import { GuestRsvpDialog } from "@/components/sessions/GuestRsvpDialog";
 import { GuestPassDialog } from "@/components/sessions/GuestPassDialog";
 import { EventPhotoWall } from "@/components/sessions/EventPhotoWall";
-import { HoloCard } from "@/components/passport/HoloCard";
 import { JoinOnlineCard } from "@/components/sessions/JoinOnlineCard";
-import { APP_URL } from "@/lib/constants";
-import { downloadIcs, openDirections, captureRefFromUrl, buildWarmShareMessage, buildEventShareUrl } from "@/lib/eventActions";
+import { captureRefFromUrl, buildWarmShareMessage, buildEventShareUrl } from "@/lib/eventActions";
 import { buildEventAuthUrl } from "@/lib/eventAuthRedirect";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
-  podcast: '🎙Podcast', workshop: 'Workshop', networking: 'Networking',
-  content: 'Content', festival: 'Festival', showcase: 'Showcase',
-  general: 'Creative',
-};
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', EUR: '€', GBP: '£', IDR: 'Rp', TTD: 'TT$',
@@ -328,13 +315,6 @@ const EventPage = () => {
   const isCompleted = event.status === 'completed';
   const hasExternalTicket = !!event.external_ticket_url;
 
-  const diff = startDate.getTime() - now.getTime();
-  const daysUntil = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-  const hoursUntil = Math.max(0, Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
-  const minutesUntil = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
-  const secondsUntil = Math.max(0, Math.floor((diff % (1000 * 60)) / 1000));
-  const isImminent = diff > 0 && diff < 24 * 60 * 60 * 1000; // <24h shows mins+secs
-
   // Scarcity: capacity > 0, <30% remaining, not full
   const capacity = event.max_participants || 0;
   const spotsLeft = capacity > 0 ? capacity - participantCount : null;
@@ -386,29 +366,6 @@ const EventPage = () => {
       </Helmet>
       
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        {/* Top nav: Back + Close */}
-        <div className="sticky top-0 z-30 bg-background/95 border-b border-border/50">
-          <div className="max-w-2xl mx-auto px-3 sm:px-4 h-12 flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/events"))}
-              className="gap-1.5 -ml-2 h-9"
-            >
-              <ArrowLeft className="h-4 w-4" /> Events
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/")}
-              aria-label="Close"
-              className="h-9 w-9 -mr-2"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-
         <div className="max-w-2xl mx-auto px-3 sm:px-4 pt-4 pb-24 relative z-10">
 
           {/* RSVP success banner (after guest quick-RSVP) */}
@@ -539,140 +496,30 @@ const EventPage = () => {
             </div>
           )}
           
-          {/* Event Header — Holo Card, same collectible-card treatment as the Passport hero */}
-          <HoloCard className="mb-4 sm:mb-6">
-            <div className="relative overflow-hidden rounded-2xl border border-border bg-card text-center px-4 pb-5 sm:px-6 sm:pb-7">
-              {event.cover_image_url ? (
-                <div className="relative -mx-4 sm:-mx-6 mb-4 h-40 sm:h-56 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)]">
-                  <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
-                </div>
-              ) : (
-                <div className="-mx-4 sm:-mx-6 mb-4 h-16 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
-              )}
-            <Badge variant="secondary" className="mb-2 sm:mb-3 text-xs sm:text-sm">
-              {CATEGORY_LABELS[event.category] || event.category}
-            </Badge>
-            <h1 className="text-xl sm:text-4xl font-bold mb-2 sm:mb-3 leading-tight">{event.title}</h1>
-            
-            {/* Hosted By — trust card */}
-            <button
-              type="button"
-              onClick={() => creator?.username && navigate(`/u/${creator.username}`)}
-              className="inline-flex items-center justify-center gap-3 mb-4 px-3 py-2 rounded-xl hover:bg-muted/50 transition-colors disabled:opacity-100"
-              disabled={!creator?.username}
-            >
-              <Avatar className="h-11 w-11 ring-2 ring-primary/20">
-                <AvatarImage src={creator?.avatar_url} />
-                <AvatarFallback className="bg-primary/10 text-primary">
-                  {creator?.full_name?.charAt(0) || 'H'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-left">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Your host</p>
-                <div className="flex items-center gap-1.5">
-                  <p className="font-semibold text-sm">{creator?.full_name || 'Kretopia Host'}</p>
-                  {creator?.id_verified && (
-                    <CheckCircle className="h-3.5 w-3.5 text-primary" aria-label="Verified" />
-                  )}
-                </div>
-                {(creator?.role || creator?.hostedCount > 0) && (
-                  <p className="text-[11px] text-muted-foreground">
-                    {creator?.role}
-                    {creator?.role && creator?.hostedCount > 0 && ' · '}
-                    {creator?.hostedCount > 0 && `${creator.hostedCount} ${creator.hostedCount === 1 ? 'event' : 'events'} hosted`}
-                  </p>
-                )}
-              </div>
-            </button>
-
-            {/* Live countdown */}
-            {!isPast && !isCancelled && diff > 0 && (
-              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
-                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{daysUntil}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase">Days</p>
-                </div>
-                <span className="text-xl text-muted-foreground">:</span>
-                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
-                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(hoursUntil).padStart(2, '0')}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase">Hrs</p>
-                </div>
-                <span className="text-xl text-muted-foreground">:</span>
-                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
-                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(minutesUntil).padStart(2, '0')}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase">Min</p>
-                </div>
-                {isImminent && (
-                  <>
-                    <span className="text-xl text-muted-foreground">:</span>
-                    <div className="text-center px-3 py-1.5 rounded-lg bg-energy/15 border border-energy/40 min-w-[56px] animate-pulse">
-                      <p className="text-xl sm:text-2xl font-bold text-energy tabular-nums">{String(secondsUntil).padStart(2, '0')}</p>
-                      <p className="text-[10px] text-energy/80 uppercase">Sec</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Scarcity line */}
-            {showScarcity && !isPast && !isCancelled && (
-              <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-energy/15 border border-energy/40 text-energy text-xs font-semibold">
-                <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                Only {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
-              </div>
-            )}
-
-              {/* Quick share + pass */}
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                <Button variant="ghost" size="sm" onClick={handleShare} className="text-muted-foreground">
-                  <Share2 className="h-4 w-4 mr-1.5" /> Share with friends
-                </Button>
-                {!!participation && (
-                  <Button variant="outline" size="sm" onClick={() => setShowGuestPass(true)} className="gap-1.5">
-                    <Ticket className="h-4 w-4" /> My pass
-                  </Button>
-                )}
-              </div>
-              {!!participation && !isPast && !isCompleted && (
-                <button
-                  type="button"
-                  onClick={handleJoin}
-                  disabled={joining}
-                  className="mt-2 text-xs text-muted-foreground hover:text-destructive underline underline-offset-2"
-                >
-                  Cancel RSVP
-                </button>
-              )}
-            </div>
-          </HoloCard>
-
-          {/* Who's going — bigger social proof above ticket/CTA */}
-          {attendeeAvatars.length > 0 && !isPast && (
-            <div className="mb-4 flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-muted/40 border border-border/50">
-              <div className="flex -space-x-2.5">
-                {attendeeAvatars.slice(0, 6).map((a, i) => (
-                  <Avatar key={i} className="h-9 w-9 border-2 border-background">
-                    <AvatarImage src={a.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                      {a.full_name?.charAt(0) || '?'}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-                {participantCount > 6 && (
-                  <div className="h-9 w-9 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center">
-                    <span className="text-xs font-semibold text-primary">+{participantCount - 6}</span>
-                  </div>
-                )}
-              </div>
-              <div className="text-left flex-1 min-w-0">
-                <p className="text-sm font-semibold">{participantCount} {participantCount === 1 ? 'person is' : 'people are'} going</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {roleBreakdown.length > 0 ? `Incl. ${roleBreakdown.join(', ')}` : 'Join the crew'}
-                </p>
-              </div>
-            </div>
-          )}
+          {/* Component 1 — Holo Card: cover, title, host, countdown, headcount, gallery, when/where/capacity */}
+          <EventHeroCard
+            event={event}
+            creator={creator}
+            isCreator={isCreator}
+            isAuthenticated={isAuthenticated}
+            isPast={isPast}
+            isCancelled={isCancelled}
+            isCompleted={isCompleted}
+            now={now}
+            participantCount={participantCount}
+            capacity={capacity}
+            isFull={isFull}
+            spotsLeft={spotsLeft}
+            showScarcity={showScarcity}
+            participation={participation}
+            joining={joining}
+            attendeeAvatars={attendeeAvatars}
+            roleBreakdown={roleBreakdown}
+            onShare={handleShare}
+            onShowGuestPass={() => setShowGuestPass(true)}
+            onCancelRsvp={handleJoin}
+            onGalleryChange={(urls) => setEvent((prev: any) => prev ? { ...prev, gallery_image_urls: urls } : prev)}
+          />
 
           {/* Online room (only for online/hybrid events) */}
           {event.event_mode && event.event_mode !== 'irl' && !isPast && !isCancelled && (
@@ -729,92 +576,6 @@ const EventPage = () => {
             </Card>
           )}
 
-          {/* Event Details Card */}
-          <Card className="mb-6 overflow-hidden">
-            <CardContent className="p-5 space-y-4">
-              {/* When */}
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Calendar className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">When</p>
-                  <p className="font-medium">{format(startDate, "EEEE, MMMM d, yyyy")}</p>
-                  <p className="text-sm text-muted-foreground">{format(startDate, "h:mm a")}{event.end_time ? ` – ${format(new Date(event.end_time), "h:mm a")}` : ''}</p>
-                </div>
-                {!isPast && !isCancelled && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="shrink-0 gap-1.5"
-                    onClick={() => downloadIcs({
-                      id: event.id,
-                      title: event.title,
-                      description: event.description,
-                      startTime: event.start_time,
-                      endTime: event.end_time,
-                      venueName: event.venue_name,
-                      venueAddress: event.venue_address,
-                      url: `${APP_URL}/event/${event.id}`,
-                    })}
-                  >
-                    <CalendarPlus className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Add to Calendar</span>
-                    <span className="sm:hidden">Save</span>
-                  </Button>
-                )}
-              </div>
-
-              {/* Where */}
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <MapPin className="h-5 w-5 text-primary" />
-                </div>
-                {isAuthenticated ? (
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Where</p>
-                    <p className="font-medium truncate">{event.venue_name || 'Location TBA'}</p>
-                    {event.venue_address && <p className="text-sm text-muted-foreground line-clamp-2">{event.venue_address}</p>}
-                  </div>
-                ) : (
-                  <div className="flex-1">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Where</p>
-                    <p className="font-medium text-muted-foreground">
-                      {event.venue_name ? event.venue_name.split(',')[0] + '…' : 'Location hidden'}
-                    </p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Lock className="h-3 w-3" /> Sign up to see full location
-                    </p>
-                  </div>
-                )}
-                {isAuthenticated && (event.venue_address || event.venue_name) && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="shrink-0 gap-1.5"
-                    onClick={() => openDirections(event.venue_address, event.venue_name)}
-                  >
-                    <Navigation className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Directions</span>
-                    <span className="sm:hidden">Map</span>
-                  </Button>
-                )}
-              </div>
-
-              {/* Capacity */}
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Users className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Who's coming</p>
-                  <p className="font-medium">{participantCount}{event.max_participants ? ` of ${event.max_participants}` : ''} going</p>
-                  {isFull && <p className="text-xs text-destructive">This one's full — try the waitlist</p>}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Description */}
           {event.description && (
             <Card className="mb-6">
@@ -853,43 +614,28 @@ const EventPage = () => {
             </Card>
           )}
 
-          {/* Guest Roster — Match/Circle-style discovery before the event (host-controlled) */}
-          {event.guest_matching_enabled !== false && (
-            <EventGuestRoster
-              eventId={event.id}
-              eventTitle={event.title}
-              hostId={event.created_by}
-              currentUserId={user?.id || null}
-              isParticipant={!!participation}
-              isHost={isCreator}
-              participantCount={participantCount}
-            />
-          )}
-
-          {/* Group Chat — host toggle + opt-in for RSVPs */}
-          {isAuthenticated && (
-            <EventGroupChatCard
-              eventId={event.id}
-              eventTitle={event.title}
-              isHost={isCreator}
-              isParticipant={!!participation}
-              hostId={event.created_by}
-              groupChatEnabled={!!event.group_chat_enabled}
-              groupChatRoomId={event.group_chat_room_id || null}
-              onChange={({ enabled, roomId }) => setEvent((prev: any) => prev ? { ...prev, group_chat_enabled: enabled, group_chat_room_id: roomId } : prev)}
-            />
-          )}
-
-          {/* Inline event chat — lives on the event page until the event wraps.
-              After the event, it collapses to a "moved to Messages" link so the
-              conversation can continue in the Groups inbox. */}
-          {isAuthenticated && event.group_chat_enabled && event.group_chat_room_id && (isCreator || !!participation) && (
-            <EventInlineChat
-              roomId={event.group_chat_room_id}
-              currentUserId={user!.id}
-              archived={isPast || isCompleted}
-            />
-          )}
+          {/* Component 2 — the crew: who's going, group chat, event chat, comments,
+              and (post-event) the bridge into a standing Circle. */}
+          <EventCommunityHub
+            eventId={event.id}
+            eventTitle={event.title}
+            eventCategory={event.category}
+            eventCoverImageUrl={event.cover_image_url}
+            hostId={event.created_by}
+            isCreator={isCreator}
+            isAuthenticated={isAuthenticated}
+            currentUserId={user?.id || null}
+            isParticipant={!!participation}
+            participantCount={participantCount}
+            guestMatchingEnabled={event.guest_matching_enabled !== false}
+            isPast={isPast}
+            isCompleted={isCompleted}
+            groupChatEnabled={!!event.group_chat_enabled}
+            groupChatRoomId={event.group_chat_room_id || null}
+            onGroupChatChange={({ enabled, roomId }) => setEvent((prev: any) => prev ? { ...prev, group_chat_enabled: enabled, group_chat_room_id: roomId } : prev)}
+            circleId={event.circle_id || null}
+            onCircleLinked={fetchEvent}
+          />
 
           {/* Photo Wall — visible during/after event for attendees */}
           {(isPast || isCompleted) && event.photo_wall_enabled !== false && (

@@ -206,11 +206,12 @@ const EventPage = () => {
     try {
       if (participation) {
         // Cancel RSVP — frees the spot and triggers waitlist auto-promotion
-        await supabase
+        const { error } = await supabase
           .from('jam_participants')
           .update({ status: 'cancelled' } as any)
           .eq('jam_id', event.id)
           .eq('user_id', user.id);
+        if (error) throw error;
         setParticipation(null);
         setParticipantCount(prev => Math.max(0, prev - 1));
         toast({ title: "RSVP cancelled", description: "Your spot has been released." });

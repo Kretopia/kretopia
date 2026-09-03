@@ -19,7 +19,7 @@ import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { analytics } from "@/lib/analytics";
-import { trackLandingCta } from "@/lib/landingFunnel";
+import { trackLandingCta, trackLandingSectionViewed } from "@/lib/landingFunnel";
 
 const ACCENT = "#FF2DA1";
 // Submitted through the same name-based web search as any real query — must

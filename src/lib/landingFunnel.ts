@@ -34,7 +34,7 @@ export const LANDING_SECTION_ORDER = [
   "closing-cta",
 ] as const;
 
-export const trackLandingSectionViewed = (section: string, index: number) =>
+export const trackLandingSectionViewed = (section: string, index = -1) =>
   trackEvent({
     eventName: "landing_section_viewed",
     eventCategory: EventCategory.ENGAGEMENT,

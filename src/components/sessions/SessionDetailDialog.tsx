@@ -98,7 +98,9 @@ export const SessionDetailDialog = ({
       .eq('jam_id', session.id)
       .eq('user_id', user.id)
       .maybeSingle();
-    setParticipation(data?.status as any || null);
+    // 'cancelled' is a real stored status, not "no participation" -- see
+    // the identical fix in EventPage.tsx's fetchEvent.
+    setParticipation((data && data.status !== 'cancelled' ? data.status : null) as any);
   };
 
   const handleJoin = async () => {

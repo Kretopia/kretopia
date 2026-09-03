@@ -9,10 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
-  MapPin, Calendar, Clock, Users, Loader2, Lock, 
+  MapPin, Calendar, Clock, Users, Loader2, Lock,
   Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine,
   MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation, MessageCircle,
-  ArrowLeft, X
+  ArrowLeft, X, ChevronDown
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -34,8 +34,8 @@ import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog
 import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
 import { GuestRsvpDialog } from "@/components/sessions/GuestRsvpDialog";
 import { GuestPassDialog } from "@/components/sessions/GuestPassDialog";
-import { BringAFriendCard } from "@/components/sessions/BringAFriendCard";
 import { EventPhotoWall } from "@/components/sessions/EventPhotoWall";
+import { HoloCard } from "@/components/passport/HoloCard";
 import { JoinOnlineCard } from "@/components/sessions/JoinOnlineCard";
 import { APP_URL } from "@/lib/constants";
 import { downloadIcs, openDirections, captureRefFromUrl, buildWarmShareMessage, buildEventShareUrl } from "@/lib/eventActions";
@@ -54,7 +54,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 const EventPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [event, setEvent] = useState<any>(null);
@@ -73,6 +73,7 @@ const EventPage = () => {
   const [showCohosts, setShowCohosts] = useState(false);
   const [showRecap, setShowRecap] = useState(false);
   const [showGuestPass, setShowGuestPass] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
   const [now, setNow] = useState(() => new Date());
 
   // Tick every second for live countdown
@@ -82,8 +83,12 @@ const EventPage = () => {
   }, []);
 
   useEffect(() => {
-    if (eventId) fetchEvent();
-  }, [eventId, user]);
+    // Wait for auth to resolve before the first fetch -- otherwise this runs
+    // once with user still null (auth session not yet restored from
+    // storage), renders "Save my spot" for an actually-registered user, and
+    // only self-corrects once the auth listener catches up a moment later.
+    if (eventId && !authLoading) fetchEvent();
+  }, [eventId, user, authLoading]);
 
   // Handle Stripe redirect: verify ticket purchase and refresh
   useEffect(() => {
@@ -171,7 +176,12 @@ const EventPage = () => {
       if (user) {
         const { data: part } = await supabase
           .from('jam_participants').select('status').eq('jam_id', eventId).eq('user_id', user.id).maybeSingle();
-        setParticipation(part?.status || null);
+        // 'cancelled' is a real stored status (so rsvp_to_event can tell a
+        // fresh join from a rejoin), not "no participation" -- treat it the
+        // same as no row at all, or a cancelled RSVP would still read as
+        // truthy here and show "My pass" / "Cancel RSVP" for someone who
+        // already left.
+        setParticipation(part && part.status !== 'cancelled' ? part.status : null);
       }
     } catch (err) {
       console.error('Error fetching event:', err);
@@ -399,17 +409,7 @@ const EventPage = () => {
           </div>
         </div>
 
-        {/* Hero Cover */}
-        {event.cover_image_url ? (
-          <div className="relative h-48 sm:h-72 w-full">
-            <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-          </div>
-        ) : (
-          <div className="h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
-        )}
-
-        <div className="max-w-2xl mx-auto px-3 sm:px-4 pb-24 -mt-8 relative z-10">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 pt-4 pb-24 relative z-10">
 
           {/* RSVP success banner (after guest quick-RSVP) */}
           {typeof window !== "undefined" && new URLSearchParams(window.location.search).get("rsvp") === "confirmed" && (
@@ -539,8 +539,17 @@ const EventPage = () => {
             </div>
           )}
           
-          {/* Event Header */}
-          <div className="text-center mb-4 sm:mb-6">
+          {/* Event Header — Holo Card, same collectible-card treatment as the Passport hero */}
+          <HoloCard className="mb-4 sm:mb-6">
+            <div className="relative overflow-hidden rounded-2xl border border-border bg-card text-center px-4 pb-5 sm:px-6 sm:pb-7">
+              {event.cover_image_url ? (
+                <div className="relative -mx-4 sm:-mx-6 mb-4 h-40 sm:h-56 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)]">
+                  <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
+                </div>
+              ) : (
+                <div className="-mx-4 sm:-mx-6 mb-4 h-16 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
+              )}
             <Badge variant="secondary" className="mb-2 sm:mb-3 text-xs sm:text-sm">
               {CATEGORY_LABELS[event.category] || event.category}
             </Badge>
@@ -614,11 +623,29 @@ const EventPage = () => {
               </div>
             )}
 
-            {/* Quick share */}
-            <Button variant="ghost" size="sm" onClick={handleShare} className="text-muted-foreground">
-              <Share2 className="h-4 w-4 mr-1.5" /> Share with friends
-            </Button>
-          </div>
+              {/* Quick share + pass */}
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <Button variant="ghost" size="sm" onClick={handleShare} className="text-muted-foreground">
+                  <Share2 className="h-4 w-4 mr-1.5" /> Share with friends
+                </Button>
+                {!!participation && (
+                  <Button variant="outline" size="sm" onClick={() => setShowGuestPass(true)} className="gap-1.5">
+                    <Ticket className="h-4 w-4" /> My pass
+                  </Button>
+                )}
+              </div>
+              {!!participation && !isPast && !isCompleted && (
+                <button
+                  type="button"
+                  onClick={handleJoin}
+                  disabled={joining}
+                  className="mt-2 text-xs text-muted-foreground hover:text-destructive underline underline-offset-2"
+                >
+                  Cancel RSVP
+                </button>
+              )}
+            </div>
+          </HoloCard>
 
           {/* Who's going — bigger social proof above ticket/CTA */}
           {attendeeAvatars.length > 0 && !isPast && (
@@ -794,7 +821,25 @@ const EventPage = () => {
               <CardContent className="p-5">
                 <h3 className="font-semibold mb-2">The vibe</h3>
                 {isAuthenticated ? (
-                  <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
+                  <div>
+                    <p
+                      className={`text-muted-foreground whitespace-pre-wrap ${
+                        !descExpanded && event.description.length > 320 ? "line-clamp-6" : ""
+                      }`}
+                    >
+                      {event.description}
+                    </p>
+                    {event.description.length > 320 && (
+                      <button
+                        type="button"
+                        onClick={() => setDescExpanded((v) => !v)}
+                        className="mt-2 flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                      >
+                        {descExpanded ? "Show less" : "Read more"}
+                        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${descExpanded ? "rotate-180" : ""}`} />
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="relative">
                     <p className="text-muted-foreground line-clamp-3">{event.description}</p>
@@ -846,15 +891,6 @@ const EventPage = () => {
             />
           )}
 
-          {/* Bring a +1 — RSVP'd guests get a personal invite link with attribution */}
-          {!!participation && !isPast && !isCompleted && !isCancelled && (
-            <BringAFriendCard
-              event={event}
-              hostFirstName={creator?.first_name || creator?.full_name?.split(" ")[0] || null}
-              attendeeCount={participantCount}
-            />
-          )}
-
           {/* Photo Wall — visible during/after event for attendees */}
           {(isPast || isCompleted) && event.photo_wall_enabled !== false && (
             <EventPhotoWall
@@ -876,29 +912,7 @@ const EventPage = () => {
                     <Share2 className="h-4 w-4 mr-2" /> Share with your network
                   </Button>
                 </div>
-              ) : participation ? (
-                <div className="space-y-3">
-                  {/* Primary: Show my pass — most important for guest on event day */}
-                  <Button
-                    variant="gradient"
-                    className="w-full py-6 text-base"
-                    onClick={() => setShowGuestPass(true)}
-                  >
-                    <Ticket className="h-5 w-5 mr-2" /> Show my pass
-                  </Button>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" onClick={handleJoin} disabled={joining} className="text-xs sm:text-sm">
-                      {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                        <><Check className="h-4 w-4 mr-1.5" /> You're in</>
-                      )}
-                    </Button>
-                    <Button variant="outline" onClick={() => setShowShareKit(true)} className="text-xs sm:text-sm">
-                      <Share2 className="h-4 w-4 mr-1.5" /> Tell a friend
-                    </Button>
-                  </div>
-                  <p className="text-[11px] text-center text-muted-foreground">Tap "You're in" again to cancel</p>
-                </div>
-              ) : !isTicketed ? (
+              ) : participation ? null : !isTicketed ? (
                 <Button variant="gradient" className="w-full py-6 text-lg" onClick={handleJoinOrSignup} disabled={joining || isFull}>
                   {joining ? <Loader2 className="h-5 w-5 animate-spin" /> : !isAuthenticated ? (
                     <>Save my spot <ArrowRight className="h-5 w-5 ml-2" /></>

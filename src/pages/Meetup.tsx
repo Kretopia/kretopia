@@ -4,11 +4,10 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Calendar, MapPin, Search, Plus, Sparkles, Ticket, Users, TrendingUp, Globe, Settings as SettingsIcon } from "lucide-react";
+import { Calendar, MapPin, Search, X, ArrowRight, Plus, Sparkles, Ticket, Users, TrendingUp, Globe, Settings as SettingsIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
@@ -44,7 +43,10 @@ interface EventRow {
   tags: string[] | null;
 }
 
-const CATEGORIES = ["all", "music", "film", "design", "photography", "writing", "tech", "networking", "workshop", "other"] as const;
+// Kept deliberately short — these are quick filters, not a taxonomy. Any
+// event whose category falls outside this set still shows up under "all";
+// it just doesn't get its own chip.
+const CATEGORIES = ["all", "music", "workshop", "networking"] as const;
 type Cat = typeof CATEGORIES[number];
 
 const Meetup = () => {
@@ -53,6 +55,7 @@ const Meetup = () => {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const [searchResults, setSearchResults] = useState<EventRow[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [category, setCategory] = useState<Cat>("all");
@@ -194,23 +197,66 @@ const Meetup = () => {
         tutorial={{ featureKey: "events", label: "How Events works", steps: EVENTS_TUTORIAL }}
 
         tabs={
-          <div className="flex flex-col gap-3">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-energy pointer-events-none" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search events, venues, topics…"
-                className="pl-11 h-12 rounded-2xl border-energy/25 bg-card/80 backdrop-blur-sm"
+          <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
+            {/* Same AI-glow treatment as the Kretopia landing hero search:
+                an ambient breathing halo behind the pill plus a scan-line
+                sweep along the top edge — purely decorative, never
+                intercepts clicks. */}
+            <form onSubmit={(e) => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }} className="relative">
+              <div
+                aria-hidden
+                className={cn(
+                  "pointer-events-none absolute -inset-3 sm:-inset-4 rounded-[28px] blur-xl transition-opacity duration-500 ai-ambient-breathe",
+                  searchFocused ? "opacity-100" : "opacity-60",
+                )}
+                style={{ background: "radial-gradient(60% 100% at 50% 50%, hsl(var(--energy) / 0.2), transparent 70%)" }}
               />
-            </div>
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+              <div aria-hidden className="pointer-events-none absolute inset-x-3 top-0 h-px overflow-hidden rounded-full">
+                <div
+                  className="ai-scan-line h-full w-1/3"
+                  style={{ background: "linear-gradient(90deg, transparent, hsl(var(--energy)), transparent)" }}
+                />
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  placeholder="Search events, venues, topics…"
+                  aria-label="Search events, venues, topics"
+                  className="w-full h-12 sm:h-14 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm pl-12 pr-20 text-sm text-foreground shadow-lg placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-all"
+                  style={{ boxShadow: searchFocused ? "var(--shadow-glow)" : undefined }}
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    aria-label="Clear search"
+                    className="absolute right-14 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors before:absolute before:-inset-2.5 before:content-['']"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  aria-label="Search"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md flex items-center justify-center transition-colors"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </form>
+
+            <div className="flex gap-2 justify-center overflow-x-auto scrollbar-hide -mx-1 px-1">
               {CATEGORIES.map((c) => (
                 <button
                   key={c}
                   onClick={() => setCategory(c)}
                   className={cn(
-                    "shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border transition-all",
+                    "shrink-0 px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border transition-all",
                     category === c
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-card/40 text-muted-foreground border-border/50 hover:border-primary/40 hover:text-foreground"
@@ -225,18 +271,6 @@ const Meetup = () => {
       />
 
       <StudioFeatureShell>
-        <KretoTip compact />
-        <div className="mb-6">
-          <AIHostEventCard
-            hostingCount={hostingCount}
-            onManage={() => navigate("/meetup/manage")}
-            onPrefilled={(details) => {
-              setPrefill(details);
-              setShowCreate(true);
-            }}
-          />
-        </div>
-
         {searchResults !== null ? (
           // A search takes over the whole content area regardless of which
           // tab was selected -- previously the search box lived in the
@@ -315,6 +349,18 @@ const Meetup = () => {
             ))}
           </Tabs>
         )}
+
+        <div className="pt-2">
+          <AIHostEventCard
+            hostingCount={hostingCount}
+            onManage={() => navigate("/meetup/manage")}
+            onPrefilled={(details) => {
+              setPrefill(details);
+              setShowCreate(true);
+            }}
+          />
+        </div>
+        <KretoTip compact />
       </StudioFeatureShell>
 
       <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={load} initialDetails={prefill} />

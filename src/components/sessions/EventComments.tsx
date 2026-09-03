@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Trash2, MessageSquare } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, Send, Trash2, MessageSquare, ImagePlus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,7 @@ interface Comment {
   id: string;
   user_id: string;
   content: string;
+  image_url: string | null;
   created_at: string;
   profile: { full_name: string; avatar_url: string | null } | null;
 }
@@ -24,16 +25,23 @@ interface EventCommentsProps {
   isCreator: boolean;
   creatorId?: string;
   eventTitle?: string;
+  /** RSVP'd (going/interested) — hosts can always comment regardless of this. */
+  isParticipant: boolean;
 }
 
-export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: EventCommentsProps) => {
+export const EventComments = ({ eventId, isCreator, creatorId, eventTitle, isParticipant }: EventCommentsProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [attachedImage, setAttachedImage] = useState<File | null>(null);
+  const [attachedPreview, setAttachedPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const canComment = isCreator || isParticipant;
 
   useEffect(() => {
     loadComments();
@@ -62,7 +70,7 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: Eve
   const loadComments = async () => {
     const { data, error } = await supabase
       .from('event_comments' as any)
-      .select('id, user_id, content, created_at')
+      .select('id, user_id, content, image_url, created_at')
       .eq('event_id', eventId)
       .order('created_at', { ascending: true });
 
@@ -84,19 +92,43 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: Eve
     setLoading(false);
   };
 
+  const handlePickImage = (file: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    setAttachedImage(file);
+    setAttachedPreview(URL.createObjectURL(file));
+  };
+
+  const clearAttachedImage = () => {
+    if (attachedPreview) URL.revokeObjectURL(attachedPreview);
+    setAttachedImage(null);
+    setAttachedPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSend = async () => {
-    if (!newComment.trim() || !user) return;
+    if ((!newComment.trim() && !attachedImage) || !user || !canComment) return;
     setSending(true);
     const commentContent = newComment.trim();
 
-    const { error } = await supabase
-      .from('event_comments' as any)
-      .insert({ event_id: eventId, user_id: user.id, content: commentContent });
+    try {
+      let imageUrl: string | null = null;
+      if (attachedImage) {
+        const ext = attachedImage.name.split(".").pop() || "jpg";
+        const path = `${user.id}/comments/${eventId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("portfolio").upload(path, attachedImage);
+        if (upErr) throw upErr;
+        const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(path);
+        imageUrl = publicUrl;
+      }
 
-    if (error) {
-      toast({ title: "Error", description: "Failed to post comment", variant: "destructive" });
-    } else {
+      const { error } = await supabase
+        .from('event_comments' as any)
+        .insert({ event_id: eventId, user_id: user.id, content: commentContent, image_url: imageUrl });
+      if (error) throw error;
+
       setNewComment("");
+      clearAttachedImage();
 
       // Get commenter's name for notification
       const { data: profile } = await supabase
@@ -105,7 +137,9 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: Eve
         .eq('user_id', user.id)
         .single();
       const commenterName = profile?.full_name || 'Someone';
-      const preview = commentContent.length > 80 ? commentContent.slice(0, 80) + '…' : commentContent;
+      const preview = commentContent
+        ? (commentContent.length > 80 ? commentContent.slice(0, 80) + '…' : commentContent)
+        : '📷 Shared a photo';
       const title = eventTitle || 'an event';
 
       // Notify event creator (if commenter is not the creator)
@@ -134,8 +168,12 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: Eve
           link: `/event/${eventId}`,
         });
       }
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error", description: "Failed to post comment", variant: "destructive" });
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   };
 
   const handleDelete = async (commentId: string) => {
@@ -151,29 +189,31 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: Eve
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1 px-5">
-        {comments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10">
-            <MessageSquare className="h-10 w-10 mb-3 text-muted-foreground/40" />
+    <Card>
+      <CardContent className="p-4 sm:p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-4 w-4 text-primary" />
+          <h3 className="font-semibold text-sm">Comments</h3>
+          {comments.length > 0 && <span className="text-xs text-muted-foreground">· {comments.length}</span>}
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : comments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <MessageSquare className="h-8 w-8 mb-2 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">No comments yet</p>
             <p className="text-xs text-muted-foreground">Start the buzz! Ask questions, share excitement.</p>
           </div>
         ) : (
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
             {comments.map(comment => (
               <div key={comment.id} className="flex gap-3 group">
-                <Avatar 
-                  className="h-8 w-8 shrink-0 cursor-pointer" 
+                <Avatar
+                  className="h-8 w-8 shrink-0 cursor-pointer"
                   onClick={() => navigate(`/profile/${comment.user_id}`)}
                 >
                   <AvatarImage src={comment.profile?.avatar_url || undefined} />
@@ -183,7 +223,7 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: Eve
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span 
+                    <span
                       className="text-sm font-medium cursor-pointer hover:text-primary transition-colors"
                       onClick={() => navigate(`/profile/${comment.user_id}`)}
                     >
@@ -203,34 +243,77 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: Eve
                       </Button>
                     )}
                   </div>
-                  <p className="text-sm text-foreground mt-0.5">{comment.content}</p>
+                  {comment.content && <p className="text-sm text-foreground mt-0.5">{comment.content}</p>}
+                  {comment.image_url && (
+                    <img
+                      src={comment.image_url}
+                      alt=""
+                      loading="lazy"
+                      className="mt-2 max-h-56 rounded-lg border border-border object-cover"
+                    />
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
-      </ScrollArea>
 
-      {user ? (
-        <div className="p-4 border-t shrink-0">
-          <form onSubmit={e => { e.preventDefault(); handleSend(); }} className="flex gap-2">
-            <Input
-              value={newComment}
-              onChange={e => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
-              disabled={sending}
-              className="flex-1"
-            />
-            <Button type="submit" size="icon" disabled={sending || !newComment.trim()}>
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </Button>
-          </form>
-        </div>
-      ) : (
-        <div className="p-4 border-t text-center">
-          <p className="text-sm text-muted-foreground">Sign up to join the conversation</p>
-        </div>
-      )}
-    </div>
+        {user && canComment ? (
+          <div className="pt-3 border-t border-border/60">
+            {attachedPreview && (
+              <div className="relative inline-block mb-2">
+                <img src={attachedPreview} alt="" className="h-16 w-16 rounded-lg object-cover border border-border" />
+                <button
+                  type="button"
+                  onClick={clearAttachedImage}
+                  aria-label="Remove image"
+                  className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            <form onSubmit={e => { e.preventDefault(); handleSend(); }} className="flex gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handlePickImage(e.target.files?.[0] || null)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={sending}
+                aria-label="Attach a photo"
+              >
+                <ImagePlus className="h-4 w-4" />
+              </Button>
+              <Input
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                placeholder="Add a comment..."
+                disabled={sending}
+                className="flex-1"
+              />
+              <Button type="submit" size="icon" disabled={sending || (!newComment.trim() && !attachedImage)}>
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </form>
+          </div>
+        ) : user ? (
+          <div className="pt-3 border-t border-border/60 text-center">
+            <p className="text-sm text-muted-foreground">RSVP to join the conversation</p>
+          </div>
+        ) : (
+          <div className="pt-3 border-t border-border/60 text-center">
+            <p className="text-sm text-muted-foreground">Sign up to join the conversation</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

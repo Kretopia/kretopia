@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,7 @@ import { destroyExistingDailyFrameAsync } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 /**
@@ -145,6 +147,7 @@ export function SoundStageRoom({
 }: SoundStageRoomProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const callRef = useRef<DailyCall | null>(null);
   // Local backstage flag — flips to false when host taps "Open the doors".
   const [isBackstage, setIsBackstage] = useState(backstage);
@@ -779,7 +782,33 @@ export function SoundStageRoom({
     callRef.current?.updateParticipant(m.sessionId, { eject: true });
   };
 
-  const leave = () => onOpenChange(false);
+  // Recording/replay integration: SoundStageRoom already starts/stops Daily's
+  // cloud recording (below) and Recordings.tsx already lists + replays
+  // sound_stage recordings via the existing RecordingReplayDialog (built in
+  // a prior sprint) -- the missing link was purely that nothing here ever
+  // told the host where the recording goes. Daily's webhook resolves a
+  // "ss-" room to a call_transcripts row asynchronously (not ready the
+  // instant the call ends), so this can't open the replay directly -- it
+  // points at the surface that already handles "not ready yet" correctly,
+  // rather than polling or guessing readiness here. Host-only: the same
+  // known, pre-existing call_transcripts authorization only actually grants
+  // created_by (the host) access for this call_kind today (see
+  // docs/SECURITY_FINDINGS.md) -- showing this to non-hosts would promise
+  // access they may not get.
+  const leave = () => {
+    if (recording && isHost) {
+      toast({
+        title: "Recording saved",
+        description: "It'll appear in your Recordings once Daily finishes processing — usually a few minutes after a stage ends.",
+        action: (
+          <ToastAction altText="View Recordings" onClick={() => navigate("/recordings")}>
+            View Recordings
+          </ToastAction>
+        ),
+      });
+    }
+    onOpenChange(false);
+  };
 
   const [shareOpen, setShareOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);

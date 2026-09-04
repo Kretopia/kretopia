@@ -6,12 +6,9 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { resolveStripeSecretKey } from "../_shared/stripeEnv.ts";
+import { requireAdminOrCron, adminGuardCorsHeaders } from "../_shared/admin-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const corsHeaders = adminGuardCorsHeaders;
 
 const log = (s: string, d?: any) =>
   console.log(`[THRIVEFUND-FINALIZE] ${s}${d ? ` - ${JSON.stringify(d)}` : ""}`);
@@ -20,6 +17,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const guard = await requireAdminOrCron(req);
+    if (!guard.ok) return guard.response;
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -37,6 +37,14 @@ serve(async (req) => {
 
     if (!["active", "funded", "failed"].includes(campaign.status)) {
       throw new Error(`Campaign in unexpected status: ${campaign.status}`);
+    }
+
+    // The whole point of a deadline is that backers' cards aren't touched
+    // before it passes -- enforce that server-side too, not just by only
+    // ever being called once the deadline has passed. Idempotent re-calls
+    // after the real deadline (retries, the actual scheduler) are unaffected.
+    if (new Date(campaign.deadline) > new Date()) {
+      throw new Error("Campaign deadline has not passed yet");
     }
 
     const stripe = new Stripe(resolveStripeSecretKey(), {

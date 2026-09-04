@@ -30,19 +30,130 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
   }
 }
 
-// Legitimate callers (project collaborator call invites, event comment
-// notifications) already target other users' devices from an authenticated
-// session, so this only requires *a* real caller — service-role (internal
-// edge functions) or an authenticated user — not self-service/ownership.
-// Previously this had no check at all: userId/title/body/data were fully
-// caller-controlled with zero authentication, a push-spam vector reachable
-// with just the public anon key.
-function isAuthorizedCaller(req: Request): boolean {
+// Step 1: is there a real caller at all? service-role (internal edge
+// functions, e.g. notify-swipe's own admin client) is always trusted.
+// Anything else must additionally pass the relationship check below.
+function parseCallerClaims(req: Request): { role?: string; sub?: string } | null {
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) return false;
+  if (!authHeader?.startsWith("Bearer ")) return null;
   const claims = parseJwtClaims(authHeader.slice("Bearer ".length).trim());
-  if (!claims) return false;
-  return claims.role === "service_role" || typeof claims.sub === "string";
+  if (!claims) return null;
+  return claims as { role?: string; sub?: string };
+}
+
+// Step 2: for a plain authenticated (non-service-role) caller, this used to
+// stop at "is this *a* real user" -- any signed-in user could target any
+// other user's devices with an arbitrary title/body, a real push-spam/
+// phishing vector. Self-notify is always fine; notifying someone else
+// requires the two users actually have a real relationship one of the
+// app's own legitimate call sites relies on (project collaborator call/
+// message notifications, event comment notifications, opportunity
+// poster<->applicant status updates, or an accepted connection) -- not
+// just "both happen to be signed in."
+async function hasRealRelationship(admin: ReturnType<typeof createClient>, callerId: string, targetId: string): Promise<boolean> {
+  // 1) Accepted connection, either direction.
+  const connectionCheck = admin
+    .from("connections")
+    .select("id")
+    .or(`and(user_id.eq.${callerId},connected_user_id.eq.${targetId}),and(user_id.eq.${targetId},connected_user_id.eq.${callerId})`)
+    .eq("status", "accepted")
+    .limit(1)
+    .maybeSingle();
+
+  // 2) Same project: caller is an accepted collaborator (or owner) on a
+  // project the target owns (or is an accepted collaborator on).
+  const projectCheck = (async () => {
+    const { data: callerProjects } = await admin
+      .from("project_collaborators")
+      .select("project_id")
+      .eq("user_id", callerId)
+      .eq("status", "accepted");
+    const { data: ownedByCaller } = await admin
+      .from("projects")
+      .select("id")
+      .eq("created_by", callerId);
+    const projectIds = [
+      ...(callerProjects ?? []).map((r) => r.project_id),
+      ...(ownedByCaller ?? []).map((r) => r.id),
+    ];
+    if (projectIds.length === 0) return false;
+    const { data: targetOwns } = await admin
+      .from("projects")
+      .select("id")
+      .eq("created_by", targetId)
+      .in("id", projectIds)
+      .limit(1)
+      .maybeSingle();
+    if (targetOwns) return true;
+    const { data: targetCollaborates } = await admin
+      .from("project_collaborators")
+      .select("id")
+      .eq("user_id", targetId)
+      .eq("status", "accepted")
+      .in("project_id", projectIds)
+      .limit(1)
+      .maybeSingle();
+    return !!targetCollaborates;
+  })();
+
+  // 3) Same event: caller is a non-cancelled participant (or host) of an
+  // event the target hosts (or also participates in).
+  const eventCheck = (async () => {
+    const { data: callerJams } = await admin
+      .from("jam_participants")
+      .select("jam_id")
+      .eq("user_id", callerId)
+      .neq("status", "cancelled");
+    const { data: hostedByCaller } = await admin
+      .from("creative_jams")
+      .select("id")
+      .eq("created_by", callerId);
+    const jamIds = [
+      ...(callerJams ?? []).map((r) => r.jam_id),
+      ...(hostedByCaller ?? []).map((r) => r.id),
+    ];
+    if (jamIds.length === 0) return false;
+    const { data: targetHosts } = await admin
+      .from("creative_jams")
+      .select("id")
+      .eq("created_by", targetId)
+      .in("id", jamIds)
+      .limit(1)
+      .maybeSingle();
+    if (targetHosts) return true;
+    const { data: targetParticipates } = await admin
+      .from("jam_participants")
+      .select("id")
+      .eq("user_id", targetId)
+      .neq("status", "cancelled")
+      .in("jam_id", jamIds)
+      .limit(1)
+      .maybeSingle();
+    return !!targetParticipates;
+  })();
+
+  // 4) Opportunity poster <-> applicant, either direction.
+  const applicationCheck = (async () => {
+    const { data: posterApps } = await admin
+      .from("opportunities")
+      .select("id, applications!inner(applicant_id)")
+      .eq("created_by", callerId)
+      .eq("applications.applicant_id", targetId)
+      .limit(1)
+      .maybeSingle();
+    if (posterApps) return true;
+    const { data: applicantApps } = await admin
+      .from("opportunities")
+      .select("id, applications!inner(applicant_id)")
+      .eq("created_by", targetId)
+      .eq("applications.applicant_id", callerId)
+      .limit(1)
+      .maybeSingle();
+    return !!applicantApps;
+  })();
+
+  const [conn, proj, evt, app] = await Promise.all([connectionCheck, projectCheck, eventCheck, applicationCheck]);
+  return !!conn.data || proj || evt || app;
 }
 
 // VAPID helper functions
@@ -144,11 +255,43 @@ serve(async (req) => {
   }
 
   try {
-    if (!isAuthorizedCaller(req)) {
+    const claims = parseCallerClaims(req);
+    if (!claims) {
       return new Response(
         JSON.stringify({ success: false, error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    const payload: PushNotificationPayload = await req.json();
+    if (!payload.userId) {
+      return new Response(
+        JSON.stringify({ success: false, error: "userId required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // service-role (internal edge functions) and self-notify are always
+    // trusted; anyone else must have a real relationship with the target.
+    if (claims.role !== "service_role" && claims.sub !== payload.userId) {
+      if (!claims.sub) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const related = await hasRealRelationship(supabaseClient, claims.sub, payload.userId);
+      if (!related) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Not authorized to notify this user" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
@@ -158,23 +301,17 @@ serve(async (req) => {
     if (!vapidPublicKey || !vapidPrivateKey) {
       console.error("[PUSH] VAPID keys not configured");
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "VAPID keys not configured. Please run generate-vapid-keys and add the keys to secrets." 
+        JSON.stringify({
+          success: false,
+          error: "VAPID keys not configured. Please run generate-vapid-keys and add the keys to secrets."
         }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
-    const payload: PushNotificationPayload = await req.json();
     console.log("[PUSH] Sending push notification to user:", payload.userId);
 
     // Get user's push subscriptions

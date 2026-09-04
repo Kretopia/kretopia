@@ -12,15 +12,55 @@ serve(async (req) => {
   }
 
   try {
+    // This had no authentication at all: inviter_id and credit_id were
+    // fully caller-controlled, so anyone could impersonate any real user
+    // in a mass "X credited you" email to arbitrary addresses, using that
+    // user's real name looked up from their own profile. Require a real
+    // caller and derive the inviter's identity from their verified JWT,
+    // never from the request body -- and require they actually own the
+    // credit they're claiming to invite people onto.
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await anonClient.auth.getUser(authHeader.replace('Bearer ', ''));
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const inviter_id = user.id;
+
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { credit_id, project_name, role, inviter_id, external_collaborators } = await req.json();
+    const { credit_id, project_name, role, external_collaborators } = await req.json();
 
     if (!credit_id || !external_collaborators?.length) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Verify the caller actually owns this credit before sending anything.
+    const { data: creditRow } = await supabase
+      .from('credits')
+      .select('id, user_id')
+      .eq('id', credit_id)
+      .maybeSingle();
+    if (!creditRow || creditRow.user_id !== inviter_id) {
+      return new Response(JSON.stringify({ error: 'Not authorized for this credit' }), {
+        status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

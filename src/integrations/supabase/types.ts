@@ -2900,6 +2900,7 @@ export type Database = {
           event_mode: string
           event_type: string | null
           external_ticket_url: string | null
+          gallery_image_urls: string[]
           group_chat_enabled: boolean
           group_chat_room_id: string | null
           guest_matching_enabled: boolean
@@ -2958,6 +2959,7 @@ export type Database = {
           event_mode?: string
           event_type?: string | null
           external_ticket_url?: string | null
+          gallery_image_urls?: string[]
           group_chat_enabled?: boolean
           group_chat_room_id?: string | null
           guest_matching_enabled?: boolean
@@ -3016,6 +3018,7 @@ export type Database = {
           event_mode?: string
           event_type?: string | null
           external_ticket_url?: string | null
+          gallery_image_urls?: string[]
           group_chat_enabled?: boolean
           group_chat_room_id?: string | null
           guest_matching_enabled?: boolean
@@ -5929,6 +5932,7 @@ export type Database = {
           created_at: string
           event_id: string
           id: string
+          image_url: string | null
           updated_at: string
           user_id: string
         }
@@ -5937,6 +5941,7 @@ export type Database = {
           created_at?: string
           event_id: string
           id?: string
+          image_url?: string | null
           updated_at?: string
           user_id: string
         }
@@ -5945,6 +5950,7 @@ export type Database = {
           created_at?: string
           event_id?: string
           id?: string
+          image_url?: string | null
           updated_at?: string
           user_id?: string
         }

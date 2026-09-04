@@ -26,6 +26,16 @@ function extractJsonObject(raw: string) {
   throw new Error('No valid JSON found in AI response');
 }
 
+// This function uses the service-role key, which bypasses RLS entirely — so
+// interpolating the raw search string into PostgREST .or() filter syntax let
+// a caller inject filter operators (commas, parens, colons) to manipulate
+// which rows match, well beyond the intended substring search. Quote the
+// value the same way src/lib/postgrestFilter.ts does for client-side
+// filters (this edge function runs on Deno and can't share that import).
+function escapePostgrestValue(value: string): string {
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}
+
 function normalizeText(value: string | null | undefined) {
   return (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
@@ -60,7 +70,7 @@ serve(async (req) => {
     }
 
     const trimmedQuery = query.trim();
-    const q = `%${trimmedQuery}%`;
+    const q = escapePostgrestValue(`%${trimmedQuery}%`);
 
     const [profilesRes, creditsRes, oppsRes] = await Promise.all([
       supabase

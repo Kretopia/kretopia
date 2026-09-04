@@ -35,17 +35,18 @@ Deno.serve(async (req) => {
     const found = list?.users?.find((x) => x.email?.toLowerCase() === target);
     if (!found) return json({ candidate: null });
 
-    const { data: prof } = await admin
-      .from("profiles")
-      .select("full_name, avatar_url")
-      .eq("user_id", found.id)
-      .maybeSingle();
-
+    // Previously returned the target account's real name and avatar to any
+    // authenticated caller who guessed their email — an email-to-identity
+    // oracle with no relationship check. The actual merge is only ever
+    // authorized later via a code sent to both inboxes (merge-accounts-init/
+    // verify), so this lookup step doesn't need to reveal who the account
+    // belongs to — just that one exists, so the UI can proceed to that
+    // verified flow.
     return json({
       candidate: {
         candidate_user_id: found.id,
-        full_name: prof?.full_name ?? null,
-        avatar_url: prof?.avatar_url ?? null,
+        full_name: null,
+        avatar_url: null,
         masked_email: maskEmail(target),
         match_email_local: false,
         match_phone: false,

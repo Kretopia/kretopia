@@ -81,6 +81,30 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Previously used the service-role key to read/write any project's files
+    // by id with no check that the caller belonged to that project (IDOR).
+    // Require a real caller and confirm they're the file's own uploader
+    // before doing anything — this matches how the function is actually
+    // invoked client-side (right after the caller uploads their own file).
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const callerClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await callerClient.auth.getUser(authHeader.replace("Bearer ", ""));
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { project_id, file_id } = await req.json();
     if (!project_id || !file_id) {
       return new Response(JSON.stringify({ error: "project_id and file_id required" }), {
@@ -98,6 +122,12 @@ Deno.serve(async (req) => {
     ]);
 
     if (!file) throw new Error("file not found");
+    if (file.user_id !== user.id) {
+      return new Response(JSON.stringify({ error: "Not authorized for this file" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     // Don't override an explicit folder pick.
     if (file.folder_id) {
       return new Response(JSON.stringify({ ok: true, skipped: "already filed" }), {

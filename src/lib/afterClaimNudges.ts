@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { PrimaryIntent } from "./intents";
+import { escapePostgrestValue } from "./postgrestFilter";
 
 /**
  * After-Claim Engagement Loop — Day 0 in-app nudges.
@@ -37,11 +38,12 @@ export async function seedAfterClaimNudges(userId: string, opts: {
 
     // 1. Matching gigs (by role keyword) — universal but boosted for "gigs" intent
     if (role) {
+      const likeRole = escapePostgrestValue(`%${role}%`);
       const { data: gigs } = await supabase
         .from("opportunities")
         .select("id, title")
         .eq("status", "active")
-        .or(`title.ilike.%${role}%,description.ilike.%${role}%`)
+        .or(`title.ilike.${likeRole},description.ilike.${likeRole}`)
         .limit(3);
 
       if (gigs && gigs.length > 0) {

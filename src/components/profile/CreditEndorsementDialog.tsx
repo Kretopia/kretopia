@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Send, Search, Loader2, ShieldCheck, Mail, MessageCircle, Copy, Check, UserPlus } from "lucide-react";
 import { getShareUrl } from "@/lib/constants";
+import { escapePostgrestValue } from "@/lib/postgrestFilter";
 
 interface Credit {
   id: string;
@@ -43,10 +44,11 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId, re
     }
     setSearching(true);
     try {
+      const likeQ = escapePostgrestValue(`%${query}%`);
       const { data } = await supabase
         .from('profiles')
         .select('user_id, full_name, avatar_url, primary_role, username')
-        .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
+        .or(`full_name.ilike.${likeQ},username.ilike.${likeQ}`)
         .neq('user_id', userId)
         .limit(4);
       setSearchResults(data || []);

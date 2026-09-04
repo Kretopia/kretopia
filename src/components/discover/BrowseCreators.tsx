@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { escapePostgrestValue } from "@/lib/postgrestFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -113,7 +114,10 @@ export function BrowseCreators() {
       if (filters.location) q = q.ilike("location", `%${filters.location}%`);
       if (filters.verifiedOnly) q = q.neq("verification_tier", "none").not("verification_tier", "is", null);
       if (filters.minRating > 0) q = q.gte("average_rating", filters.minRating);
-      if (query.trim()) q = q.or(`full_name.ilike.%${query}%,role.ilike.%${query}%,bio.ilike.%${query}%`);
+      if (query.trim()) {
+        const likeQ = escapePostgrestValue(`%${query}%`);
+        q = q.or(`full_name.ilike.${likeQ},role.ilike.${likeQ},bio.ilike.${likeQ}`);
+      }
 
       const { data, error } = await q;
       if (error) throw error;

@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar, MapPin, Search, X, ArrowRight, Plus, Sparkles, Ticket, Users, TrendingUp, Globe, Settings as SettingsIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { escapePostgrestValue } from "@/lib/postgrestFilter";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { AIHostEventCard } from "@/components/sessions/AIHostEventCard";
 import type { ScannedEventDetails } from "@/components/sessions/ScanFlyerDialog";
@@ -125,12 +126,13 @@ const Meetup = () => {
     const thisRequest = ++searchRequestId.current;
     const t = window.setTimeout(async () => {
       try {
+        const likeQ = escapePostgrestValue(`%${q}%`);
         let query = supabase
           .from("creative_jams")
           .select("id, title, description, start_time, end_time, venue_name, venue_address, category, cover_image_url, is_ticketed, ticket_price, ticket_currency, max_participants, country, created_by, tags")
           .eq("is_public", true)
           .gte("start_time", new Date().toISOString())
-          .or(`title.ilike.%${q}%,description.ilike.%${q}%,venue_name.ilike.%${q}%`)
+          .or(`title.ilike.${likeQ},description.ilike.${likeQ},venue_name.ilike.${likeQ}`)
           .order("start_time", { ascending: true })
           .limit(60);
         if (category !== "all") query = query.eq("category", category);

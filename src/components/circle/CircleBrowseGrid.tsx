@@ -13,6 +13,7 @@ import { Search, MapPin, Verified, Sparkles, Users, Crown } from "lucide-react";
 import { SwipeFiltersState } from "./SwipeFilters";
 import { locationMatchesFilter } from "@/lib/locationGroups";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { escapePostgrestValue } from "@/lib/postgrestFilter";
 
 const FREE_BROWSE_LIMIT = 6;
 
@@ -47,7 +48,8 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
         .select("user_id, full_name, avatar_url, role, bio, location, badge, verification_score, level");
 
       if (search.trim()) {
-        query = query.or(`full_name.ilike.%${search}%,role.ilike.%${search}%,location.ilike.%${search}%`);
+        const likeQ = escapePostgrestValue(`%${search}%`);
+        query = query.or(`full_name.ilike.${likeQ},role.ilike.${likeQ},location.ilike.${likeQ}`);
       }
 
       // Multi-role DB filter (use first role for DB, rest client-side)

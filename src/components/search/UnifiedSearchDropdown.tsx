@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useVoiceSearch } from "@/hooks/useVoiceSearch";
 import { VoiceWaveform } from "@/components/search/VoiceWaveform";
+import { escapePostgrestValue } from "@/lib/postgrestFilter";
 
 interface SearchResult {
   type: "creator" | "credit" | "gig" | "web";
@@ -155,6 +156,7 @@ export function UnifiedSearchDropdown({
 
     try {
       const likeQ = `%${q}%`;
+      const likeQEscaped = escapePostgrestValue(likeQ);
 
       // Generate fuzzy variants (swap common letter pairs: i/y, z/s, etc.)
       const fuzzyVariants = new Set<string>([q]);
@@ -164,9 +166,12 @@ export function UnifiedSearchDropdown({
           fuzzyVariants.add(q.toLowerCase().replace(new RegExp(from, 'gi'), to));
         }
       }
-      
+
       const fuzzyFilters = Array.from(fuzzyVariants)
-        .map(v => `full_name.ilike.%${v}%,role.ilike.%${v}%`)
+        .map(v => {
+          const ev = escapePostgrestValue(`%${v}%`);
+          return `full_name.ilike.${ev},role.ilike.${ev}`;
+        })
         .join(',');
 
       // Fast DB queries for instant results
@@ -180,7 +185,7 @@ export function UnifiedSearchDropdown({
         supabase
           .from("credits")
           .select("id, project_name, role, year, project_type, thumbnail_url")
-          .or(`project_name.ilike.${likeQ},role.ilike.${likeQ}`)
+          .or(`project_name.ilike.${likeQEscaped},role.ilike.${likeQEscaped}`)
           .limit(5),
         supabase
           .from("opportunities")

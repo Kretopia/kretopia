@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Users, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
+import { escapePostgrestValue } from "@/lib/postgrestFilter";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -117,7 +118,7 @@ const AcceptInvite = () => {
 
         if (email && !isLegacyUserInvite) {
           // Email-based invite: match by either user_id or email
-          invitationQuery = invitationQuery.or(`user_id.eq.${user.id},email.eq.${email.toLowerCase()}`);
+          invitationQuery = invitationQuery.or(`user_id.eq.${user.id},email.eq.${escapePostgrestValue(email.toLowerCase())}`);
         } else {
           // In-app invite (no email param OR legacy placeholder): match by user_id
           invitationQuery = invitationQuery.eq('user_id', user.id);

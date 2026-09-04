@@ -8,9 +8,6 @@ const corsHeaders = {
 
 interface SwipeNotificationRequest {
   recipientId: string;
-  swiperName: string;
-  swiperRole: string;
-  swiperAvatar?: string;
 }
 
 serve(async (req) => {
@@ -19,13 +16,76 @@ serve(async (req) => {
   }
 
   try {
+    // This had no authentication at all: recipientId AND the displayed
+    // swiperName/swiperRole/swiperAvatar were fully caller-controlled, so
+    // anyone with the public anon key could send a real email + push to
+    // any user impersonating an arbitrary "swiper". Require a real caller
+    // and verify they actually swiped right on this recipient before
+    // sending anything -- and derive the displayed name/role/avatar from
+    // the caller's own profile server-side, never from the request body.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const anonClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: claimsData, error: claimsErr } = await anonClient.auth.getClaims(
+      authHeader.slice("Bearer ".length).trim(),
+    );
+    const swiperId = claimsData?.claims?.sub as string | undefined;
+    if (claimsErr || !swiperId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { recipientId, swiperName, swiperRole, swiperAvatar }: SwipeNotificationRequest = await req.json();
-    
+    const { recipientId }: SwipeNotificationRequest = await req.json();
+    if (!recipientId) {
+      return new Response(JSON.stringify({ error: "recipientId required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify a real right-swipe actually happened before notifying anyone.
+    const { data: realSwipe } = await supabaseClient
+      .from("swipes")
+      .select("id")
+      .eq("user_id", swiperId)
+      .eq("target_id", recipientId)
+      .eq("target_type", "profile")
+      .eq("direction", "right")
+      .maybeSingle();
+    if (!realSwipe) {
+      return new Response(JSON.stringify({ error: "No matching swipe found" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Displayed identity always comes from the verified caller's own
+    // profile, never from the request body.
+    const { data: swiperProfile } = await supabaseClient
+      .from("profiles")
+      .select("full_name, role, avatar_url")
+      .eq("user_id", swiperId)
+      .maybeSingle();
+    const swiperName = swiperProfile?.full_name || "A creator";
+    const swiperRole = swiperProfile?.role || "Creator";
+    const swiperAvatar = swiperProfile?.avatar_url || undefined;
+
     console.log(`Sending swipe notification to user: ${recipientId}`);
 
     // Get recipient's notification preferences

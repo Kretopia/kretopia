@@ -18,6 +18,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { escapePostgrestValue } from "@/lib/postgrestFilter";
 
 const FREE_BROWSE_LIMIT = 10;
 const PAGE_SIZE = 20;
@@ -281,7 +282,8 @@ export function CreatorBrowseGrid() {
         .range(creatorPage * PAGE_SIZE, (creatorPage + 1) * PAGE_SIZE - 1);
 
       if (search.trim()) {
-        query = query.or(`full_name.ilike.%${search}%,role.ilike.%${search}%,location.ilike.%${search}%`);
+        const likeQ = escapePostgrestValue(`%${search}%`);
+        query = query.or(`full_name.ilike.${likeQ},role.ilike.${likeQ},location.ilike.${likeQ}`);
       }
       if (isPro && skillFilter !== "all") {
         query = query.ilike('role', `%${skillFilter}%`);
@@ -385,7 +387,10 @@ export function CreatorBrowseGrid() {
         .order('year', { ascending: false, nullsFirst: false })
         .range(creditPage * PAGE_SIZE, (creditPage + 1) * PAGE_SIZE - 1);
 
-      if (search.trim()) query = query.or(`project_name.ilike.%${search}%,role.ilike.%${search}%,client_brand.ilike.%${search}%`);
+      if (search.trim()) {
+        const likeQ = escapePostgrestValue(`%${search}%`);
+        query = query.or(`project_name.ilike.${likeQ},role.ilike.${likeQ},client_brand.ilike.${likeQ}`);
+      }
       if (verifiedOnly) query = query.eq('verification_status', 'verified');
       if (category !== 'all') {
         const types = Object.entries(TYPE_TO_CATEGORY).filter(([, cat]) => cat === category).map(([type]) => type);

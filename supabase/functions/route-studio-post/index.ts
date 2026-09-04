@@ -89,6 +89,30 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Previously used the service-role key to read/write any project's posts
+    // by id with no check that the caller belonged to that project (IDOR).
+    // Require a real caller and confirm they authored the post before
+    // routing it — matches how this is actually invoked (right after the
+    // caller creates their own post).
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const callerClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await callerClient.auth.getUser(authHeader.replace("Bearer ", ""));
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { post_id } = await req.json();
     if (!post_id) {
       return new Response(JSON.stringify({ error: "post_id required" }), {
@@ -105,6 +129,12 @@ Deno.serve(async (req) => {
       .eq("id", post_id)
       .maybeSingle();
     if (postErr || !post) throw new Error(postErr?.message ?? "post not found");
+    if (post.author_id !== user.id) {
+      return new Response(JSON.stringify({ error: "Not authorized for this post" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const { data: project } = await admin
       .from("projects")

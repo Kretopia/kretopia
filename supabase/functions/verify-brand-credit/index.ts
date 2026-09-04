@@ -15,12 +15,50 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { action, token, roleId, projectId, brandEmail, brandName, submittedBy } = await req.json();
+    const { action, token, roleId, projectId, brandEmail, brandName } = await req.json();
 
     if (action === 'request') {
-      if (!roleId || !projectId || !brandEmail || !brandName || !submittedBy) {
+      // Previously: no auth check, submittedBy was caller-supplied, and the
+      // response leaked the verification_token directly — letting the same
+      // caller immediately turn around and call action=verify themselves to
+      // set their own credit's verification_status to 'enterprise' without
+      // the brand ever seeing the email. Require a real caller, derive
+      // submittedBy from their verified JWT, confirm they actually claimed
+      // the role they're requesting verification for, and never return the
+      // token — only the brand's inbox should ever see it.
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader?.startsWith('Bearer ')) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const anonClient = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } },
+      );
+      const { data: { user } } = await anonClient.auth.getUser(authHeader.replace('Bearer ', ''));
+      if (!user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const submittedBy = user.id;
+
+      if (!roleId || !projectId || !brandEmail || !brandName) {
         return new Response(JSON.stringify({ error: 'Missing required fields' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { data: roleRow } = await supabase
+        .from('icdb_project_roles')
+        .select('claimed_by')
+        .eq('id', roleId)
+        .maybeSingle();
+      if (!roleRow || roleRow.claimed_by !== submittedBy) {
+        return new Response(JSON.stringify({ error: 'Not authorized for this role' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
@@ -92,9 +130,8 @@ serve(async (req) => {
         });
       }
 
-      return new Response(JSON.stringify({ 
-        success: true, 
-        token: data.verification_token,
+      return new Response(JSON.stringify({
+        success: true,
         message: `Verification request sent to ${brandEmail}`
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

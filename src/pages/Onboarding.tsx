@@ -567,7 +567,8 @@ export default function Onboarding() {
       const managerCode = sessionStorage.getItem("manager_referral_code");
       if (managerCode) {
         try {
-          const { data: managerData } = await supabase.from("talent_managers").select("id").eq("referral_code", managerCode).eq("is_active", true).maybeSingle();
+          const { data: managerRows } = await supabase.rpc("get_talent_manager_by_referral_code" as any, { p_referral_code: managerCode });
+          const managerData = Array.isArray(managerRows) ? managerRows[0] : managerRows;
           if (managerData) {
             await supabase.from("talent_referrals").insert({ manager_id: managerData.id, talent_user_id: user.id });
             await supabase.rpc("increment_manager_referrals" as any, { manager_id_input: managerData.id });

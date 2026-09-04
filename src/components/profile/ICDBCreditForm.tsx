@@ -500,7 +500,6 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
               credit_id: insertedData.id,
               project_name: form.project_name,
               role: form.role,
-              inviter_id: userId,
               external_collaborators: externalCollabs,
             },
           }).catch(err => console.log('Credit chain invites queued:', err));

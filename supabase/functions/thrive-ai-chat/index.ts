@@ -138,6 +138,29 @@ serve(async (req) => {
         const user = resolvedUser;
         userId = user.id;
 
+        // This function runs under the service role and bypasses RLS, so a
+        // client-supplied conversation_id must never be trusted as-is — an
+        // unverified id would let a caller read/write another user's
+        // conversation history (ai_messages hydration below, plus every
+        // persist write later in this handler, both key off conversationId
+        // with no further ownership check of their own). Verify ownership
+        // once here; any mismatch is rejected outright rather than silently
+        // falling back to the caller's own thread, so the client never
+        // believes it's continuing a conversation it was actually denied.
+        if (conversationId) {
+          const { data: convo } = await admin
+            .from("ai_conversations")
+            .select("user_id")
+            .eq("id", conversationId)
+            .maybeSingle();
+          if (!convo || convo.user_id !== userId) {
+            return new Response(JSON.stringify({ error: "Conversation not found" }), {
+              status: 403,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
+
         // ---- Per-tier daily message cap ----
         const TIER_DAILY_CAPS: Record<string, number> = {
           free: 30,

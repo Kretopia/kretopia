@@ -1,21 +1,86 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUp, Loader2, Square } from "lucide-react";
 import { BRAND } from "@/lib/brandLexicon";
-import { streamCopilot, type CopilotMessage } from "@/lib/thriveCopilot";
+import {
+  streamCopilot, loadConversationMessages, createConversation, extractActions,
+  type CopilotMessage,
+} from "@/lib/thriveCopilot";
+
+// Strip <action>/<plan> tags from the live-streaming buffer, same approach
+// already proven in ThriveAgentFab.tsx — remove fully-closed tags, then hide
+// any half-streamed opening tag and everything after it so partial JSON/XML
+// never flashes on screen mid-stream.
+function stripTagsLive(raw: string): string {
+  let out = raw
+    .replace(/<action>[\s\S]*?<\/action>/g, "")
+    .replace(/<plan>[\s\S]*?<\/plan>/g, "");
+  const openIdx = Math.min(
+    ...["<action", "<plan"].map((t) => {
+      const i = out.indexOf(t);
+      return i === -1 ? Infinity : i;
+    }),
+  );
+  if (openIdx !== Infinity) out = out.slice(0, openIdx);
+  return out;
+}
+
+interface InlineKretoChatProps {
+  seedPrompt?: string | null;
+  /** Bump this any time seedPrompt should (re)send — including clicking the
+   *  same quick action twice, which wouldn't otherwise re-fire the effect
+   *  since the string value wouldn't change. */
+  seedNonce?: number;
+  /** The active conversation, or null for a fresh, not-yet-persisted draft —
+   *  sending the first message in a draft lazily creates the real row. */
+  conversationId: string | null;
+  /** Fired once a draft becomes a real conversation (first send), and again
+   *  any time the caller should know the list of conversations changed. */
+  onConversationCreated?: (id: string) => void;
+}
 
 /**
  * Inline Kreto thread — the chat lives on the page itself, not in the floating
  * bubble. Streams the first token straight into the thread so replies feel
  * instant, and keeps the composer pinned under the conversation.
  */
-export function InlineKretoChat({ seedPrompt }: { seedPrompt?: string | null }) {
+export function InlineKretoChat({ seedPrompt, seedNonce, conversationId, onConversationCreated }: InlineKretoChatProps) {
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const conversationRef = useRef<string | undefined>(undefined);
+  const conversationIdRef = useRef<string | null>(conversationId);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
+
+  // Load (or clear) messages whenever the active conversation changes — a
+  // draft (null) starts empty; a real id rehydrates its persisted history.
+  // The server already saves every turn to ai_messages; this just asks for
+  // it back, so switching conversations (or refreshing the page) never
+  // silently loses the visible thread.
+  useEffect(() => {
+    let cancelled = false;
+    setMessages([]);
+    setHistoryLoaded(false);
+    if (!conversationId) {
+      setHistoryLoaded(true);
+      return;
+    }
+    loadConversationMessages(conversationId)
+      .then((rows) => {
+        if (cancelled) return;
+        setMessages(rows);
+      })
+      .catch((e) => console.error("InlineKretoChat history load failed:", e))
+      .finally(() => {
+        if (!cancelled) setHistoryLoaded(true);
+      });
+    return () => { cancelled = true; };
+  }, [conversationId]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
@@ -29,42 +94,92 @@ export function InlineKretoChat({ seedPrompt }: { seedPrompt?: string | null }) 
     setMessages((m) => [...m, { role: "user", content: text }, { role: "assistant", content: "" }]);
     setStreaming(true);
 
+    // A draft conversation doesn't exist server-side until the first
+    // message actually sends — this keeps "New conversation" from littering
+    // the list with abandoned empty rows if the user changes their mind.
+    let activeId = conversationIdRef.current;
+    if (!activeId) {
+      activeId = await createConversation();
+      if (activeId) {
+        conversationIdRef.current = activeId;
+        onConversationCreated?.(activeId);
+      }
+    }
+
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const appendDelta = (delta: string) =>
+    // Strip <action>/<plan> tags live so raw JSON/XML never renders in the
+    // bubble, even mid-stream — matches ThriveAgentFab's stripTagsLive.
+    let assistantSoFar = "";
+    const appendDelta = (delta: string) => {
+      assistantSoFar += delta;
+      const visible = stripTagsLive(assistantSoFar);
       setMessages((m) => {
         const next = [...m];
         const last = next[next.length - 1];
-        if (last?.role === "assistant") next[next.length - 1] = { ...last, content: last.content + delta };
+        if (last?.role === "assistant") next[next.length - 1] = { ...last, content: visible };
         return next;
       });
+    };
 
-    await streamCopilot({
-      messages: [{ role: "user", content: text }],
-      surface: "home",
-      conversationId: conversationRef.current,
-      onConversationId: (id) => { conversationRef.current = id; },
-      onDelta: appendDelta,
-      onDone: () => setStreaming(false),
-      onError: (err) =>
+    try {
+      await streamCopilot({
+        messages: [{ role: "user", content: text }],
+        surface: "home",
+        conversationId: activeId ?? undefined,
+        onConversationId: (id) => { conversationIdRef.current = id; },
+        onDelta: appendDelta,
+        onDone: () => {},
+        onError: (err) =>
+          setMessages((m) => {
+            const next = [...m];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant" && !last.content) next[next.length - 1] = { ...last, content: err };
+            return next;
+          }),
+        signal: controller.signal,
+      });
+
+      // The model proposed an action/plan (tags were stripped from the
+      // visible text above). This page has no approval-card UI yet — never
+      // pretend the action happened; point the user at the surface that
+      // actually can execute and approve it.
+      const { actions, plans } = extractActions(assistantSoFar);
+      if (actions.length > 0 || plans.length > 0) {
+        setMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            content: "I've got a suggested action ready — open the full Copilot (bottom nav) to review and approve it.",
+          },
+        ]);
+      }
+    } catch (e) {
+      const aborted = e instanceof DOMException && e.name === "AbortError";
+      if (!aborted) {
+        console.error("InlineKretoChat stream failed:", e);
         setMessages((m) => {
           const next = [...m];
           const last = next[next.length - 1];
-          if (last?.role === "assistant" && !last.content) next[next.length - 1] = { ...last, content: err };
+          if (last?.role === "assistant" && !last.content) {
+            next[next.length - 1] = { ...last, content: "Something went wrong on my end. Try again?" };
+          }
           return next;
-        }),
-      signal: controller.signal,
-    }).catch((e) => console.error("InlineKretoChat stream failed:", e));
+        });
+      }
+    } finally {
+      setStreaming(false);
+    }
+  }, [streaming, conversationId, onConversationCreated]);
 
-    setStreaming(false);
-  }, [streaming]);
-
-  // A quick-action click seeds the thread and sends immediately.
+  // A quick-action click seeds the thread and sends immediately. Keyed on
+  // seedNonce (not seedPrompt itself) so clicking the same quick action
+  // twice in a row still re-sends — the string value alone wouldn't change.
   useEffect(() => {
-    if (seedPrompt) send(seedPrompt).catch((e) => console.error(e));
+    if (seedPrompt && seedNonce) send(seedPrompt).catch((e) => console.error(e));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seedPrompt]);
+  }, [seedNonce]);
 
   const stop = () => {
     abortRef.current?.abort();
@@ -73,6 +188,11 @@ export function InlineKretoChat({ seedPrompt }: { seedPrompt?: string | null }) 
 
   return (
     <div className="rounded-2xl border border-[hsl(var(--energy)/0.3)] bg-white/[0.03] backdrop-blur-sm overflow-hidden">
+      {!historyLoaded && messages.length === 0 && (
+        <div className="px-4 py-4 text-xs text-white/40 flex items-center gap-1.5">
+          <Loader2 className="h-3 w-3 animate-spin" /> Loading your conversation…
+        </div>
+      )}
       {messages.length > 0 && (
         <div className="max-h-[46vh] overflow-y-auto px-4 py-4 space-y-3">
           {messages.map((m, i) => (

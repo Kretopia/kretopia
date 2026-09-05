@@ -88,6 +88,26 @@ Deno.serve(async (req) => {
       return json({ error: "Profile name required" }, 400);
     }
 
+    // skip_magic_link is meant only for the post-Google-OAuth flow, where the
+    // caller is already authenticated as this exact email — previously it was
+    // trusted blindly from the request body, letting any unauthenticated
+    // caller upsert bio/skills/credits onto any not-yet-onboarded account (or
+    // pre-create one) without ever proving ownership of that email. Require a
+    // real session whose own email matches before honoring it.
+    if (skip_magic_link) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      const anonClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user: caller } } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
+      if (!caller || caller.email?.toLowerCase() !== email) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+    }
+
     // identity_face_verified must reflect a real, server-computed
     // verify-profile-claim result, never a client-supplied number — a bare
     // face_match_score here used to be directly replayable by any caller.

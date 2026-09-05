@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Loader2, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { OPPORTUNITY_PUBLIC_COLUMNS } from "@/lib/opportunityColumns";
 import { GigRailCard } from "@/components/opportunity/GigRailCard";
 import type { GigOpportunity } from "@/components/opportunity/GigCard";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
@@ -17,7 +18,7 @@ export const CastingCallsRail = ({ limit = 12 }: { limit?: number }) => {
   const fetchCalls = useCallback(async () => {
     const { data } = await supabase
       .from("opportunities")
-      .select("*")
+      .select(OPPORTUNITY_PUBLIC_COLUMNS)
       .eq("type", "casting")
       .in("status", ["active", "open"])
       .order("created_at", { ascending: false })

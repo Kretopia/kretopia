@@ -35,6 +35,7 @@ const WorkHomeSkeleton = ({ variant = "studio" }: { variant?: "studio" | "hiring
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
+import { OPPORTUNITY_PUBLIC_COLUMNS } from "@/lib/opportunityColumns";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Briefcase, DollarSign, ArrowRight, Plus, Mic,
@@ -125,7 +126,7 @@ const BrandWorkHome = () => {
       setLoading(true);
       const { data: opps } = await supabase
         .from("opportunities")
-        .select("*")
+        .select(OPPORTUNITY_PUBLIC_COLUMNS)
         .eq("created_by", user.id)
         .order("created_at", { ascending: false })
         .limit(10);
@@ -146,11 +147,11 @@ const BrandWorkHome = () => {
 
       const { count: totalPosted } = await supabase
         .from("opportunities")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("created_by", user.id);
       const { count: activeCount } = await supabase
         .from("opportunities")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("created_by", user.id)
         .eq("status", "active");
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { OPPORTUNITY_PUBLIC_COLUMNS } from "@/lib/opportunityColumns";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -141,7 +142,7 @@ const ManageOpportunities = () => {
   };
 
   const duplicateGig = async (gigId: string) => {
-    const { data: orig } = await supabase.from("opportunities").select("*").eq("id", gigId).maybeSingle();
+    const { data: orig } = await supabase.from("opportunities").select(OPPORTUNITY_PUBLIC_COLUMNS).eq("id", gigId).maybeSingle();
     if (!orig || !user) return;
     const { id, created_at, updated_at, ...rest } = orig as any;
     const { data: created, error } = await supabase

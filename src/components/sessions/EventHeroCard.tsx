@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -76,6 +76,10 @@ export function EventHeroCard({
   const { toast } = useToast();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [coverImageFailed, setCoverImageFailed] = useState(false);
+  // Reset the broken-image fallback whenever the cover actually changes
+  // (e.g. the host replaces it) so a stale failure doesn't stick around.
+  useEffect(() => { setCoverImageFailed(false); }, [event.cover_image_url]);
 
   const startDate = new Date(event.start_time);
   const diff = startDate.getTime() - now.getTime();
@@ -127,9 +131,14 @@ export function EventHeroCard({
   return (
     <HoloCard className="mb-4 sm:mb-6">
       <div className="relative overflow-hidden rounded-2xl border border-border bg-card text-center px-4 pb-5 sm:px-6 sm:pb-7">
-        {event.cover_image_url ? (
+        {event.cover_image_url && !coverImageFailed ? (
           <div className="relative -mx-4 sm:-mx-6 mb-4 h-40 sm:h-56 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)]">
-            <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" />
+            <img
+              src={event.cover_image_url}
+              alt={event.title}
+              className="w-full h-full object-cover"
+              onError={() => setCoverImageFailed(true)}
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
           </div>
         ) : (

@@ -391,16 +391,18 @@ const Rail = ({ title, icon, events }: { title: string; icon: React.ReactNode; e
 const EventCard = ({ ev }: { ev: EventRow }) => {
   const date = new Date(ev.start_time);
   const isPaid = !!(ev.is_ticketed && ev.ticket_price && ev.ticket_price > 0);
+  const [coverImageFailed, setCoverImageFailed] = useState(false);
   return (
     <Link to={`/event/${ev.id}`}>
       <Card className="overflow-hidden group hover:border-energy/50 transition-all hover:-translate-y-0.5 hover:shadow-glow-lime h-full flex flex-col bg-card/60">
         <div className="relative aspect-[4/3] bg-gradient-to-br from-primary/20 to-accent/10 overflow-hidden">
-          {ev.cover_image_url ? (
+          {ev.cover_image_url && !coverImageFailed ? (
             <img
               src={ev.cover_image_url}
               alt={ev.title}
               loading="lazy"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              onError={() => setCoverImageFailed(true)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

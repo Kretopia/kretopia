@@ -1,9 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { requireAdminOrCron, adminGuardCorsHeaders } from "../_shared/admin-guard.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const corsHeaders = adminGuardCorsHeaders;
 
 // Trinidad timezone for formatting
 const EVENT_TIMEZONE = 'America/Port_of_Spain'
@@ -12,6 +10,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  const guard = await requireAdminOrCron(req);
+  if (!guard.ok) return guard.response;
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -131,6 +132,24 @@ Deno.serve(async (req) => {
           continue
         }
 
+        // Cross-function idempotency: event-reminders (the newer, more
+        // complete reminder dispatcher) tracks the exact same
+        // (event_id, user_id, reminder_24h, email) tuple in this same
+        // table on success. Check it here too, so attendees never get both
+        // functions' 24h email if they're ever scheduled at the same time.
+        const { data: alreadyClaimed } = await supabase
+          .from('event_reminders_sent')
+          .select('id')
+          .eq('event_id', event.id)
+          .eq('user_id', participant.user_id)
+          .eq('reminder_type', 'reminder_24h')
+          .eq('channel', 'email')
+          .maybeSingle()
+        if (alreadyClaimed) {
+          console.log(`[EVENT-REMINDERS] Reminder already sent via event-reminders for event ${event.id}, user ${participant.user_id} — skipping`)
+          continue
+        }
+
         try {
           await supabase.functions.invoke('send-transactional-email', {
             body: {
@@ -150,6 +169,15 @@ Deno.serve(async (req) => {
             },
           })
           totalSent++
+          // Record the claim so event-reminders skips this user/event if it
+          // also runs. A duplicate-key conflict here just means the other
+          // function claimed it first in a narrow race — harmless to ignore.
+          const { error: claimErr } = await supabase
+            .from('event_reminders_sent')
+            .insert({ event_id: event.id, user_id: participant.user_id, reminder_type: 'reminder_24h', channel: 'email' })
+          if (claimErr && claimErr.code !== '23505') {
+            console.error(`[EVENT-REMINDERS] Failed to record reminder claim:`, claimErr)
+          }
         } catch (err) {
           console.error(`[EVENT-REMINDERS] Failed to send reminder to ${authUser.user.email}:`, err)
         }

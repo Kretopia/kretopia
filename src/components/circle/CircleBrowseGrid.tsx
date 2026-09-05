@@ -161,7 +161,12 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
                 >
                   <CardContent className="p-3 sm:p-4 text-center">
                     <div className="relative mx-auto w-14 h-14 mb-2">
-                      <FramedAvatar src={profile.avatar_url} fallback={(profile.full_name || "?")[0]} className="h-14 w-14" />
+                      <FramedAvatar
+                        src={profile.avatar_url}
+                        fallback={(profile.full_name || "?")[0]}
+                        alt={maskCreatorName(profile.full_name, !!user)}
+                        className="h-14 w-14"
+                      />
                       {isVerified && (
                         <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
                           <Verified className="h-2.5 w-2.5 text-primary-foreground" />
@@ -207,7 +212,12 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
                     <Card key={profile.user_id} className="overflow-hidden">
                       <CardContent className="p-3 sm:p-4 text-center">
                         <div className="mx-auto w-14 h-14 mb-2">
-                          <FramedAvatar src={profile.avatar_url} fallback={(profile.full_name || "?")[0]} className="h-14 w-14" />
+                          <FramedAvatar
+                            src={profile.avatar_url}
+                            fallback={(profile.full_name || "?")[0]}
+                            alt={profile.full_name || undefined}
+                            className="h-14 w-14"
+                          />
                         </div>
                         <h3 className="font-semibold text-xs sm:text-sm truncate">{profile.full_name}</h3>
                         <p className="text-[11px] text-muted-foreground truncate mt-0.5">{profile.role || "Creator"}</p>

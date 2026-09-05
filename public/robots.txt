@@ -32,6 +32,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /auth
+Disallow: /dashboard
 
 # Sitemap
 Sitemap: https://www.kretopia.com/sitemap.xml

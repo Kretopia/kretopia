@@ -147,6 +147,19 @@ const ViewProfile = () => {
     }
   }, [user, userId, navigate]);
 
+  // This page's own data fetch requires an authenticated session (below),
+  // so an anonymous visitor -- including every search-engine crawler and
+  // link-preview bot -- always hit a bare "Profile not found" wall here,
+  // no matter whose real profile the link pointed at. /epk/:userId is the
+  // actual public equivalent (full Person JSON-LD, canonical, OG image
+  // already correct there) -- send anonymous visitors there instead of
+  // guessing at fixing this page's own auth gate.
+  useEffect(() => {
+    if (!authLoading && !user && userId) {
+      navigate(`/epk/${userId}`, { replace: true });
+    }
+  }, [authLoading, user, userId, navigate]);
+
   // Auth gate moved below all hooks to avoid React hooks violation
 
   const fetchData = async () => {
@@ -468,6 +481,7 @@ const ViewProfile = () => {
                 <FramedAvatar
                   src={profile.avatar_url}
                   fallback={profile.full_name?.charAt(0) || 'U'}
+                  alt={profile.full_name || undefined}
                   frame={profile.profile_frame}
                   className="h-24 w-24 border-4 border-background shadow-lg"
                 />

@@ -7,6 +7,11 @@ interface FramedAvatarProps {
   frame?: string | null;
   className?: string;
   onClick?: () => void;
+  /** Defaults to a generic label derived from `fallback` (usually an
+   *  initial) when the caller doesn't have a real name handy -- pass the
+   *  person's name whenever it's available for a meaningful screen-reader
+   *  label instead of nothing. */
+  alt?: string;
 }
 
 const frameStyles: Record<string, string> = {
@@ -27,6 +32,7 @@ export const FramedAvatar = ({
   frame,
   className,
   onClick,
+  alt,
 }: FramedAvatarProps) => {
   const frameClass = frame ? frameStyles[frame] || "" : "";
 
@@ -39,7 +45,7 @@ export const FramedAvatar = ({
       )}
       onClick={onClick}
     >
-      <AvatarImage src={src || undefined} />
+      <AvatarImage src={src || undefined} alt={alt || `${fallback} avatar`} />
       <AvatarFallback>{fallback}</AvatarFallback>
     </Avatar>
   );

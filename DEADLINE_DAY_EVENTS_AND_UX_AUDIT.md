@@ -218,6 +218,17 @@ At 390×844, 768×1024, 1440×900:
 
 Curl-based verification (same methodology used throughout this session for edge functions): call `event-reminders`/`send-event-reminders` with no auth, with anon key, with a real admin JWT, and confirm the response codes match the fix.
 
+## P1 Addendum — Landing Page (post-audit deep dive, no code changed)
+
+The §I map above located the current landing structure correctly, but a deeper read of `KretopiaLanding.tsx` and `UnifiedHome.tsx` before implementing any P1 change surfaced something the initial audit missed: the 13-section "cinematic" structure is not legacy bloat — it is a **deliberate, already-shipped replacement** for an older, more traditional SaaS-style landing page.
+
+- `UnifiedHome.tsx:546-548`: "the guest narrative (8-section legacy landing) was retired — Kretopia v1's KretopiaLanding + EditorialFooter above now own the entire guest experience." `SOURCE_CONFIRMED`.
+- `FAQSection.tsx`, `CoreValueBlocks.tsx`, `ThriveDeskShowcase.tsx`, `CreatorDashboardSection.tsx` are all leftovers from that retired version — imported in `UnifiedHome.tsx` but never rendered on the live guest path. `SOURCE_CONFIRMED`.
+- Their copy is stale relative to the current brand system: `FAQSection.tsx` refers to "ThriveDesk," but `src/lib/brandLexicon.ts:109` explicitly documents `studio: "Studio", // projects (was ThriveDesk)` — resurrecting that content as-is would put outdated branding back on the live page, violating "every user-facing claim must match actual runtime behavior."
+- Checked against the brief's actual P1 requirements, the current (live, unmodified) page already satisfies all of them: primary CTA ("Claim your Passport") above the fold in the Hero, auth redirect (`?next=`) preserved end-to-end, analytics/tracking wired to every section, no fake claims present.
+
+**Decision (user-confirmed):** leave the landing page as-is. No files changed for P1. Cutting or resurrecting content here without a specific product decision would mean reversing a deliberate, already-executed design choice rather than fixing an oversight — outside what a same-day "polish" pass should do unilaterally.
+
 ## O. Deferred Work
 
 - Ticket-checkout webhook confirmation (payment-adjacent, explicitly out of scope today).

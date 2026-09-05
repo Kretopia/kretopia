@@ -240,15 +240,17 @@ export function seoPagesPlugin(options: SeoPagesPluginOptions): Plugin {
 
       // ---- Sitemap ----------------------------------------------------------
       const today = new Date().toISOString().split("T")[0];
+      // /auth (never indexable), /landing (dead client-side redirect stub to
+      // /), and /founding-member (ProtectedRoute-gated -- a crawler
+      // following it only reaches a login wall) don't belong in a sitemap;
+      // /magazine and /podcast are themselves dead redirect stubs a non-JS
+      // crawler won't follow, so link their real destinations directly.
       const staticEntries: Array<{ path: string; priority: string; changefreq: string }> = [
         { path: "/", priority: "1.0", changefreq: "weekly" },
-        { path: "/auth", priority: "0.5", changefreq: "monthly" },
         { path: "/credits", priority: "0.9", changefreq: "daily" },
-        { path: "/magazine", priority: "0.8", changefreq: "weekly" },
-        { path: "/podcast", priority: "0.7", changefreq: "weekly" },
+        { path: "/spotlight?tab=magazine", priority: "0.8", changefreq: "weekly" },
+        { path: "/spotlight?tab=podcast", priority: "0.7", changefreq: "weekly" },
         { path: "/circle", priority: "0.6", changefreq: "weekly" },
-        { path: "/landing", priority: "0.6", changefreq: "monthly" },
-        { path: "/founding-member", priority: "0.5", changefreq: "monthly" },
         { path: "/community-guidelines", priority: "0.3", changefreq: "monthly" },
         { path: "/terms", priority: "0.3", changefreq: "monthly" },
         { path: "/privacy", priority: "0.3", changefreq: "monthly" },

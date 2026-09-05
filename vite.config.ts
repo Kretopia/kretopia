@@ -4,6 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 import { versionPlugin } from "./plugins/version-plugin";
+import { sitemapPlugin } from "./plugins/sitemap-plugin";
 import { magazineSharePagesPlugin } from "./plugins/magazine-share-pages";
 import { profileSharePagesPlugin } from "./plugins/profile-share-pages";
 import { gigSharePagesPlugin } from "./plugins/gig-share-pages";
@@ -134,6 +135,15 @@ export default defineConfig(({ mode }) => {
         },
       }),
       versionJsonPlugin,
+      // Unconditional, unlike the static-page plugins below — a sitemap is
+      // one file, so it carries none of the per-entity upload-throttling
+      // risk that keeps those opt-in. No reason this one should ever go
+      // stale on a normal production build.
+      sitemapPlugin({
+        projectUrl: env.VITE_SUPABASE_URL,
+        publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        siteUrl: "https://www.kretopia.com",
+      }),
       // These plugins can emit hundreds/thousands of per-entity HTML files
       // (/profile/:id, /credits/project/:id, /share/gig/:id, etc.). Lovable's
       // preview uploader can throttle when too many generated files are pushed

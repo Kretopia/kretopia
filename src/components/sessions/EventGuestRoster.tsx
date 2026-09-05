@@ -23,6 +23,11 @@ interface Guest {
   is_guest?: boolean;
 }
 
+interface MutualInfo {
+  count: number;
+  names: string[];
+}
+
 interface Props {
   eventId: string;
   eventTitle: string;
@@ -47,6 +52,7 @@ export const EventGuestRoster = ({
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Guest | null>(null);
   const [connections, setConnections] = useState<Record<string, "none" | "pending" | "accepted" | "declined" | "received">>({});
+  const [mutuals, setMutuals] = useState<Record<string, MutualInfo>>({});
   const [acting, setActing] = useState(false);
 
   const canSee = isHost || isParticipant;
@@ -105,6 +111,19 @@ export const EventGuestRoster = ({
               else if (c.status === "pending" && !map[c.user_id]) map[c.user_id] = "received";
             });
             setConnections(map);
+
+            // "You know 2: Maya, Jordan" — a real trust signal before
+            // connecting, not just a bare list of strangers.
+            const { data: mutualRows } = await supabase.rpc("get_mutual_connection_counts" as any, {
+              p_target_ids: otherIds,
+            });
+            if (mutualRows) {
+              const mMap: Record<string, MutualInfo> = {};
+              (mutualRows as { target_id: string; mutual_count: number; sample: { full_name: string }[] | null }[]).forEach((r) => {
+                mMap[r.target_id] = { count: r.mutual_count, names: (r.sample || []).map((s) => s.full_name) };
+              });
+              setMutuals(mMap);
+            }
           }
         }
       } finally {
@@ -139,6 +158,16 @@ export const EventGuestRoster = ({
     } finally {
       setActing(false);
     }
+  };
+
+  const mutualHint = (userId: string | null): string | null => {
+    if (!userId) return null;
+    const info = mutuals[userId];
+    if (!info || info.count === 0) return null;
+    if (info.names.length === 0) return `You know ${info.count} person going`;
+    const shown = info.names.slice(0, 2).join(", ");
+    const extra = info.count - Math.min(info.names.length, 2);
+    return extra > 0 ? `You know ${shown} +${extra} more` : `You know ${shown}`;
   };
 
   const openProfile = (g: Guest) => {
@@ -218,6 +247,11 @@ export const EventGuestRoster = ({
                       {g.role && (
                         <p className="text-xs text-muted-foreground truncate">{g.role}</p>
                       )}
+                      {mutualHint(g.user_id) && (
+                        <p className="text-[11px] text-primary/80 truncate flex items-center gap-1 mt-0.5">
+                          <Users className="h-2.5 w-2.5 shrink-0" /> {mutualHint(g.user_id)}
+                        </p>
+                      )}
                     </div>
                   </button>
                 </li>
@@ -254,6 +288,11 @@ export const EventGuestRoster = ({
                     {selected.location && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         <MapPin className="h-3 w-3" /> {selected.location}
+                      </p>
+                    )}
+                    {mutualHint(selected.user_id) && (
+                      <p className="text-xs text-primary/80 flex items-center gap-1.5 mt-0.5">
+                        <Users className="h-3 w-3" /> {mutualHint(selected.user_id)}
                       </p>
                     )}
                   </div>

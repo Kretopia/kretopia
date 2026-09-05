@@ -122,15 +122,32 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle, isPar
         imageUrl = publicUrl;
       }
 
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('event_comments' as any)
-        .insert({ event_id: eventId, user_id: user.id, content: commentContent, image_url: imageUrl });
+        .insert({ event_id: eventId, user_id: user.id, content: commentContent, image_url: imageUrl })
+        .select('id')
+        .single();
       if (error) throw error;
 
       setNewComment("");
       clearAttachedImage();
 
-      // Get commenter's name for notification
+      // The in-app notification row for the host + other commenters is
+      // created server-side (notify_event_comment is SECURITY DEFINER) —
+      // a direct client insert for someone else's user_id is rejected by
+      // RLS, which used to make this silently no-op. See
+      // 20260905120000_notify_event_comment_rpc.sql.
+      const commentId = (inserted as any)?.id as string | undefined;
+      if (commentId) {
+        supabase.rpc('notify_event_comment' as any, { _comment_id: commentId })
+          .then(({ error: notifyErr }) => {
+            if (notifyErr) console.error('[EventComments] notify_event_comment failed:', notifyErr);
+          });
+      }
+
+      // Get commenter's name for the push (browser) leg only — the in-app
+      // row is handled by the RPC above, so skipInApp avoids a duplicate,
+      // pointless RLS-rejected insert attempt here.
       const { data: profile } = await supabase
         .from('profiles')
         .select('full_name')
@@ -150,6 +167,7 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle, isPar
           body: `${commenterName}: ${preview}`,
           type: 'general',
           link: `/event/${eventId}`,
+          skipInApp: true,
         });
       }
 
@@ -166,6 +184,7 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle, isPar
           body: `${commenterName}: ${preview}`,
           type: 'general',
           link: `/event/${eventId}`,
+          skipInApp: true,
         });
       }
     } catch (err) {

@@ -65,11 +65,23 @@ export const EventCoverPicker = ({
   const [generating, setGenerating] = useState(false);
   const [showAiDialog, setShowAiDialog] = useState(false);
 
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // The <input accept="image/*"> hint is a filter suggestion only, not a
+    // guarantee — validate the actual MIME type before it ever reaches the
+    // cropper/upload path (deliberately excludes image/svg+xml, which can
+    // carry embedded scripts).
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast({ title: "Unsupported file type", description: "Please choose a JPG, PNG, WEBP, or GIF image.", variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "File too large", description: "Max 5MB", variant: "destructive" });
+      e.target.value = "";
       return;
     }
     const url = URL.createObjectURL(file);

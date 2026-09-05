@@ -1,13 +1,29 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Plus, X, CalendarPlus, Briefcase, FolderPlus, Compass, LayoutDashboard, UserSearch, Wallet, Scan } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
-import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
-import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
-import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+
+// This FAB is mounted on every page (App.tsx renders it unconditionally
+// whenever the bottom nav shows), so a plain static import of any dialog
+// here put its whole dependency tree in the main bundle for every visitor,
+// whether they ever open it or not. VoiceFirstCreateModal alone pulled in
+// pdfjs-dist (~790KB minified) via its brief-document text extraction.
+// Lazy-loading defers each dialog's code until the user actually opens it.
+const CreateSessionDialog = lazyWithRetry(() =>
+  import("@/components/sessions/CreateSessionDialog").then((m) => ({ default: m.CreateSessionDialog })),
+);
+const VoiceFirstCreateModal = lazyWithRetry(() =>
+  import("@/components/project/studio/VoiceFirstCreateModal").then((m) => ({ default: m.VoiceFirstCreateModal })),
+);
+const PostOpportunityDialog = lazyWithRetry(() =>
+  import("@/components/PostOpportunityDialog").then((m) => ({ default: m.PostOpportunityDialog })),
+);
+const ScoutEventDialog = lazyWithRetry(() =>
+  import("@/components/sessions/ScoutEventDialog").then((m) => ({ default: m.ScoutEventDialog })),
+);
 
 interface QuickAction {
   id: string;
@@ -82,6 +98,16 @@ const QuickActionFab = () => {
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showPostGig, setShowPostGig] = useState(false);
   const [showScoutEvent, setShowScoutEvent] = useState(false);
+
+  // Track "opened at least once" per dialog so each lazy chunk loads only
+  // the first time it's actually needed, then stays mounted for the rest
+  // of the session (so closing still gets its normal exit animation
+  // instead of vanishing the instant showX flips back to false).
+  const everOpened = useRef({ event: false, project: false, gig: false, scout: false });
+  if (showCreateEvent) everOpened.current.event = true;
+  if (showCreateProject) everOpened.current.project = true;
+  if (showPostGig) everOpened.current.gig = true;
+  if (showScoutEvent) everOpened.current.scout = true;
 
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -361,25 +387,43 @@ const QuickActionFab = () => {
         </button>
       </div>
 
-      {/* Mounted dialogs */}
-      <CreateSessionDialog
-        open={showCreateEvent}
-        onOpenChange={setShowCreateEvent}
-        onCreated={() => navigate("/events/backstage")}
-      />
-      <VoiceFirstCreateModal
-        open={showCreateProject}
-        onOpenChange={setShowCreateProject}
-        onCreated={() => setShowCreateProject(false)}
-      />
-      <PostOpportunityDialog
-        open={showPostGig}
-        onOpenChange={setShowPostGig}
-      />
-      <ScoutEventDialog
-        open={showScoutEvent}
-        onOpenChange={setShowScoutEvent}
-      />
+      {/* Mounted dialogs — lazy, and only once each has actually been
+          opened (see everOpened above), so none of their code loads until
+          the user picks that specific action. */}
+      {everOpened.current.event && (
+        <Suspense fallback={null}>
+          <CreateSessionDialog
+            open={showCreateEvent}
+            onOpenChange={setShowCreateEvent}
+            onCreated={() => navigate("/events/backstage")}
+          />
+        </Suspense>
+      )}
+      {everOpened.current.project && (
+        <Suspense fallback={null}>
+          <VoiceFirstCreateModal
+            open={showCreateProject}
+            onOpenChange={setShowCreateProject}
+            onCreated={() => setShowCreateProject(false)}
+          />
+        </Suspense>
+      )}
+      {everOpened.current.gig && (
+        <Suspense fallback={null}>
+          <PostOpportunityDialog
+            open={showPostGig}
+            onOpenChange={setShowPostGig}
+          />
+        </Suspense>
+      )}
+      {everOpened.current.scout && (
+        <Suspense fallback={null}>
+          <ScoutEventDialog
+            open={showScoutEvent}
+            onOpenChange={setShowScoutEvent}
+          />
+        </Suspense>
+      )}
     </>
   );
 };

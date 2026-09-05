@@ -3,9 +3,9 @@
  * funnel (signup/signin attempt/success/error). A thin, purpose-built
  * vocabulary layer over the existing trackEvent()/analytics_events pipeline
  * from analytics.ts -- same writer, same table, same session-id and
- * fail-safe behavior. Not a second analytics system (see the audit's note
- * on useLandingVariant's separate site_analytics table -- this deliberately
- * does not repeat that duplication).
+ * fail-safe behavior. Not a second analytics system -- the retired
+ * useLandingVariant A/B hook used to write to a separate site_analytics
+ * table; this deliberately never repeated that duplication.
  *
  * Section-view and scroll-depth tracking used to live here too, but that's
  * now handled generically by LandingFunnelTracker.tsx (observes every real

@@ -244,6 +244,22 @@ export const VerifiedCreditsChapterSection = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Closing beat — carries the one line from the former, separate
+            TrustSection, which otherwise just re-showed this same evidence
+            progression a scroll later with no CTA and no click tracking. */}
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="mt-14 text-center"
+        >
+          <p className="text-lg font-semibold italic text-white/85">
+            Don't just claim the work.{" "}
+            <span style={{ color: ACCENT }}>Prove it.</span>
+          </p>
+        </motion.div>
       </div>
     </section>
   );

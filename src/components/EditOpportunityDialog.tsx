@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { OPPORTUNITY_PUBLIC_COLUMNS } from "@/lib/opportunityColumns";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +61,7 @@ export const EditOpportunityDialog = ({
     try {
       const { data, error } = await supabase
         .from('opportunities')
-        .select('*')
+        .select(OPPORTUNITY_PUBLIC_COLUMNS)
         .eq('id', opportunityId)
         .single();
 

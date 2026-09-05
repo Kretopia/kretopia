@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { OPPORTUNITY_PUBLIC_COLUMNS } from "@/lib/opportunityColumns";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -108,7 +109,7 @@ export const OpportunitiesFeed = () => {
     queryFn: async () => {
       let query = supabase
         .from("opportunities")
-        .select("*")
+        .select(OPPORTUNITY_PUBLIC_COLUMNS)
         .in("status", ["active", "open"])
         .order("created_at", { ascending: false })
         .limit(30);

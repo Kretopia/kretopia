@@ -15,6 +15,7 @@ import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
+import { OPPORTUNITY_PUBLIC_COLUMNS } from "@/lib/opportunityColumns";
 
 interface Opportunity {
   id: string;
@@ -227,7 +228,7 @@ const OpportunityDetail = () => {
     if (!user) {
       const { data, error } = await supabase
         .from('opportunities')
-        .select('*')
+        .select(OPPORTUNITY_PUBLIC_COLUMNS)
         .eq('id', id)
         .maybeSingle();
 
@@ -241,7 +242,7 @@ const OpportunityDetail = () => {
     }
 
     const [oppResult, savedResult, appResult] = await Promise.all([
-      supabase.from('opportunities').select('*').eq('id', id).maybeSingle(),
+      supabase.from('opportunities').select(OPPORTUNITY_PUBLIC_COLUMNS).eq('id', id).maybeSingle(),
       supabase.from('saved_opportunities').select('id').eq('user_id', user.id).eq('opportunity_id', id).maybeSingle(),
       supabase.from('applications').select('id, status').eq('applicant_id', user.id).eq('opportunity_id', id).maybeSingle(),
     ]);

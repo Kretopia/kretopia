@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { OPPORTUNITY_PUBLIC_COLUMNS } from "@/lib/opportunityColumns";
 import { Building2, MapPin, Users, Star, Award, Gift, Briefcase, Edit, Share2, QrCode, MessageCircle, Settings, ChevronRight, ExternalLink, Calendar, Clock, Image as ImageIcon, UserPlus, TrendingUp, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -68,7 +69,7 @@ export const CompanyProfileView = ({
     const fetchOpportunities = async () => {
       const { data } = await supabase
         .from('opportunities')
-        .select('*')
+        .select(OPPORTUNITY_PUBLIC_COLUMNS)
         .eq('created_by', profile.user_id)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
@@ -81,13 +82,13 @@ export const CompanyProfileView = ({
       // Total opps posted
       const { count: oppsCount } = await supabase
         .from('opportunities')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('created_by', profile.user_id);
 
       // Active jobs
       const { count: activeCount } = await supabase
         .from('opportunities')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('created_by', profile.user_id)
         .eq('status', 'active');
 

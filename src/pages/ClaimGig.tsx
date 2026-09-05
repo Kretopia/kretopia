@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { OPPORTUNITY_PUBLIC_COLUMNS } from "@/lib/opportunityColumns";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,7 @@ const ClaimGig = () => {
       if (!token) return;
       const { data, error } = await supabase
         .from("opportunities")
-        .select("*")
+        .select(OPPORTUNITY_PUBLIC_COLUMNS)
         .eq("claim_token", token)
         .maybeSingle();
 

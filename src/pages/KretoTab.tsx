@@ -11,6 +11,7 @@ import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { KRETO_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { InlineKretoChat } from "@/components/kreto/InlineKretoChat";
+import { KretoConversationHistory } from "@/components/kreto/KretoConversationHistory";
 
 const QUICK_ACTIONS = [
   {
@@ -71,6 +72,13 @@ export default function KretoTab() {
   const [loadingContext, setLoadingContext] = useState(true);
   const [seed, setSeed] = useState<{ text: string; n: number } | null>(null);
   const ask = (text: string) => setSeed((s) => ({ text, n: (s?.n ?? 0) + 1 }));
+  // null = a fresh, not-yet-persisted draft conversation.
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const handleConversationCreated = (id: string) => {
+    setActiveConversationId(id);
+    setHistoryRefreshKey((k) => k + 1);
+  };
 
   useEffect(() => {
     if (!user) { setLoadingContext(false); return; }
@@ -112,24 +120,42 @@ export default function KretoTab() {
       />
 
       <StudioFeatureShell>
-        {/* Primary surface — the live thread, answered right here on the page */}
-        <InlineKretoChat key={seed?.n ?? 0} seedPrompt={seed?.text ?? null} />
+        <div className="flex gap-4 items-start">
+          {/* Desktop: fixed rail beside the chat. Mobile: a compact History
+              button that opens the same list in a Sheet. */}
+          <KretoConversationHistory
+            activeConversationId={activeConversationId}
+            onSelect={setActiveConversationId}
+            onNew={() => setActiveConversationId(null)}
+            refreshKey={historyRefreshKey}
+          />
 
-        {/* Quick actions — secondary shortcuts, visually quieter than the primary CTA above */}
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2.5">Or start with</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {QUICK_ACTIONS.map(({ icon: Icon, label, prompt }) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => ask(prompt)}
-                className="btn-glass btn-glass-outline flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium"
-              >
-                <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
-                {label}
-              </button>
-            ))}
+          <div className="flex-1 min-w-0 space-y-5">
+            {/* Primary surface — the live thread, answered right here on the page */}
+            <InlineKretoChat
+              seedPrompt={seed?.text ?? null}
+              seedNonce={seed?.n}
+              conversationId={activeConversationId}
+              onConversationCreated={handleConversationCreated}
+            />
+
+            {/* Quick actions — secondary shortcuts, visually quieter than the primary CTA above */}
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2.5">Or start with</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {QUICK_ACTIONS.map(({ icon: Icon, label, prompt }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => ask(prompt)}
+                    className="btn-glass btn-glass-outline flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium"
+                  >
+                    <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

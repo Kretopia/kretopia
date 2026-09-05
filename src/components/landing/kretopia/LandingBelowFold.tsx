@@ -16,11 +16,10 @@ import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutor
 import { InlineSignupBar } from "@/components/landing/kretopia/InlineSignupBar";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
 import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
-import { TrustSection } from "@/components/landing/kretopia/TrustSection";
 import { ProductLoopSection } from "@/components/landing/kretopia/ProductLoopSection";
 import { MeetKretoSection } from "@/components/landing/kretopia/MeetKretoSection";
-import { CreativeUniverseSection } from "@/components/landing/kretopia/CreativeUniverseSection";
 import { ForOrganisationsSection } from "@/components/landing/kretopia/ForOrganisationsSection";
+import { FAQSection } from "@/components/landing/FAQSection";
 import { ClosingCTASection } from "@/components/landing/kretopia/ClosingCTASection";
 import { EditorialFooter } from "@/components/landing/kretopia/EditorialFooter";
 import { chapterRoman } from "@/components/landing/kretopia/chapterRegistry";
@@ -80,11 +79,10 @@ export const LandingBelowFold = () => {
         tutorialVisual={PassportVisual}
       />
 
-      {/* Verified Credits — the canonical tutorial reference */}
+      {/* Verified Credits — the canonical tutorial reference. Its own
+          closing beat now carries the one Trust line that used to be a
+          separate, un-tracked section restating this same evidence data. */}
       <VerifiedCreditsChapterSection />
-
-      {/* Trust — the general Co-Sign principle, real evidence states */}
-      <TrustSection />
 
       {/* Product Loop — Passport -> Scout -> Match -> Studio -> stronger Passport */}
       <ProductLoopSection />
@@ -164,9 +162,6 @@ export const LandingBelowFold = () => {
       {/* Kreto — the sunset moment of the core creative journey */}
       <MeetKretoSection />
 
-      {/* Creative Universe — visual category grid, no explanatory bloat */}
-      <CreativeUniverseSection />
-
       {/* Community — SoundStages, Circle and events combined into one
           section rather than three separate large homepage modules. */}
       <ChapterSection
@@ -196,6 +191,10 @@ export const LandingBelowFold = () => {
 
       {/* Closing CTA — back to the hero's core wedge */}
       <ClosingCTASection />
+
+      {/* FAQ — crawlable, text-based answers for AI-search citation and
+          Google FAQ rich results, mirrored in index.html's FAQPage JSON-LD */}
+      <FAQSection />
 
       {/* Footer */}
       <EditorialFooter />

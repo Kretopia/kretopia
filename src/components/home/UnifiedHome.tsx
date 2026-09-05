@@ -27,14 +27,11 @@ import { ProductReelSection } from "@/components/landing/ProductReelSection";
 import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
 import { ThriveFundTeaserCard } from "@/components/landing/ThriveFundTeaserCard";
 import { CoreValueBlocks } from "@/components/landing/CoreValueBlocks";
-import { FAQSection } from "@/components/landing/FAQSection";
 import { BottomCTASection } from "@/components/landing/BottomCTASection";
-import { useLandingVariant } from "@/hooks/useLandingVariant";
 
-// KretopiaLanding is the entire guest landing page (hero + all chapters) —
-// route-split so logged-in users, who never render it, don't pay for it in
-// the shared UnifiedHome chunk. OneWedgeLanding (the retired A/B variant)
-// was imported here too but never rendered — removed, it was dead weight.
+// KretopiaLanding is the entire guest landing page (hero + all chapters,
+// including FAQSection) — route-split so logged-in users, who never render
+// it, don't pay for it in the shared UnifiedHome chunk.
 const KretopiaLanding = lazy(
   () => import("@/components/landing/KretopiaLanding").then((m) => ({ default: m.KretopiaLanding })),
 );
@@ -94,8 +91,6 @@ export const UnifiedHome = () => {
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
   const [heroRoleIdx, setHeroRoleIdx] = useState(0);
   const { geo: currentGeo } = useCurrentGeoCountry();
-  const landingVariant = useLandingVariant();
-  const isWedge = !user && landingVariant === "wedge";
   const reducedMotion = useReducedMotion();
   const [peopleForYouApi, setPeopleForYouApi] = useState<CarouselApi>();
 

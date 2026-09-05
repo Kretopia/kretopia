@@ -71,7 +71,7 @@
           "Match — find collaborators, teams and mentors",
           "Studio — projects, tasks, files, deliverables",
           "SoundStages — live virtual collaboration rooms",
-          "KrePay — contracts, invoices and milestone payments",
+          "KrePay — invoices, payment links and direct bank payouts",
           "Kreto — your Executive Producer"
         ]
       }
@@ -87,6 +87,47 @@
           "target": "https://www.kretopia.com/search?q={search_term_string}",
           "query-input": "required name=search_term_string"
         }
+      }
+    </script>
+    <!-- Mirrors src/components/landing/FAQSection.tsx exactly — keep both in sync. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Kretopia?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Kretopia is the Creative Economy OS — an all-in-one professional network, portfolio builder, and workspace for artists, musicians, filmmakers, producers, and models. It includes a verified credit registry for every creative industry, an auto-generated Industry EPK you can share with a link, Studio (a collaborative project workspace with tasks, files, chat, and calls), and KrePay for sending invoices and payment links."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the creative credit tracking system work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Search any production, album, campaign, event, or release in the registry, then claim your role on it. Collaborators co-sign your credit to verify authorship peer-to-peer, and Kretopia cross-references public records and platform data to issue a verified badge — a portable work history backed by real evidence, not just claims."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is an Industry EPK on Kretopia?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "An Industry EPK (Electronic Press Kit) is a professional, link-ready profile Kretopia generates automatically from your account — pulling in your verified credits, portfolio media, and reviews, always up to date, ready to share with clients, agents, labels, festivals, or casting directors."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does KrePay help me get paid?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "KrePay is Kretopia's built-in payments tool: share a payment link or send an invoice, track every invoice and expense in one place, and get paid directly to your bank without managing a separate payments dashboard."
+            }
+          }
+        ]
       }
     </script>
 

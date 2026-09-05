@@ -246,6 +246,14 @@ export const MeetKretoSection = () => {
                     <Link
                       key={p}
                       to={`/auth?next=${encodeURIComponent("/circle")}`}
+                      onClick={() =>
+                        trackLandingCtaClick({
+                          ctaId: "meet_kreto_try_asking",
+                          section: "meet_kreto",
+                          label: p,
+                          destinationType: "auth",
+                        })
+                      }
                       className="rounded-full border border-white/12 px-3 py-1.5 text-xs text-white/60 transition-colors hover:border-white/30 hover:text-white/90"
                       style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
                     >

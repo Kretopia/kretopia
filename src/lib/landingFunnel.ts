@@ -21,17 +21,18 @@ import { trackEvent, EventCategory } from "@/lib/analytics";
 export const LANDING_SECTION_ORDER = [
   "kretopia-hero",
   "chapter-search",
+  "inline-signup",
   "chapter-passport",
-  "chapter-credits",
-  "chapter-trust",
+  "chapter-verified-credits",
   "chapter-loop",
   "chapter-scout",
   "chapter-match",
   "chapter-studio",
-  "chapter-soundstages",
   "chapter-kreto",
+  "chapter-community",
   "chapter-organisations",
   "closing-cta",
+  "faq",
 ] as const;
 
 export const trackLandingSectionViewed = (section: string, index = -1) =>

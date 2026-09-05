@@ -329,42 +329,24 @@ export function CreatorBrowseGrid() {
           });
         }
 
-        // Get mutual connections if logged in
+        // Mutual connections, if logged in. connections' RLS only lets a
+        // caller see rows where they're a party to the row, so querying
+        // OTHER users' connections directly (the old approach here) always
+        // came back empty. get_mutual_connection_counts is SECURITY DEFINER
+        // and derives the caller from auth.uid() itself, so it can compute
+        // this correctly in one round trip instead of N.
         if (user?.id) {
-          const [outgoing, incoming] = await Promise.all([
-            supabase.from('connections').select('connected_user_id').eq('user_id', user.id).eq('status', 'accepted'),
-            supabase.from('connections').select('user_id').eq('connected_user_id', user.id).eq('status', 'accepted'),
-          ]);
-          const myConnections = new Set<string>();
-          outgoing.data?.forEach(c => myConnections.add(c.connected_user_id));
-          incoming.data?.forEach(c => myConnections.add(c.user_id));
-
-          if (myConnections.size > 0) {
-            // Batch: get all connections for visible creators in two queries instead of N
-            const visibleIds = profiles.map(p => p.user_id);
-            const [allOut, allIn] = await Promise.all([
-              supabase.from('connections').select('user_id, connected_user_id').in('user_id', visibleIds).eq('status', 'accepted'),
-              supabase.from('connections').select('user_id, connected_user_id').in('connected_user_id', visibleIds).eq('status', 'accepted'),
-            ]);
-
-            const creatorConnectionsMap = new Map<string, Set<string>>();
-            allOut.data?.forEach(c => {
-              const set = creatorConnectionsMap.get(c.user_id) || new Set();
-              set.add(c.connected_user_id);
-              creatorConnectionsMap.set(c.user_id, set);
+          const visibleIds = profiles.map(p => p.user_id);
+          const { data: mutualRows } = await supabase.rpc('get_mutual_connection_counts' as any, {
+            p_target_ids: visibleIds,
+          });
+          if (mutualRows) {
+            const mutualMap = new Map(
+              (mutualRows as { target_id: string; mutual_count: number }[]).map((r) => [r.target_id, r.mutual_count]),
+            );
+            profiles.forEach(p => {
+              p.mutual_connections = mutualMap.get(p.user_id) || 0;
             });
-            allIn.data?.forEach(c => {
-              const set = creatorConnectionsMap.get(c.connected_user_id) || new Set();
-              set.add(c.user_id);
-              creatorConnectionsMap.set(c.connected_user_id, set);
-            });
-
-            for (const profile of profiles) {
-              const theirConnections = creatorConnectionsMap.get(profile.user_id) || new Set();
-              let mutual = 0;
-              myConnections.forEach(id => { if (theirConnections.has(id)) mutual++; });
-              profile.mutual_connections = mutual;
-            }
           }
         }
       }

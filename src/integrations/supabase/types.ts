@@ -20329,6 +20329,13 @@ export type Database = {
         }[]
       }
       get_stage_invite_token: { Args: { p_stage_id: string }; Returns: string }
+      get_talent_manager_by_referral_code: {
+        Args: { p_referral_code: string }
+        Returns: {
+          display_name: string
+          id: string
+        }[]
+      }
       get_tier_storage_limit: { Args: { tier: string }; Returns: number }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       guest_drop_post: {

@@ -14,6 +14,7 @@ import { toast as sonnerToast } from "sonner";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { KretoTip } from "@/components/agent/KretoTip";
 import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+import { StudioSectionTabs } from "@/components/studio-reference/StudioSectionTabs";
 
 const RECORDINGS_TUTORIAL: TutorialStep[] = [
   { icon: Video, title: "Every call gets recorded", body: "Tap Record during any Kretopia call. The replay lands here about a minute after it ends." },
@@ -56,6 +57,11 @@ export default function Recordings() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [recapId, setRecapId] = useState<string | null>(null);
+
+  // Which call kinds actually appear in the loaded rows, in KIND_LABEL's
+  // declared order — drives the filter tabs below. A page with recordings
+  // from 8 possible kinds otherwise has no way to narrow the list.
+  const kindsPresent = Object.keys(KIND_LABEL).filter((k) => rows.some((r) => r.call_kind === k));
 
   const load = async () => {
     if (!user?.id) return;
@@ -137,7 +143,7 @@ export default function Recordings() {
         Recordings finalize ~1 min after a call ends. Tap Sync now to pull the latest.
       </p>
 
-      <div className="px-4 py-4 space-y-3">
+      <div className="px-4 py-4">
         {loading ? (
           <p className="text-center text-sm text-muted-foreground py-12">Loading…</p>
         ) : rows.length === 0 ? (
@@ -149,62 +155,22 @@ export default function Recordings() {
               and action items land here.
             </p>
           </Card>
+        ) : kindsPresent.length <= 1 ? (
+          // Only one call kind in the list (or none) — a filter would just
+          // be a single useless tab, so skip straight to the flat list.
+          <RecordingsList rows={rows} onRecap={setRecapId} />
         ) : (
-          rows.map((r) => {
-            const dur = fmtDur(r.duration_seconds);
-            const kindLabel = KIND_LABEL[r.call_kind] ?? r.call_kind;
-            const processing = r.status === "pending" || r.status === "transcribing";
-            return (
-              <Card key={r.id} className="p-4 flex items-start gap-3 rounded-2xl shadow-none border-border/60">
-                <span className="h-10 w-10 rounded-xl bg-[hsl(var(--energy)/0.12)] flex items-center justify-center shrink-0">
-                  <Video className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                    <p className="text-sm font-semibold">{kindLabel}</p>
-                    {processing ? (
-                      <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
-                        Kreto listening…
-                      </Badge>
-                    ) : r.status === "ready" ? (
-                      <Badge className="h-4 px-1.5 text-[10px] bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))] border-0">
-                        Ready
-                      </Badge>
-                    ) : r.status === "failed" ? (
-                      <Badge variant="destructive" className="h-4 px-1.5 text-[10px]">
-                        Failed
-                      </Badge>
-                    ) : null}
-                  </div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <Clock className="h-3 w-3" />
-                    {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
-                    {dur && <span>· {dur}</span>}
-                  </p>
-                  {r.summary && (
-                    <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{r.summary}</p>
-                  )}
-                  <div className="flex items-center gap-2 mt-2">
-                    <WatchReplayButton
-                      transcriptId={r.id}
-                      title={kindLabel}
-                      subtitle={`${formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}${dur ? ` · ${dur}` : ""}`}
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 gap-1 text-xs"
-                      onClick={() => setRecapId(r.id)}
-                    >
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Recap
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            );
-          })
+          <StudioSectionTabs
+            queryParam="kind"
+            tabs={[
+              { id: "all", label: "All", content: <RecordingsList rows={rows} onRecap={setRecapId} /> },
+              ...kindsPresent.map((kind) => ({
+                id: kind,
+                label: KIND_LABEL[kind] ?? kind,
+                content: <RecordingsList rows={rows.filter((r) => r.call_kind === kind)} onRecap={setRecapId} />,
+              })),
+            ]}
+          />
         )}
       </div>
 
@@ -213,6 +179,71 @@ export default function Recordings() {
         onOpenChange={(o) => !o && setRecapId(null)}
         transcriptId={recapId}
       />
+    </div>
+  );
+}
+
+function RecordingsList({ rows, onRecap }: { rows: Row[]; onRecap: (id: string) => void }) {
+  if (rows.length === 0) {
+    return <p className="text-center text-sm text-muted-foreground py-8">No recordings in this category.</p>;
+  }
+  return (
+    <div className="space-y-3">
+      {rows.map((r) => {
+        const dur = fmtDur(r.duration_seconds);
+        const kindLabel = KIND_LABEL[r.call_kind] ?? r.call_kind;
+        const processing = r.status === "pending" || r.status === "transcribing";
+        return (
+          <Card key={r.id} className="p-4 flex items-start gap-3 rounded-2xl shadow-none border-border/60">
+            <span className="h-10 w-10 rounded-xl bg-[hsl(var(--energy)/0.12)] flex items-center justify-center shrink-0">
+              <Video className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                <p className="text-sm font-semibold">{kindLabel}</p>
+                {processing ? (
+                  <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+                    Kreto listening…
+                  </Badge>
+                ) : r.status === "ready" ? (
+                  <Badge className="h-4 px-1.5 text-[10px] bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))] border-0">
+                    Ready
+                  </Badge>
+                ) : r.status === "failed" ? (
+                  <Badge variant="destructive" className="h-4 px-1.5 text-[10px]">
+                    Failed
+                  </Badge>
+                ) : null}
+              </div>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Clock className="h-3 w-3" />
+                {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                {dur && <span>· {dur}</span>}
+              </p>
+              {r.summary && (
+                <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{r.summary}</p>
+              )}
+              <div className="flex items-center gap-2 mt-2">
+                <WatchReplayButton
+                  transcriptId={r.id}
+                  title={kindLabel}
+                  subtitle={`${formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}${dur ? ` · ${dur}` : ""}`}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 gap-1 text-xs"
+                  onClick={() => onRecap(r.id)}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Recap
+                </Button>
+              </div>
+            </div>
+          </Card>
+        );
+      })}
     </div>
   );
 }

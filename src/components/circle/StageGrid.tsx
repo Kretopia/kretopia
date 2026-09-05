@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, RefreshCw, Radio } from "lucide-react";
 import { StageCard, type StageCardData } from "./StageCard";
 import type { SoundStage } from "./SoundStagesRail";
+import { StudioSectionTabs } from "@/components/studio-reference/StudioSectionTabs";
 
 interface StageGridProps {
   onJoinSoundStage: (stage: SoundStage) => void;
@@ -155,11 +156,32 @@ export function StageGrid({ onJoinSoundStage }: StageGridProps) {
     );
   }
 
+  const liveCards = cards.filter((c) => c.status === "live");
+  const upcomingCards = cards.filter((c) => c.status !== "live");
+
+  // Only offer the Live/Upcoming split once there's actually something on
+  // both sides of it — otherwise it'd be a filter with a dead second tab.
+  if (liveCards.length === 0 || upcomingCards.length === 0) {
+    return <StageCardGrid cards={cards} onAction={handleAction} />;
+  }
+
+  return (
+    <StudioSectionTabs
+      tabs={[
+        { id: "all", label: `All (${cards.length})`, content: <StageCardGrid cards={cards} onAction={handleAction} /> },
+        { id: "live", label: `Live (${liveCards.length})`, content: <StageCardGrid cards={liveCards} onAction={handleAction} /> },
+        { id: "upcoming", label: `Upcoming (${upcomingCards.length})`, content: <StageCardGrid cards={upcomingCards} onAction={handleAction} /> },
+      ]}
+    />
+  );
+}
+
+function StageCardGrid({ cards, onAction }: { cards: StageCardData[]; onAction: (stage: StageCardData) => void }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Live and upcoming stages">
       {cards.map((c) => (
         <div key={`${c.kind}-${c.id}`} role="listitem">
-          <StageCard stage={c} onAction={handleAction} />
+          <StageCard stage={c} onAction={onAction} />
         </div>
       ))}
     </div>

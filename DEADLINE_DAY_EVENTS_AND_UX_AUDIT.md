@@ -187,6 +187,39 @@ Not recommended for today given "no broad rewrite": unifying the `portfolio`/`ev
 
 ---
 
+## P2 Addendum — Global UX Polish (implemented)
+
+Before touching anything, all 13 remaining priority surfaces (Events was already fully covered above) were audited for genuine, evidence-backed density problems — not assumed ones, per the P1 lesson. `SOURCE_CONFIRMED` findings:
+
+**LEAVE_AS_IS (11 of 13)** — each already uses `StudioFeatureShell`/`FeaturePageHeader`/tabs/carousels/filters, several with explicit code comments documenting that this exact "wrap dense content" work was already done deliberately:
+- **Studio** (`WorkHome.tsx`) — every list capped (5/3/10/20/12/8 items), `StudioProjectsDashboard` has its own filter tiles + search + sort.
+- **Today** (`UnifiedHome.tsx` authed path) — `MoreFromToday.tsx:56-62` documents replacing a closed `<details>` pattern with a real `role="tablist"` filter bar.
+- **Scout** — `ScoutedGigsSection.tsx:513` comment: "one hero card + a Carousel, not a card wall"; marketplace tab has `DiscoveryGate`/`DiscoveryUpsell` progressive disclosure.
+- **Match** — `StudioSectionTabs` (Discover/Browse/Interested); default view is a single-card swipe deck.
+- **Messages** — 4-way tabs (Direct/Groups/Calls/Requests) in `ConversationListPanel.tsx`.
+- **Verified Credits** (`CreditsDashboard.tsx`) — the reference implementation of Shell + `StudioSectionTabs` (6 tabs); this is the pattern other pages are already following.
+- **Creative Circle** — largest list is 6 items, well under any wrap threshold.
+- **Spotlight** — `SpotlightBoard` tabs (Magazine/Podcast) plus filter/sort/search/`Carousel` inside `MagazineWall.tsx`.
+- **Founding Circle** — 3 items, already in a `CardCarousel`.
+- **KrePay** (`ThrivePay.tsx:420-432`) — comment explicitly documents this page was already refactored from "5 sections that used to stack in one continuous scroll" into 3 tabs; re-wrapping would be redundant.
+- **Passport** (`PassportDirectory.tsx`) — genuine density exists (up to 120 unpaginated cards, `line 42`), but it's a single homogeneous directory with no natural category to tab by; the real fix is pagination/infinite-scroll, which is a different problem than "wrap into tabs/accordions/drawers" and was left alone today per the brief's own scoping of this pass.
+
+**GENUINE_CANDIDATE, implemented (2 of 13):**
+- **Recordings** (`src/pages/Recordings.tsx`) — was a single flat, unpaginated list of up to 100 items (`.limit(100)`) across 8 unrelated call kinds with zero filtering. Added `StudioSectionTabs` (All + one tab per kind actually present in the data, `queryParam="kind"` for shareable/refresh-safe state), extracted the existing card markup into a `RecordingsList` sub-component reused per tab — zero change to any card's content, actions (`WatchReplayButton`, Recap), or the sync/empty/loading states. Skips the tab UI entirely when 0-1 kinds are present, avoiding a single dead tab.
+- **SoundStages** "All Stages" grid (`src/components/circle/StageGrid.tsx`) — was one undifferentiated realtime grid of up to ~40 mixed live + scheduled stages with no way to separate them. Added a Live/Upcoming/All `StudioSectionTabs` split (with live counts in each label), extracted the grid markup into a `StageCardGrid` sub-component. Falls back to the plain grid (no tabs) if either side is empty, so it never shows a dead tab. Realtime subscription, loading/error/empty states, and the join/navigate action are all unchanged.
+
+Both changes: `TYPECHECKED` (clean `tsc --noEmit`), `BROWSER_VERIFIED` only for "no console error, builds and loads cleanly" — full authenticated click-through (opening each tab, confirming card content matches the filter, confirming keyboard tab navigation) was `NOT_CONFIRMED` because this session has no test-account session available, same limitation noted for the P0 Events fixes.
+
+For every change, per the brief's own checklist:
+- *User problem:* an unfilterable, unbounded list forcing a long scroll to find one item.
+- *Preserved behavior:* every action, empty/loading/error state, and realtime update is untouched — only the container around the existing list changed.
+- *Content moved/wrapped:* the same card list, now split by an existing data field (`call_kind`, `status`) instead of shown as one flat run.
+- *Reachability:* nothing is hidden — "All" is always the first tab and shows everything exactly as before.
+- *Mobile:* `StudioSectionTabs` is the same responsive, already-mobile-tested primitive used elsewhere (Match, Credits, KrePay); no new breakpoints introduced.
+- *Keyboard:* inherited for free from Radix `Tabs` (arrow-key navigation, proper `tablist`/`tab`/`tabpanel` roles) — not reimplemented.
+
+---
+
 ## K. Files to Modify (if approved)
 
 - `supabase/functions/event-reminders/index.ts` — add `requireAdminOrCron` guard.

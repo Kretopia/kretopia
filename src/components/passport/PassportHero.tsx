@@ -150,6 +150,7 @@ export function PassportHero({
               <FramedAvatar
                 src={profile.avatar_url || "/avatar-silhouette.svg"}
                 fallback={displayName?.split(" ").map((n: string) => n[0]).join("") || "?"}
+                alt={displayName || undefined}
                 className="h-20 w-20 rounded-full border-2 border-card shadow-lg bg-card"
               />
               <Button

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
+import { APP_URL } from "@/lib/constants";
 import type { ContentBlock } from "@/components/creator-site/blocks/BlockTypes";
 import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemplate";
 import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
@@ -38,6 +39,7 @@ export interface CreatorSiteData {
     site_sections: any;
     site_custom_blocks: ContentBlock[];
     professional_skills: any;
+    username?: string;
   };
   services: any[];
   credits: any[];
@@ -163,12 +165,36 @@ const CreatorSite = () => {
   }
 
   const template = data.profile.site_template || 'bold-electric';
+  // /:username is the canonical, shareable form of this same page (see
+  // CreatorSiteByUsername.tsx) -- point search engines there when a
+  // username exists so ranking signal isn't split across two URLs for the
+  // same content, and fall back to this page's own URL otherwise.
+  const canonicalUrl = data.profile.username
+    ? `${APP_URL}/${data.profile.username}`
+    : `${APP_URL}/site/${userId}`;
 
   return (
     <>
-      <SEO 
+      <SEO
         title={`${data.profile.full_name} — ${data.profile.role || 'Creator'}`}
         description={data.profile.bio?.slice(0, 160) || `${data.profile.full_name}'s professional site powered by Kretopia`}
+        type="profile"
+        image={data.profile.avatar_url || data.profile.cover_image_url || undefined}
+        url={canonicalUrl}
+        profile={{
+          name: data.profile.full_name,
+          role: data.profile.role,
+          location: data.profile.location,
+          avatar: data.profile.avatar_url,
+          bio: data.profile.bio,
+          socialLinks: {
+            instagram: data.profile.instagram_url,
+            twitter: data.profile.twitter_url,
+            linkedin: data.profile.linkedin_url,
+            youtube: data.profile.youtube_url,
+            website: data.profile.website,
+          },
+        }}
       />
       {template === 'bold-electric' && <BoldElectricTemplate data={data} />}
       {template === 'minimal-editorial' && <MinimalEditorialTemplate data={data} />}

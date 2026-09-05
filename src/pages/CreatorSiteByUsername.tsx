@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { APP_URL } from "@/lib/constants";
 import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemplate";
 import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
 import { PortfolioMosaicTemplate } from "@/components/creator-site/PortfolioMosaicTemplate";
@@ -154,11 +155,30 @@ const CreatorSiteByUsername = () => {
 
   const template = data.profile.site_template || "bold-electric";
 
+  const canonicalUrl = `${APP_URL}/${username}`;
+
   return (
     <>
       <SEO
         title={`${data.profile.full_name} — ${data.profile.role || "Creator"}`}
         description={data.profile.bio?.slice(0, 160) || `${data.profile.full_name}'s professional site powered by Kretopia`}
+        type="profile"
+        image={data.profile.avatar_url || data.profile.cover_image_url || undefined}
+        url={canonicalUrl}
+        profile={{
+          name: data.profile.full_name,
+          role: data.profile.role,
+          location: data.profile.location,
+          avatar: data.profile.avatar_url,
+          bio: data.profile.bio,
+          socialLinks: {
+            instagram: data.profile.instagram_url,
+            twitter: data.profile.twitter_url,
+            linkedin: data.profile.linkedin_url,
+            youtube: data.profile.youtube_url,
+            website: data.profile.website,
+          },
+        }}
       />
       {template === 'bold-electric' && <BoldElectricTemplate data={data} />}
       {template === 'minimal-editorial' && <MinimalEditorialTemplate data={data} />}

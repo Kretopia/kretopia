@@ -270,4 +270,54 @@ The §I map above located the current landing structure correctly, but a deeper 
 - Adding pagination to `event_comments` (currently fine at low comment volume; flagged for later).
 - Adding an index on `event_comments.event_id` (currently fine at low volume; cheap to add later, not urgent today).
 - Full landing-page section-by-section KEEP/CONDENSE/MERGE/MOVE/DEFER pass (P1) — needs an explicit go-ahead per section given the brief's own instruction not to unilaterally remove dense content.
-- P2 global UI wrapping pass across the 14 priority feature surfaces — not started; each surface needs its own brief look before touching it.
+- Passport directory pagination/infinite-scroll (120 unpaginated cards) — real but a different class of fix than P2's tabs/accordion/drawer scope.
+- Full authenticated browser click-through of every P0/P2 change (see P3 section below) — no test-account session was available in this environment for any part of today's work.
+
+---
+
+## P3 — Final Release QA
+
+### Regression
+
+Full baseline re-run against the current merged `main`/branch state, after all of today's P0/P2 commits:
+- `npm run typecheck` → **PASS**, `TYPECHECKED`
+- `npm run build` → **PASS**, `TYPECHECKED` (no new large-chunk warnings beyond the same pre-existing ones from before today)
+- `npm run test` → 121/127 pass; the same 6 pre-existing `stripeWebhookSignature.test.ts` failures present at the start of the day (unrelated `crypto.subtle`-in-Vitest environment gap, not a functional regression, not touched by anything today) — **no new test failures introduced.** `UNIT_TESTED`
+
+### Security spot checks — `PRODUCTION_VERIFIED`
+
+Re-verified every P0/security fix from today and earlier this session live via curl, after all merges:
+- `event-reminders`, `send-event-reminders` → `401 Unauthorized` with no admin/cron credential. ✓
+- `notify_event_comment` RPC → exists, `permission denied for function` for anon (correctly `authenticated`-only). ✓
+- `profiles.subscription_tier` → `permission denied for table profiles` for a cross-user PATCH. ✓
+- `talent_managers` full-table anon scan → `[]` (blocked). ✓
+
+**One real regression caught and fixed during this pass:** `opportunities.guest_email` and `opportunities.verification_token` — the migration meant to lock these down (`20260905110000`, part of PR #72, reported applied earlier) had **not actually taken effect**. Confirmed live via curl: an anonymous request returned a real guest email address and its verification token in plain text. Flagged immediately, user re-applied the migration, re-verified live — now correctly returns `permission denied for table opportunities` for both columns, while normal columns (`title`, `status`, etc.) remain readable and the public gig feed (`OpportunitiesFeed.tsx`'s exact query, full `OPPORTUNITY_PUBLIC_COLUMNS` list) still returns `200` with real data. This is exactly the kind of gap a dedicated regression pass exists to catch — it was not part of today's P0/P2 work, but surfaced because this pass re-checked *everything* live rather than trusting prior "applied" confirmations at face value.
+
+Also confirmed the anonymous console 400/403/404 errors seen on `/opportunities` in the browser are unrelated to this fix — the exact `OPPORTUNITY_PUBLIC_COLUMNS` query the client uses was independently verified via curl to return a clean `200`; the console errors are ordinary auth-gated calls (saved-opportunities, application status, scout preferences) failing as expected for a logged-out session.
+
+### Browser verification — `BROWSER_VERIFIED` (partial), `NOT_CONFIRMED` (authenticated flows)
+
+What **was** verified in-browser today, anonymously, against the local dev server (same live Supabase backend):
+- `/opportunities` (both Scouted and Marketplace tabs) — renders real data, no console errors traceable to today's changes.
+- Opportunity detail page — renders fully with the new explicit column list.
+- No console errors on any page load touched by today's commits.
+
+What was **not** completed, and why: this environment has no test-account session, and creating one is outside what this session should do unilaterally (account creation requires the user's own action). The following from the brief's own checklist remain genuinely unverified:
+- Event admin image upload (valid/invalid type, size, replace, broken-URL fallback) as a real logged-in host.
+- Posting an event comment as two different real accounts, confirming realtime delivery and the new in-app notification.
+- Triggering `event-reminders`/`send-event-reminders` end-to-end with a real admin JWT or the actual cron secret (only the *rejection* path was verified, not the success path with real credentials).
+- Recordings/StageGrid tab filtering against a real account with data in multiple categories.
+- All three breakpoints (390×844 / 768×1024 / 1440×900) for any of the above.
+
+**`REQUIRES_PRODUCT_DECISION`**: whether to have the user (or a designated tester) run this specific checklist before the demo, since it's the one category of verification this session structurally cannot complete alone.
+
+### Demo script readiness — `NOT_CONFIRMED`
+
+No demo script or specific flow was shared with this session, so readiness against a specific script can't be assessed. Based on everything audited and fixed today, the safest demo path is: browse `/meetup` and an event detail page (public, no auth needed, fully verified), rather than leading with comment-posting or reminder-triggering (both fixed but not click-verified).
+
+### Release gate
+
+No unresolved P0 issue remains from the original audit. All P0/P2 code changes are typechecked, built clean, and their *rejection*/*security* paths are production-verified via curl. The one regression this pass found (`opportunities` column lock not applying) has been fixed and re-verified live. What's missing for a full `RELEASE_READY` call is authenticated click-through verification, which requires a test account this session doesn't have.
+
+**Final status: `DEADLINE_RELEASE_CANDIDATE`.**

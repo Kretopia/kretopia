@@ -56,12 +56,12 @@ interface PassportSnapshot {
 }
 
 /**
- * /kreto — Kreto's live workspace. Auto-opens the real Copilot (Sheet, mounted
- * globally in App.tsx) on arrival, and surfaces real account context
- * (Passport snapshot, most recent Scout match, recent proposed actions)
- * so the page reads as an active dashboard rather than an empty pitch for
- * a feature the user hasn't tried yet. Every section only renders when
- * real data exists — no placeholder numbers, no invented activity.
+ * /kreto — Kreto's live workspace. Renders the chat inline (InlineKretoChat,
+ * not the global Copilot Sheet) alongside real account context (Passport
+ * snapshot, most recent Scout match, recent proposed actions) so the page
+ * reads as an active dashboard rather than an empty pitch for a feature the
+ * user hasn't tried yet. Every section only renders when real data exists —
+ * no placeholder numbers, no invented activity.
  */
 export default function KretoTab() {
   const { user } = useAuth();

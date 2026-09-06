@@ -1353,17 +1353,16 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   .btn-landing-primary:hover { transform: none; }
 }
 
-/* ── HERO TITLE HOVER FX ─────────────────────────────────────────────
+/* ── HERO TITLE HOVER FX — electric arcs ─────────────────────────────
    A discreet, on-demand interaction for the hero headline: hovering the
-   title sends a slow pink/white gradient sweep through the accent words
-   (paint-like, not a strobing gradient-text cliché) while every word
-   lifts in a soft staggered wave. Reads as "this word is alive," which
-   is the point -- it's the one interactive flourish on a text element
-   that otherwise just fades in once and sits still. Pure CSS
-   (background-position + transform), no JS, no new dependency, and the
-   stagger reuses the same --wi custom property pattern already used for
-   the entrance reveal, just applied to a nested element so it never
-   collides with framer-motion's own inline transform on the outer span. */
+   title traces a handful of thin arcs behind the words in the exact same
+   grey-to-pink gradient as .btn-landing-primary (--secondary -> --energy)
+   -- Kretopia's one CTA gradient language, reused here instead of a new
+   color pairing -- while every word lifts in a soft staggered wave. The
+   arcs live on a plain absolutely-positioned <svg> sibling (see
+   KretopiaHero.tsx) so they never interfere with the title's own text
+   layout or selection. Pure CSS + SVG (stroke-dashoffset + transform), no
+   JS, no new dependency. */
 .hero-title-fx .hero-word {
   display: inline-block;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1373,31 +1372,60 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 .hero-title-fx:hover .hero-word {
   transform: translateY(-0.06em);
 }
-.hero-title-fx .hero-word-pink {
-  background-image: linear-gradient(90deg, #ff2da1 0%, #ffffff 35%, #ff2da1 70%, #ffffff 100%);
-  background-size: 300% 100%;
-  background-position: 0% 0%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  transition: background-position 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+.hero-title-arcs {
+  width: calc(100% + 3rem);
+  height: calc(100% + 4rem);
+  overflow: visible;
 }
-.hero-title-fx:hover .hero-word-pink {
-  background-position: 100% 0%;
+.hero-arc {
+  fill: none;
+  stroke: url(#heroArcGradient);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  filter: url(#heroArcGlow);
+  opacity: 0;
+  stroke-dasharray: 520;
+  stroke-dashoffset: 520;
+  transition: opacity 0.25s ease;
 }
-.hero-title-fx .hero-word-white {
-  color: #fff;
-  text-shadow: 0 0 0 rgba(255, 45, 161, 0);
-  transition: text-shadow 0.6s ease;
+.hero-title-fx:hover .hero-arc-1 {
+  opacity: 0.8;
+  animation: hero-arc-draw 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+             hero-arc-flicker 1.5s ease 1s 1;
 }
-.hero-title-fx:hover .hero-word-white {
-  text-shadow: 0 0 26px rgba(255, 45, 161, 0.4);
+.hero-title-fx:hover .hero-arc-2 {
+  opacity: 0.7;
+  animation: hero-arc-draw 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s forwards,
+             hero-arc-flicker 1.5s ease 1.12s 1;
+}
+.hero-title-fx:hover .hero-arc-3 {
+  opacity: 0.7;
+  animation: hero-arc-draw 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.24s forwards,
+             hero-arc-flicker 1.5s ease 1.24s 1;
+}
+@keyframes hero-arc-draw {
+  from { stroke-dashoffset: 520; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes hero-arc-flicker {
+  0%, 100% { opacity: 0.75; }
+  15% { opacity: 0.25; }
+  30% { opacity: 0.85; }
+  45% { opacity: 0.35; }
+  60% { opacity: 0.75; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-title-fx .hero-word,
-  .hero-title-fx .hero-word-pink,
-  .hero-title-fx .hero-word-white {
+  .hero-title-fx .hero-word {
     transition: none !important;
   }
   .hero-title-fx:hover .hero-word { transform: none; }
+  .hero-title-fx:hover .hero-arc-1,
+  .hero-title-fx:hover .hero-arc-2,
+  .hero-title-fx:hover .hero-arc-3 {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 0.55;
+    transition: opacity 0.4s ease;
+  }
 }

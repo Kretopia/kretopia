@@ -137,7 +137,7 @@ export const ClosingCTASection = () => {
       />
 
       <p
-        className="relative pb-16 sm:pb-20 text-center text-[10px] font-semibold uppercase tracking-[0.32em] text-white/30"
+        className="relative pb-16 sm:pb-20 text-center text-[10px] font-semibold uppercase tracking-[0.32em] text-white/50"
         style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
       >
         Kretopia

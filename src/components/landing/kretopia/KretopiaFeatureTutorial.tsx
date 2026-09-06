@@ -62,7 +62,7 @@ export function KretopiaFeatureTutorial({ steps, featureName }: KretopiaFeatureT
                 <Fingerprint className="h-4 w-4 text-white/60 transition-colors group-hover:text-white" aria-hidden />
               </span>
               <span
-                className="text-xs font-semibold text-white/70 transition-colors group-hover:text-white"
+                className="text-xs font-semibold text-white/85 transition-colors group-hover:text-white"
                 style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
               >
                 See how it works

@@ -165,7 +165,7 @@ export const TutorialStepper = ({ steps, label, activeStep, onStepChange, autoPl
                 <div className="flex items-center gap-2.5">
                   <span
                     className={cn("text-[10px] font-medium tabular-nums", isActive && "pink-glow-breathe")}
-                    style={{ color: isActive ? ACCENT : "rgba(255,255,255,0.32)" }}
+                    style={{ color: isActive ? ACCENT : "rgba(255,255,255,0.5)" }}
                   >
                     {String(i + 1).padStart(2, "0")}
                   </span>

@@ -11,7 +11,7 @@
  * `/profile/:id?showClaim=true` claim entry point. Nothing backend-side
  * changed; only which UI fronts the flow.
  */
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -21,11 +21,16 @@ import { trackLandingCta } from "@/lib/landingFunnel";
 
 const ACCENT = "#FF2DA1";
 
-/** Headline, split into words so each can resolve out of a blur on load. */
-const HEADLINE: string[][] = [
-  ["Turn", "the", "work", "you've", "already", "done"],
-  ["into", "your", "next", "opportunity."],
-];
+/** Headline, split into words so each can resolve out of a blur on load and
+ *  carry a running index that drives the hover stagger in .hero-title-fx. */
+const HEADLINE: { word: string; index: number }[][] = (() => {
+  const lines: string[][] = [
+    ["Turn", "the", "work", "you've", "already", "done"],
+    ["into", "your", "next", "opportunity."],
+  ];
+  let i = 0;
+  return lines.map((line) => line.map((word) => ({ word, index: i++ })));
+})();
 
 interface KretopiaHeroProps {
   /** Kept for backward compatibility with the search-first flow this hero
@@ -104,38 +109,86 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           For creatives who want their work to count
         </motion.p>
 
-        {/* Headline — words reveal one by one out of a blur, like the page is
-            resolving the sentence rather than printing it. */}
-        <h1 className="landing-h1 landing-glow max-w-full mx-auto">
-          <motion.span
-            className="block"
-            initial="hidden"
-            animate="show"
-            variants={{ show: { transition: { staggerChildren: reducedMotion ? 0 : 0.05 } } }}
+        {/* Headline — words reveal one by one out of a blur on load. Hover
+            adds a second interaction, hero-title-arcs: a handful of thin
+            SVG arcs traced in the same grey-to-pink gradient as
+            btn-landing-primary (--secondary -> --energy, the one gradient
+            pair that IS Kretopia's CTA language) sweep in behind the words
+            like current arcing between them, while each word lifts in a
+            staggered wave. The arcs sit on a plain absolutely-positioned
+            <svg> sibling, and the wave-lift on a plain inner <span> inside
+            each word -- neither ever touches framer-motion's own inline
+            transform on the outer motion.span used for the entrance
+            reveal. */}
+        <div className="relative hero-title-fx max-w-full mx-auto">
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            viewBox="0 0 400 140"
+            preserveAspectRatio="none"
+            className="hero-title-arcs pointer-events-none absolute -inset-x-6 -inset-y-8"
           >
-            {HEADLINE.map((line, li) => (
-              <span key={li} className="block">
-                {line.map((word, wi) => (
-                  <motion.span
-                    key={`${li}-${wi}`}
-                    className="inline-block"
-                    variants={
-                      reducedMotion
-                        ? { hidden: {}, show: {} }
-                        : {
-                            hidden: { opacity: 0, y: 18, filter: "blur(8px)" },
-                            show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] } },
-                          }
-                    }
-                  >
-                    {word}
-                    {wi < line.length - 1 && " "}
-                  </motion.span>
-                ))}
-              </span>
-            ))}
-          </motion.span>
-        </h1>
+            <defs>
+              <linearGradient id="heroArcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: "hsl(var(--secondary))" }} />
+                <stop offset="100%" style={{ stopColor: "hsl(var(--energy))" }} />
+              </linearGradient>
+              <filter id="heroArcGlow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="2.4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <path className="hero-arc hero-arc-1" d="M8,26 Q100,-8 196,28 T392,18" />
+            <path className="hero-arc hero-arc-2" d="M14,70 Q120,112 210,70 T386,90" />
+            <path className="hero-arc hero-arc-3" d="M4,114 Q90,86 200,120 T396,102" />
+          </svg>
+
+          <h1 className="landing-h1 landing-glow relative">
+            <motion.span
+              className="block"
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: reducedMotion ? 0 : 0.05 } } }}
+            >
+              {HEADLINE.map((line, li) => (
+                <span key={li} className="block">
+                  {line.map(({ word, index }, wi) => (
+                    // The separating space is a sibling of motion.span, not a
+                    // child of it or of .hero-word -- a trailing space inside
+                    // either inline-block collapses to zero width (each
+                    // establishes its own line-box, and CSS trims whitespace
+                    // at the edge of one), confirmed by measuring a 0px gap
+                    // between words with the space nested either way. Placed
+                    // here, directly inside the block-level line wrapper
+                    // between two atomic inline-block boxes, it renders
+                    // normally.
+                    <Fragment key={`${li}-${wi}`}>
+                      <motion.span
+                        className="inline-block"
+                        variants={
+                          reducedMotion
+                            ? { hidden: {}, show: {} }
+                            : {
+                                hidden: { opacity: 0, y: 18, filter: "blur(8px)" },
+                                show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] } },
+                              }
+                        }
+                      >
+                        <span className="hero-word" style={{ ["--wi" as string]: index }}>
+                          {word}
+                        </span>
+                      </motion.span>
+                      {wi < line.length - 1 ? " " : ""}
+                    </Fragment>
+                  ))}
+                </span>
+              ))}
+            </motion.span>
+          </h1>
+        </div>
 
         {/* Value explanation — the "why" behind the headline, one sentence. */}
         <motion.p
@@ -150,7 +203,9 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
 
         {/* Primary CTA — the one dominant action. Real button, canonical
             grey-to-pink gradient (btn-landing-primary), not a typographic
-            link and not a flat pink fill. */}
+            link and not a flat pink fill. This is Kretopia's one CTA
+            design for this weight of action -- no second, differently
+            styled button beside it. */}
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}

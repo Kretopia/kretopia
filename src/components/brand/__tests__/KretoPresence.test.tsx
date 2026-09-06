@@ -51,13 +51,13 @@ describe("KretoPresence", () => {
     expect(screen.getByText(label)).toHaveClass("sr-only");
   });
 
-  it("renders the real KretoMark badge at card/hero sizes but not at micro/compact", () => {
+  it("renders the real KretoMark badge at compact/card/hero sizes but not at micro", () => {
     const { container: micro } = render(<KretoPresence size="micro" />);
     const { container: compact } = render(<KretoPresence size="compact" />);
     const { container: card } = render(<KretoPresence size="card" />);
     const { container: hero } = render(<KretoPresence size="hero" />);
     expect(micro.querySelector("img")).not.toBeInTheDocument();
-    expect(compact.querySelector("img")).not.toBeInTheDocument();
+    expect(compact.querySelector("img")).toBeInTheDocument();
     expect(card.querySelector("img")).toBeInTheDocument();
     expect(hero.querySelector("img")).toBeInTheDocument();
   });

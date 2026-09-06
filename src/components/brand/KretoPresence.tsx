@@ -81,7 +81,9 @@ export const KretoPresence = ({
 }: KretoPresenceProps) => {
   const reducedMotion = useReducedMotion();
   const px = SIZE_PX[size];
-  const showMark = size === "card" || size === "hero";
+  // "micro" (24px) is too small for any legible badge; everything else gets
+  // one, sized so its footprint stays proportionate at each presence size.
+  const showMark = size !== "micro";
   const stateLabel = STATE_LABEL[state];
   const isInteractive = !!onClick;
 
@@ -148,7 +150,7 @@ export const KretoPresence = ({
 
       {showMark && (
         <div className="absolute bottom-[14%] left-1/2 -translate-x-1/2 opacity-90">
-          <KretoMark variant="bare" size={size === "hero" ? "sm" : "xs"} />
+          <KretoMark variant="bare" size={size === "hero" ? "sm" : "xs"} className={size === "compact" ? "scale-75" : undefined} />
         </div>
       )}
     </motion.div>

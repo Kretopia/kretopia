@@ -382,6 +382,7 @@ export type Database = {
       }
       ai_conversations: {
         Row: {
+          archived_at: string | null
           created_at: string
           id: string
           title: string
@@ -389,6 +390,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           id?: string
           title?: string
@@ -396,6 +398,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           id?: string
           title?: string
@@ -19944,6 +19947,14 @@ export type Database = {
         Args: { _milestone_id: string }
         Returns: Json
       }
+      get_mutual_connection_counts: {
+        Args: { p_target_ids: string[] }
+        Returns: {
+          mutual_count: number
+          sample: Json
+          target_id: string
+        }[]
+      }
       get_mutual_connections: {
         Args: { user1_id: string; user2_id: string }
         Returns: {
@@ -20483,6 +20494,7 @@ export type Database = {
         Args: { _application_id: string; _status: string }
         Returns: Json
       }
+      notify_event_comment: { Args: { _comment_id: string }; Returns: Json }
       notify_new_application: {
         Args: { _application_id: string }
         Returns: Json

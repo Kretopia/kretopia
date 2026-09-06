@@ -10,8 +10,9 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { ArrowRight, Sparkles, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { KretoMark } from "@/components/brand/KretoMark";
+import { KretoPresence } from "@/components/brand/KretoPresence";
 import { cn } from "@/lib/utils";
 
 type Tip = { eyebrow: string; line: string; cta: string; prompt: string };
@@ -145,9 +146,13 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
   if (dismissed) return null;
 
   const tip = tips[idx] ?? FALLBACK;
-  // Deliberate exception: the Studio surface keeps its own inline Sparkles
-  // signal rather than the identity mark, matching StudioCreateHero's own
-  // established mic-button chip convention immediately above it on that page.
+  // Kreto pilot surface #3 (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md): Studio
+  // gets the compact embodied presence instead of the flat KretoMark used
+  // by every other route group here -- superseding the previous "inline
+  // Sparkles signal" exception. The tips themselves are static, route-based
+  // canned suggestions (see ROUTE_TIPS above), not a real generated
+  // proposal, so this always renders state="idle" -- proposal_ready would
+  // be a false claim about work Kreto hasn't actually done.
   const isStudio = tip.eyebrow === "Studio";
 
   const openKreto = (prompt?: string) => {
@@ -185,16 +190,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
 
       <div className="relative flex items-start gap-3 sm:gap-4">
         {isStudio ? (
-          <span
-            aria-hidden
-            className={cn(
-              "shrink-0 rounded-full flex items-center justify-center",
-              compact ? "h-10 w-10" : "h-16 w-16",
-            )}
-            style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
-          >
-            <Sparkles className={compact ? "h-4 w-4 text-white" : "h-6 w-6 text-white"} />
-          </span>
+          <KretoPresence size={compact ? "compact" : "card"} state="idle" />
         ) : (
           <KretoMark variant="default" size={compact ? "sm" : "md"} />
         )}

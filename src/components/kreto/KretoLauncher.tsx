@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { KretoMark } from "@/components/brand/KretoMark";
+import { KretoPresence } from "@/components/brand/KretoPresence";
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,6 +13,12 @@ import { cn } from "@/lib/utils";
  * above the bottom nav as the "open Kreto" entry point — a second floating
  * button there would sit on top of it, which is exactly what this
  * component's own positioning rules are meant to avoid.
+ *
+ * Kreto pilot surface #1 (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md): shows
+ * KretoPresence at state="idle" only. This button is hidden the moment any
+ * dialog opens (see below), which is exactly when a real request would be
+ * "processing" -- while this launcher is visible, Kreto is, truthfully,
+ * always idle. No fake processing/proposal/success state is invented here.
  */
 export function KretoLauncher() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -59,7 +65,7 @@ export function KretoLauncher() {
         bottom: "max(1.25rem, env(safe-area-inset-bottom))",
       }}
     >
-      <KretoMark variant="bare" size="lg" />
+      <KretoPresence size="compact" state="idle" />
       <span className="sr-only">Open Kreto</span>
     </button>
   );

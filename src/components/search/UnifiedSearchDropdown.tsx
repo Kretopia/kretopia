@@ -451,6 +451,7 @@ export function UnifiedSearchDropdown({
             onKeyDown={handleInputKeyDown}
             placeholder={placeholder}
             autoFocus={autoFocus}
+            role="combobox"
             aria-label="Search a name, project or opportunity"
             aria-expanded={open}
             aria-controls={listboxId}

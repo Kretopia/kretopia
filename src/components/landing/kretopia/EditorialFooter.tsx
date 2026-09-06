@@ -17,7 +17,7 @@ export const EditorialFooter = () => {
           <div>
             <BrandLogo size="md" showBeta linkToHome />
             <p
-              className="mt-3 text-[10px] font-medium uppercase tracking-[0.32em] text-white/40"
+              className="mt-3 text-[10px] font-medium uppercase tracking-[0.32em] text-white/50"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
               {BRAND.parentLine}
@@ -51,13 +51,13 @@ export const EditorialFooter = () => {
 
         <div className="mt-12 pt-6 border-t border-white/[0.05] flex flex-wrap items-center justify-between gap-3">
           <p
-            className="text-[10px] uppercase tracking-[0.28em] text-white/30"
+            className="text-[10px] uppercase tracking-[0.28em] text-white/50"
             style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             © {new Date().getFullYear()} Thrive Collective · All rights reserved
           </p>
           <p
-            className="text-[10px] uppercase tracking-[0.28em] text-white/30"
+            className="text-[10px] uppercase tracking-[0.28em] text-white/50"
             style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
           >
             Made for creators · Worldwide

@@ -79,6 +79,7 @@ export const LandingBelowFold = () => {
         ]}
         tutorialSteps={PASSPORT_TUTORIAL}
         tutorialVisual={PassportVisual}
+        discreetTutorial
       />
 
       {/* Verified Credits — the canonical tutorial reference. Its own
@@ -108,6 +109,7 @@ export const LandingBelowFold = () => {
         reverse
         tutorialSteps={SCOUT_TUTORIAL}
         tutorialVisual={ScoutVisual}
+        discreetTutorial
       />
 
       {/* Match */}
@@ -156,6 +158,7 @@ export const LandingBelowFold = () => {
         reverse
         tutorialSteps={STUDIO_TUTORIAL}
         tutorialVisual={StudioVisual}
+        discreetTutorial
       />
 
       {/* Kreto — the sunset moment of the core creative journey */}

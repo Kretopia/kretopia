@@ -6,9 +6,9 @@ import { KretoTip } from "../KretoTip";
 /**
  * Regression coverage for Kreto's controlled rollout across KretoTip's
  * route groups (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md §13): Studio shipped
- * in the pilot, Scout is the first rollout surface approved after pilot
- * review. This guards that the embodied presence only appears on the
- * approved route groups and every other group still renders the flat
+ * in the pilot, Scout and Passport are the rollout surfaces approved after
+ * pilot review so far. This guards that the embodied presence only appears
+ * on the approved route groups and every other group still renders the flat
  * KretoMark unchanged -- a rollout to "everywhere at once" would be exactly
  * the regression this suite exists to catch.
  */
@@ -34,7 +34,13 @@ describe("KretoTip — Kreto presence rollout scope", () => {
     expect(screen.getByText(/Kreto · Scout/i)).toBeInTheDocument();
   });
 
-  it.each(["today", "match", "pay", "passport"] as const)(
+  it("Passport renders the embodied KretoPresence -- the second rollout surface", () => {
+    const { container } = renderTip("passport");
+    expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeInTheDocument();
+    expect(screen.getByText(/Kreto · Passport/i)).toBeInTheDocument();
+  });
+
+  it.each(["today", "match", "pay"] as const)(
     "%s still renders the flat KretoMark, not the embodied presence -- rollout is scoped, not global",
     (surface) => {
       const { container } = renderTip(surface);

@@ -11,14 +11,27 @@
  * name" flow this hero used to front-end is reachable through the site's
  * persistent navbar search (now shown on the landing page too, see
  * Navbar.tsx), not duplicated here.
+ *
+ * Background: "Verified Creative Signal Field" -- replaces an earlier
+ * multicolor aurora that, per direct feedback and a read-only audit
+ * (LANDING_HERO_SIGNAL_FIELD_AUDIT.md), mixed five hues (including green,
+ * reserved for KrePay) and directly contradicted a house rule already
+ * encoded in index.css: the old multi-color "Signal Triad" tokens
+ * (--signal-pink/amber/violet/teal) were deliberately retired down to one
+ * dominant accent (--energy). This field is built around that one accent
+ * plus --secondary (the same grey used in .btn-landing-primary's own
+ * gradient) -- one restrained grey-to-pink field, a few decorative proof
+ * nodes, and the official KretoMark at low opacity. Text first, CTA
+ * second, field always subordinate to both.
  */
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { analytics } from "@/lib/analytics";
 import { trackLandingCta } from "@/lib/landingFunnel";
+import { KretoMark } from "@/components/brand/KretoMark";
 
 /** Headline, split into words per line so each can resolve out of a blur on
  *  load. Line 1 renders in the default white; line 2 is wrapped in
@@ -42,67 +55,19 @@ const wordVariants = (reducedMotion: boolean) =>
         show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] as const } },
       };
 
-/** One vertical curtain of aurora light. Tall and narrow rather than a round
- *  blob -- real aurora reads as folded sheets of light hanging in the sky --
- *  with a slow, restrained ambient shimmer (scaleY/skew only, never x/y, so
- *  it never fights the mouse-parallax offset applied via `style` on the
- *  same element) and a multi-stop gradient along its length. */
-const AuroraCurtain = ({
-  className,
-  background,
-  parallaxX,
-  parallaxY,
-  reducedMotion,
-  initialSkew,
-  ambient,
-  duration,
-  delay,
-}: {
-  className: string;
-  background: string;
-  parallaxX: MotionValue<number>;
-  parallaxY: MotionValue<number>;
-  reducedMotion: boolean;
-  initialSkew: number;
-  ambient: { scaleY: number[]; skewX: number[] };
-  duration: number;
-  delay: number;
-}) => (
-  <motion.div
-    className={className}
-    style={{ background, x: parallaxX, y: parallaxY, skewX: initialSkew }}
-    initial={{ scaleY: 1, skewX: initialSkew }}
-    animate={reducedMotion ? undefined : { scaleY: ambient.scaleY, skewX: ambient.skewX }}
-    transition={{ duration, repeat: Infinity, ease: "easeInOut", delay }}
-  />
-);
-
 export const KretopiaHero = (_props: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
 
-  // Mouse-driven interaction for the aurora, dialed back to feel deliberate
-  // rather than busy: the curtains drift only a little (parallax depth cue,
-  // not a light show), and the one clearly "smart" payoff is a soft
-  // spotlight that tracks the cursor directly and tightly -- the effect
-  // that's actually supposed to read as intentional. Disabled entirely
-  // under reduced motion.
+  // The signal field's only pointer interaction: its center offsets a
+  // small, capped amount toward the cursor -- one field responding, not
+  // several independent layers drifting. Spring-smoothed so it settles
+  // rather than snapping. Disabled entirely under reduced motion.
   const pointerX = useMotionValue(0.5);
   const pointerY = useMotionValue(0.5);
-  const smoothX = useSpring(pointerX, { stiffness: 45, damping: 22, mass: 0.5 });
-  const smoothY = useSpring(pointerY, { stiffness: 45, damping: 22, mass: 0.5 });
-  const spotlightX = useSpring(pointerX, { stiffness: 140, damping: 22, mass: 0.35 });
-  const spotlightY = useSpring(pointerY, { stiffness: 140, damping: 22, mass: 0.35 });
-  const spotlightLeft = useTransform(spotlightX, (v) => `${v * 100}%`);
-  const spotlightTop = useTransform(spotlightY, (v) => `${v * 100}%`);
-
-  const curtain1X = useTransform(smoothX, [0, 1], [-32, 32]);
-  const curtain1Y = useTransform(smoothY, [0, 1], [-16, 16]);
-  const curtain2X = useTransform(smoothX, [0, 1], [26, -26]);
-  const curtain2Y = useTransform(smoothY, [0, 1], [14, -14]);
-  const curtain3X = useTransform(smoothX, [0, 1], [-20, 20]);
-  const curtain3Y = useTransform(smoothY, [0, 1], [10, -10]);
-  const curtain4X = useTransform(smoothX, [0, 1], [22, -22]);
-  const curtain4Y = useTransform(smoothY, [0, 1], [-9, 9]);
+  const smoothX = useSpring(pointerX, { stiffness: 40, damping: 22, mass: 0.6 });
+  const smoothY = useSpring(pointerY, { stiffness: 40, damping: 22, mass: 0.6 });
+  const fieldX = useTransform(smoothX, [0, 1], [-24, 24]);
+  const fieldY = useTransform(smoothY, [0, 1], [-14, 14]);
 
   const handlePointerMove = (e: React.MouseEvent<HTMLElement>) => {
     if (reducedMotion) return;
@@ -140,81 +105,35 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
         }}
       />
 
-      {/* Northern Lights — dialed back after feedback that the palette read
-          as "too much color": four restrained curtains (down from six),
-          each roughly a third dimmer than the previous pass, real-aurora
-          colors (emerald/teal, a touch of violet, no dominant pink) so it
-          still reads as northern lights rather than a brand-color wash.
-          The "smart" part of the interaction is the cursor spotlight below,
-          not a busy multi-layer light show -- the curtains themselves only
-          drift a little. Composited with mix-blend-mode:screen so
-          overlapping color brightens like real light instead of muddying.
-          Always rendered, never blank -- under reduced motion every curtain
-          holds its resting shape and the pointer-driven layers are
-          disabled outright. */}
-      <div
+      {/* Verified Creative Signal Field — one restrained grey-to-pink radial
+          field (the same --secondary -> --energy pair as the primary CTA's
+          own gradient, not a new color pairing) and the official KretoMark
+          at low opacity. Replaces the earlier multicolor aurora entirely --
+          see file header and LANDING_HERO_SIGNAL_FIELD_AUDIT.md for why.
+          The proof-node constellation (decorative dots/lines) that shipped
+          in the first pass was removed per direct feedback -- a more
+          carefully-scoped version (peripheral-only, never crossing the
+          title) is planned separately. Midnight base and the faint
+          coordinate grid below are unchanged; they already matched the
+          brief before this pass. Everything here is aria-hidden -- purely
+          decorative, no live data implied. */}
+      <motion.div
         aria-hidden
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-        style={{ mixBlendMode: "screen" }}
+        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+        style={{ x: fieldX, y: fieldY }}
       >
-        <AuroraCurtain
-          className="absolute -top-[10%] left-[8%] h-[150%] w-[18%] blur-[70px]"
-          background="linear-gradient(180deg, transparent 0%, rgba(52,211,153,0.3) 20%, rgba(45,212,191,0.2) 44%, transparent 82%)"
-          parallaxX={curtain1X}
-          parallaxY={curtain1Y}
-          reducedMotion={reducedMotion}
-          initialSkew={-9}
-          ambient={{ scaleY: [1, 1.08, 0.96, 1], skewX: [-9, -5, -12, -9] }}
-          duration={24}
-          delay={0}
+        <div
+          className="h-[70vh] w-[70vh] max-h-[560px] max-w-[560px] rounded-full blur-[90px]"
+          style={{
+            background:
+              "radial-gradient(circle, hsl(var(--secondary) / 0.55) 0%, hsl(var(--energy) / 0.22) 42%, transparent 72%)",
+          }}
         />
-        <AuroraCurtain
-          className="absolute -top-[12%] left-[34%] h-[155%] w-[15%] blur-[75px]"
-          background="linear-gradient(180deg, transparent 0%, rgba(45,212,191,0.26) 22%, rgba(129,102,255,0.16) 48%, transparent 84%)"
-          parallaxX={curtain2X}
-          parallaxY={curtain2Y}
-          reducedMotion={reducedMotion}
-          initialSkew={7}
-          ambient={{ scaleY: [1, 0.94, 1.1, 1], skewX: [7, 11, 3, 7] }}
-          duration={29}
-          delay={1.6}
-        />
-        <AuroraCurtain
-          className="absolute -top-[14%] right-[22%] h-[148%] w-[16%] blur-[72px]"
-          background="linear-gradient(180deg, transparent 0%, rgba(52,211,153,0.24) 20%, rgba(255,45,161,0.14) 48%, transparent 84%)"
-          parallaxX={curtain3X}
-          parallaxY={curtain3Y}
-          reducedMotion={reducedMotion}
-          initialSkew={-6}
-          ambient={{ scaleY: [1, 1.06, 0.96, 1], skewX: [-6, -10, -1, -6] }}
-          duration={27}
-          delay={0.9}
-        />
-        <AuroraCurtain
-          className="absolute -top-[10%] right-[4%] h-[145%] w-[14%] blur-[70px]"
-          background="linear-gradient(180deg, transparent 0%, rgba(45,212,191,0.22) 20%, transparent 80%)"
-          parallaxX={curtain4X}
-          parallaxY={curtain4Y}
-          reducedMotion={reducedMotion}
-          initialSkew={8}
-          ambient={{ scaleY: [1, 0.95, 1.08, 1], skewX: [8, 4, 12, 8] }}
-          duration={31}
-          delay={2.3}
-        />
+      </motion.div>
 
-        {/* Cursor spotlight — the one deliberately obvious interaction.
-            Tracks the pointer directly (lightly springed, snappier than the
-            curtains' own drift) rather than adding more ambient movement. */}
-        {!reducedMotion && (
-          <motion.div
-            className="absolute h-[38vh] w-[38vh] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[85px]"
-            style={{
-              left: spotlightLeft,
-              top: spotlightTop,
-              background: "radial-gradient(circle, rgba(148,255,214,0.22), rgba(94,234,212,0.1) 45%, transparent 72%)",
-            }}
-          />
-        )}
+      <div className="pointer-events-none absolute left-1/2 top-6 sm:top-8 -translate-x-1/2 opacity-20">
+        <KretoMark variant="bare" size="sm" className="sm:hidden" />
+        <KretoMark variant="bare" size="md" className="hidden sm:inline-flex" />
       </div>
 
       {/* Faint signal grid, masked to fade out — the "machine" layer */}
@@ -307,7 +226,12 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <Link
               to="/auth?tab=signup&src=hero_passport"
-              onClick={() => trackLandingCta("hero_build_passport", "hero")}
+              onClick={() =>
+                trackLandingCta("hero_build_passport", "hero", {
+                  label: "Build My Passport",
+                  variant: "signal_field",
+                })
+              }
               className="btn-landing-primary group inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
@@ -317,7 +241,12 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
 
             <Link
               to="/auth?next=/scout&src=hero_explore"
-              onClick={() => trackLandingCta("hero_explore_opportunities", "hero")}
+              onClick={() =>
+                trackLandingCta("hero_explore_opportunities", "hero", {
+                  label: "Explore Opportunities",
+                  variant: "signal_field",
+                })
+              }
               className="btn-glass btn-glass-outline inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >

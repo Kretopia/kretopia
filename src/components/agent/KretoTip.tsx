@@ -103,6 +103,15 @@ const FALLBACK: Tip = {
 const DISMISS_KEY = "kreto-tip-dismissed-at";
 const DISMISS_HOURS = 6;
 
+/** Kreto controlled rollout, one route group at a time, each with explicit
+ *  approval after the pilot review (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md
+ *  §13, KRETO_3D_PILOT_IMPLEMENTATION_REPORT.md). Route groups in this set
+ *  get the embodied presence instead of the flat KretoMark used by every
+ *  other group here. Studio shipped in the pilot; Scout, Passport, Events
+ *  and Circle (the brief's "Stage/Circle context" -- covers both /circle
+ *  and /stages) are the rollout surfaces approved so far. */
+const PRESENCE_EYEBROWS = new Set(["Studio", "Scout", "Passport", "Events", "Circle"]);
+
 interface KretoTipProps {
   /** Override route detection with an explicit tip group. */
   surface?: "today" | "discover" | "desk" | "match" | "pay" | "passport";
@@ -146,14 +155,11 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
   if (dismissed) return null;
 
   const tip = tips[idx] ?? FALLBACK;
-  // Kreto pilot surface #3 (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md): Studio
-  // gets the compact embodied presence instead of the flat KretoMark used
-  // by every other route group here -- superseding the previous "inline
-  // Sparkles signal" exception. The tips themselves are static, route-based
-  // canned suggestions (see ROUTE_TIPS above), not a real generated
-  // proposal, so this always renders state="idle" -- proposal_ready would
-  // be a false claim about work Kreto hasn't actually done.
-  const isStudio = tip.eyebrow === "Studio";
+  // The tips themselves are static, route-based canned suggestions (see
+  // ROUTE_TIPS above), not a real generated proposal, so every instance
+  // renders state="idle" regardless of surface -- proposal_ready would be a
+  // false claim about work Kreto hasn't actually done.
+  const usesPresence = PRESENCE_EYEBROWS.has(tip.eyebrow);
 
   const openKreto = (prompt?: string) => {
     window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: prompt ? { prompt } : {} }));
@@ -189,7 +195,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
       </button>
 
       <div className="relative flex items-start gap-3 sm:gap-4">
-        {isStudio ? (
+        {usesPresence ? (
           <KretoPresence size={compact ? "compact" : "card"} state="idle" />
         ) : (
           <KretoMark variant="default" size={compact ? "sm" : "md"} />

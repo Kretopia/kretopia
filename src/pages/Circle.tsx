@@ -22,6 +22,7 @@ import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
 import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
+import { KretoTip } from "@/components/agent/KretoTip";
 import { SOUNDSTAGES_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 import { StudioEmptyState } from "@/components/studio-reference/StudioEmptyState";
@@ -330,6 +331,8 @@ export default function Circle() {
         />
 
         <StudioFeatureShell>
+          <KretoTip compact />
+
           <StudioSectionTabs
             tabs={circleTabs}
             defaultTabId={initialTab}

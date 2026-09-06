@@ -6,17 +6,28 @@ import { KretoTip } from "../KretoTip";
 /**
  * Regression coverage for Kreto's controlled rollout across KretoTip's
  * route groups (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md §13): Studio shipped
- * in the pilot, Scout and Passport are the rollout surfaces approved after
- * pilot review so far. This guards that the embodied presence only appears
- * on the approved route groups and every other group still renders the flat
- * KretoMark unchanged -- a rollout to "everywhere at once" would be exactly
- * the regression this suite exists to catch.
+ * in the pilot, Scout, Passport and Events are the rollout surfaces
+ * approved after pilot review so far. This guards that the embodied
+ * presence only appears on the approved route groups and every other group
+ * still renders the flat KretoMark unchanged -- a rollout to "everywhere at
+ * once" would be exactly the regression this suite exists to catch.
  */
 
 function renderTip(surface: "today" | "discover" | "desk" | "match" | "pay" | "passport") {
   return render(
     <MemoryRouter>
       <KretoTip surface={surface} />
+    </MemoryRouter>,
+  );
+}
+
+/** Events has no `surface` override key (unlike the others), so it's
+ *  exercised via real route matching instead -- the same code path a real
+ *  visitor to /events hits. */
+function renderTipAtRoute(pathname: string) {
+  return render(
+    <MemoryRouter initialEntries={[pathname]}>
+      <KretoTip />
     </MemoryRouter>,
   );
 }
@@ -38,6 +49,18 @@ describe("KretoTip — Kreto presence rollout scope", () => {
     const { container } = renderTip("passport");
     expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeInTheDocument();
     expect(screen.getByText(/Kreto · Passport/i)).toBeInTheDocument();
+  });
+
+  it("Events (/events route) renders the embodied KretoPresence -- the third rollout surface", () => {
+    const { container } = renderTipAtRoute("/events");
+    expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeInTheDocument();
+    expect(screen.getByText(/Kreto · Events/i)).toBeInTheDocument();
+  });
+
+  it("/meetup route also resolves to the Events group and renders the embodied presence", () => {
+    const { container } = renderTipAtRoute("/meetup");
+    expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeInTheDocument();
+    expect(screen.getByText(/Kreto · Events/i)).toBeInTheDocument();
   });
 
   it.each(["today", "match", "pay"] as const)(

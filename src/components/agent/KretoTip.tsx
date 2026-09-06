@@ -107,9 +107,9 @@ const DISMISS_HOURS = 6;
  *  approval after the pilot review (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md
  *  §13, KRETO_3D_PILOT_IMPLEMENTATION_REPORT.md). Route groups in this set
  *  get the embodied presence instead of the flat KretoMark used by every
- *  other group here. Studio shipped in the pilot; Scout and Passport are
- *  the rollout surfaces approved so far. */
-const PRESENCE_EYEBROWS = new Set(["Studio", "Scout", "Passport"]);
+ *  other group here. Studio shipped in the pilot; Scout, Passport and
+ *  Events are the rollout surfaces approved so far. */
+const PRESENCE_EYEBROWS = new Set(["Studio", "Scout", "Passport", "Events"]);
 
 interface KretoTipProps {
   /** Override route detection with an explicit tip group. */

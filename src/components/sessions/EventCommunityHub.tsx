@@ -1,9 +1,10 @@
-import { Users2 } from "lucide-react";
+import { Users2, MessageCircle, MessageSquare } from "lucide-react";
 import { EventGuestRoster } from "./EventGuestRoster";
 import { EventGroupChatCard } from "./EventGroupChatCard";
 import { EventInlineChat } from "./EventInlineChat";
 import { EventComments } from "./EventComments";
 import { ContinueAsCircle } from "./ContinueAsCircle";
+import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
 
 interface Props {
   eventId: string;
@@ -27,11 +28,18 @@ interface Props {
 }
 
 /**
- * Component 2 — the crew. Who's going, the group chat, the event chat and
- * the comment thread all live under one shell so the page reads as one
- * social surface instead of four stacked cards. Once the event has
- * happened, this is also where the "continue as a Circle" bridge appears
- * (CEO rule: the event turns into a standing group afterward).
+ * Component 2 — the crew. Who's going, the group chat + event chat, and the
+ * comment thread are peer content categories under one shell, switched via
+ * tabs (StudioSectionTabs — the same accessible, Radix-based primitive used
+ * for Recordings/StageGrid) instead of all stacked and visible at once —
+ * previously this meant scrolling past a full guest list, a full chat
+ * surface, AND a full comment thread just to reach the bottom of the page.
+ * Every condition that gated a section before still gates its tab (or hides
+ * the tab entirely) exactly as before; nothing lost, just switched instead
+ * of stacked. Once the event has happened, the "continue as a Circle"
+ * bridge stays outside the tabs, always visible, since it's a one-time CTA
+ * rather than a content category (CEO rule: the event turns into a
+ * standing group afterward).
  */
 export function EventCommunityHub({
   eventId, eventTitle, eventCategory, eventCoverImageUrl, hostId,
@@ -39,6 +47,71 @@ export function EventCommunityHub({
   guestMatchingEnabled, isPast, isCompleted, groupChatEnabled, groupChatRoomId, onGroupChatChange,
   circleId, onCircleLinked,
 }: Props) {
+  const tabs: StudioSectionTab[] = [];
+
+  if (guestMatchingEnabled) {
+    tabs.push({
+      id: "who",
+      label: participantCount > 0 ? `Who's Going (${participantCount})` : "Who's Going",
+      icon: Users2,
+      content: (
+        <EventGuestRoster
+          eventId={eventId}
+          eventTitle={eventTitle}
+          hostId={hostId}
+          currentUserId={currentUserId}
+          isParticipant={isParticipant}
+          isHost={isCreator}
+          participantCount={participantCount}
+        />
+      ),
+    });
+  }
+
+  if (isAuthenticated) {
+    tabs.push({
+      id: "chat",
+      label: "Chat",
+      icon: MessageCircle,
+      content: (
+        <div className="space-y-4">
+          <EventGroupChatCard
+            eventId={eventId}
+            eventTitle={eventTitle}
+            isHost={isCreator}
+            isParticipant={isParticipant}
+            hostId={hostId}
+            groupChatEnabled={groupChatEnabled}
+            groupChatRoomId={groupChatRoomId}
+            onChange={onGroupChatChange}
+          />
+          {groupChatEnabled && groupChatRoomId && currentUserId && (isCreator || isParticipant) && (
+            <EventInlineChat
+              roomId={groupChatRoomId}
+              currentUserId={currentUserId}
+              archived={isPast || isCompleted}
+            />
+          )}
+        </div>
+      ),
+    });
+  }
+
+  tabs.push({
+    id: "comments",
+    label: "Comments",
+    icon: MessageSquare,
+    content: (
+      <EventComments
+        eventId={eventId}
+        isCreator={isCreator}
+        creatorId={hostId}
+        eventTitle={eventTitle}
+        isParticipant={isParticipant}
+      />
+    ),
+  });
+
   return (
     <section className="relative mb-6">
       <div
@@ -52,46 +125,11 @@ export function EventCommunityHub({
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">The crew</p>
         </div>
 
-        {guestMatchingEnabled && (
-          <EventGuestRoster
-            eventId={eventId}
-            eventTitle={eventTitle}
-            hostId={hostId}
-            currentUserId={currentUserId}
-            isParticipant={isParticipant}
-            isHost={isCreator}
-            participantCount={participantCount}
-          />
+        {tabs.length > 1 ? (
+          <StudioSectionTabs tabs={tabs} defaultTabId={tabs[0].id} queryParam="crew" />
+        ) : (
+          tabs[0]?.content
         )}
-
-        {isAuthenticated && (
-          <EventGroupChatCard
-            eventId={eventId}
-            eventTitle={eventTitle}
-            isHost={isCreator}
-            isParticipant={isParticipant}
-            hostId={hostId}
-            groupChatEnabled={groupChatEnabled}
-            groupChatRoomId={groupChatRoomId}
-            onChange={onGroupChatChange}
-          />
-        )}
-
-        {isAuthenticated && groupChatEnabled && groupChatRoomId && currentUserId && (isCreator || isParticipant) && (
-          <EventInlineChat
-            roomId={groupChatRoomId}
-            currentUserId={currentUserId}
-            archived={isPast || isCompleted}
-          />
-        )}
-
-        <EventComments
-          eventId={eventId}
-          isCreator={isCreator}
-          creatorId={hostId}
-          eventTitle={eventTitle}
-          isParticipant={isParticipant}
-        />
 
         {isPast && (
           <ContinueAsCircle

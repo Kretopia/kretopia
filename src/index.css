@@ -1323,19 +1323,18 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   isolation: isolate;
   color: #fff;
   background-image: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--energy)) 100%);
-  border: 1px solid hsl(var(--energy) / 0.4);
-  box-shadow: 0 16px 40px -20px hsl(var(--energy) / 0.5);
+  border: 1px solid hsl(var(--energy) / 0.3);
+  box-shadow: 0 10px 26px -18px hsl(var(--energy) / 0.35);
   transition: box-shadow 0.3s ease, transform 0.2s ease, filter 0.3s ease;
 }
 .btn-landing-primary:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 0 0 1px hsl(var(--energy) / 0.5), 0 0 28px hsl(var(--energy) / 0.45),
-              0 16px 40px -20px hsl(var(--energy) / 0.6);
+  filter: brightness(1.04);
+  box-shadow: 0 12px 30px -16px hsl(var(--energy) / 0.4);
   transform: translateY(-1px);
 }
 .btn-landing-primary:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--energy) / 0.6), 0 0 24px hsl(var(--energy) / 0.4);
+  box-shadow: 0 0 0 2px hsl(var(--energy) / 0.5);
 }
 .btn-landing-primary:active {
   transform: translateY(0) scale(0.98);

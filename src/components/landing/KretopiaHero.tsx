@@ -13,7 +13,7 @@
  */
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { analytics } from "@/lib/analytics";
@@ -24,7 +24,7 @@ import { trackLandingCta } from "@/lib/landingFunnel";
  *  .landing-accent (the canonical pink/italic/glow accent already used for
  *  this exact role elsewhere on Landing) so every word in it inherits the
  *  color/style without needing a per-word class. */
-const LINE_1 = ["Turn", "the", "work", "you've", "already", "done"];
+const LINE_1 = ["Turn", "the", "work", "you've", "done"];
 const LINE_2 = ["into", "your", "next", "opportunity."];
 
 interface KretopiaHeroProps {
@@ -41,8 +41,74 @@ const wordVariants = (reducedMotion: boolean) =>
         show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] as const } },
       };
 
+/** One vertical curtain of aurora light. Tall and narrow rather than a round
+ *  blob -- real aurora reads as folded sheets of light hanging from the sky,
+ *  not a glow -- with a slow ambient shimmer (scaleY/rotate/skew only, never
+ *  x/y, so it never fights the mouse-parallax offset applied via `style`
+ *  on the same element) and a soft multi-stop gradient along its length. */
+const AuroraCurtain = ({
+  className,
+  background,
+  parallaxX,
+  parallaxY,
+  reducedMotion,
+  initialSkew,
+  ambient,
+  duration,
+  delay,
+}: {
+  className: string;
+  background: string;
+  parallaxX: MotionValue<number>;
+  parallaxY: MotionValue<number>;
+  reducedMotion: boolean;
+  initialSkew: number;
+  ambient: { scaleY: number[]; skewX: number[] };
+  duration: number;
+  delay: number;
+}) => (
+  <motion.div
+    className={className}
+    style={{ background, x: parallaxX, y: parallaxY, skewX: initialSkew }}
+    initial={{ scaleY: 1, skewX: initialSkew }}
+    animate={reducedMotion ? undefined : { scaleY: ambient.scaleY, skewX: ambient.skewX }}
+    transition={{ duration, repeat: Infinity, ease: "easeInOut", delay }}
+  />
+);
+
 export const KretopiaHero = (_props: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
+
+  // Mouse-driven parallax for the aurora: each curtain drifts a different
+  // amount as the visitor's cursor moves across the section, so the
+  // northern lights genuinely respond to where they look/hover rather than
+  // just looping on their own. Springs smooth the motion instead of it
+  // snapping to the raw pointer position; disabled entirely under reduced
+  // motion (the curtains keep their resting position, see AuroraCurtain).
+  const pointerX = useMotionValue(0.5);
+  const pointerY = useMotionValue(0.5);
+  const smoothX = useSpring(pointerX, { stiffness: 35, damping: 20, mass: 0.6 });
+  const smoothY = useSpring(pointerY, { stiffness: 35, damping: 20, mass: 0.6 });
+
+  const curtain1X = useTransform(smoothX, [0, 1], [-50, 50]);
+  const curtain1Y = useTransform(smoothY, [0, 1], [-24, 24]);
+  const curtain2X = useTransform(smoothX, [0, 1], [40, -40]);
+  const curtain2Y = useTransform(smoothY, [0, 1], [20, -20]);
+  const curtain3X = useTransform(smoothX, [0, 1], [-28, 28]);
+  const curtain3Y = useTransform(smoothY, [0, 1], [16, -16]);
+  const curtain4X = useTransform(smoothX, [0, 1], [30, -30]);
+  const curtain4Y = useTransform(smoothY, [0, 1], [-14, 14]);
+
+  const handlePointerMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (reducedMotion) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    pointerX.set((e.clientX - rect.left) / rect.width);
+    pointerY.set((e.clientY - rect.top) / rect.height);
+  };
+  const handlePointerLeave = () => {
+    pointerX.set(0.5);
+    pointerY.set(0.5);
+  };
 
   useEffect(() => {
     analytics.featureUsed("landing_hero_viewed", { location: "hero" });
@@ -56,6 +122,8 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
       id="kretopia-hero"
       className="relative overflow-hidden"
       style={{ backgroundColor: "#05070D" }}
+      onMouseMove={handlePointerMove}
+      onMouseLeave={handlePointerLeave}
     >
       {/* warm vignette — barely there */}
       <div
@@ -67,55 +135,64 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
         }}
       />
 
-      {/* Northern Lights — three drifting curtains of light in Kretopia's own
-          palette (pink/energy + violet + a cool blue undertone for depth),
-          composited with mix-blend-mode:screen so overlapping color actually
-          brightens like real aurora light instead of muddying like paint.
-          Always rendered (never blank) -- under reduced motion each curtain
-          holds its resting position instead of animating, rather than
-          disappearing entirely, so the section stays visually rich for
-          every visitor. */}
+      {/* Northern Lights — four tall, narrow curtains of light (not round
+          blobs) in Kretopia's own palette, composited with
+          mix-blend-mode:screen so overlapping color brightens like real
+          light instead of muddying. They drift gently on their own AND
+          respond to the visitor's cursor across the section (see
+          handlePointerMove) -- two independent motions on separate
+          transform channels (ambient scaleY/skew vs. pointer-driven x/y)
+          so neither fights the other. Always rendered, never blank --
+          under reduced motion each curtain holds its resting shape instead
+          of animating, and the pointer offset is disabled outright. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
         style={{ mixBlendMode: "screen" }}
       >
-        <motion.div
-          className="absolute -top-1/4 left-[-15%] h-[62vh] w-[140%] rounded-[50%] blur-[100px]"
-          style={{
-            background:
-              "linear-gradient(100deg, transparent 4%, rgba(255,45,161,0.4) 32%, rgba(255,45,161,0.18) 52%, transparent 82%)",
-          }}
-          initial={{ rotate: -9, y: 0, scaleY: 1 }}
-          animate={
-            reducedMotion
-              ? undefined
-              : { y: [0, 34, -12, 0], scaleY: [1, 1.18, 0.92, 1], rotate: [-9, -5, -11, -9] }
-          }
-          transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+        <AuroraCurtain
+          className="absolute -top-[20%] left-[6%] h-[135%] w-[22%] blur-[70px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(255,45,161,0.5) 22%, rgba(255,120,190,0.32) 45%, rgba(150,90,255,0.22) 68%, transparent 92%)"
+          parallaxX={curtain1X}
+          parallaxY={curtain1Y}
+          reducedMotion={reducedMotion}
+          initialSkew={-12}
+          ambient={{ scaleY: [1, 1.12, 0.94, 1], skewX: [-12, -6, -15, -12] }}
+          duration={22}
+          delay={0}
         />
-        <motion.div
-          className="absolute top-[2%] right-[-20%] h-[56vh] w-[135%] rounded-[50%] blur-[110px]"
-          style={{
-            background:
-              "linear-gradient(105deg, transparent 6%, rgba(150,90,255,0.34) 38%, rgba(150,90,255,0.14) 58%, transparent 85%)",
-          }}
-          initial={{ rotate: 7, y: 0, scaleY: 1 }}
-          animate={
-            reducedMotion
-              ? undefined
-              : { y: [0, -28, 16, 0], scaleY: [1, 0.88, 1.2, 1], rotate: [7, 10, 4, 7] }
-          }
-          transition={{ duration: 32, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+        <AuroraCurtain
+          className="absolute -top-[24%] left-[32%] h-[140%] w-[18%] blur-[75px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(150,90,255,0.46) 24%, rgba(190,120,255,0.26) 48%, rgba(70,170,255,0.18) 70%, transparent 92%)"
+          parallaxX={curtain2X}
+          parallaxY={curtain2Y}
+          reducedMotion={reducedMotion}
+          initialSkew={8}
+          ambient={{ scaleY: [1, 0.9, 1.15, 1], skewX: [8, 14, 4, 8] }}
+          duration={27}
+          delay={1.2}
         />
-        <motion.div
-          className="absolute top-[-14%] left-[8%] h-[48vh] w-[115%] rounded-[50%] blur-[120px]"
-          style={{
-            background: "linear-gradient(95deg, transparent 8%, rgba(70,170,255,0.18) 45%, transparent 82%)",
-          }}
-          initial={{ rotate: -4, y: 0 }}
-          animate={reducedMotion ? undefined : { y: [0, 22, 0], rotate: [-4, -7, -4] }}
-          transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+        <AuroraCurtain
+          className="absolute -top-[18%] right-[10%] h-[130%] w-[24%] blur-[80px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(255,45,161,0.4) 26%, rgba(255,45,161,0.2) 50%, transparent 90%)"
+          parallaxX={curtain3X}
+          parallaxY={curtain3Y}
+          reducedMotion={reducedMotion}
+          initialSkew={-6}
+          ambient={{ scaleY: [1, 1.1, 0.95, 1], skewX: [-6, -11, -2, -6] }}
+          duration={31}
+          delay={2.4}
+        />
+        <AuroraCurtain
+          className="absolute -top-[26%] right-[28%] h-[138%] w-[16%] blur-[85px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(70,170,255,0.3) 28%, rgba(150,90,255,0.16) 55%, transparent 90%)"
+          parallaxX={curtain4X}
+          parallaxY={curtain4Y}
+          reducedMotion={reducedMotion}
+          initialSkew={11}
+          ambient={{ scaleY: [1, 0.92, 1.08, 1], skewX: [11, 6, 15, 11] }}
+          duration={24}
+          delay={0.8}
         />
       </div>
 
@@ -132,7 +209,7 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
         }}
       />
 
-      <div className="relative mx-auto max-w-[900px] px-5 sm:px-8 lg:px-12 pt-16 sm:pt-24 lg:pt-28 pb-20 sm:pb-28 text-center">
+      <div className="relative mx-auto max-w-[900px] px-5 sm:px-8 lg:px-12 pt-16 sm:pt-24 lg:pt-28 pb-20 sm:pb-28 text-center flex flex-col items-center">
         <motion.p
           initial={reducedMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -184,11 +261,10 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           discovered for the skills you've already proved.
         </motion.p>
 
-        {/* CTA pair — primary (canonical grey-to-pink gradient,
-            btn-landing-primary) beside a same-size secondary sign-in action
-            (btn-glass btn-glass-outline, the same restrained glass family
-            used everywhere else on the site). One clear primary action,
-            one clear secondary one, nothing else competing for attention. */}
+        {/* CTA pair — one clear primary action, one clear secondary one,
+            both the same size, neither shouting over the other. Toned down
+            from the original build: softer glow, no lift-on-hover jump,
+            gentler brightness shift -- reads as confident, not loud. */}
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -198,11 +274,11 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <Link
               to="/auth?tab=signup&src=hero_passport"
-              onClick={() => trackLandingCta("hero_build_passport", "hero")}
+              onClick={() => trackLandingCta("hero_join_kretopia", "hero")}
               className="btn-landing-primary group inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              Build my Passport
+              Join Kretopia
               <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
             </Link>
 

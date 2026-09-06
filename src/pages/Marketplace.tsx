@@ -46,6 +46,7 @@ const Marketplace = () => {
   const [activeView, setActiveView] = useState("browse");
   const { toast } = useToast();
   const { wishlistIds, toggleWishlist } = useWishlist();
+  const [failedFeatured, setFailedFeatured] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchProducts();
@@ -170,8 +171,20 @@ const Marketplace = () => {
                 <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
                   {featuredProducts.map(p => (
                     <div key={p.id} className="shrink-0 w-[160px] group cursor-pointer" onClick={() => navigate(`/market/${p.id}`)}>
-                      <div className="aspect-[4/3] rounded-lg overflow-hidden mb-2 border border-border/30">
-                        <img src={p.preview_urls[0]} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                      <div className="aspect-[4/3] rounded-lg overflow-hidden mb-2 border border-border/30 bg-muted/50">
+                        {failedFeatured.has(p.id) ? (
+                          <div className="h-full w-full flex items-center justify-center">
+                            <Package className="h-6 w-6 text-muted-foreground/40" />
+                          </div>
+                        ) : (
+                          <img
+                            src={p.preview_urls[0]}
+                            alt={p.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                            onError={() => setFailedFeatured((prev) => new Set(prev).add(p.id))}
+                          />
+                        )}
                       </div>
                       <p className="text-xs font-medium line-clamp-1">{p.title}</p>
                       <p className="text-xs text-primary font-bold">${p.price}</p>

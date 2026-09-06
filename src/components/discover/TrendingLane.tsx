@@ -33,6 +33,7 @@ export const TrendingLane = () => {
   const [risingCreators, setRisingCreators] = useState<TrendingCreator[]>([]);
   const [newCredits, setNewCredits] = useState<NewCredit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failedThumbs, setFailedThumbs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -159,8 +160,14 @@ export const TrendingLane = () => {
                 className="rounded-xl border border-border bg-card overflow-hidden hover:border-[hsl(var(--signal-teal))]/40 transition-colors"
               >
                 <div className="aspect-video bg-muted">
-                  {cr.thumbnail_url && (
-                    <img src={cr.thumbnail_url} alt={cr.project_name ?? ""} className="w-full h-full object-cover" loading="lazy" />
+                  {cr.thumbnail_url && !failedThumbs.has(cr.id) && (
+                    <img
+                      src={cr.thumbnail_url}
+                      alt={cr.project_name ?? ""}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={() => setFailedThumbs((prev) => new Set(prev).add(cr.id))}
+                    />
                   )}
                 </div>
                 <div className="p-2.5">

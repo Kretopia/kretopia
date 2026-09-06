@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
-import { Flame, MessageCircle, Send, MoreVertical, Trash2, Play, ExternalLink, Paperclip } from "lucide-react";
+import { Flame, MessageCircle, Send, MoreVertical, Trash2, Play, ExternalLink, Paperclip, ImageOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
@@ -51,6 +51,7 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
   const [isClipped, setIsClipped] = useState(false);
+  const [linkImageFailed, setLinkImageFailed] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -341,17 +342,25 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
         if (isImage) {
           return (
             <div className="mt-2 rounded-lg overflow-hidden">
-              <img 
-                src={url} 
-                alt={post.link_title || 'Portfolio item'} 
-                className="w-full max-h-96 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => setSelectedMedia({
-                  title: post.link_title || 'Portfolio item',
-                  description: post.content || '',
-                  media_type: 'image',
-                  media_url: url,
-                })}
-              />
+              {linkImageFailed ? (
+                <div className="flex items-center gap-2 w-full h-24 bg-muted/50 text-xs text-muted-foreground px-3">
+                  <ImageOff className="h-3.5 w-3.5 shrink-0" /> Image unavailable
+                </div>
+              ) : (
+                <img
+                  src={url}
+                  alt={post.link_title || 'Portfolio item'}
+                  loading="lazy"
+                  onError={() => setLinkImageFailed(true)}
+                  className="w-full max-h-96 min-h-[120px] object-cover cursor-pointer hover:opacity-90 transition-opacity bg-muted/30"
+                  onClick={() => setSelectedMedia({
+                    title: post.link_title || 'Portfolio item',
+                    description: post.content || '',
+                    media_type: 'image',
+                    media_url: url,
+                  })}
+                />
+              )}
               {post.link_title && (
                 <p className="text-xs text-muted-foreground mt-1 px-1">{post.link_title}</p>
               )}

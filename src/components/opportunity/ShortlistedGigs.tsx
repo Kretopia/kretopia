@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,6 +33,7 @@ export function ShortlistedGigs() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const queryKey = ["shortlisted-gigs", user?.id];
   const { data: gigs = [], isLoading: loading } = useQuery({
     queryKey,
@@ -103,9 +105,15 @@ export function ShortlistedGigs() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {gigs.map((g) => (
           <Card key={g.id} className="overflow-hidden flex flex-col">
-            {g.image_url && (
+            {g.image_url && !failedImages.has(g.id) && (
               <div className="aspect-[16/9] overflow-hidden bg-muted">
-                <img src={g.image_url} alt={g.title} className="w-full h-full object-cover" loading="lazy" />
+                <img
+                  src={g.image_url}
+                  alt={g.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={() => setFailedImages((prev) => new Set(prev).add(g.id))}
+                />
               </div>
             )}
             <div className="p-3 flex flex-col gap-2 flex-1">

@@ -16,6 +16,8 @@ const Explore = () => {
   const [activeGigs, setActiveGigs] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
+  const [failedCredits, setFailedCredits] = useState<Set<string>>(new Set());
+  const [failedEventCovers, setFailedEventCovers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetch = async () => {
@@ -65,9 +67,15 @@ const Explore = () => {
                   className="group text-left"
                 >
                   <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
-                    {(c.thumbnail_url || c.primary_media_url) ? (
+                    {(c.thumbnail_url || c.primary_media_url) && !failedCredits.has(c.id) ? (
                       <div className="aspect-[3/4] overflow-hidden">
-                        <img src={c.thumbnail_url || c.primary_media_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                        <img
+                          src={c.thumbnail_url || c.primary_media_url}
+                          alt={c.project_name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          loading="lazy"
+                          onError={() => setFailedCredits((prev) => new Set(prev).add(c.id))}
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                       </div>
                     ) : (
@@ -163,9 +171,15 @@ const Explore = () => {
                         className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
                         onClick={() => navigate(`/event/${ev.id}`)}
                       >
-                        {ev.cover_image_url ? (
+                        {ev.cover_image_url && !failedEventCovers.has(ev.id) ? (
                           <div className="aspect-[16/9] overflow-hidden relative">
-                            <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                            <img
+                              src={ev.cover_image_url}
+                              alt={ev.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                              onError={() => setFailedEventCovers((prev) => new Set(prev).add(ev.id))}
+                            />
                             <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
                               <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
                               <p className="text-sm font-bold text-foreground leading-tight">{day}</p>

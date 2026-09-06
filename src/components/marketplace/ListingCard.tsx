@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ const TYPE_CONFIG = {
 
 const ListingCard = ({ listing, isSaved, onToggleSave }: ListingCardProps & { isSaved?: boolean; onToggleSave?: (id: string) => void }) => {
   const navigate = useNavigate();
+  const [imageFailed, setImageFailed] = useState(false);
   const typeConfig = TYPE_CONFIG[listing.listing_type as keyof typeof TYPE_CONFIG] || TYPE_CONFIG.digital;
   const TypeIcon = typeConfig.icon;
 
@@ -50,13 +52,14 @@ const ListingCard = ({ listing, isSaved, onToggleSave }: ListingCardProps & { is
       className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
       onClick={() => navigate(`/market/${listing.id}`)}
     >
-      {listing.preview_urls?.[0] ? (
+      {listing.preview_urls?.[0] && !imageFailed ? (
         <div className="aspect-video bg-muted relative overflow-hidden">
           <img
             src={listing.preview_urls[0]}
             alt={listing.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
+            onError={() => setImageFailed(true)}
           />
           <Badge className={`absolute top-2 left-2 ${typeConfig.color} border-0 text-xs`}>
             <TypeIcon className="h-3 w-3 mr-1" />

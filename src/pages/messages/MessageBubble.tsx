@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCheck, Check, Reply, FileText } from "lucide-react";
+import { CheckCheck, Check, Reply, FileText, ImageOff } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { InlineReply } from "@/components/messages/MessageReply";
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export const MessageBubble = ({ msg, isOwn, showAvatar, reactions, currentUserId, otherUser, onReply, onOpenLightbox }: Props) => {
+  const [imageFailed, setImageFailed] = useState(false);
   let lastTap = 0;
   const handleDoubleTap = async () => {
     const now = Date.now();
@@ -91,9 +93,21 @@ export const MessageBubble = ({ msg, isOwn, showAvatar, reactions, currentUserId
           )}
 
           {nativeImage && (
-            <button onClick={(e) => { e.stopPropagation(); onOpenLightbox(msg.attachment_url!); }} className="block">
-              <img src={msg.attachment_url!} alt="Shared image" className="max-w-[240px] max-h-[280px] rounded-2xl object-cover border border-border" />
-            </button>
+            imageFailed ? (
+              <div className="flex items-center gap-2 max-w-[240px] rounded-2xl border border-border bg-muted/50 px-3 py-2.5 text-xs text-muted-foreground">
+                <ImageOff className="h-3.5 w-3.5 shrink-0" /> Image unavailable
+              </div>
+            ) : (
+              <button onClick={(e) => { e.stopPropagation(); onOpenLightbox(msg.attachment_url!); }} className="block">
+                <img
+                  src={msg.attachment_url!}
+                  alt="Shared image"
+                  loading="lazy"
+                  onError={() => setImageFailed(true)}
+                  className="max-w-[240px] max-h-[280px] min-h-[80px] rounded-2xl object-cover border border-border bg-muted/30"
+                />
+              </button>
+            )
           )}
 
           {nativeFile && (
@@ -112,9 +126,21 @@ export const MessageBubble = ({ msg, isOwn, showAvatar, reactions, currentUserId
           )}
 
           {legacyImageMatch && (
-            <button onClick={(e) => { e.stopPropagation(); onOpenLightbox(legacyImageMatch[1]); }} className="block">
-              <img src={legacyImageMatch[1]} alt="Shared image" className="max-w-[240px] max-h-[280px] rounded-2xl object-cover border border-border" />
-            </button>
+            imageFailed ? (
+              <div className="flex items-center gap-2 max-w-[240px] rounded-2xl border border-border bg-muted/50 px-3 py-2.5 text-xs text-muted-foreground">
+                <ImageOff className="h-3.5 w-3.5 shrink-0" /> Image unavailable
+              </div>
+            ) : (
+              <button onClick={(e) => { e.stopPropagation(); onOpenLightbox(legacyImageMatch[1]); }} className="block">
+                <img
+                  src={legacyImageMatch[1]}
+                  alt="Shared image"
+                  loading="lazy"
+                  onError={() => setImageFailed(true)}
+                  className="max-w-[240px] max-h-[280px] min-h-[80px] rounded-2xl object-cover border border-border bg-muted/30"
+                />
+              </button>
+            )
           )}
 
           {legacyFileMatch && (

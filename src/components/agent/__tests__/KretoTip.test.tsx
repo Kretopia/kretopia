@@ -6,7 +6,7 @@ import { KretoTip } from "../KretoTip";
 /**
  * Regression coverage for Kreto's controlled rollout across KretoTip's
  * route groups (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md §13): Studio shipped
- * in the pilot, Scout, Passport and Events are the rollout surfaces
+ * in the pilot, Scout, Passport, Events and Circle are the rollout surfaces
  * approved after pilot review so far. This guards that the embodied
  * presence only appears on the approved route groups and every other group
  * still renders the flat KretoMark unchanged -- a rollout to "everywhere at
@@ -61,6 +61,18 @@ describe("KretoTip — Kreto presence rollout scope", () => {
     const { container } = renderTipAtRoute("/meetup");
     expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeInTheDocument();
     expect(screen.getByText(/Kreto · Events/i)).toBeInTheDocument();
+  });
+
+  it("Circle (/circle route) renders the embodied KretoPresence -- the fourth rollout surface", () => {
+    const { container } = renderTipAtRoute("/circle");
+    expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeInTheDocument();
+    expect(screen.getByText(/Kreto · Circle/i)).toBeInTheDocument();
+  });
+
+  it("/stages route also resolves to the Circle group and renders the embodied presence", () => {
+    const { container } = renderTipAtRoute("/stages");
+    expect(container.querySelector('svg[viewBox="0 0 100 100"]')).toBeInTheDocument();
+    expect(screen.getByText(/Kreto · Circle/i)).toBeInTheDocument();
   });
 
   it.each(["today", "match", "pay"] as const)(

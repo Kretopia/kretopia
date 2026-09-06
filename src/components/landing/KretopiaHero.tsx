@@ -42,10 +42,11 @@ const wordVariants = (reducedMotion: boolean) =>
       };
 
 /** One vertical curtain of aurora light. Tall and narrow rather than a round
- *  blob -- real aurora reads as folded sheets of light hanging from the sky,
- *  not a glow -- with a slow ambient shimmer (scaleY/rotate/skew only, never
- *  x/y, so it never fights the mouse-parallax offset applied via `style`
- *  on the same element) and a soft multi-stop gradient along its length. */
+ *  blob -- real aurora reads as folded sheets of light hanging in the sky,
+ *  not a glow -- with a slow ambient shimmer (scaleY/skew only, never x/y,
+ *  so it never fights the mouse-parallax offset applied via `style` on the
+ *  same element) and a multi-stop gradient along its length. Reaches well
+ *  down into the section rather than staying pinned to the top edge. */
 const AuroraCurtain = ({
   className,
   background,
@@ -79,25 +80,34 @@ const AuroraCurtain = ({
 export const KretopiaHero = (_props: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
 
-  // Mouse-driven parallax for the aurora: each curtain drifts a different
-  // amount as the visitor's cursor moves across the section, so the
-  // northern lights genuinely respond to where they look/hover rather than
-  // just looping on their own. Springs smooth the motion instead of it
-  // snapping to the raw pointer position; disabled entirely under reduced
-  // motion (the curtains keep their resting position, see AuroraCurtain).
+  // Mouse-driven interaction for the aurora: (1) each curtain drifts a
+  // different amount as the cursor moves, for parallax depth, and (2) a
+  // soft "spotlight" glow follows the cursor 1:1 (lightly springed, not
+  // heavily damped like the curtains) so the effect is unmistakable the
+  // instant the pointer enters the section, not just a subtle background
+  // drift someone could miss on a quick pass. Disabled entirely under
+  // reduced motion -- curtains hold their resting position, no spotlight.
   const pointerX = useMotionValue(0.5);
   const pointerY = useMotionValue(0.5);
-  const smoothX = useSpring(pointerX, { stiffness: 35, damping: 20, mass: 0.6 });
-  const smoothY = useSpring(pointerY, { stiffness: 35, damping: 20, mass: 0.6 });
+  const smoothX = useSpring(pointerX, { stiffness: 30, damping: 18, mass: 0.6 });
+  const smoothY = useSpring(pointerY, { stiffness: 30, damping: 18, mass: 0.6 });
+  const spotlightX = useSpring(pointerX, { stiffness: 120, damping: 20, mass: 0.4 });
+  const spotlightY = useSpring(pointerY, { stiffness: 120, damping: 20, mass: 0.4 });
+  const spotlightLeft = useTransform(spotlightX, (v) => `${v * 100}%`);
+  const spotlightTop = useTransform(spotlightY, (v) => `${v * 100}%`);
 
-  const curtain1X = useTransform(smoothX, [0, 1], [-50, 50]);
-  const curtain1Y = useTransform(smoothY, [0, 1], [-24, 24]);
-  const curtain2X = useTransform(smoothX, [0, 1], [40, -40]);
-  const curtain2Y = useTransform(smoothY, [0, 1], [20, -20]);
-  const curtain3X = useTransform(smoothX, [0, 1], [-28, 28]);
-  const curtain3Y = useTransform(smoothY, [0, 1], [16, -16]);
-  const curtain4X = useTransform(smoothX, [0, 1], [30, -30]);
-  const curtain4Y = useTransform(smoothY, [0, 1], [-14, 14]);
+  const curtain1X = useTransform(smoothX, [0, 1], [-90, 90]);
+  const curtain1Y = useTransform(smoothY, [0, 1], [-40, 40]);
+  const curtain2X = useTransform(smoothX, [0, 1], [70, -70]);
+  const curtain2Y = useTransform(smoothY, [0, 1], [36, -36]);
+  const curtain3X = useTransform(smoothX, [0, 1], [-55, 55]);
+  const curtain3Y = useTransform(smoothY, [0, 1], [28, -28]);
+  const curtain4X = useTransform(smoothX, [0, 1], [60, -60]);
+  const curtain4Y = useTransform(smoothY, [0, 1], [-24, 24]);
+  const curtain5X = useTransform(smoothX, [0, 1], [-45, 45]);
+  const curtain5Y = useTransform(smoothY, [0, 1], [30, -30]);
+  const curtain6X = useTransform(smoothX, [0, 1], [50, -50]);
+  const curtain6Y = useTransform(smoothY, [0, 1], [-20, 20]);
 
   const handlePointerMove = (e: React.MouseEvent<HTMLElement>) => {
     if (reducedMotion) return;
@@ -135,65 +145,108 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
         }}
       />
 
-      {/* Northern Lights — four tall, narrow curtains of light (not round
-          blobs) in Kretopia's own palette, composited with
-          mix-blend-mode:screen so overlapping color brightens like real
-          light instead of muddying. They drift gently on their own AND
-          respond to the visitor's cursor across the section (see
-          handlePointerMove) -- two independent motions on separate
-          transform channels (ambient scaleY/skew vs. pointer-driven x/y)
-          so neither fights the other. Always rendered, never blank --
-          under reduced motion each curtain holds its resting shape instead
-          of animating, and the pointer offset is disabled outright. */}
+      {/* Northern Lights — six tall, narrow curtains of light (not round
+          blobs), reaching well down into the section rather than staying
+          pinned along the top edge, in a real-aurora palette: emerald and
+          teal do the heavy lifting (the actual signature colors of oxygen
+          emission in a real aurora), violet/indigo for depth, and pink kept
+          to a single accent curtain rather than the dominant color, so this
+          reads as northern lights first and a brand moment second.
+          Composited with mix-blend-mode:screen so overlapping color
+          brightens like real light instead of muddying. Two independent
+          interactions layer on top: a slow ambient shimmer per curtain
+          (scaleY/skew) and a much more pronounced cursor-driven parallax
+          (x/y) -- separate transform channels so neither fights the other.
+          A soft spotlight also tracks the cursor directly (see
+          spotlightLeft/Top) so the interaction is obvious on first touch,
+          not just a subtle drift. Always rendered, never blank -- under
+          reduced motion every curtain holds its resting shape and the
+          pointer-driven layers are disabled outright. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
         style={{ mixBlendMode: "screen" }}
       >
         <AuroraCurtain
-          className="absolute -top-[20%] left-[6%] h-[135%] w-[22%] blur-[70px]"
-          background="linear-gradient(180deg, transparent 0%, rgba(255,45,161,0.5) 22%, rgba(255,120,190,0.32) 45%, rgba(150,90,255,0.22) 68%, transparent 92%)"
+          className="absolute -top-[10%] left-[2%] h-[170%] w-[20%] blur-[65px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(52,211,153,0.5) 18%, rgba(45,212,191,0.34) 42%, rgba(94,234,212,0.2) 62%, transparent 88%)"
           parallaxX={curtain1X}
           parallaxY={curtain1Y}
           reducedMotion={reducedMotion}
-          initialSkew={-12}
-          ambient={{ scaleY: [1, 1.12, 0.94, 1], skewX: [-12, -6, -15, -12] }}
-          duration={22}
+          initialSkew={-11}
+          ambient={{ scaleY: [1, 1.15, 0.92, 1], skewX: [-11, -5, -16, -11] }}
+          duration={20}
           delay={0}
         />
         <AuroraCurtain
-          className="absolute -top-[24%] left-[32%] h-[140%] w-[18%] blur-[75px]"
-          background="linear-gradient(180deg, transparent 0%, rgba(150,90,255,0.46) 24%, rgba(190,120,255,0.26) 48%, rgba(70,170,255,0.18) 70%, transparent 92%)"
+          className="absolute -top-[14%] left-[20%] h-[178%] w-[16%] blur-[70px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(45,212,191,0.44) 20%, rgba(129,102,255,0.28) 46%, rgba(94,234,212,0.18) 68%, transparent 90%)"
           parallaxX={curtain2X}
           parallaxY={curtain2Y}
           reducedMotion={reducedMotion}
-          initialSkew={8}
-          ambient={{ scaleY: [1, 0.9, 1.15, 1], skewX: [8, 14, 4, 8] }}
-          duration={27}
-          delay={1.2}
+          initialSkew={9}
+          ambient={{ scaleY: [1, 0.88, 1.18, 1], skewX: [9, 15, 3, 9] }}
+          duration={25}
+          delay={1.4}
         />
         <AuroraCurtain
-          className="absolute -top-[18%] right-[10%] h-[130%] w-[24%] blur-[80px]"
-          background="linear-gradient(180deg, transparent 0%, rgba(255,45,161,0.4) 26%, rgba(255,45,161,0.2) 50%, transparent 90%)"
+          className="absolute -top-[8%] left-[40%] h-[165%] w-[18%] blur-[75px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(129,102,255,0.4) 22%, rgba(94,234,212,0.24) 48%, transparent 86%)"
           parallaxX={curtain3X}
           parallaxY={curtain3Y}
           reducedMotion={reducedMotion}
-          initialSkew={-6}
-          ambient={{ scaleY: [1, 1.1, 0.95, 1], skewX: [-6, -11, -2, -6] }}
-          duration={31}
-          delay={2.4}
+          initialSkew={-7}
+          ambient={{ scaleY: [1, 1.1, 0.94, 1], skewX: [-7, -13, -1, -7] }}
+          duration={29}
+          delay={2.6}
         />
         <AuroraCurtain
-          className="absolute -top-[26%] right-[28%] h-[138%] w-[16%] blur-[85px]"
-          background="linear-gradient(180deg, transparent 0%, rgba(70,170,255,0.3) 28%, rgba(150,90,255,0.16) 55%, transparent 90%)"
+          className="absolute -top-[16%] right-[26%] h-[172%] w-[17%] blur-[70px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(52,211,153,0.4) 20%, rgba(255,45,161,0.22) 46%, rgba(129,102,255,0.2) 70%, transparent 90%)"
           parallaxX={curtain4X}
           parallaxY={curtain4Y}
           reducedMotion={reducedMotion}
-          initialSkew={11}
-          ambient={{ scaleY: [1, 0.92, 1.08, 1], skewX: [11, 6, 15, 11] }}
-          duration={24}
-          delay={0.8}
+          initialSkew={6}
+          ambient={{ scaleY: [1, 0.9, 1.14, 1], skewX: [6, 12, 0, 6] }}
+          duration={23}
+          delay={0.9}
         />
+        <AuroraCurtain
+          className="absolute -top-[10%] right-[10%] h-[168%] w-[19%] blur-[68px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(45,212,191,0.38) 18%, rgba(94,234,212,0.24) 44%, transparent 86%)"
+          parallaxX={curtain5X}
+          parallaxY={curtain5Y}
+          reducedMotion={reducedMotion}
+          initialSkew={-9}
+          ambient={{ scaleY: [1, 1.12, 0.95, 1], skewX: [-9, -3, -14, -9] }}
+          duration={27}
+          delay={1.9}
+        />
+        <AuroraCurtain
+          className="absolute -top-[18%] right-[-2%] h-[176%] w-[15%] blur-[72px]"
+          background="linear-gradient(180deg, transparent 0%, rgba(255,45,161,0.3) 24%, rgba(129,102,255,0.22) 52%, transparent 88%)"
+          parallaxX={curtain6X}
+          parallaxY={curtain6Y}
+          reducedMotion={reducedMotion}
+          initialSkew={10}
+          ambient={{ scaleY: [1, 0.92, 1.1, 1], skewX: [10, 4, 16, 10] }}
+          duration={33}
+          delay={3.1}
+        />
+
+        {/* Cursor spotlight — follows the pointer directly (lightly
+            springed, not the slower drift above) so the interaction reads
+            immediately, not just as ambient background drift. */}
+        {!reducedMotion && (
+          <motion.div
+            className="absolute h-[45vh] w-[45vh] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]"
+            style={{
+              left: spotlightLeft,
+              top: spotlightTop,
+              background: "radial-gradient(circle, rgba(148,255,214,0.28), rgba(94,234,212,0.12) 45%, transparent 72%)",
+            }}
+          />
+        )}
       </div>
 
       {/* Faint signal grid, masked to fade out — the "machine" layer */}
@@ -262,9 +315,7 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
         </motion.p>
 
         {/* CTA pair — one clear primary action, one clear secondary one,
-            both the same size, neither shouting over the other. Toned down
-            from the original build: softer glow, no lift-on-hover jump,
-            gentler brightness shift -- reads as confident, not loud. */}
+            both the same size, neither shouting over the other. */}
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}

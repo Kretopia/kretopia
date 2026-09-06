@@ -133,20 +133,30 @@ async function sendReminder(
   const sentEmail = new Set((alreadySent || []).filter((r: any) => r.channel === "email").map((r: any) => r.user_id));
   const sentPush = new Set((alreadySent || []).filter((r: any) => r.channel === "in_app").map((r: any) => r.user_id));
 
-  for (const p of participants as { user_id: string; check_in_token: string | null }[]) {
-    // Get profile for name; email lives in auth.users (profiles has no `email`).
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("full_name, first_name")
-      .eq("user_id", p.user_id)
-      .maybeSingle();
+  const typedParticipants = participants as { user_id: string; check_in_token: string | null }[];
+
+  // Batch the name lookup -- one query for every participant instead of one
+  // per participant. (auth.admin.getUserById below has no bulk equivalent in
+  // the standard admin API, so that part of the original N+1 stays
+  // per-participant -- but it, and the email/notification sends, now run
+  // concurrently in bounded batches instead of one participant's full
+  // round-trip finishing before the next starts, so wall-clock time no
+  // longer stacks linearly with participant count.)
+  const { data: profiles } = await admin
+    .from("profiles")
+    .select("user_id, full_name, first_name")
+    .in("user_id", typedParticipants.map((p) => p.user_id));
+  const profileMap = new Map((profiles || []).map((pr: any) => [pr.user_id, pr]));
+
+  const startDate = new Date(ev.start_time);
+
+  const sendOne = async (p: { user_id: string; check_in_token: string | null }) => {
+    const profile = profileMap.get(p.user_id) || { full_name: null, first_name: null };
     let guestEmail: string | null = null;
     try {
       const { data: u } = await admin.auth.admin.getUserById(p.user_id);
       guestEmail = u?.user?.email ?? null;
     } catch (e) { console.error("[event-reminders] getUserById", p.user_id, e); }
-
-    const startDate = new Date(ev.start_time);
 
     // --- Email (only on 24h reminder) ---
     if (type === "reminder_24h" && guestEmail && !sentEmail.has(p.user_id)) {
@@ -205,6 +215,14 @@ async function sendReminder(
         stats.errors++;
       }
     }
+  };
+
+  // Bounded concurrency -- full parallelism for a typical event (well under
+  // 25 attendees), capped so an unusually large event can't fire hundreds of
+  // simultaneous admin-API/email calls at once.
+  const CONCURRENCY = 25;
+  for (let i = 0; i < typedParticipants.length; i += CONCURRENCY) {
+    await Promise.all(typedParticipants.slice(i, i + CONCURRENCY).map(sendOne));
   }
 }
 

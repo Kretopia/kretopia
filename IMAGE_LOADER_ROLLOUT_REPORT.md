@@ -2,7 +2,13 @@
 
 Follow-up to the audit finding that `ImageLoader` (`src/components/ui/image-loader.tsx`) is used in only 2 files against ~280 raw `<img>` tags app-wide.
 
-## Status: `IMPLEMENTED`, `TYPECHECKED`, `BUILD_PASSED`. One surface `RUNTIME_CONFIRMED` live; the rest rely on the same verified pattern (no test account for the others).
+## Status: `IMPLEMENTED`, `TYPECHECKED`, `BUILD_PASSED`. Three surfaces `RUNTIME_CONFIRMED` live (including, in a follow-up round, admin access); the rest rely on the same verified pattern (no test account/data for the others).
+
+## Follow-up round — the deferred admin avatar/logo cluster
+
+Closed out the "deferred, lower priority" item from the first round: `src/components/admin/UsersTab.tsx`, `VerificationTab.tsx`, `CheckInsTab.tsx`, and `PartnerSubmissionsTab.tsx` (2 instances — pending and reviewed partner-logo cards) all had layout protection but no `onError`. Same fix shape as the rest of this rollout: per-item `Set`-based failure tracking (table/grid rows), routing to each component's existing initials/icon fallback where one existed, and a small new icon-in-a-box fallback for `PartnerSubmissionsTab.tsx`'s partner logos (no fallback existed there before — company logos, not personal avatars, so an `ImageOff` icon fits better than initials).
+
+`RUNTIME_CONFIRMED` this round: got real admin access in the dev server session and directly verified both `UsersTab.tsx` (User Management table, real avatars loading correctly) and `VerificationTab.tsx` (Approved tab, a real verification request with a real photo rendering correctly) — no console errors, no regressions. `CheckInsTab.tsx` and `PartnerSubmissionsTab.tsx` weren't individually reachable in this admin session (no check-ins or partner submissions currently in those specific views) but use the identical, now-twice-confirmed pattern.
 
 ## What was actually needed — evidence before action
 

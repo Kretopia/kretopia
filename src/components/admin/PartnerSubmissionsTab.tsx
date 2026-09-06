@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, ExternalLink, Mail, Phone, Globe } from "lucide-react";
+import { CheckCircle, XCircle, ExternalLink, Mail, Phone, Globe, ImageOff } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -19,6 +19,7 @@ export const PartnerSubmissionsTab = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -137,11 +138,19 @@ export const PartnerSubmissionsTab = () => {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={submission.logo_url}
-                      alt={submission.company_name}
-                      className="h-12 w-12 object-contain rounded"
-                    />
+                    {failedLogos.has(submission.id) ? (
+                      <div className="h-12 w-12 rounded bg-muted flex items-center justify-center shrink-0">
+                        <ImageOff className="h-5 w-5 text-muted-foreground/50" />
+                      </div>
+                    ) : (
+                      <img
+                        src={submission.logo_url}
+                        alt={submission.company_name}
+                        loading="lazy"
+                        onError={() => setFailedLogos((prev) => new Set(prev).add(submission.id))}
+                        className="h-12 w-12 object-contain rounded"
+                      />
+                    )}
                     <div>
                       <CardTitle className="text-lg">{submission.company_name}</CardTitle>
                       <CardDescription className="flex items-center gap-2">
@@ -225,11 +234,19 @@ export const PartnerSubmissionsTab = () => {
               <Card key={submission.id}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={submission.logo_url}
-                      alt={submission.company_name}
-                      className="h-10 w-10 object-contain rounded"
-                    />
+                    {failedLogos.has(submission.id) ? (
+                      <div className="h-10 w-10 rounded bg-muted flex items-center justify-center shrink-0">
+                        <ImageOff className="h-4 w-4 text-muted-foreground/50" />
+                      </div>
+                    ) : (
+                      <img
+                        src={submission.logo_url}
+                        alt={submission.company_name}
+                        loading="lazy"
+                        onError={() => setFailedLogos((prev) => new Set(prev).add(submission.id))}
+                        className="h-10 w-10 object-contain rounded"
+                      />
+                    )}
                     <div>
                       <p className="font-medium">{submission.company_name}</p>
                       <p className="text-sm text-muted-foreground">{submission.contact_email}</p>

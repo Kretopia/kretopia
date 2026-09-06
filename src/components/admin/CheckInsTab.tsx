@@ -16,6 +16,7 @@ import { MapPin } from "lucide-react";
 export function CheckInsTab() {
   const [checkIns, setCheckIns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failedAvatars, setFailedAvatars] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -82,10 +83,12 @@ export function CheckInsTab() {
               <TableRow key={checkIn.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    {checkIn.profiles?.avatar_url ? (
+                    {checkIn.profiles?.avatar_url && !failedAvatars.has(checkIn.id) ? (
                       <img
                         src={checkIn.profiles.avatar_url}
                         alt={checkIn.profiles.full_name}
+                        loading="lazy"
+                        onError={() => setFailedAvatars((prev) => new Set(prev).add(checkIn.id))}
                         className="h-8 w-8 rounded-full object-cover"
                       />
                     ) : (

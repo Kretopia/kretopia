@@ -1352,3 +1352,52 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 @media (prefers-reduced-motion: reduce) {
   .btn-landing-primary:hover { transform: none; }
 }
+
+/* ── HERO TITLE HOVER FX ─────────────────────────────────────────────
+   A discreet, on-demand interaction for the hero headline: hovering the
+   title sends a slow pink/white gradient sweep through the accent words
+   (paint-like, not a strobing gradient-text cliché) while every word
+   lifts in a soft staggered wave. Reads as "this word is alive," which
+   is the point -- it's the one interactive flourish on a text element
+   that otherwise just fades in once and sits still. Pure CSS
+   (background-position + transform), no JS, no new dependency, and the
+   stagger reuses the same --wi custom property pattern already used for
+   the entrance reveal, just applied to a nested element so it never
+   collides with framer-motion's own inline transform on the outer span. */
+.hero-title-fx .hero-word {
+  display: inline-block;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--wi, 0) * 35ms);
+  will-change: transform;
+}
+.hero-title-fx:hover .hero-word {
+  transform: translateY(-0.06em);
+}
+.hero-title-fx .hero-word-pink {
+  background-image: linear-gradient(90deg, #ff2da1 0%, #ffffff 35%, #ff2da1 70%, #ffffff 100%);
+  background-size: 300% 100%;
+  background-position: 0% 0%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: background-position 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-title-fx:hover .hero-word-pink {
+  background-position: 100% 0%;
+}
+.hero-title-fx .hero-word-white {
+  color: #fff;
+  text-shadow: 0 0 0 rgba(255, 45, 161, 0);
+  transition: text-shadow 0.6s ease;
+}
+.hero-title-fx:hover .hero-word-white {
+  text-shadow: 0 0 26px rgba(255, 45, 161, 0.4);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-title-fx .hero-word,
+  .hero-title-fx .hero-word-pink,
+  .hero-title-fx .hero-word-white {
+    transition: none !important;
+  }
+  .hero-title-fx:hover .hero-word { transform: none; }
+}

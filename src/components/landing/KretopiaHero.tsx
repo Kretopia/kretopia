@@ -21,11 +21,18 @@ import { trackLandingCta } from "@/lib/landingFunnel";
 
 const ACCENT = "#FF2DA1";
 
-/** Headline, split into words so each can resolve out of a blur on load. */
-const HEADLINE: string[][] = [
-  ["Turn", "the", "work", "you've", "already", "done"],
-  ["into", "your", "next", "opportunity."],
-];
+/** Headline, split into exactly two lines, each word alternating white/pink
+ *  (continuous across the line break) and tagged with a running index that
+ *  drives the hover stagger in .hero-title-fx. Computed once at module load
+ *  since the copy is static. */
+const HEADLINE: { word: string; pink: boolean; index: number }[][] = (() => {
+  const lines: string[][] = [
+    ["The", "Executive", "Producer"],
+    ["for", "your", "creative", "career."],
+  ];
+  let i = 0;
+  return lines.map((line) => line.map((word) => ({ word, pink: i % 2 === 1, index: i++ })));
+})();
 
 interface KretopiaHeroProps {
   /** Kept for backward compatibility with the search-first flow this hero
@@ -104,9 +111,14 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           For creatives who want their work to count
         </motion.p>
 
-        {/* Headline — words reveal one by one out of a blur, like the page is
-            resolving the sentence rather than printing it. */}
-        <h1 className="landing-h1 landing-glow max-w-full mx-auto">
+        {/* Headline — words reveal one by one out of a blur on load.
+            hero-title-fx layers a second, hover-only interaction on top:
+            pink words sweep through a slow gradient, white words bloom a
+            soft pink glow, and every word lifts in a staggered wave -- all
+            on a plain inner <span> so it never fights framer-motion's own
+            inline transform on the outer motion.span used for the entrance
+            reveal. */}
+        <h1 className="landing-h1 landing-glow hero-title-fx max-w-full mx-auto">
           <motion.span
             className="block"
             initial="hidden"
@@ -115,7 +127,7 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           >
             {HEADLINE.map((line, li) => (
               <span key={li} className="block">
-                {line.map((word, wi) => (
+                {line.map(({ word, pink, index }, wi) => (
                   <motion.span
                     key={`${li}-${wi}`}
                     className="inline-block"
@@ -128,7 +140,12 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
                           }
                     }
                   >
-                    {word}
+                    <span
+                      className={`hero-word ${pink ? "hero-word-pink" : "hero-word-white"}`}
+                      style={{ ["--wi" as string]: index }}
+                    >
+                      {word}
+                    </span>
                     {wi < line.length - 1 && " "}
                   </motion.span>
                 ))}
@@ -148,24 +165,38 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           discovered for the skills you've already proved.
         </motion.p>
 
-        {/* Primary CTA — the one dominant action. Real button, canonical
-            grey-to-pink gradient (btn-landing-primary), not a typographic
-            link and not a flat pink fill. */}
+        {/* CTA pair — primary (canonical grey-to-pink gradient,
+            btn-landing-primary) beside a secondary sign-in action
+            (btn-glass btn-glass-outline, the same restrained glass family
+            used everywhere else on the site) rather than a second
+            typographic link, so returning visitors get a real button too,
+            not a smaller afterthought next to the one that matters. */}
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-9 sm:mt-10 flex flex-col items-center gap-4"
         >
-          <Link
-            to="/auth?tab=signup&src=hero_passport"
-            onClick={() => trackLandingCta("hero_build_passport", "hero")}
-            className="btn-landing-primary group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
-            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-          >
-            Build my Creative Passport
-            <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Link
+              to="/auth?tab=signup&src=hero_passport"
+              onClick={() => trackLandingCta("hero_build_passport", "hero")}
+              className="btn-landing-primary group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+            >
+              Build my Passport
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </Link>
+
+            <Link
+              to="/auth?tab=signin"
+              onClick={() => trackLandingCta("hero_signin", "hero")}
+              className="btn-glass btn-glass-outline inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+            >
+              Sign in
+            </Link>
+          </div>
 
           <p
             className="text-xs text-white/45"
@@ -173,15 +204,6 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           >
             Free to start. No credit card needed.
           </p>
-
-          <Link
-            to="/auth?tab=signin"
-            onClick={() => trackLandingCta("hero_signin", "hero")}
-            className="text-xs text-white/40 underline decoration-white/15 underline-offset-4 transition-colors hover:text-white/70"
-            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-          >
-            Already have an account? Sign in
-          </Link>
         </motion.div>
       </div>
 

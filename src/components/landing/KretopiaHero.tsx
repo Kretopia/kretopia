@@ -32,6 +32,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { analytics } from "@/lib/analytics";
 import { trackLandingCta } from "@/lib/landingFunnel";
 import { KretoMark } from "@/components/brand/KretoMark";
+import { KretoPresence } from "@/components/brand/KretoPresence";
 
 /** Headline, split into words per line so each can resolve out of a blur on
  *  load. Line 1 renders in the default white; line 2 is wrapped in
@@ -261,6 +262,19 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
             Free to start. No credit card needed.
           </p>
         </motion.div>
+      </div>
+
+      {/* Kreto pilot surface #2 (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md):
+          a subtle, secondary embodied presence at the section's lower-right
+          edge -- never behind the headline, never over the CTA. Desktop
+          only (lg+): the content column fills nearly the full width below
+          that breakpoint (confirmed in LANDING_HERO_AVATAR_ASSET_AUDIT.md),
+          so there's no genuine peripheral space to place it in without
+          risking overlap on tablet/mobile. State is always "idle" -- there
+          is no live Kreto request context on a guest landing page, so no
+          other state would be truthful here. */}
+      <div className="pointer-events-none absolute bottom-8 right-8 hidden lg:block opacity-70">
+        <KretoPresence size="hero" state="idle" />
       </div>
 
       {/* bottom dissolve to next section */}

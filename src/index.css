@@ -1323,19 +1323,18 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   isolation: isolate;
   color: #fff;
   background-image: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--energy)) 100%);
-  border: 1px solid hsl(var(--energy) / 0.4);
-  box-shadow: 0 16px 40px -20px hsl(var(--energy) / 0.5);
+  border: 1px solid hsl(var(--energy) / 0.3);
+  box-shadow: 0 10px 26px -18px hsl(var(--energy) / 0.35);
   transition: box-shadow 0.3s ease, transform 0.2s ease, filter 0.3s ease;
 }
 .btn-landing-primary:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 0 0 1px hsl(var(--energy) / 0.5), 0 0 28px hsl(var(--energy) / 0.45),
-              0 16px 40px -20px hsl(var(--energy) / 0.6);
+  filter: brightness(1.04);
+  box-shadow: 0 12px 30px -16px hsl(var(--energy) / 0.4);
   transform: translateY(-1px);
 }
 .btn-landing-primary:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--energy) / 0.6), 0 0 24px hsl(var(--energy) / 0.4);
+  box-shadow: 0 0 0 2px hsl(var(--energy) / 0.5);
 }
 .btn-landing-primary:active {
   transform: translateY(0) scale(0.98);
@@ -1353,79 +1352,3 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   .btn-landing-primary:hover { transform: none; }
 }
 
-/* ── HERO TITLE HOVER FX — electric arcs ─────────────────────────────
-   A discreet, on-demand interaction for the hero headline: hovering the
-   title traces a handful of thin arcs behind the words in the exact same
-   grey-to-pink gradient as .btn-landing-primary (--secondary -> --energy)
-   -- Kretopia's one CTA gradient language, reused here instead of a new
-   color pairing -- while every word lifts in a soft staggered wave. The
-   arcs live on a plain absolutely-positioned <svg> sibling (see
-   KretopiaHero.tsx) so they never interfere with the title's own text
-   layout or selection. Pure CSS + SVG (stroke-dashoffset + transform), no
-   JS, no new dependency. */
-.hero-title-fx .hero-word {
-  display: inline-block;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: calc(var(--wi, 0) * 35ms);
-  will-change: transform;
-}
-.hero-title-fx:hover .hero-word {
-  transform: translateY(-0.06em);
-}
-
-.hero-title-arcs {
-  width: calc(100% + 3rem);
-  height: calc(100% + 4rem);
-  overflow: visible;
-}
-.hero-arc {
-  fill: none;
-  stroke: url(#heroArcGradient);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  filter: url(#heroArcGlow);
-  opacity: 0;
-  stroke-dasharray: 520;
-  stroke-dashoffset: 520;
-  transition: opacity 0.25s ease;
-}
-.hero-title-fx:hover .hero-arc-1 {
-  opacity: 0.8;
-  animation: hero-arc-draw 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
-             hero-arc-flicker 1.5s ease 1s 1;
-}
-.hero-title-fx:hover .hero-arc-2 {
-  opacity: 0.7;
-  animation: hero-arc-draw 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s forwards,
-             hero-arc-flicker 1.5s ease 1.12s 1;
-}
-.hero-title-fx:hover .hero-arc-3 {
-  opacity: 0.7;
-  animation: hero-arc-draw 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.24s forwards,
-             hero-arc-flicker 1.5s ease 1.24s 1;
-}
-@keyframes hero-arc-draw {
-  from { stroke-dashoffset: 520; }
-  to   { stroke-dashoffset: 0; }
-}
-@keyframes hero-arc-flicker {
-  0%, 100% { opacity: 0.75; }
-  15% { opacity: 0.25; }
-  30% { opacity: 0.85; }
-  45% { opacity: 0.35; }
-  60% { opacity: 0.75; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-title-fx .hero-word {
-    transition: none !important;
-  }
-  .hero-title-fx:hover .hero-word { transform: none; }
-  .hero-title-fx:hover .hero-arc-1,
-  .hero-title-fx:hover .hero-arc-2,
-  .hero-title-fx:hover .hero-arc-3 {
-    animation: none;
-    stroke-dashoffset: 0;
-    opacity: 0.55;
-    transition: opacity 0.4s ease;
-  }
-}

@@ -542,7 +542,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       onClick={() => { setGuestMenuOpen(false); navigate("/auth?tab=signup"); }}
                     >
                       <Sparkles className="h-4 w-4" aria-hidden />
-                      Get Started
+                      Build Your Passport
                     </Button>
                   </div>
                 </SheetContent>
@@ -564,7 +564,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
               <Link to="/auth?tab=signup">
                 <Button variant="link" size="sm" className="nav-btn-plain bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 text-xs sm:text-sm px-2.5 sm:px-4 font-semibold no-underline hover:no-underline">
                   <Sparkles className="h-4 w-4" aria-hidden />
-                  Get Started
+                  Build Your Passport
                 </Button>
               </Link>
             </>

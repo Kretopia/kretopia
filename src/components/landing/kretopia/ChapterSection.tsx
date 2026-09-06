@@ -8,6 +8,7 @@ import { ArrowUpRight } from "lucide-react";
 import type { ComponentType } from "react";
 import type { TutorialStep } from "./FeatureTutorial";
 import { FeatureTutorialPanel } from "./FeatureTutorialPanel";
+import { KretopiaFeatureTutorial } from "./KretopiaFeatureTutorial";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { trackLandingCtaClick, type LandingSectionId } from "@/lib/landingMetrics";
@@ -33,11 +34,18 @@ export interface ChapterProps {
   concepts?: { label: string; body: string }[];
   /** Optional single emphasized line rendered just above the CTA. */
   closingLine?: string;
+  /** Landing Final Conversion Overhaul §5/§6: when true, the tutorial is
+   *  collapsed behind a discreet "See how it works" fingerprint trigger
+   *  next to the CTA (KretopiaFeatureTutorial) instead of the always-visible,
+   *  auto-playing full-width FeatureTutorialPanel. Opt-in and per-chapter —
+   *  omitting it (the default) keeps a chapter's existing behavior exactly
+   *  as it was. */
+  discreetTutorial?: boolean;
 }
 
 export const ChapterSection = ({
   index, kicker, title, body, caption, image, accent, href, reverse, id, tutorialSteps, tutorialVisual,
-  ctaLabel, concepts, closingLine,
+  ctaLabel, concepts, closingLine, discreetTutorial,
 }: ChapterProps) => {
   const reducedMotion = useReducedMotion();
   const sectionId = (id ?? kicker.toLowerCase()) as LandingSectionId;
@@ -156,31 +164,40 @@ export const ChapterSection = ({
               </p>
             )}
 
-            <Button
-              asChild
-              className="group mt-9 h-auto w-fit rounded-full px-6 py-3 text-sm font-semibold"
-              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-            >
-              <Link
-                to={`${href}${href.includes("?") ? "&" : "?"}tab=signup&src=${sectionId}`}
-                onClick={() =>
-                  trackLandingCtaClick({
-                    ctaId: `${kicker.toLowerCase()}_chapter_cta`,
-                    section: sectionId,
-                    label: ctaLabel ?? `Enter ${kicker}`,
-                    destinationType: "auth",
-                  })
-                }
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Button
+                asChild
+                className="group h-auto w-fit rounded-full px-6 py-3 text-sm font-semibold"
+                style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
               >
-                {ctaLabel ?? `Enter ${kicker}`}
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
-              </Link>
-            </Button>
+                <Link
+                  to={`${href}${href.includes("?") ? "&" : "?"}tab=signup&src=${sectionId}`}
+                  onClick={() =>
+                    trackLandingCtaClick({
+                      ctaId: `${kicker.toLowerCase()}_chapter_cta`,
+                      section: sectionId,
+                      label: ctaLabel ?? `Enter ${kicker}`,
+                      destinationType: "auth",
+                    })
+                  }
+                >
+                  {ctaLabel ?? `Enter ${kicker}`}
+                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+                </Link>
+              </Button>
+
+              {discreetTutorial && tutorialSteps && tutorialSteps.length > 0 && (
+                <KretopiaFeatureTutorial steps={tutorialSteps} featureName={kicker} />
+              )}
+            </div>
           </motion.div>
         </div>
 
-        {/* Interactive tutorial — full-width panel, immediately follows its feature */}
-        {tutorialSteps && tutorialSteps.length > 0 && tutorialVisual && (
+        {/* Interactive tutorial — full-width panel, immediately follows its
+            feature. Skipped when discreetTutorial is set: that chapter's
+            tutorial lives behind the fingerprint trigger next to the CTA
+            instead (see above), not as an always-visible panel here. */}
+        {!discreetTutorial && tutorialSteps && tutorialSteps.length > 0 && tutorialVisual && (
           <FeatureTutorialPanel
             steps={tutorialSteps}
             label={`${kicker} tutorial`}

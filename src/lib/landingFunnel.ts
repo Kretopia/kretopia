@@ -20,11 +20,10 @@ import { trackEvent, EventCategory } from "@/lib/analytics";
  *  list only drives ordering in the admin funnel view. */
 export const LANDING_SECTION_ORDER = [
   "kretopia-hero",
-  "chapter-search",
+  "chapter-loop",
   "inline-signup",
   "chapter-passport",
   "chapter-verified-credits",
-  "chapter-loop",
   "chapter-scout",
   "chapter-match",
   "chapter-studio",

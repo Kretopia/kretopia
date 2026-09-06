@@ -2,8 +2,8 @@
  * LandingBelowFold — everything on the landing page after the hero.
  *
  * Split into its own chunk and mounted only once the visitor approaches it
- * (or the browser goes idle), so the hero + search bar stay on the critical
- * path and become interactive as early as possible.
+ * (or the browser goes idle), so the hero stays on the critical path and
+ * becomes interactive as early as possible.
  *
  * Every chapter follows one structural pattern: image (or illustrative
  * visual) → numbered title → explanation → an interactive tutorial
@@ -12,7 +12,6 @@
  * or reordering a chapter here never requires hand-patching a number
  * anywhere else.
  */
-import { SearchTutorialSection } from "@/components/landing/kretopia/SearchTutorialSection";
 import { InlineSignupBar } from "@/components/landing/kretopia/InlineSignupBar";
 import { ChapterSection } from "@/components/landing/kretopia/ChapterSection";
 import { VerifiedCreditsChapterSection } from "@/components/landing/kretopia/VerifiedCreditsChapterSection";
@@ -41,8 +40,11 @@ import soundstagesImg from "@/assets/kretopia/chapter-soundstages.jpg";
 export const LandingBelowFold = () => {
   return (
     <>
-      {/* Search — the Hero above already IS the live feature; this is just its tutorial */}
-      <SearchTutorialSection />
+      {/* Kretopia loop — Landing Final Conversion Overhaul: replaces the old
+          "Search Your Name" pitch in this same slot (real search is now on
+          the persistent navbar itself, see Navbar.tsx). Shows how a Passport
+          becomes discovery becomes execution becomes a stronger Passport. */}
+      <ProductLoopSection />
 
       {/* First conversion beat — most visitors never reach the closing CTA */}
       <InlineSignupBar />
@@ -77,15 +79,13 @@ export const LandingBelowFold = () => {
         ]}
         tutorialSteps={PASSPORT_TUTORIAL}
         tutorialVisual={PassportVisual}
+        discreetTutorial
       />
 
       {/* Verified Credits — the canonical tutorial reference. Its own
           closing beat now carries the one Trust line that used to be a
           separate, un-tracked section restating this same evidence data. */}
       <VerifiedCreditsChapterSection />
-
-      {/* Product Loop — Passport -> Scout -> Match -> Studio -> stronger Passport */}
-      <ProductLoopSection />
 
       {/* Scout */}
       <ChapterSection
@@ -109,6 +109,7 @@ export const LandingBelowFold = () => {
         reverse
         tutorialSteps={SCOUT_TUTORIAL}
         tutorialVisual={ScoutVisual}
+        discreetTutorial
       />
 
       {/* Match */}
@@ -157,6 +158,7 @@ export const LandingBelowFold = () => {
         reverse
         tutorialSteps={STUDIO_TUTORIAL}
         tutorialVisual={StudioVisual}
+        discreetTutorial
       />
 
       {/* Kreto — the sunset moment of the core creative journey */}
@@ -180,7 +182,7 @@ export const LandingBelowFold = () => {
         caption="Community"
         image={soundstagesImg}
         accent="#FF2DA1"
-        href="/auth?next=/circle?tab=live"
+        href={`/auth?next=${encodeURIComponent("/circle?tab=live")}`}
         ctaLabel="Join a SoundStage"
         tutorialSteps={SOUNDSTAGES_TUTORIAL}
         tutorialVisual={SoundStagesVisual}

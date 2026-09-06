@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /**
- * CANONICAL CTA — single source of truth.
+ * CANONICAL CTA — single source of truth for in-app (Studio) primary CTAs.
  *
- * These are the exact classes used by the Landing Page CTA
- * (src/components/landing/BottomCTASection.tsx). Any page-level primary
- * CTA must render through <CtaButton> so there is only one CTA
- * implementation in the product.
+ * Live call sites today: StudioProjectsDashboard.tsx, StudioCreateHero.tsx.
+ * (The doc comment here used to point at
+ * src/components/landing/BottomCTASection.tsx as the reference
+ * implementation -- that file is dead code, never rendered by any route,
+ * so it was never actually wired to this. The guest Landing page's own
+ * primary CTAs use the separate .btn-landing-primary gradient system
+ * instead, see src/index.css.)
  *
  * NOT for: navbar buttons, filters, icon-only controls, destructive
  * actions, status controls. Those keep their own affordances.

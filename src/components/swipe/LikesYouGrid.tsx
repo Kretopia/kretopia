@@ -26,6 +26,7 @@ export function LikesYouGrid() {
   const [likers, setLikers] = useState<Liker[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [failedAvatars, setFailedAvatars] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -128,8 +129,14 @@ export function LikesYouGrid() {
             onClick={() => navigate(`/profile/${p.user_id}`)}
             className="block w-full aspect-[3/4] bg-muted"
           >
-            {p.avatar_url ? (
-              <img src={p.avatar_url} alt={p.full_name ?? "Creator"} className="h-full w-full object-cover" loading="lazy" />
+            {p.avatar_url && !failedAvatars.has(p.user_id) ? (
+              <img
+                src={p.avatar_url}
+                alt={p.full_name ?? "Creator"}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                onError={() => setFailedAvatars((prev) => new Set(prev).add(p.user_id))}
+              />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-2xl font-bold text-muted-foreground">
                 {(p.full_name ?? "?").charAt(0)}

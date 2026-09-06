@@ -39,6 +39,7 @@ export const VerificationTab = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [failedAvatars, setFailedAvatars] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -217,10 +218,12 @@ export const VerificationTab = () => {
       <CardHeader className="p-4 sm:p-6">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            {request.profiles.avatar_url && (
+            {request.profiles.avatar_url && !failedAvatars.has(request.id) && (
               <img
                 src={request.profiles.avatar_url}
                 alt={request.profiles.full_name}
+                loading="lazy"
+                onError={() => setFailedAvatars((prev) => new Set(prev).add(request.id))}
                 className="h-10 w-10 sm:h-12 sm:w-12 rounded-full object-cover flex-shrink-0"
               />
             )}

@@ -27,6 +27,7 @@ export function UsersTab() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [failedAvatars, setFailedAvatars] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -146,10 +147,12 @@ export function UsersTab() {
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {user.avatar_url ? (
+                      {user.avatar_url && !failedAvatars.has(user.id) ? (
                         <img
                           src={user.avatar_url}
                           alt={user.full_name}
+                          loading="lazy"
+                          onError={() => setFailedAvatars((prev) => new Set(prev).add(user.id))}
                           className="h-8 w-8 rounded-full object-cover"
                         />
                       ) : (

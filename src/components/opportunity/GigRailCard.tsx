@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
@@ -30,6 +31,7 @@ interface GigRailCardProps {
 }
 
 export const GigRailCard = ({ opportunity: opp, matchScore = null }: GigRailCardProps) => {
+  const [imageFailed, setImageFailed] = useState(false);
   const navigate = useNavigate();
   const config = TYPE_CONFIG[opp.type] || TYPE_CONFIG.job;
   const TypeIcon = config.icon;
@@ -44,11 +46,12 @@ export const GigRailCard = ({ opportunity: opp, matchScore = null }: GigRailCard
     >
       {/* Hero — fixed aspect, image OR branded gradient */}
       <div className="relative aspect-[16/10] overflow-hidden shrink-0">
-        {opp.image_url ? (
+        {opp.image_url && !imageFailed ? (
           <img
             src={opp.image_url}
             alt={opp.title}
             loading="lazy"
+            onError={() => setImageFailed(true)}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (

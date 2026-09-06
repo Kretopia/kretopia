@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Paperclip, Image, X, Loader2 } from "lucide-react";
+import { Paperclip, Image, X, Loader2, ImageOff } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -155,15 +155,23 @@ interface AttachmentPreviewProps {
 }
 
 export const AttachmentPreview = ({ url, type, fileName, onRemove }: AttachmentPreviewProps) => {
+  const [imageFailed, setImageFailed] = useState(false);
   return (
     <div className="relative inline-block mb-2">
       {type === 'image' ? (
         <div className="relative rounded-lg overflow-hidden border border-border">
-          <img 
-            src={url} 
-            alt="Attachment preview" 
-            className="max-h-32 max-w-48 object-cover"
-          />
+          {imageFailed ? (
+            <div className="flex items-center gap-2 h-20 w-32 bg-muted/50 text-xs text-muted-foreground px-2">
+              <ImageOff className="h-3.5 w-3.5 shrink-0" /> Failed to load
+            </div>
+          ) : (
+            <img
+              src={url}
+              alt="Attachment preview"
+              onError={() => setImageFailed(true)}
+              className="max-h-32 max-w-48 object-cover"
+            />
+          )}
           <Button
             type="button"
             variant="destructive"

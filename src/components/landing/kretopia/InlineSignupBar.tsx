@@ -10,10 +10,7 @@
  */
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { trackLandingCta } from "@/lib/landingFunnel";
-
-const ACCENT = "#FF2DA1";
 
 export const InlineSignupBar = () => (
   <section
@@ -39,19 +36,15 @@ export const InlineSignupBar = () => (
         </p>
       </div>
 
-      <Button
-        asChild
-        className="group h-auto w-full shrink-0 rounded-full px-6 py-3 text-sm font-semibold sm:w-auto"
-        style={{ fontFamily: "'Satoshi', 'Inter', sans-serif", backgroundColor: ACCENT }}
+      <Link
+        to="/auth?tab=signup&intent=inline_bar"
+        onClick={() => trackLandingCta("inline_bar_claim_passport", "inline_signup")}
+        className="btn-landing-primary group flex h-auto w-full shrink-0 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold sm:w-auto"
+        style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
       >
-        <Link
-          to="/auth?tab=signup&intent=inline_bar"
-          onClick={() => trackLandingCta("inline_bar_claim_passport", "inline_signup")}
-        >
-          Claim your Passport
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
-        </Link>
-      </Button>
+        Claim your Passport
+        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+      </Link>
     </div>
   </section>
 );

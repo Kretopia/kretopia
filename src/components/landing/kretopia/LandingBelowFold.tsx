@@ -180,7 +180,7 @@ export const LandingBelowFold = () => {
         caption="Community"
         image={soundstagesImg}
         accent="#FF2DA1"
-        href="/auth?next=/circle?tab=live"
+        href={`/auth?next=${encodeURIComponent("/circle?tab=live")}`}
         ctaLabel="Join a SoundStage"
         tutorialSteps={SOUNDSTAGES_TUTORIAL}
         tutorialVisual={SoundStagesVisual}

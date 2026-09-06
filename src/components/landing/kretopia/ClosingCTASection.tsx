@@ -35,7 +35,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { FixedProgressiveCard } from "@/components/landing/kretopia/FixedProgressiveCard";
-import { Button } from "@/components/ui/button";
 import { trackLandingCtaClick } from "@/lib/landingMetrics";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -109,16 +108,15 @@ export const ClosingCTASection = () => {
               className="ai-ambient-breathe pointer-events-none absolute -inset-4 rounded-full blur-2xl"
               style={{ background: `radial-gradient(circle, ${ACCENT}55, transparent 70%)` }}
             />
-            <Button
-              asChild
-              className="btn-glass-hero group relative h-auto rounded-full px-8 py-4 text-base font-semibold"
+            <Link
+              to="/auth?tab=signup&intent=closing_cta&src=closing_cta"
+              onClick={trackSignupClick}
+              className="btn-landing-primary group relative inline-flex h-auto items-center gap-2 rounded-full px-8 py-4 text-base font-semibold"
               style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
             >
-              <Link to="/auth?tab=signup&intent=closing_cta&src=closing_cta" onClick={trackSignupClick}>
-                Claim Your Creative Passport
-                <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden />
-              </Link>
-            </Button>
+              Claim Your Creative Passport
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden />
+            </Link>
           </div>
         }
         supportingItem={

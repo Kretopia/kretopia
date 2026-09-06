@@ -1305,3 +1305,50 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   color: hsl(var(--primary-foreground)) !important;
 }
 .cta-solid::before { display: none !important; content: none !important; }
+
+/* ── LANDING PRIMARY CTA — grey-to-pink gradient ─────────────────────
+   The Landing conversion overhaul calls for a literal grey-to-pink
+   linear-gradient fill for its highest-weight CTAs (Hero, Claim
+   Passport, Closing) -- distinct from .btn-glass's translucent
+   glass-over-dark-background chrome above (built for secondary/tertiary
+   buttons layered over content) and from a flat hot-pink fill
+   (explicitly out per brand rules -- reads as a generic "buy now"
+   button, not Kretopia). Built entirely from existing semantic tokens:
+   the grey end is --secondary (the same dark elevated-surface tone
+   already used for cards), the pink end is --energy (the same brand
+   accent already used everywhere on Landing as a hardcoded #FF2DA1
+   literal) -- so this adds zero new raw color values to the codebase. */
+.btn-landing-primary {
+  position: relative;
+  isolation: isolate;
+  color: #fff;
+  background-image: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--energy)) 100%);
+  border: 1px solid hsl(var(--energy) / 0.4);
+  box-shadow: 0 16px 40px -20px hsl(var(--energy) / 0.5);
+  transition: box-shadow 0.3s ease, transform 0.2s ease, filter 0.3s ease;
+}
+.btn-landing-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 1px hsl(var(--energy) / 0.5), 0 0 28px hsl(var(--energy) / 0.45),
+              0 16px 40px -20px hsl(var(--energy) / 0.6);
+  transform: translateY(-1px);
+}
+.btn-landing-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--energy) / 0.6), 0 0 24px hsl(var(--energy) / 0.4);
+}
+.btn-landing-primary:active {
+  transform: translateY(0) scale(0.98);
+  filter: brightness(0.96);
+}
+.btn-landing-primary:disabled,
+.btn-landing-primary[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-landing-primary:hover { transform: none; }
+}

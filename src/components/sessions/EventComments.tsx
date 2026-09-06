@@ -261,7 +261,8 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle, isPar
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                        aria-label="Delete comment"
+                        className="h-6 w-6 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                         onClick={() => handleDelete(comment.id)}
                       >
                         <Trash2 className="h-3 w-3" />

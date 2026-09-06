@@ -155,7 +155,6 @@ const CreditsDashboard = lazy(() => import("./pages/CreditsDashboard"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
-const Explore = lazy(() => import("./pages/Explore"));
 const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const Ambassadors = lazy(() => import("./pages/Ambassadors"));
 const Ambassador = lazy(() => import("./pages/Ambassador"));

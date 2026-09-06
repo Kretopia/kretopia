@@ -3,15 +3,15 @@
  *
  * Landing Final Conversion Overhaul: replaces the prior search-first hero
  * (real global search bar as the primary action) with a direct,
- * CTA-first hero — one heading, one value sentence, one primary button.
- * The real "claim your record by searching your name" flow this used to
- * front-end is not deleted: it's reachable through the site's persistent
- * navbar search (now shown on the landing page too, see Navbar.tsx),
- * which already resolves a matched result to the same
+ * CTA-first hero — one heading, one value sentence, two CTAs of equal
+ * weight. The real "claim your record by searching your name" flow this
+ * used to front-end is not deleted: it's reachable through the site's
+ * persistent navbar search (now shown on the landing page too, see
+ * Navbar.tsx), which already resolves a matched result to the same
  * `/profile/:id?showClaim=true` claim entry point. Nothing backend-side
  * changed; only which UI fronts the flow.
  */
-import { Fragment, useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -19,24 +19,27 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { analytics } from "@/lib/analytics";
 import { trackLandingCta } from "@/lib/landingFunnel";
 
-const ACCENT = "#FF2DA1";
-
-/** Headline, split into words so each can resolve out of a blur on load and
- *  carry a running index that drives the hover stagger in .hero-title-fx. */
-const HEADLINE: { word: string; index: number }[][] = (() => {
-  const lines: string[][] = [
-    ["Turn", "the", "work", "you've", "already", "done"],
-    ["into", "your", "next", "opportunity."],
-  ];
-  let i = 0;
-  return lines.map((line) => line.map((word) => ({ word, index: i++ })));
-})();
+/** Headline, split into words per line so each can resolve out of a blur on
+ *  load. Line 1 renders in the default white; line 2 is wrapped in
+ *  .landing-accent (the canonical pink/italic/glow accent already used for
+ *  this exact role elsewhere on Landing) so every word in it inherits the
+ *  color/style without needing a per-word class. */
+const LINE_1 = ["Turn", "the", "work", "you've", "already", "done"];
+const LINE_2 = ["into", "your", "next", "opportunity."];
 
 interface KretopiaHeroProps {
   /** Kept for backward compatibility with the search-first flow this hero
    *  used to front — no longer called from here (see file header). */
   onSearchSubmit?: (query: string) => void;
 }
+
+const wordVariants = (reducedMotion: boolean) =>
+  reducedMotion
+    ? { hidden: {}, show: {} }
+    : {
+        hidden: { opacity: 0, y: 18, filter: "blur(8px)" },
+        show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] as const } },
+      };
 
 export const KretopiaHero = (_props: KretopiaHeroProps) => {
   const reducedMotion = useReducedMotion();
@@ -64,27 +67,57 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
         }}
       />
 
-      {/* Living aurora — two slow, counter-drifting magenta fields. Reads as
-          "something is thinking behind the glass" without ever competing
-          with the type. Disabled under prefers-reduced-motion. */}
-      {!reducedMotion && (
-        <>
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute -top-1/3 left-1/2 h-[70vh] w-[70vh] -translate-x-1/2 rounded-full blur-[110px]"
-            style={{ background: `radial-gradient(circle, ${ACCENT}26, transparent 65%)` }}
-            animate={{ x: ["-55%", "-40%", "-55%"], y: [0, 40, 0], scale: [1, 1.12, 1] }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-1/4 right-0 h-[50vh] w-[50vh] rounded-full blur-[120px]"
-            style={{ background: "radial-gradient(circle, rgba(120,80,255,0.16), transparent 65%)" }}
-            animate={{ x: [0, -60, 0], y: [0, -30, 0], scale: [1.1, 1, 1.1] }}
-            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </>
-      )}
+      {/* Northern Lights — three drifting curtains of light in Kretopia's own
+          palette (pink/energy + violet + a cool blue undertone for depth),
+          composited with mix-blend-mode:screen so overlapping color actually
+          brightens like real aurora light instead of muddying like paint.
+          Always rendered (never blank) -- under reduced motion each curtain
+          holds its resting position instead of animating, rather than
+          disappearing entirely, so the section stays visually rich for
+          every visitor. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        style={{ mixBlendMode: "screen" }}
+      >
+        <motion.div
+          className="absolute -top-1/4 left-[-15%] h-[62vh] w-[140%] rounded-[50%] blur-[100px]"
+          style={{
+            background:
+              "linear-gradient(100deg, transparent 4%, rgba(255,45,161,0.4) 32%, rgba(255,45,161,0.18) 52%, transparent 82%)",
+          }}
+          initial={{ rotate: -9, y: 0, scaleY: 1 }}
+          animate={
+            reducedMotion
+              ? undefined
+              : { y: [0, 34, -12, 0], scaleY: [1, 1.18, 0.92, 1], rotate: [-9, -5, -11, -9] }
+          }
+          transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-[2%] right-[-20%] h-[56vh] w-[135%] rounded-[50%] blur-[110px]"
+          style={{
+            background:
+              "linear-gradient(105deg, transparent 6%, rgba(150,90,255,0.34) 38%, rgba(150,90,255,0.14) 58%, transparent 85%)",
+          }}
+          initial={{ rotate: 7, y: 0, scaleY: 1 }}
+          animate={
+            reducedMotion
+              ? undefined
+              : { y: [0, -28, 16, 0], scaleY: [1, 0.88, 1.2, 1], rotate: [7, 10, 4, 7] }
+          }
+          transition={{ duration: 32, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+        />
+        <motion.div
+          className="absolute top-[-14%] left-[8%] h-[48vh] w-[115%] rounded-[50%] blur-[120px]"
+          style={{
+            background: "linear-gradient(95deg, transparent 8%, rgba(70,170,255,0.18) 45%, transparent 82%)",
+          }}
+          initial={{ rotate: -4, y: 0 }}
+          animate={reducedMotion ? undefined : { y: [0, 22, 0], rotate: [-4, -7, -4] }}
+          transition={{ duration: 38, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+        />
+      </div>
 
       {/* Faint signal grid, masked to fade out — the "machine" layer */}
       <div
@@ -109,86 +142,36 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           For creatives who want their work to count
         </motion.p>
 
-        {/* Headline — words reveal one by one out of a blur on load. Hover
-            adds a second interaction, hero-title-arcs: a handful of thin
-            SVG arcs traced in the same grey-to-pink gradient as
-            btn-landing-primary (--secondary -> --energy, the one gradient
-            pair that IS Kretopia's CTA language) sweep in behind the words
-            like current arcing between them, while each word lifts in a
-            staggered wave. The arcs sit on a plain absolutely-positioned
-            <svg> sibling, and the wave-lift on a plain inner <span> inside
-            each word -- neither ever touches framer-motion's own inline
-            transform on the outer motion.span used for the entrance
-            reveal. */}
-        <div className="relative hero-title-fx max-w-full mx-auto">
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            viewBox="0 0 400 140"
-            preserveAspectRatio="none"
-            className="hero-title-arcs pointer-events-none absolute -inset-x-6 -inset-y-8"
+        {/* Headline — words reveal one by one out of a blur on load. Line 2
+            is wrapped in .landing-accent, the canonical pink/italic/glow
+            treatment already used for this exact role elsewhere on Landing
+            (see VerifiedCreditsChapterSection's "proves your experience") --
+            reused rather than inventing a second accent style. */}
+        <h1 className="landing-h1 landing-glow max-w-full mx-auto">
+          <motion.span
+            className="block"
+            initial="hidden"
+            animate="show"
+            variants={{ show: { transition: { staggerChildren: reducedMotion ? 0 : 0.05 } } }}
           >
-            <defs>
-              <linearGradient id="heroArcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: "hsl(var(--secondary))" }} />
-                <stop offset="100%" style={{ stopColor: "hsl(var(--energy))" }} />
-              </linearGradient>
-              <filter id="heroArcGlow" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur stdDeviation="2.4" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            <path className="hero-arc hero-arc-1" d="M8,26 Q100,-8 196,28 T392,18" />
-            <path className="hero-arc hero-arc-2" d="M14,70 Q120,112 210,70 T386,90" />
-            <path className="hero-arc hero-arc-3" d="M4,114 Q90,86 200,120 T396,102" />
-          </svg>
-
-          <h1 className="landing-h1 landing-glow relative">
-            <motion.span
-              className="block"
-              initial="hidden"
-              animate="show"
-              variants={{ show: { transition: { staggerChildren: reducedMotion ? 0 : 0.05 } } }}
-            >
-              {HEADLINE.map((line, li) => (
-                <span key={li} className="block">
-                  {line.map(({ word, index }, wi) => (
-                    // The separating space is a sibling of motion.span, not a
-                    // child of it or of .hero-word -- a trailing space inside
-                    // either inline-block collapses to zero width (each
-                    // establishes its own line-box, and CSS trims whitespace
-                    // at the edge of one), confirmed by measuring a 0px gap
-                    // between words with the space nested either way. Placed
-                    // here, directly inside the block-level line wrapper
-                    // between two atomic inline-block boxes, it renders
-                    // normally.
-                    <Fragment key={`${li}-${wi}`}>
-                      <motion.span
-                        className="inline-block"
-                        variants={
-                          reducedMotion
-                            ? { hidden: {}, show: {} }
-                            : {
-                                hidden: { opacity: 0, y: 18, filter: "blur(8px)" },
-                                show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.95] } },
-                              }
-                        }
-                      >
-                        <span className="hero-word" style={{ ["--wi" as string]: index }}>
-                          {word}
-                        </span>
-                      </motion.span>
-                      {wi < line.length - 1 ? " " : ""}
-                    </Fragment>
-                  ))}
-                </span>
+            <span className="block">
+              {LINE_1.map((word, wi) => (
+                <motion.span key={wi} className="inline-block" variants={wordVariants(reducedMotion)}>
+                  {word}
+                  {wi < LINE_1.length - 1 ? " " : ""}
+                </motion.span>
               ))}
-            </motion.span>
-          </h1>
-        </div>
+            </span>
+            <span className="landing-accent block">
+              {LINE_2.map((word, wi) => (
+                <motion.span key={wi} className="inline-block" variants={wordVariants(reducedMotion)}>
+                  {word}
+                  {wi < LINE_2.length - 1 ? " " : ""}
+                </motion.span>
+              ))}
+            </span>
+          </motion.span>
+        </h1>
 
         {/* Value explanation — the "why" behind the headline, one sentence. */}
         <motion.p
@@ -201,26 +184,37 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           discovered for the skills you've already proved.
         </motion.p>
 
-        {/* Primary CTA — the one dominant action. Real button, canonical
-            grey-to-pink gradient (btn-landing-primary), not a typographic
-            link and not a flat pink fill. This is Kretopia's one CTA
-            design for this weight of action -- no second, differently
-            styled button beside it. */}
+        {/* CTA pair — primary (canonical grey-to-pink gradient,
+            btn-landing-primary) beside a same-size secondary sign-in action
+            (btn-glass btn-glass-outline, the same restrained glass family
+            used everywhere else on the site). One clear primary action,
+            one clear secondary one, nothing else competing for attention. */}
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-9 sm:mt-10 flex flex-col items-center gap-4"
         >
-          <Link
-            to="/auth?tab=signup&src=hero_passport"
-            onClick={() => trackLandingCta("hero_build_passport", "hero")}
-            className="btn-landing-primary group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
-            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-          >
-            Build my Creative Passport
-            <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Link
+              to="/auth?tab=signup&src=hero_passport"
+              onClick={() => trackLandingCta("hero_build_passport", "hero")}
+              className="btn-landing-primary group inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+            >
+              Build my Passport
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </Link>
+
+            <Link
+              to="/auth?tab=signin"
+              onClick={() => trackLandingCta("hero_signin", "hero")}
+              className="btn-glass btn-glass-outline inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold"
+              style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
+            >
+              Sign in
+            </Link>
+          </div>
 
           <p
             className="text-xs text-white/45"
@@ -228,15 +222,6 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           >
             Free to start. No credit card needed.
           </p>
-
-          <Link
-            to="/auth?tab=signin"
-            onClick={() => trackLandingCta("hero_signin", "hero")}
-            className="text-xs text-white/40 underline decoration-white/15 underline-offset-4 transition-colors hover:text-white/70"
-            style={{ fontFamily: "'Satoshi', 'Inter', sans-serif" }}
-          >
-            Already have an account? Sign in
-          </Link>
         </motion.div>
       </div>
 

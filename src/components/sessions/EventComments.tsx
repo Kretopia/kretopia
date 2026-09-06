@@ -196,12 +196,18 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle, isPar
   };
 
   const handleDelete = async (commentId: string) => {
-    const { error } = await supabase
+    // A delete that RLS filters out entirely matches zero rows rather than
+    // raising an error, so without .select() this would silently "succeed"
+    // from the client's point of view — the comment reappearing on the next
+    // reload with no visible failure. Requesting the deleted row back makes
+    // a denied delete distinguishable from a real one.
+    const { data, error } = await supabase
       .from('event_comments' as any)
       .delete()
-      .eq('id', commentId);
+      .eq('id', commentId)
+      .select('id');
 
-    if (error) {
+    if (error || !data || data.length === 0) {
       toast({ title: "Error", description: "Failed to delete", variant: "destructive" });
     } else {
       setComments(prev => prev.filter(c => c.id !== commentId));

@@ -213,7 +213,7 @@ export const EventCohosts = ({ eventId, isCreator }: EventCohostsProps) => {
           )}
 
           {cohosts.length === 0 && !searchQuery && (
-            <p className="text-xs text-muted-foreground">Add co-hosts who can help manage this event</p>
+            <p className="text-xs text-muted-foreground">Add co-hosts to credit them on this event</p>
           )}
         </div>
       )}

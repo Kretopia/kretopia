@@ -57,7 +57,7 @@ export const LandingBelowFold = () => {
         title={
           <>
             One place for <br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <span className="landing-accent">
               the work
             </span>{" "}
             <br className="hidden sm:block" />
@@ -95,7 +95,7 @@ export const LandingBelowFold = () => {
         title={
           <>
             The opportunity finds<br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <span className="landing-accent">
               you
             </span>
           </>
@@ -120,7 +120,7 @@ export const LandingBelowFold = () => {
         title={
           <>
             The right person<br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <span className="landing-accent">
               for the work
             </span>
           </>
@@ -143,7 +143,7 @@ export const LandingBelowFold = () => {
         title={
           <>
             From idea to invoice<br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <span className="landing-accent">
               in one room
             </span>
           </>
@@ -173,7 +173,7 @@ export const LandingBelowFold = () => {
         title={
           <>
             Creative careers<br />
-            <span className="italic" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <span className="landing-accent">
               grow through people
             </span>
           </>

@@ -14,13 +14,20 @@
  * happening) plus the same paired sr-only text announcement -- state is
  * still never color/motion alone.
  *
- * "main" gets a soft radial fade (CSS mask-image) so its photographic
- * rectangle blends into the app's permanently-dark surfaces instead of
- * reading as a pasted sticker -- biased low and tall so the ground
- * shadow under its feet stays visible instead of fading with the rest
- * (direct feedback: "avec le sol sous ses pieds"). The four role
- * variants render inside a rounded-square tile, matching their own
- * presentation in the source artwork -- a defined edge is correct
+ * "main" uses a real alpha-channel cutout (background removed via
+ * ML segmentation, not a CSS fade) -- direct feedback flagged the
+ * earlier CSS radial-mask approach as still reading like "a pasted
+ * image with a visible box", which is real: a soft edge fade can
+ * never fully hide a rectangular source photo's corners. A true cutout
+ * has no box to hide in the first place. The source photo's own ground
+ * shadow was removed by the segmentation along with the rest of the
+ * background (it wasn't part of the character's solid silhouette) --
+ * a separate, deliberate CSS radial-gradient "grounding" ellipse
+ * beneath the character replaces it, giving the same "standing on
+ * something" feel without depending on a baked-in shadow that only
+ * ever looked right against one exact background. The four role
+ * variants still render inside a rounded-square tile, matching their
+ * own presentation in the source artwork -- a defined edge is correct
  * there, not a flaw to hide.
  *
  * `hoverable` makes the cast feel alive to a real pointer, per direct
@@ -34,7 +41,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
-import kretoMain from "@/assets/brand/kreto/kreto-main.jpg";
+import kretoMain from "@/assets/brand/kreto/kreto-main-cutout.png";
 import kretoScout from "@/assets/brand/kreto/kreto-scout.jpg";
 import kretoConnector from "@/assets/brand/kreto/kreto-connector.jpg";
 import kretoProducer from "@/assets/brand/kreto/kreto-producer.jpg";
@@ -183,17 +190,26 @@ export const KretoCharacter = ({
       onHoverEnd={handleHoverEnd}
       aria-hidden="true"
     >
+      {isMain && (
+        // Grounding shadow -- a deliberate CSS ellipse standing in for the
+        // real cutout's now-removed background shadow, so the character
+        // still reads as standing on something regardless of what's behind
+        // it, instead of depending on one exact background matching a
+        // baked-in photo shadow.
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 bottom-[6%] -translate-x-1/2 rounded-[50%] blur-md"
+          style={{ width: "58%", height: "10%", background: "radial-gradient(closest-side, rgba(0,0,0,0.45), transparent)" }}
+        />
+      )}
       <img
         src={VARIANT_SRC[variant]}
         alt=""
         draggable={false}
-        className={cn("w-full h-auto select-none", isMain ? "" : "rounded-2xl")}
+        className={cn("relative w-full h-auto select-none", isMain ? "" : "rounded-2xl")}
         style={
           isMain
-            ? {
-                maskImage: "radial-gradient(65% 100% at 50% 62%, #000 62%, transparent 100%)",
-                WebkitMaskImage: "radial-gradient(65% 100% at 50% 62%, #000 62%, transparent 100%)",
-              }
+            ? undefined
             : {
                 boxShadow: "0 0 0 1px hsl(var(--border) / 0.4), 0 10px 28px -12px rgba(0,0,0,0.6)",
               }

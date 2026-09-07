@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 export type KretoPresenceState =
   | "idle"
   | "attentive"
+  | "listening"
   | "processing"
   | "proposal_ready"
   | "success"
@@ -66,6 +67,7 @@ const SIZE_PX: Record<KretoPresenceSize, number> = {
 const STATE_LABEL: Record<KretoPresenceState, string> = {
   idle: "",
   attentive: "",
+  listening: "Kreto is listening",
   processing: "Kreto is working on this",
   proposal_ready: "Kreto has a suggestion ready",
   success: "Kreto completed the action",
@@ -93,13 +95,20 @@ function signalColor(state: KretoPresenceState): string {
 }
 
 /** Which states get a continuous loop vs. a single one-shot acknowledgement
- *  vs. nothing at all -- KRETO_STATE_MACHINE_REPORT.md §"Motion per state". */
-type SignalMotion = "loop-slow" | "loop-fast" | "once-in" | "once-nod" | "none";
+ *  vs. nothing at all -- KRETO_STATE_MACHINE_REPORT.md §"Motion per state".
+ *  "loop-listen" is deliberately a calmer, steadier pulse than "loop-fast"
+ *  (processing) -- New Room already has its own large pulsing stop-button
+ *  while genuinely recording (KRETO_NEW_ROOM_INTEGRATION_REPORT.md), so
+ *  Kreto's own cue here reads as "present and picking this up" rather than
+ *  competing with it as a second anxious animation. */
+type SignalMotion = "loop-slow" | "loop-listen" | "loop-fast" | "once-in" | "once-nod" | "none";
 function signalMotion(state: KretoPresenceState): SignalMotion {
   switch (state) {
     case "idle":
     case "attentive":
       return "loop-slow";
+    case "listening":
+      return "loop-listen";
     case "processing":
       return "loop-fast";
     case "proposal_ready":
@@ -165,19 +174,23 @@ export const KretoPresence = ({
     ? undefined
     : motionState === "loop-fast"
       ? { opacity: [0.55, 1, 0.55], scale: [0.92, 1.08, 0.92] }
-      : motionState === "loop-slow"
-        ? { opacity: [0.75, 1, 0.75] }
-        : motionState === "once-in"
-          ? { opacity: [0, 1], scale: [0.8, 1] }
-          : motionState === "once-nod"
-            ? { scale: [1, 1.18, 1] }
-            : undefined;
+      : motionState === "loop-listen"
+        ? { opacity: [0.65, 1, 0.65], scale: [0.97, 1.03, 0.97] }
+        : motionState === "loop-slow"
+          ? { opacity: [0.75, 1, 0.75] }
+          : motionState === "once-in"
+            ? { opacity: [0, 1], scale: [0.8, 1] }
+            : motionState === "once-nod"
+              ? { scale: [1, 1.18, 1] }
+              : undefined;
   const signalTransition =
     motionState === "loop-fast"
       ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" as const }
-      : motionState === "loop-slow"
-        ? { duration: 6, repeat: Infinity, ease: "easeInOut" as const }
-        : { duration: 0.45, ease: "easeOut" as const };
+      : motionState === "loop-listen"
+        ? { duration: 2, repeat: Infinity, ease: "easeInOut" as const }
+        : motionState === "loop-slow"
+          ? { duration: 6, repeat: Infinity, ease: "easeInOut" as const }
+          : { duration: 0.45, ease: "easeOut" as const };
 
   const visual = (
     <motion.div

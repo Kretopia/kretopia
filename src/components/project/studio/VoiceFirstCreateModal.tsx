@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { KretoMark } from "@/components/brand/KretoMark";
+import { KretoPresence, type KretoPresenceState } from "@/components/brand/KretoPresence";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceConfigs";
 import { compressImage } from "@/lib/extractBriefDocument";
 import { inferWorkspaceType } from "@/lib/inferWorkspaceType";
+import { getNewRoomCautionReasons } from "@/lib/newRoomCaution";
 import { analytics } from "@/lib/analytics";
 
 
@@ -96,7 +97,7 @@ interface VoiceFirstCreateModalProps {
   onCreated: () => void;
 }
 
-type Mode = "prompt" | "recording" | "thinking" | "review";
+type Mode = "prompt" | "recording" | "thinking" | "review" | "error";
 
 interface ExtractedBrief {
   project: { title: string; summary: string };
@@ -143,6 +144,17 @@ export const VoiceFirstCreateModal = ({
   const [linkUrl, setLinkUrl] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
   const [thinkingStep, setThinkingStep] = useState(0);
+  // Kreto embodied-presence state (KRETO_NEW_ROOM_STATE_MAPPING_AUDIT.md) --
+  // every field below is a real, independently-observable signal, never a
+  // fabricated one: composerFocused is real DOM focus, isOffline mirrors the
+  // browser's own online/offline events, errorInfo/creationError are only
+  // ever set inside a real catch block, and draftDegraded is only set when
+  // extract-brief genuinely failed and the app fell back to raw text.
+  const [composerFocused, setComposerFocused] = useState(false);
+  const [isOffline, setIsOffline] = useState(() => (typeof navigator !== "undefined" ? !navigator.onLine : false));
+  const [errorInfo, setErrorInfo] = useState<{ message: string; retryTo: "prompt" | "link" } | null>(null);
+  const [creationError, setCreationError] = useState<string | null>(null);
+  const [draftDegraded, setDraftDegraded] = useState(false);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -180,6 +192,10 @@ export const VoiceFirstCreateModal = ({
       setShowLinkInput(false);
       setLinkUrl("");
       setUploadingFile(false);
+      setComposerFocused(false);
+      setErrorInfo(null);
+      setCreationError(null);
+      setDraftDegraded(false);
       hydratedRef.current = false;
       return;
     }
@@ -232,6 +248,23 @@ export const VoiceFirstCreateModal = ({
     );
     return () => window.clearInterval(id);
   }, [mode]);
+
+  // Real browser connectivity, tracked only while New Room is actually open
+  // -- not a guess, and no new network request (KRETO_HERO_NEW_ROOM_PERFORMANCE_REPORT.md's
+  // "no new network request" rule). This reflects the browser's own network
+  // interface state, which is the most honest signal available without
+  // adding a request solely to probe reachability.
+  useEffect(() => {
+    if (!open || typeof window === "undefined") return;
+    const goOnline = () => setIsOffline(false);
+    const goOffline = () => setIsOffline(true);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, [open]);
 
   const startTimer = () => {
     setSeconds(0);
@@ -311,6 +344,7 @@ export const VoiceFirstCreateModal = ({
     });
 
   const processAudio = async (blob: Blob) => {
+    setDraftDegraded(false);
     try {
       const data_base64 = await blobToBase64(blob);
       const { data, error } = await supabase.functions.invoke("extract-brief", {
@@ -329,12 +363,15 @@ export const VoiceFirstCreateModal = ({
       setMode("review");
     } catch (err: any) {
       console.error(err);
-      toast({
-        title: "Couldn't process that",
-        description: await describeFunctionError(err, "Try typing it instead."),
-        variant: "destructive",
+      analytics.newRoomCreationFailed("voice_extract");
+      setErrorInfo({
+        message: await describeFunctionError(
+          err,
+          "Kreto couldn't catch what you said. Try again or type it instead.",
+        ),
+        retryTo: "prompt",
       });
-      setMode("prompt");
+      setMode("error");
     }
   };
 
@@ -342,6 +379,7 @@ export const VoiceFirstCreateModal = ({
     const trimmed = textInput.trim();
     if (!trimmed) return;
     setRawInput(trimmed);
+    setDraftDegraded(false);
     analytics.newRoomInputModeSelected('text');
     setMode("thinking");
     // If user hasn't picked a type yet, infer one before calling extract-brief
@@ -378,6 +416,7 @@ export const VoiceFirstCreateModal = ({
         },
       });
       setSelected(new Set());
+      setDraftDegraded(true);
       setMode("review");
     }
   };
@@ -396,6 +435,7 @@ export const VoiceFirstCreateModal = ({
       return;
     }
     setUploadingFile(true);
+    setDraftDegraded(false);
     analytics.newRoomFileUploaded(file.type || 'unknown');
     setMode("thinking");
     try {
@@ -428,12 +468,11 @@ export const VoiceFirstCreateModal = ({
     } catch (err: any) {
       console.error(err);
       analytics.newRoomCreationFailed('file_extract');
-      toast({
-        title: "Couldn't read that file",
-        description: await describeFunctionError(err, "Try pasting the brief as text instead."),
-        variant: "destructive",
+      setErrorInfo({
+        message: await describeFunctionError(err, "Kreto couldn't read that file. Try pasting the brief as text instead."),
+        retryTo: "prompt",
       });
-      setMode("prompt");
+      setMode("error");
     } finally {
       setUploadingFile(false);
     }
@@ -453,6 +492,7 @@ export const VoiceFirstCreateModal = ({
     if (!url) return;
     analytics.newRoomInputModeSelected('link');
     analytics.newRoomLinkSubmitted();
+    setDraftDegraded(false);
     setMode("thinking");
     try {
       const { data, error } = await supabase.functions.invoke("extract-brief", {
@@ -468,13 +508,14 @@ export const VoiceFirstCreateModal = ({
     } catch (err: any) {
       console.error(err);
       analytics.newRoomCreationFailed('link_extract');
-      toast({
-        title: "Couldn't read that link",
-        description: await describeFunctionError(err, "Make sure the Google Sheet is shared as \"Anyone with the link.\""),
-        variant: "destructive",
+      setErrorInfo({
+        message: await describeFunctionError(
+          err,
+          "Kreto couldn't read that link. Make sure the Google Sheet is shared as \"Anyone with the link.\"",
+        ),
+        retryTo: "link",
       });
-      setMode("prompt");
-      setShowLinkInput(true);
+      setMode("error");
     }
   };
 
@@ -482,6 +523,7 @@ export const VoiceFirstCreateModal = ({
     if (!user || !brief) return;
     if (creatingRef.current) return;
     creatingRef.current = true;
+    setCreationError(null);
     analytics.newRoomProjectConfirmed(workspaceType);
     setCreating(true);
     try {
@@ -551,10 +593,16 @@ export const VoiceFirstCreateModal = ({
       clearDraft();
       onCreated();
       onOpenChange(false);
-      setTimeout(() => navigate(`/desk/${project.id}`), 80);
+      // Real route state, not a query param -- it never reaches the URL, so
+      // it can't be bookmarked, shared or hand-typed to spoof the
+      // acknowledgement on an unrelated visit (KRETO_NEW_ROOM_INTEGRATION_REPORT.md's
+      // approved design). Only ever set here, right after this real insert
+      // succeeded.
+      setTimeout(() => navigate(`/desk/${project.id}`, { state: { kretoJustCreated: true } }), 80);
     } catch (err: any) {
       console.error(err);
       analytics.newRoomCreationFailed('project_insert');
+      setCreationError(err?.message || "Couldn't open the room. Try again.");
       toast({
         title: "Couldn't open the room",
         description: err.message,
@@ -618,6 +666,15 @@ export const VoiceFirstCreateModal = ({
   const fmtSec = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
+  // Review-step Kreto state: a real creation failure always takes priority
+  // (it's the most urgent thing to surface), otherwise caution only when a
+  // real unresolved detail exists (KRETO_NEW_ROOM_STATE_MAPPING_AUDIT.md's
+  // approved decision) -- never for an ordinary clean draft.
+  const otherCautionReasons = getNewRoomCautionReasons(workspaceType, draftDegraded);
+  const noDeliverables = !brief?.deliverables || brief.deliverables.length === 0;
+  const reviewNeedsCaution = otherCautionReasons.length > 0 || noDeliverables;
+  const reviewState: KretoPresenceState = creationError ? "error" : reviewNeedsCaution ? "caution" : "proposal_ready";
+
   return (
     <div
       ref={modalRef}
@@ -672,9 +729,19 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "prompt" && (
           <>
+            <KretoPresence
+              size="card"
+              className="mb-4"
+              state={isOffline ? "offline" : composerFocused || showLinkInput ? "attentive" : "idle"}
+            />
             <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] mb-3 leading-[1.05]">
               What are you making?
             </h1>
+            {isOffline && (
+              <p role="status" className="text-xs font-semibold text-muted-foreground mb-3">
+                You're offline — reconnect before Kreto can read a brief.
+              </p>
+            )}
             <p className="text-sm text-muted-foreground max-w-sm mb-3">
               Share what you're working on — voice, text, a file or a link. Kreto drafts the
               brief, starter tasks and room type for you to review.
@@ -788,6 +855,8 @@ export const VoiceFirstCreateModal = ({
                     autoFocus
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
+                    onFocus={() => setComposerFocused(true)}
+                    onBlur={() => setComposerFocused(false)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && textInput.trim()) {
                         e.preventDefault();
@@ -889,6 +958,7 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "recording" && (
           <>
+            <KretoPresence size="compact" state="listening" className="mb-5" />
             <div className="relative mb-8">
               <span
                 className="absolute inset-0 rounded-full animate-ping"
@@ -914,9 +984,9 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "thinking" && (
           <div className="flex flex-col items-center">
-            <KretoMark size="xl" state="active" />
+            <KretoPresence size="card" state="processing" />
 
-            <div className="mt-7 h-7 relative w-full max-w-xs">
+            <div className="mt-7 h-7 relative w-full max-w-xs" aria-live="polite">
               <AnimatePresence mode="wait">
                 <motion.p
                   key={thinkingStep}
@@ -943,11 +1013,59 @@ export const VoiceFirstCreateModal = ({
           </div>
         )}
 
+        {mode === "error" && (
+          <div className="flex flex-col items-center max-w-sm">
+            <KretoPresence size="card" state={isOffline ? "offline" : "error"} />
+            <p className="mt-6 text-lg font-bold">
+              {isOffline ? "You're offline" : "Kreto couldn't finish that draft."}
+            </p>
+            <p role="alert" className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              {isOffline
+                ? "Reconnect and try again — nothing you typed or recorded is lost."
+                : errorInfo?.message || "Your input is still here. Try again or adjust the brief."}
+            </p>
+            <Button
+              className="mt-6"
+              onClick={() => {
+                const retryTo = errorInfo?.retryTo ?? "prompt";
+                setErrorInfo(null);
+                setMode("prompt");
+                if (retryTo === "link") setShowLinkInput(true);
+              }}
+            >
+              Try again
+            </Button>
+          </div>
+        )}
+
         {mode === "review" && brief && (
           <div className="w-full max-w-md space-y-5 text-left">
-            <p className="text-xs font-bold tracking-[0.18em] uppercase" style={{ color: "hsl(var(--energy))" }}>
-              Kreto structured your project — review and edit
-            </p>
+            <div className="flex items-center gap-3">
+              <KretoPresence size="compact" state={reviewState} />
+              <p className="text-xs font-bold tracking-[0.18em] uppercase" style={{ color: "hsl(var(--energy))" }}>
+                Kreto structured your project — review and edit
+              </p>
+            </div>
+
+            {creationError && (
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
+                {creationError}
+              </div>
+            )}
+
+            {otherCautionReasons.length > 0 && (
+              <div role="status" className="rounded-lg border p-3 space-y-1" style={{ borderColor: "hsl(var(--warning) / 0.4)", backgroundColor: "hsl(var(--warning) / 0.06)" }}>
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--warning))" }}>
+                  Worth a look before you continue
+                </p>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  {otherCautionReasons.map((reason) => (
+                    <li key={reason}>{reason}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Project name

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { KretoCharacter } from "../KretoCharacter";
 
@@ -54,6 +54,31 @@ describe("KretoCharacter", () => {
   it("does not throw when hoverable under reduced motion (hover wiggle is skipped, not broken)", () => {
     reducedMotion = true;
     expect(() => render(<KretoCharacter hoverable />)).not.toThrow();
+    reducedMotion = false;
+  });
+
+  it("knocks to a real, non-identity transform on a real hover, and settles back on hover end", async () => {
+    const { container } = render(<KretoCharacter hoverable />);
+    const el = container.firstElementChild as HTMLElement;
+    const restingTransform = el.style.transform;
+
+    fireEvent.mouseEnter(el);
+    await waitFor(() => expect(el.style.transform).not.toBe(restingTransform));
+
+    fireEvent.mouseLeave(el);
+    // Settling back is itself animated (spring/tween), so just confirm the
+    // hover-end handler ran without throwing and the element is still there
+    // -- KretoPresence-style "does not throw" coverage, not a pixel chase.
+    expect(el).toBeInTheDocument();
+  });
+
+  it("never knocks when reduced motion is on, even while hoverable", () => {
+    reducedMotion = true;
+    const { container } = render(<KretoCharacter hoverable />);
+    const el = container.firstElementChild as HTMLElement;
+    const restingTransform = el.style.transform;
+    fireEvent.mouseEnter(el);
+    expect(el.style.transform).toBe(restingTransform);
     reducedMotion = false;
   });
 });

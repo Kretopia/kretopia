@@ -43,22 +43,17 @@ import { KretoCharacter, type KretoCharacterVariant } from "@/components/brand/K
 const LINE_1 = ["Find", "work", "that", "fits"];
 const LINE_2 = ["what", "you", "do."];
 
-/** Scattered decorative Kreto instances -- "repartis... de facon
- *  équilibrée, pas que sur les cotés" per direct feedback: a top row
- *  (above the brand lockup) and a bottom row (below the CTA/trust line)
- *  balance the left/right columns instead of everything hugging the
- *  edges. The top/bottom rows can sit at any horizontal position (even
- *  centered) because they're vertically outside the text entirely --
- *  the section's own top/bottom padding (pt-16..lg:pt-28,
- *  pb-20..sm:pb-28) is empty space above/below the centered content div.
- *  The left/right column entries stay inside the margin that's clear
- *  even at the tightest desktop width this renders at (exactly `lg`,
- *  1024px, ~62px outside the centered max-w-[900px] column before its
- *  own internal padding even starts) -- those DO share vertical range
- *  with the text, so they can't drift toward center. Each instance gets
- *  its own float delay/amplitude/duration so the group reads as
- *  independently drifting, not one asset cloned in lockstep, and
- *  `hoverable` makes each one react to a real mouse hover. */
+/** 4 satellite role variants plus the big main figure (rendered separately
+ *  below, not in this array) -- 5 total, per direct feedback. The main
+ *  figure now owns the bottom-right corner at a larger size, so these
+ *  four cover top-left, top-right, bottom-left and mid-left instead of
+ *  crowding near it -- "judicieusement... sur toute" the section without
+ *  two instances landing on top of each other. Each still sits inside the
+ *  margin that's clear even at the tightest desktop width this renders at
+ *  (exactly `lg`, 1024px, ~62px outside the centered max-w-[900px] column
+ *  before its own internal padding even starts), and gets its own float
+ *  delay/amplitude/duration so the group reads as independently
+ *  drifting, not cloned in lockstep. */
 const HERO_FLOATERS: Array<{
   variant: KretoCharacterVariant;
   size: number;
@@ -67,24 +62,10 @@ const HERO_FLOATERS: Array<{
   floatAmplitude: number;
   floatDuration: number;
 }> = [
-  // Top row -- above the brand lockup, clear of all text at any x.
-  { variant: "scout", size: 46, className: "top-4 left-[28%]", floatDelay: 0.2, floatAmplitude: 6, floatDuration: 6.5 },
-  { variant: "connector", size: 46, className: "top-6 right-[26%]", floatDelay: 1.4, floatAmplitude: 5, floatDuration: 7 },
-
-  // Bottom row -- below the CTA/trust line, clear of all text at any x.
-  { variant: "producer", size: 46, className: "bottom-4 left-[30%]", floatDelay: 0.8, floatAmplitude: 6, floatDuration: 6.8 },
-  { variant: "publicist", size: 46, className: "bottom-6 right-[30%]", floatDelay: 2, floatAmplitude: 5, floatDuration: 7.2 },
-
-  // Left column -- inside the pixel margin that's clear at every desktop
-  // width down to `lg`; any y is safe here.
-  { variant: "scout", size: 58, className: "top-28 left-6", floatDelay: 0, floatAmplitude: 8, floatDuration: 7 },
-  { variant: "producer", size: 48, className: "top-64 left-3", floatDelay: 1.8, floatAmplitude: 6, floatDuration: 6.4 },
-  { variant: "connector", size: 44, className: "bottom-28 left-10", floatDelay: 1, floatAmplitude: 5, floatDuration: 7.4 },
-
-  // Right column -- same margin guarantee, mirrored.
-  { variant: "publicist", size: 56, className: "top-24 right-8", floatDelay: 0.6, floatAmplitude: 7, floatDuration: 6.2 },
-  { variant: "connector", size: 46, className: "top-60 right-3", floatDelay: 2.2, floatAmplitude: 6, floatDuration: 6.9 },
-  { variant: "scout", size: 44, className: "bottom-24 right-10", floatDelay: 1.2, floatAmplitude: 5, floatDuration: 7.1 },
+  { variant: "scout", size: 80, className: "top-16 left-10", floatDelay: 0, floatAmplitude: 8, floatDuration: 7 },
+  { variant: "connector", size: 78, className: "top-16 right-10", floatDelay: 1.2, floatAmplitude: 7, floatDuration: 6.6 },
+  { variant: "producer", size: 76, className: "bottom-16 left-10", floatDelay: 0.7, floatAmplitude: 6, floatDuration: 7.3 },
+  { variant: "publicist", size: 72, className: "top-64 left-3", floatDelay: 1.8, floatAmplitude: 7, floatDuration: 6.9 },
 ];
 
 interface KretopiaHeroProps {
@@ -317,18 +298,19 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
       </div>
 
       {/* Kreto's real, owned character render (KRETO_CHARACTER_ASSET_REPORT.md)
-          -- scattered role-variant instances plus the main figure, floating
-          independently and reacting to a real mouse hover, balanced across
-          top/bottom/left/right per direct feedback ("repartis... de facon
-          équilibrée, pas que sur les cotés", "je dois pouvoir faire bouger
-          les perso quand je passe ma souris dessus"). Desktop only (lg+):
-          the content column fills nearly the full width below that
-          breakpoint (confirmed in LANDING_HERO_AVATAR_ASSET_AUDIT.md), so
-          there's no genuine peripheral space for any of this without
-          risking overlap on tablet/mobile. Each wrapper stays
-          pointer-events-none (so the absolutely-positioned hit-box itself
-          never intercepts anything); KretoCharacter's own `hoverable` prop
-          re-enables pointer events on just the character itself. */}
+          -- 4 satellite role variants plus the big main figure, floating
+          like balloons and reacting to a real mouse hover by drifting to a
+          random nearby spot, per direct feedback ("reduis mes personnages
+          au nombre de 5... répartis les judicieusement absolument
+          partout... comme des ballons, ils doivent flotter dans l'air").
+          Desktop only (lg+): the content column fills nearly the full
+          width below that breakpoint (confirmed in
+          LANDING_HERO_AVATAR_ASSET_AUDIT.md), so there's no genuine
+          peripheral space for any of this without risking overlap on
+          tablet/mobile. Each wrapper stays pointer-events-none (so the
+          absolutely-positioned hit-box itself never intercepts anything);
+          KretoCharacter's own `hoverable` prop re-enables pointer events
+          on just the character itself. */}
       {HERO_FLOATERS.map((floater, i) => (
         <div
           key={`${floater.variant}-${i}`}
@@ -344,11 +326,16 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
           />
         </div>
       ))}
-      {/* The main figure is now small and truly centered (below the CTA,
-          clear of all text) rather than a big corner anchor, per direct
-          feedback ("transforme mon gros personnage en petit"). */}
-      <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 hidden lg:block opacity-90">
-        <KretoCharacter variant="main" size={48} floatDelay={0.4} floatAmplitude={6} floatDuration={6.6} hoverable />
+      {/* The main figure is fixed in place -- not hoverable, no idle drift
+          -- rather than floating/knockable like the satellites, per direct
+          feedback ("positionne le gros personnage de facon fixe... annule
+          cette action" cancelling its earlier balloon-hover). Bigger than
+          before and anchored to the one corner that's stayed clear of the
+          headline/CTA in every verification pass this whole engagement;
+          ground shadow intact under its feet (KretoCharacter's own mask
+          keeps that area solid). */}
+      <div className="pointer-events-none absolute bottom-4 right-6 hidden lg:block opacity-95">
+        <KretoCharacter variant="main" size={260} floatAmplitude={0} />
       </div>
 
       {/* bottom dissolve to next section */}

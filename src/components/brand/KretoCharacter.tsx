@@ -16,14 +16,21 @@
  *
  * "main" gets a soft radial fade (CSS mask-image) so its photographic
  * rectangle blends into the app's permanently-dark surfaces instead of
- * reading as a pasted sticker. The four role variants render inside a
- * rounded-square tile, matching their own presentation in the source
- * artwork -- a defined edge is correct there, not a flaw to hide.
+ * reading as a pasted sticker -- biased low and tall so the ground
+ * shadow under its feet stays visible instead of fading with the rest
+ * (direct feedback: "avec le sol sous ses pieds"). The four role
+ * variants render inside a rounded-square tile, matching their own
+ * presentation in the source artwork -- a defined edge is correct
+ * there, not a flaw to hide.
  *
- * `hoverable` adds a real mouse-hover reaction (a small wiggle) for
- * surfaces that want the cast to feel alive to a pointer, per direct
- * feedback on the Landing Hero -- off by default everywhere else.
+ * `hoverable` makes the cast feel alive to a real pointer, per direct
+ * feedback ("comme des ballons... flotter dans l'air"): idle motion
+ * drifts on both axes like a buoyant balloon, and a real hover knocks
+ * the character to a random nearby spot with a springy, elastic
+ * transition, settling back into its own drift once the pointer
+ * leaves -- off by default everywhere else.
  */
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
@@ -103,11 +110,13 @@ interface KretoCharacterProps {
   /** Delay before the float starts, in seconds -- the other half of
    *  breaking lockstep motion across multiple instances. */
   floatDelay?: number;
-  /** Real mouse-hover reaction (a small playful wiggle) -- off by default
-   *  since most instances are purely decorative background elements with
-   *  no reason to intercept pointer events at all. When on, only this
-   *  element (not its absolutely-positioned wrapper) re-enables pointer
-   *  events, so it can't steal clicks meant for anything else nearby. */
+  /** Balloon-like hover reaction: knocks the character to a random nearby
+   *  spot with a springy transition instead of a small in-place wiggle --
+   *  off by default since most instances are purely decorative background
+   *  elements with no reason to intercept pointer events at all. When on,
+   *  only this element (not its absolutely-positioned wrapper) re-enables
+   *  pointer events, so it can't steal clicks meant for anything else
+   *  nearby. */
   hoverable?: boolean;
 }
 
@@ -125,31 +134,53 @@ export const KretoCharacter = ({
   const reducedMotion = useReducedMotion();
   const isMain = variant === "main";
   const showBadge = state !== "idle" && state !== "attentive";
+  // Real state, not a fake gesture: only set while the pointer is actually
+  // over this element (onHoverStart/End below), cleared the moment it
+  // leaves so the character drifts back into its own idle float.
+  const [knock, setKnock] = useState<{ x: number; y: number } | null>(null);
 
-  const idleFloat = reducedMotion ? undefined : { y: [0, -floatAmplitude, 0] };
+  // A balloon drifts on both axes, not just up and down -- a touch of
+  // lateral motion on a slightly offset cycle is what makes it read as
+  // buoyant rather than a mechanical bob. `rotate: 0` is explicit and
+  // required, not decorative: Framer Motion leaves a property untouched
+  // when a later `animate` target omits it, so without this the knock's
+  // tilt would stick permanently once the pointer leaves.
+  const idleAnimate = reducedMotion
+    ? undefined
+    : { y: [0, -floatAmplitude, 0], x: [0, floatAmplitude * 0.5, 0, -floatAmplitude * 0.35, 0], rotate: 0 };
+  // `rotate` gets its own quick tween here -- without this override it
+  // would inherit the same multi-second looping duration as the x/y
+  // drift, which reads as the tilt from a knock "sticking" for several
+  // seconds instead of settling back out promptly.
   const idleTransition = {
-    duration: floatDuration,
-    delay: floatDelay,
-    repeat: Infinity,
-    ease: "easeInOut" as const,
+    default: { duration: floatDuration, delay: floatDelay, repeat: Infinity, ease: "easeInOut" as const },
+    rotate: { duration: 0.5, ease: "easeOut" as const },
   };
+  const knockTransition = { type: "spring" as const, stiffness: 140, damping: 9 };
 
-  const hoverAnimation =
-    hoverable && !reducedMotion
-      ? {
-          scale: 1.15,
-          rotate: [0, -6, 6, -3, 0],
-          transition: { duration: 0.5, ease: "easeInOut" as const },
-        }
-      : undefined;
+  const handleHoverStart = () => {
+    if (!hoverable || reducedMotion) return;
+    // A real random direction/distance each time -- "les envoyer partout
+    // comme des ballons" -- not the same nudge every time. Capped at 80px:
+    // the satellites got bigger, so the same knock distance would reach
+    // further into the centered text column than before.
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 36 + Math.random() * 44;
+    setKnock({ x: Math.cos(angle) * distance, y: Math.sin(angle) * distance - 24 });
+  };
+  const handleHoverEnd = () => {
+    if (!hoverable) return;
+    setKnock(null);
+  };
 
   return (
     <motion.div
       className={cn("relative inline-block", hoverable && "pointer-events-auto cursor-default", className)}
       style={{ width: size }}
-      animate={idleFloat}
-      whileHover={hoverAnimation}
-      transition={idleTransition}
+      animate={knock ? { x: knock.x, y: knock.y, rotate: knock.x > 0 ? 12 : -12 } : idleAnimate}
+      transition={knock ? knockTransition : idleTransition}
+      onHoverStart={handleHoverStart}
+      onHoverEnd={handleHoverEnd}
       aria-hidden="true"
     >
       <img
@@ -160,8 +191,8 @@ export const KretoCharacter = ({
         style={
           isMain
             ? {
-                maskImage: "radial-gradient(75% 80% at 50% 45%, #000 55%, transparent 100%)",
-                WebkitMaskImage: "radial-gradient(75% 80% at 50% 45%, #000 55%, transparent 100%)",
+                maskImage: "radial-gradient(65% 100% at 50% 62%, #000 62%, transparent 100%)",
+                WebkitMaskImage: "radial-gradient(65% 100% at 50% 62%, #000 62%, transparent 100%)",
               }
             : {
                 boxShadow: "0 0 0 1px hsl(var(--border) / 0.4), 0 10px 28px -12px rgba(0,0,0,0.6)",

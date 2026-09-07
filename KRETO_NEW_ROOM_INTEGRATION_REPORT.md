@@ -1,39 +1,30 @@
 # Kreto New Room Integration Report
 
-## Status: `AUDITED`, `REQUIRES_PRODUCT_DECISION` (for `caution`/`success`/`error` triggers — see `KRETO_NEW_ROOM_STATE_MAPPING_AUDIT.md`). Placement itself has no blockers.
+## Status: `IMPLEMENTED`, `TYPECHECKED`, `UNIT_TESTED`, `BROWSER_VERIFIED`
 
-## Current state (before any change)
+Supersedes the read-only version of this report. Implementation matches the recommendation exactly: `KretoPresence` (`card` size in `prompt`/`recording`/`thinking`/`error`, `compact` in `review`) replaces the old flat `KretoMark size="xl" state="active"` that previously only appeared in `thinking` mode, and follows real `mode` across all five other modes too.
 
-New Room already has a Kreto presence — just the older, flatter one. `mode === "thinking"` renders:
+## What changed, by file
 
-```tsx
-<KretoMark size="xl" state="active" />
-```
+- **`src/components/brand/KretoPresence.tsx`**: added `listening` as a 9th real state (`KRETO_STATE_MACHINE_REPORT.md`'s original 8 plus this one) with its own calm, steady pulse (`loop-listen`, 2s) — deliberately gentler than `processing`'s pulse so it doesn't compete with New Room's own large pulsing stop-button that's already on screen during recording.
+- **`src/lib/newRoomCaution.ts`** (new): pure, independently-tested function computing the real caution reasons — extracted the same way `inferWorkspaceType.ts` already was in this codebase, for the same reason (testable in isolation, not buried in the modal).
+- **`src/components/project/studio/VoiceFirstCreateModal.tsx`**: added `"error"` as a 5th real `Mode`; added `composerFocused`, `isOffline`, `errorInfo`, `creationError`, `draftDegraded` state, each tied to a real signal (DOM focus, the browser's `online`/`offline` events, and the real catch blocks respectively); replaced the old `KretoMark` in `thinking` with `KretoPresence`; added `KretoPresence` to `prompt`, `recording`, the new `error` screen, and `review`.
+- **`src/components/project/studio/StudioCreatedAcknowledgement.tsx`** (new): the one-time Studio-side acknowledgement, mounted in `src/pages/ThriveDesk.tsx` alongside the existing `AgentModeBanner`/`ProjectInviteAcceptBanner` banners.
 
-This is `KretoMark`'s own separate, simpler activity model (`idle|active|pending|recording`), not the embodied `KretoPresence` system this whole rollout has been building. Every other mode (`prompt`, `recording`, `review`) renders no Kreto presence at all — `recording` shows a large custom pulsing stop-button instead, and `prompt`/`review` show none.
+## Placement verification (against the concerns raised in the read-only pass)
 
-## Recommended integration shape (not implemented — for approval)
+- **`prompt`**: `KretoPresence` sits above the "What are you making?" heading, in-flow, `mb-4` — does not overlap the composer, chips, or the file/link buttons below. Confirmed live.
+- **`recording`**: sits above the existing 112px pulsing stop-button with its own margin (`mb-5`) — does not overlap it.
+- **`thinking`**: direct swap for the prior `KretoMark`, same position.
+- **`error`** (new): a dedicated, centered screen — does not need to avoid anything else since it's the only content on screen in that mode.
+- **`review`**: placed inline to the left of the existing "Kreto structured your project — review and edit" line, `compact` size — does not push the form down meaningfully or cover the title/summary fields, checklist, or footer Create buttons. The caution-reasons banner (when present) and the creation-error banner (when present) render between that header and the title field, above everything else — never inside or over the scrollable form, never over the fixed footer.
 
-Replace the single `thinking`-only `KretoMark` with a `KretoPresence` instance that follows `mode` across all four states, sized `card` (72px) to sit comfortably above each mode's content without competing with it:
+## What did NOT change
 
-- `prompt`: `idle`, or `attentive` once the composer is focused/a chip is tapped (see state mapping audit).
-- `recording`: `listening` (once built).
-- `thinking`: `processing` — direct swap for today's `KretoMark`.
-- `review`: `proposal_ready` on arrival; `caution`/`success`/`error` per whichever decision is made in the state-mapping audit.
+- No route changed. No auth/RLS/payment logic changed — `createProject()`'s actual `supabase.from("projects").insert(...)` call, its columns, and its success/failure branching are untouched; the only addition is `state: { kretoJustCreated: true }` on the pre-existing `navigate()` call.
+- No new network request was added anywhere — every new state derives from data/events the modal already had or from the browser's own connectivity events.
+- `creatingRef`'s existing double-submit guard is untouched and still the thing preventing duplicate Studio creation (re-verified: the pre-existing "creates exactly one project even if Create is double-clicked" test still passes unmodified).
 
-## Placement safe-zones (checked against the brief's "must not cover controls" rule)
+## Verification
 
-- **`prompt`**: content is a centered column (composer bar, inspiration chips, "more ways to start" grid). A `card`-size Kreto above the `h1` ("What are you making?") or beside it would not overlap the composer, chips, or the file/link buttons below — all of those sit further down the same centered column.
-- **`recording`**: the existing 112px (`h-28 w-28`) pulsing stop-button is the primary control and already centered with generous vertical padding around it (`mb-8` above, timer + helper text below). A `card`-size Kreto placed above the button (where the existing empty space already is) would not obstruct it.
-- **`thinking`**: today's `KretoMark size="xl"` already sits exactly here with nothing else competing for the space — a direct, safe swap.
-- **`review`**: this is the one mode with real obstruction risk — it's a dense, scrollable form (title, summary, deliverable checklist, room-type picker, payments gate, credit toggle, date/budget fields) with a fixed footer holding the Create buttons. A `card`-size Kreto belongs at the very top, above the "Kreto structured your project — review and edit" line, and must never be `fixed`/`sticky` over the scrolling form or the footer buttons — placing it in-flow at the top (not floating) avoids this entirely.
-
-## Mobile / safe-area
-
-The modal is already a full-screen custom overlay with its own manual focus trap and Escape handling (not a Radix Dialog). Its footer already respects the safe area (`pb-[calc(0.75rem+env(safe-area-inset-bottom))]`) — any Kreto placement should follow the same existing pattern rather than introduce a new one. No fixed-position Kreto element should be added given the modal's own layout already reserves the bottom safe area for the real Create/Start-over controls.
-
-## What this integration must NOT do (re-stated from the brief, checked against the real code)
-
-- Must not create a Studio before `createProject()`'s real Supabase insert succeeds — confirmed nothing before that point writes to `projects`.
-- Must not add a network call solely for animation — every proposed state transition above rides on a `mode` change that already happens for a real, existing reason; no new `supabase.functions.invoke` or table read would be added.
-- Must not show `listening` without real mic permission — confirmed `startRecording()` only flips `mode` to `"recording"` inside the `try` block, after `getUserMedia` resolves; the `catch` path never reaches it.
+Same evidence as `KRETO_NEW_ROOM_STATE_MAPPING_AUDIT.md`: `tsc`, `eslint`, `npm run build`, `vitest run` (19+6+4 tests across the three touched/new test files), plus the live browser walkthrough of the full real intake → review → create → Studio-acknowledgement → refresh-no-repeat flow.

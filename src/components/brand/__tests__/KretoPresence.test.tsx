@@ -44,6 +44,7 @@ describe("KretoPresence", () => {
   });
 
   it.each([
+    ["listening", "Kreto is listening"],
     ["processing", "Kreto is working on this"],
     ["proposal_ready", "Kreto has a suggestion ready"],
     ["success", "Kreto completed the action"],

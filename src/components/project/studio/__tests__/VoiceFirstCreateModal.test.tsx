@@ -14,10 +14,11 @@ import { VoiceFirstCreateModal } from "../VoiceFirstCreateModal";
  * Also covers the Kreto embodied-presence state mapping approved in
  * KRETO_NEW_ROOM_STATE_MAPPING_AUDIT.md: idle/attentive/listening/processing/
  * caution/proposal_ready/error, each tied to a real trigger, never a fake
- * one. `KretoPresence` itself is mocked to a thin `data-state` stub -- its
- * own rendering (SVG, sr-only text per state) is already covered by
- * KretoPresence.test.tsx; what this file verifies is that the *right* state
- * gets computed and passed down for the *real* condition in this modal.
+ * one. `KretoCharacter` itself is mocked to a thin `data-state` stub -- its
+ * own rendering (the real character image, sr-only text per state) is
+ * already covered by KretoCharacter.test.tsx; what this file verifies is
+ * that the *right* state gets computed and passed down for the *real*
+ * condition in this modal.
  */
 
 const mocks = vi.hoisted(() => ({
@@ -76,12 +77,13 @@ vi.mock("react-router-dom", async (importOriginal) => {
   return { ...actual, useNavigate: () => mocks.navigate };
 });
 
-// KretoPresence's own rendering (SVG, sr-only announcements per state) is
-// covered by its own test suite -- this file only needs to know which
-// `state` VoiceFirstCreateModal computed and passed down for a given real
-// condition, so a thin stub keeps these tests fast and decoupled.
-vi.mock("@/components/brand/KretoPresence", () => ({
-  KretoPresence: ({ state, size }: { state?: string; size?: string }) => (
+// KretoCharacter's own rendering (the real character image, sr-only
+// announcements per state) is covered by its own test suite -- this file
+// only needs to know which `state` VoiceFirstCreateModal computed and
+// passed down for a given real condition, so a thin stub keeps these
+// tests fast and decoupled.
+vi.mock("@/components/brand/KretoCharacter", () => ({
+  KretoCharacter: ({ state, size }: { state?: string; size?: number }) => (
     <div data-testid="kreto-presence" data-state={state} data-size={size} />
   ),
 }));

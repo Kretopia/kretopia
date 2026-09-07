@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { KretoPresence, type KretoPresenceState } from "@/components/brand/KretoPresence";
+import { KretoCharacter, type KretoCharacterState } from "@/components/brand/KretoCharacter";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -673,7 +673,7 @@ export const VoiceFirstCreateModal = ({
   const otherCautionReasons = getNewRoomCautionReasons(workspaceType, draftDegraded);
   const noDeliverables = !brief?.deliverables || brief.deliverables.length === 0;
   const reviewNeedsCaution = otherCautionReasons.length > 0 || noDeliverables;
-  const reviewState: KretoPresenceState = creationError ? "error" : reviewNeedsCaution ? "caution" : "proposal_ready";
+  const reviewState: KretoCharacterState = creationError ? "error" : reviewNeedsCaution ? "caution" : "proposal_ready";
 
   return (
     <div
@@ -729,8 +729,8 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "prompt" && (
           <>
-            <KretoPresence
-              size="card"
+            <KretoCharacter
+              size={96}
               className="mb-4"
               state={isOffline ? "offline" : composerFocused || showLinkInput ? "attentive" : "idle"}
             />
@@ -958,7 +958,7 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "recording" && (
           <>
-            <KretoPresence size="compact" state="listening" className="mb-5" />
+            <KretoCharacter size={72} state="listening" className="mb-5" />
             <div className="relative mb-8">
               <span
                 className="absolute inset-0 rounded-full animate-ping"
@@ -984,7 +984,7 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "thinking" && (
           <div className="flex flex-col items-center">
-            <KretoPresence size="card" state="processing" />
+            <KretoCharacter size={96} state="processing" />
 
             <div className="mt-7 h-7 relative w-full max-w-xs" aria-live="polite">
               <AnimatePresence mode="wait">
@@ -1015,7 +1015,7 @@ export const VoiceFirstCreateModal = ({
 
         {mode === "error" && (
           <div className="flex flex-col items-center max-w-sm">
-            <KretoPresence size="card" state={isOffline ? "offline" : "error"} />
+            <KretoCharacter size={96} state={isOffline ? "offline" : "error"} />
             <p className="mt-6 text-lg font-bold">
               {isOffline ? "You're offline" : "Kreto couldn't finish that draft."}
             </p>
@@ -1041,7 +1041,7 @@ export const VoiceFirstCreateModal = ({
         {mode === "review" && brief && (
           <div className="w-full max-w-md space-y-5 text-left">
             <div className="flex items-center gap-3">
-              <KretoPresence size="compact" state={reviewState} />
+              <KretoCharacter size={56} state={reviewState} />
               <p className="text-xs font-bold tracking-[0.18em] uppercase" style={{ color: "hsl(var(--energy))" }}>
                 Kreto structured your project — review and edit
               </p>

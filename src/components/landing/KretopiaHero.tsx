@@ -32,7 +32,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { analytics } from "@/lib/analytics";
 import { trackLandingCta } from "@/lib/landingFunnel";
 import { KretoMark } from "@/components/brand/KretoMark";
-import { KretoPresence } from "@/components/brand/KretoPresence";
+import { KretoCharacter } from "@/components/brand/KretoCharacter";
 
 /** Headline, split into words per line so each can resolve out of a blur on
  *  load. Line 1 renders in the default white; line 2 is wrapped in
@@ -264,17 +264,30 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
         </motion.div>
       </div>
 
-      {/* Kreto pilot surface #2 (KRETO_3D_REFERENCE_AND_RIGHTS_AUDIT.md):
-          a subtle, secondary embodied presence at the section's lower-right
-          edge -- never behind the headline, never over the CTA. Desktop
-          only (lg+): the content column fills nearly the full width below
-          that breakpoint (confirmed in LANDING_HERO_AVATAR_ASSET_AUDIT.md),
-          so there's no genuine peripheral space to place it in without
-          risking overlap on tablet/mobile. State is always "idle" -- there
-          is no live Kreto request context on a guest landing page, so no
-          other state would be truthful here. */}
-      <div className="pointer-events-none absolute bottom-8 right-8 hidden lg:block opacity-70">
-        <KretoPresence size="hero" state="idle" />
+      {/* Kreto's real, owned character render (KRETO_CHARACTER_ASSET_REPORT.md)
+          -- the main figure plus all four role variants (Scout, Connector,
+          Producer, Publicist), framing the section's edges the same way
+          they frame the source "Meet Kreto" artwork. Desktop only (lg+):
+          the content column fills nearly the full width below that
+          breakpoint (confirmed in LANDING_HERO_AVATAR_ASSET_AUDIT.md), so
+          there's no genuine peripheral space for any of this without
+          risking overlap on tablet/mobile. Every instance is
+          pointer-events-none and outside the centered max-w-[900px] column
+          -- decorative framing, never competing with the headline or CTA. */}
+      <div className="pointer-events-none absolute top-28 left-8 hidden lg:block opacity-90">
+        <KretoCharacter variant="scout" size={72} />
+      </div>
+      <div className="pointer-events-none absolute top-28 right-8 hidden lg:block opacity-90">
+        <KretoCharacter variant="connector" size={72} />
+      </div>
+      <div className="pointer-events-none absolute bottom-28 left-8 hidden lg:block opacity-90">
+        <KretoCharacter variant="producer" size={72} />
+      </div>
+      <div className="pointer-events-none absolute bottom-64 right-10 hidden lg:block opacity-90">
+        <KretoCharacter variant="publicist" size={72} />
+      </div>
+      <div className="pointer-events-none absolute bottom-4 right-4 hidden lg:block">
+        <KretoCharacter variant="main" size={220} />
       </div>
 
       {/* bottom dissolve to next section */}

@@ -19,6 +19,10 @@
  * reading as a pasted sticker. The four role variants render inside a
  * rounded-square tile, matching their own presentation in the source
  * artwork -- a defined edge is correct there, not a flaw to hide.
+ *
+ * `hoverable` adds a real mouse-hover reaction (a small wiggle) for
+ * surfaces that want the cast to feel alive to a pointer, per direct
+ * feedback on the Landing Hero -- off by default everywhere else.
  */
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -91,6 +95,20 @@ interface KretoCharacterProps {
   state?: KretoCharacterState;
   label?: string;
   className?: string;
+  /** How far the idle float travels, in px. Vary per instance so a group
+   *  of these doesn't visibly move in lockstep. */
+  floatAmplitude?: number;
+  /** Full float cycle length, in seconds. */
+  floatDuration?: number;
+  /** Delay before the float starts, in seconds -- the other half of
+   *  breaking lockstep motion across multiple instances. */
+  floatDelay?: number;
+  /** Real mouse-hover reaction (a small playful wiggle) -- off by default
+   *  since most instances are purely decorative background elements with
+   *  no reason to intercept pointer events at all. When on, only this
+   *  element (not its absolutely-positioned wrapper) re-enables pointer
+   *  events, so it can't steal clicks meant for anything else nearby. */
+  hoverable?: boolean;
 }
 
 export const KretoCharacter = ({
@@ -99,19 +117,38 @@ export const KretoCharacter = ({
   state = "idle",
   label,
   className,
+  floatAmplitude = 6,
+  floatDuration = 6,
+  floatDelay = 0,
+  hoverable = false,
 }: KretoCharacterProps) => {
   const reducedMotion = useReducedMotion();
   const isMain = variant === "main";
   const showBadge = state !== "idle" && state !== "attentive";
 
-  const idleFloat = reducedMotion ? undefined : { y: [0, -6, 0] };
-  const idleTransition = { duration: 6, repeat: Infinity, ease: "easeInOut" as const };
+  const idleFloat = reducedMotion ? undefined : { y: [0, -floatAmplitude, 0] };
+  const idleTransition = {
+    duration: floatDuration,
+    delay: floatDelay,
+    repeat: Infinity,
+    ease: "easeInOut" as const,
+  };
+
+  const hoverAnimation =
+    hoverable && !reducedMotion
+      ? {
+          scale: 1.15,
+          rotate: [0, -6, 6, -3, 0],
+          transition: { duration: 0.5, ease: "easeInOut" as const },
+        }
+      : undefined;
 
   return (
     <motion.div
-      className={cn("relative inline-block", className)}
+      className={cn("relative inline-block", hoverable && "pointer-events-auto cursor-default", className)}
       style={{ width: size }}
       animate={idleFloat}
+      whileHover={hoverAnimation}
       transition={idleTransition}
       aria-hidden="true"
     >

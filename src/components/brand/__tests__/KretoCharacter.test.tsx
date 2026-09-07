@@ -39,4 +39,21 @@ describe("KretoCharacter", () => {
     expect(() => render(<KretoCharacter />)).not.toThrow();
     reducedMotion = false;
   });
+
+  it("does not re-enable pointer events unless hoverable is explicitly set", () => {
+    const { container } = render(<KretoCharacter />);
+    expect(container.firstElementChild).not.toHaveClass("pointer-events-auto");
+  });
+
+  it("re-enables pointer events only on itself when hoverable, without becoming a control", () => {
+    const { container } = render(<KretoCharacter hoverable />);
+    expect(container.firstElementChild).toHaveClass("pointer-events-auto");
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("does not throw when hoverable under reduced motion (hover wiggle is skipped, not broken)", () => {
+    reducedMotion = true;
+    expect(() => render(<KretoCharacter hoverable />)).not.toThrow();
+    reducedMotion = false;
+  });
 });

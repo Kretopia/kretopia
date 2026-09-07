@@ -29,10 +29,11 @@ import { Link } from "react-router-dom";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { cn } from "@/lib/utils";
 import { analytics } from "@/lib/analytics";
 import { trackLandingCta } from "@/lib/landingFunnel";
-import { KretoMark } from "@/components/brand/KretoMark";
-import { KretoCharacter } from "@/components/brand/KretoCharacter";
+import { BrandLogo } from "@/components/BrandLogo";
+import { KretoCharacter, type KretoCharacterVariant } from "@/components/brand/KretoCharacter";
 
 /** Headline, split into words per line so each can resolve out of a blur on
  *  load. Line 1 renders in the default white; line 2 is wrapped in
@@ -41,6 +42,33 @@ import { KretoCharacter } from "@/components/brand/KretoCharacter";
  *  color/style without needing a per-word class. */
 const LINE_1 = ["Find", "work", "that", "fits"];
 const LINE_2 = ["what", "you", "do."];
+
+/** Scattered decorative Kreto instances -- "multiplie les personnages...
+ *  mieux repartis" per direct feedback. Every offset stays inside the
+ *  margin that's clear even at the tightest desktop width this renders at
+ *  (exactly `lg`, 1024px): the centered max-w-[900px] column leaves ~62px
+ *  of true margin on each side there, before the column's own internal
+ *  padding even starts -- every value below is comfortably under that, so
+ *  nothing here ever reaches the headline/CTA text itself. Each instance
+ *  gets its own float delay/amplitude/duration so the group reads as
+ *  independently drifting, not one asset cloned in lockstep. */
+const HERO_FLOATERS: Array<{
+  variant: KretoCharacterVariant;
+  size: number;
+  className: string;
+  floatDelay: number;
+  floatAmplitude: number;
+  floatDuration: number;
+}> = [
+  { variant: "scout", size: 62, className: "top-20 left-6", floatDelay: 0, floatAmplitude: 8, floatDuration: 7 },
+  { variant: "connector", size: 58, className: "top-32 right-8", floatDelay: 1.2, floatAmplitude: 6, floatDuration: 6.5 },
+  { variant: "producer", size: 50, className: "top-72 left-3", floatDelay: 2, floatAmplitude: 7, floatDuration: 7.5 },
+  { variant: "publicist", size: 54, className: "top-56 right-3", floatDelay: 0.6, floatAmplitude: 7, floatDuration: 6 },
+  { variant: "scout", size: 46, className: "bottom-44 left-10", floatDelay: 1.6, floatAmplitude: 5, floatDuration: 6.8 },
+  { variant: "connector", size: 48, className: "bottom-16 left-4", floatDelay: 2.4, floatAmplitude: 6, floatDuration: 7.2 },
+  { variant: "producer", size: 52, className: "bottom-48 right-16", floatDelay: 0.9, floatAmplitude: 8, floatDuration: 6.2 },
+  { variant: "publicist", size: 44, className: "top-96 right-2", floatDelay: 1.8, floatAmplitude: 5, floatDuration: 7 },
+];
 
 interface KretopiaHeroProps {
   /** Kept for backward compatibility with the search-first flow this hero
@@ -132,11 +160,6 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
         />
       </motion.div>
 
-      <div className="pointer-events-none absolute left-1/2 top-6 sm:top-8 -translate-x-1/2 opacity-20">
-        <KretoMark variant="bare" size="sm" className="sm:hidden" />
-        <KretoMark variant="bare" size="md" className="hidden sm:inline-flex" />
-      </div>
-
       {/* Faint signal grid, masked to fade out — the "machine" layer */}
       <div
         aria-hidden
@@ -151,10 +174,22 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
       />
 
       <div className="relative mx-auto max-w-[900px] px-5 sm:px-8 lg:px-12 pt-16 sm:pt-24 lg:pt-28 pb-20 sm:pb-28 text-center flex flex-col items-center">
-        <motion.p
+        {/* Same brand lockup as the Navbar (BrandLogo, K + wordmark + Beta
+            pill) -- direct feedback asked for identical branding here,
+            not the earlier faint bare K-mark watermark. */}
+        <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <BrandLogo size="md" showBeta />
+        </motion.div>
+
+        <motion.p
+          initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className="landing-eyebrow mb-6"
         >
           For creative professionals
@@ -265,29 +300,35 @@ export const KretopiaHero = (_props: KretopiaHeroProps) => {
       </div>
 
       {/* Kreto's real, owned character render (KRETO_CHARACTER_ASSET_REPORT.md)
-          -- the main figure plus all four role variants (Scout, Connector,
-          Producer, Publicist), framing the section's edges the same way
-          they frame the source "Meet Kreto" artwork. Desktop only (lg+):
-          the content column fills nearly the full width below that
-          breakpoint (confirmed in LANDING_HERO_AVATAR_ASSET_AUDIT.md), so
-          there's no genuine peripheral space for any of this without
-          risking overlap on tablet/mobile. Every instance is
-          pointer-events-none and outside the centered max-w-[900px] column
-          -- decorative framing, never competing with the headline or CTA. */}
-      <div className="pointer-events-none absolute top-28 left-8 hidden lg:block opacity-90">
-        <KretoCharacter variant="scout" size={72} />
-      </div>
-      <div className="pointer-events-none absolute top-28 right-8 hidden lg:block opacity-90">
-        <KretoCharacter variant="connector" size={72} />
-      </div>
-      <div className="pointer-events-none absolute bottom-28 left-8 hidden lg:block opacity-90">
-        <KretoCharacter variant="producer" size={72} />
-      </div>
-      <div className="pointer-events-none absolute bottom-64 right-10 hidden lg:block opacity-90">
-        <KretoCharacter variant="publicist" size={72} />
-      </div>
+          -- scattered role-variant instances plus the main figure, floating
+          independently across the section's margins the way direct
+          feedback asked for ("mieux repartis", "flottent litteralement",
+          "multiplie les personnages"). Desktop only (lg+): the content
+          column fills nearly the full width below that breakpoint
+          (confirmed in LANDING_HERO_AVATAR_ASSET_AUDIT.md), so there's no
+          genuine peripheral space for any of this without risking overlap
+          on tablet/mobile. Every instance is pointer-events-none and
+          positioned inside the margin outside the centered max-w-[900px]
+          column (see HERO_FLOATERS' own comment for the exact math) --
+          decorative framing, never competing with the headline or CTA. */}
+      {HERO_FLOATERS.map((floater, i) => (
+        <div
+          key={`${floater.variant}-${i}`}
+          className={cn("pointer-events-none absolute hidden lg:block opacity-90", floater.className)}
+        >
+          <KretoCharacter
+            variant={floater.variant}
+            size={floater.size}
+            floatDelay={floater.floatDelay}
+            floatAmplitude={floater.floatAmplitude}
+            floatDuration={floater.floatDuration}
+          />
+        </div>
+      ))}
+      {/* The main figure anchors the group, smaller than before per direct
+          feedback ("reduis la taille du gros personnage"). */}
       <div className="pointer-events-none absolute bottom-4 right-4 hidden lg:block">
-        <KretoCharacter variant="main" size={220} />
+        <KretoCharacter variant="main" size={130} floatDelay={0.3} />
       </div>
 
       {/* bottom dissolve to next section */}

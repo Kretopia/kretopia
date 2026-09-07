@@ -91,6 +91,14 @@ interface KretoCharacterProps {
   state?: KretoCharacterState;
   label?: string;
   className?: string;
+  /** How far the idle float travels, in px. Vary per instance so a group
+   *  of these doesn't visibly move in lockstep. */
+  floatAmplitude?: number;
+  /** Full float cycle length, in seconds. */
+  floatDuration?: number;
+  /** Delay before the float starts, in seconds -- the other half of
+   *  breaking lockstep motion across multiple instances. */
+  floatDelay?: number;
 }
 
 export const KretoCharacter = ({
@@ -99,13 +107,21 @@ export const KretoCharacter = ({
   state = "idle",
   label,
   className,
+  floatAmplitude = 6,
+  floatDuration = 6,
+  floatDelay = 0,
 }: KretoCharacterProps) => {
   const reducedMotion = useReducedMotion();
   const isMain = variant === "main";
   const showBadge = state !== "idle" && state !== "attentive";
 
-  const idleFloat = reducedMotion ? undefined : { y: [0, -6, 0] };
-  const idleTransition = { duration: 6, repeat: Infinity, ease: "easeInOut" as const };
+  const idleFloat = reducedMotion ? undefined : { y: [0, -floatAmplitude, 0] };
+  const idleTransition = {
+    duration: floatDuration,
+    delay: floatDelay,
+    repeat: Infinity,
+    ease: "easeInOut" as const,
+  };
 
   return (
     <motion.div

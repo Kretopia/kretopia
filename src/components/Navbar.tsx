@@ -275,7 +275,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   aria-current={isActive ? "page" : undefined}
                   aria-label={label}
                   className={cn(
-                    "flex items-center gap-2 h-10 px-3.5 rounded-lg transition-smooth text-sm font-medium whitespace-nowrap border",
+                    "relative flex items-center gap-2 h-10 px-3.5 rounded-lg transition-smooth text-sm font-medium whitespace-nowrap border",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     isActive
                       ? "text-foreground border-white/15 bg-white/[0.04]"
@@ -284,6 +284,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
                   {label}
+                  {isActive && (
+                    <span
+                      aria-hidden
+                      className="absolute bottom-0 left-3.5 right-3.5 h-0.5 rounded-full"
+                      style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
+                    />
+                  )}
                 </Link>
               );
             })}

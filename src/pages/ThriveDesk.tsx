@@ -11,6 +11,7 @@ import { StudioToolBar } from "@/components/project/StudioToolBar";
 import { ConfirmCreditBanner } from "@/components/project/ConfirmCreditBanner";
 import { AgentModeBanner } from "@/components/project/AgentModeBanner";
 import { ProjectInviteAcceptBanner } from "@/components/project/ProjectInviteAcceptBanner";
+import { StudioCreatedAcknowledgement } from "@/components/project/studio/StudioCreatedAcknowledgement";
 import { DeskTabContent } from "@/components/project/DeskTabContent";
 import { useAgentRole } from "@/hooks/useAgentRole";
 
@@ -318,6 +319,12 @@ const ThriveDesk = () => {
             messageCount={messages.length}
           />
         )}
+
+        {/* Kreto's one-time "Studio is ready" acknowledgement — only when
+            New Room's real navigate() call included the confirmation flag
+            (KRETO_NEW_ROOM_INTEGRATION_REPORT.md); a no-op on every other
+            visit to this route, including a refresh of this same one. */}
+        <StudioCreatedAcknowledgement />
 
         {/* Agent Mode Banner — visible when agent_mode is true */}
         <AgentModeBanner agentRole={agentRole} />

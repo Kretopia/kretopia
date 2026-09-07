@@ -26,3 +26,8 @@ dist-ssr
 
 # Local contractor docs (not committed)
 docs/
+
+# Local environment secrets
+.env
+.env.*
+!.env.example

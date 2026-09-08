@@ -110,6 +110,7 @@ export const LandingBelowFold = () => {
         tutorialSteps={SCOUT_TUTORIAL}
         tutorialVisual={ScoutVisual}
         discreetTutorial
+        kretoVariant="scout"
       />
 
       {/* Match */}
@@ -186,6 +187,7 @@ export const LandingBelowFold = () => {
         ctaLabel="Join a SoundStage"
         tutorialSteps={SOUNDSTAGES_TUTORIAL}
         tutorialVisual={SoundStagesVisual}
+        kretoVariant="connector"
       />
 
       {/* For Organisations — shorter than the creator journey, never competes with the hero */}

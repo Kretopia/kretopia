@@ -37,6 +37,7 @@ import { ArrowRight } from "lucide-react";
 import { FixedProgressiveCard } from "@/components/landing/kretopia/FixedProgressiveCard";
 import { trackLandingCtaClick } from "@/lib/landingMetrics";
 import { supabase } from "@/integrations/supabase/client";
+import { KretoCharacter } from "@/components/brand/KretoCharacter";
 
 const ACCENT = "#FF2DA1";
 
@@ -89,6 +90,15 @@ export const ClosingCTASection = () => {
       style={{ backgroundColor: "#05070D" }}
       aria-labelledby="closing-cta-title"
     >
+      {/* One small, static Kreto touch on the page's final conversion
+          moment -- per the brief's own suggested placement ("features,
+          community, CTA"). Deliberately not hoverable/floating here: this
+          is the one true "landing" beat (see file header), so nothing
+          should compete for attention with the real CTA button. */}
+      <div className="pointer-events-none absolute top-10 right-10 hidden lg:block opacity-80">
+        <KretoCharacter variant="publicist" size={64} floatAmplitude={0} />
+      </div>
+
       <FixedProgressiveCard
         eyebrow={<p className="landing-eyebrow">Get started</p>}
         title={

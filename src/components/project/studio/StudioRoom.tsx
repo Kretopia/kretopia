@@ -620,10 +620,12 @@ export const StudioRoom = ({
               )}
             </>
           )}
-          <div className="flex items-center justify-between px-1">
-            <p className="text-[11px] text-muted-foreground/70">
-              Tip: hover any section and drag the handle to reorder your studio.
-            </p>
+          {/* The standing "hover to drag" tip line used to sit here always-on
+              -- redundant noise once you notice SortableSection's own grip
+              handle already carries the same "Drag to reorder" title/
+              aria-label right where you'd actually use it. Kept only the
+              action that isn't self-explanatory from the handle alone. */}
+          <div className="flex items-center justify-end px-1">
             <button
               type="button"
               onClick={resetLayout}

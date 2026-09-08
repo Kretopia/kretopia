@@ -1,8 +1,9 @@
 import { useState, KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Sparkles, ArrowRight, Wand2 } from "lucide-react";
+import { Loader2, ArrowRight, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { KretoCharacter } from "@/components/brand/KretoCharacter";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { dispatchDeskIntent } from "@/hooks/useDeskIntent";
@@ -115,9 +116,12 @@ export function StudioOutcomeComposer({ projectId, projectTitle }: Props) {
     <section className="px-4 pt-3">
       <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-card to-card p-3 sm:p-4">
         <div className="flex items-center gap-2 mb-2">
-          <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-          </div>
+          {/* Kreto's own presence at the room's one direct-command input --
+              a real avatar for who's actually reading "Tell Kreto what you
+              need", not a generic sparkle. No float/hover: calm and
+              non-obstructive next to an active text input, not a second
+              thing competing for attention while typing. */}
+          <KretoCharacter variant="producer" size={40} floatAmplitude={0} className="shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
               Tell Kreto what you need

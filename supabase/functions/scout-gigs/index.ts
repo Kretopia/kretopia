@@ -440,7 +440,13 @@ serve(async (req) => {
     const linkedinCap = { count: 0, max: 3 };
     const filtered = extracted.filter((g: any) => {
       if (!g.title || !g.source_url) return false;
-      if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;
+      if ((g.fit_score ?? 0) < prefs.min_fit_score) {
+        // Logged (not silent, unlike before) so a thin/empty-profile scan's
+        // actual scores are visible in function logs without guessing --
+        // same visibility the demographic/region drops below already had.
+        console.log("[scout] dropped low fit_score:", g.fit_score, "<", prefs.min_fit_score, "-", g.title);
+        return false;
+      }
       if (isStale(g.posted_age || "")) return false;
       // URL must be a deep-link to a specific posting (not a search/category page)
       const apply = g.apply_url || g.source_url;
@@ -482,6 +488,28 @@ serve(async (req) => {
       return true;
     });
     console.log("[scout] after recency+source filter", filtered.length, "of", extracted.length);
+    // Profile-richness signal alongside the score distribution -- lets a
+    // thin/empty-profile scan (new signup: default "creative" role, no
+    // skills, no bio) be correlated against its actual fit_scores in logs,
+    // to confirm or rule out a systematic low-score bias before changing
+    // any scoring/threshold behavior.
+    if (extracted.length > 0) {
+      const scores = extracted.map((g: any) => g.fit_score ?? 0);
+      const profileRichness =
+        (mergedProfile.role ? 1 : 0) +
+        (mergedProfile.sub_roles?.length ? 1 : 0) +
+        (mergedProfile.skills?.length ? 1 : 0) +
+        (mergedProfile.bio?.trim() ? 1 : 0);
+      console.log(
+        "[scout] fit_score distribution", JSON.stringify({
+          userId, profileRichness, minScore: Math.min(...scores),
+          maxScore: Math.max(...scores),
+          avgScore: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+          belowThreshold: scores.filter((s) => s < prefs.min_fit_score).length,
+          total: scores.length,
+        }),
+      );
+    }
 
     let inserted = 0;
     // Build url -> image map from raw search results to enrich gigs

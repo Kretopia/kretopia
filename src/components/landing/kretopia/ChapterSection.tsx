@@ -12,6 +12,7 @@ import { KretopiaFeatureTutorial } from "./KretopiaFeatureTutorial";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { trackLandingCtaClick, type LandingSectionId } from "@/lib/landingMetrics";
+import { KretoCharacter, type KretoCharacterVariant } from "@/components/brand/KretoCharacter";
 
 export interface ChapterProps {
   index: string;        // "I", "II", "III"…
@@ -41,11 +42,19 @@ export interface ChapterProps {
    *  omitting it (the default) keeps a chapter's existing behavior exactly
    *  as it was. */
   discreetTutorial?: boolean;
+  /** Optional, subtle Kreto silhouette in the image's own bottom-right
+   *  corner (inside its existing overflow-hidden frame, so it's naturally
+   *  clipped and can never spill into the text column or off-screen on
+   *  mobile). Opt-in per chapter — omitting it (the default) keeps a
+   *  chapter's image exactly as it was. Reserved for a couple of
+   *  strategic chapters, not every one, per the brief's own "subtle...
+   *  2-3 sections" guidance. */
+  kretoVariant?: KretoCharacterVariant;
 }
 
 export const ChapterSection = ({
   index, kicker, title, body, caption, image, accent, href, reverse, id, tutorialSteps, tutorialVisual,
-  ctaLabel, concepts, closingLine, discreetTutorial,
+  ctaLabel, concepts, closingLine, discreetTutorial, kretoVariant,
 }: ChapterProps) => {
   const reducedMotion = useReducedMotion();
   const sectionId = (id ?? kicker.toLowerCase()) as LandingSectionId;
@@ -100,6 +109,17 @@ export const ChapterSection = ({
                 className="absolute inset-x-0 bottom-0 h-1/4"
                 style={{ background: "linear-gradient(to top, #05070D, transparent)" }}
               />
+              {/* Subtle Kreto touch — sits inside this frame's own
+                  overflow-hidden clip, so it's automatically contained on
+                  every viewport rather than needing its own breakpoint
+                  handling. Low opacity, no float/hover: a quiet presence
+                  cue, not a second focal point competing with the chapter's
+                  own image and copy. */}
+              {kretoVariant && (
+                <div className="pointer-events-none absolute bottom-3 right-3 opacity-40 grayscale">
+                  <KretoCharacter variant={kretoVariant} size={56} floatAmplitude={0} />
+                </div>
+              )}
             </div>
           </motion.div>
 

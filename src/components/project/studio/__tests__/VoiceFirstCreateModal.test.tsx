@@ -235,6 +235,22 @@ describe("VoiceFirstCreateModal", () => {
     expect(mocks.projectsInsert).toHaveBeenCalledTimes(1);
   });
 
+  it("gives the final confirm action the app's canonical primary-CTA treatment, not a plain small button", async () => {
+    // Regression guard: this button used to be a bare size="sm" Button --
+    // visually the smallest control in the footer despite being the most
+    // consequential action. It must render via CtaButton (same component
+    // StudioCreateHero's "Open a New Room" uses) so it actually reads as
+    // the primary action next to "Start over"/"Create N selected".
+    renderModal();
+    fireEvent.click(screen.getByText("Photo Shoot"));
+    fireEvent.click(screen.getByLabelText("Send to Kreto"));
+    await screen.findByText("Kreto structured your project — review and edit");
+    fireEvent.click(screen.getByText("No — personal/passion"));
+
+    const confirmButton = screen.getByText("Create all & open").closest("button");
+    expect(confirmButton).toHaveClass("cta-solid", "bg-primary", "shadow-md");
+  });
+
   describe("Kreto embodied presence — state mapping", () => {
     it("is idle when New Room first opens, with nothing typed or focused", () => {
       renderModal();

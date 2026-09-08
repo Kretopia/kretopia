@@ -7,6 +7,7 @@ import {
   Wand2, FolderPlus, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CtaButton } from "@/components/ui/cta-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { KretoCharacter, type KretoCharacterState } from "@/components/brand/KretoCharacter";
@@ -1300,15 +1301,22 @@ export const VoiceFirstCreateModal = ({
                 Create {selected.size} selected
               </Button>
             )}
-            <Button
+            {/* The final, consequential confirm action -- promoted to the
+                app's canonical primary-CTA treatment (same component as
+                StudioCreateHero's "Open a New Room") instead of a plain
+                size="sm" Button indistinguishable from "Start over"/
+                "Create N selected" next to it. w-auto override keeps it
+                from stretching full-width in this compact footer row,
+                which CtaButton's own default width classes assume a
+                standalone card slot, not a shared flex bar. */}
+            <CtaButton
               onClick={() => createProject(brief.deliverables?.length ? "all" : "none")}
               disabled={creating || !brief.project.title.trim() || paymentsInvolved === null}
-              className="gap-1"
-              size="sm"
+              className="w-auto gap-1.5 px-6"
             >
               {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
               {brief.deliverables?.length ? "Create all & open" : "Open the room"}
-            </Button>
+            </CtaButton>
           </div>
         </div>
       )}

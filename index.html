@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-vibe="midnight" class="dark" style="color-scheme: dark; background-color: #0B0B10;">
+<html lang="en" data-vibe="midnight" class="dark" style="color-scheme: dark; background-color: #05070D;">
   <head>
     <meta charset="UTF-8" />
     <meta name="google-site-verification" content="Q9BsvA9vwgxyOg6XZDaZ-g9T-WyRjbSbIvBuGBZ8VLY" />
@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0B0B10" />
+    <meta name="theme-color" id="meta-theme-color" content="#05070D" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Kretopia" />
@@ -137,15 +137,29 @@
     <meta name="twitter:description" content="The Creative Economy OS. Build your Creative Passport, find opportunities, collaborate, and get paid." />
     <meta name="twitter:image" content="https://www.kretopia.com/og-image.png" />
     <script>
-      // V1: Midnight locked platform-wide. Vibe picker disabled until post-launch.
+      // Applies the user's saved Dark/Light choice before first paint, so
+      // there's no flash of the wrong theme once React mounts and
+      // VibeThemeSync (src/components/VibeThemeSync.tsx) takes over. Reads
+      // localStorage only -- it's the one theme source available this
+      // early; a signed-in user's profile-stored choice is reconciled by
+      // VibeThemeSync after mount, already applied at that point in a
+      // previous session so this still matches on the very next load.
+      // Only "daylight"/"midnight" are selectable (see VibePicker) -- any
+      // other stored value, including the retired "neon", falls back to
+      // Midnight, the product's default look.
       (function () {
         try {
           var html = document.documentElement;
-          html.setAttribute("data-vibe", "midnight");
-          html.classList.add("dark");
-          html.style.colorScheme = "dark";
-          html.style.backgroundColor = "#0B0B10";
-          localStorage.setItem("ui_vibe", "midnight");
+          var stored = localStorage.getItem("ui_vibe");
+          var vibe = stored === "daylight" ? "daylight" : "midnight";
+          html.setAttribute("data-vibe", vibe);
+          var isLight = vibe === "daylight";
+          html.classList.toggle("dark", !isLight);
+          html.style.colorScheme = isLight ? "light" : "dark";
+          html.style.backgroundColor = isLight ? "#FAF8F5" : "#05070D";
+          var meta = document.getElementById("meta-theme-color");
+          if (meta) meta.setAttribute("content", isLight ? "#FAF8F5" : "#05070D");
+          localStorage.setItem("ui_vibe", vibe);
         } catch (_) {}
       })();
     </script>

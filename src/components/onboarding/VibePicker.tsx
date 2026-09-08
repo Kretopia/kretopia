@@ -18,23 +18,15 @@ const TILES: Tile[] = [
     blurb: "Cream canvas, calm. Editorial.",
     bg: "#FAF8F5",
     fg: "#0F0F12",
-    accent: "#9413D2",
+    accent: "#FF2DA1",
   },
   {
     id: "midnight",
     label: "Midnight",
-    blurb: "Dark canvas, teal accent. Focused.",
-    bg: "#0F0F14",
+    blurb: "Dark canvas, pink accent. Focused.",
+    bg: "#05070D",
     fg: "#FAF8F5",
-    accent: "#9413D2",
-  },
-  {
-    id: "neon",
-    label: "Neon",
-    blurb: "Dark canvas, lime energy. Bold.",
-    bg: "#0F0F14",
-    fg: "#FAF8F5",
-    accent: "#D4FF3E",
+    accent: "#FF2DA1",
   },
 ];
 
@@ -57,7 +49,7 @@ export function VibePicker({ onPick, compact = false }: VibePickerProps) {
   };
 
   return (
-    <div className={cn("grid gap-3", compact ? "grid-cols-3" : "grid-cols-1 sm:grid-cols-3")}>
+    <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2")}>
       {TILES.map((t) => {
         const active = selected === t.id;
         return (

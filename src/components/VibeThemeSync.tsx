@@ -1,12 +1,24 @@
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Vibe = "daylight" | "midnight" | "neon";
+// Neon retired -- exactly two selectable vibes now (see VibePicker). The DB
+// column's CHECK constraint still allows 'neon' for any pre-existing rows
+// (not migrated, out of scope here); normalizeVibe() below is what keeps
+// those rows from ever reaching the UI as a third, unselectable option.
+export type Vibe = "daylight" | "midnight";
 const STORAGE_KEY = "ui_vibe";
 
 export function isVibe(v: unknown): v is Vibe {
-  return v === "daylight" || v === "midnight" || v === "neon";
+  return v === "daylight" || v === "midnight";
+}
+
+/** Coerces any stored value -- including the retired "neon" -- to a
+ *  supported vibe, defaulting unknown/missing values to Midnight (the
+ *  product's current default look). */
+function normalizeVibe(v: unknown): Vibe {
+  return isVibe(v) ? v : "midnight";
 }
 
 export function applyVibe(vibe: Vibe, setNextTheme?: (t: string) => void) {
@@ -14,7 +26,7 @@ export function applyVibe(vibe: Vibe, setNextTheme?: (t: string) => void) {
   try {
     localStorage.setItem(STORAGE_KEY, vibe);
   } catch {}
-  // Midnight + Neon use the .dark class so shadcn dark variants apply.
+  // Midnight uses the .dark class so shadcn dark variants apply.
   if (setNextTheme) {
     setNextTheme(vibe === "daylight" ? "light" : "dark");
   }
@@ -24,22 +36,47 @@ export function applyVibe(vibe: Vibe, setNextTheme?: (t: string) => void) {
 export function getStoredVibe(): Vibe {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
-    if (isVibe(v)) return v;
+    if (v !== null) return normalizeVibe(v);
   } catch {}
-  return "daylight";
+  return "midnight";
 }
 
 /**
- * Mirrors ModeThemeSync. Reads profiles.ui_vibe (or localStorage for guests),
- * sets [data-vibe] on <html>, and aligns next-themes light/dark accordingly.
+ * Mirrors ModeThemeSync. index.html's own inline script already applies
+ * the stored vibe before first paint (see index.html) so there's no flash
+ * of the wrong theme -- this hook just wires that same value into
+ * next-themes/React state, then reconciles with profiles.ui_vibe for a
+ * signed-in user (e.g. picked on another device) once that fetch resolves,
+ * strictly after first paint so it never re-introduces the flicker.
  */
 export function VibeThemeSync() {
   const { setTheme } = useTheme();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // V1: Midnight locked. Ignore stored/profile vibe until picker returns post-launch.
-    applyVibe("midnight", setTheme);
+    applyVibe(getStoredVibe(), setTheme);
   }, [setTheme]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("ui_vibe")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(
+        ({ data }) => {
+          if (cancelled || !data?.ui_vibe) return;
+          const remote = normalizeVibe(data.ui_vibe);
+          if (remote !== getStoredVibe()) applyVibe(remote, setTheme);
+        },
+        () => {},
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, [user, setTheme]);
 
   return null;
 }

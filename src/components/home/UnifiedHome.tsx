@@ -11,6 +11,7 @@ import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
+import { PassportPreviewCard } from "@/components/passport/PassportPreviewCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
 import { CreditThumb } from "@/components/onboarding/claim-flow/CreditThumb";
@@ -199,12 +200,17 @@ export const UnifiedHome = () => {
 
       // Use the public-readable view so signed-in users see OTHER real creators,
       // not just themselves (profiles table RLS hides non-connected rows).
+      // "Real Passport" = the same 3 signals the redesigned Passport card
+      // needs to be worth showing: a photo, a name, a role for RoleStamp to
+      // read, and onboarding actually finished -- not a half-abandoned signup.
       let creatorsQuery = supabase
         .from("public_profiles_safe")
         .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills")
 
         .not("avatar_url", "is", null)
         .not("full_name", "is", null)
+        .not("role", "is", null)
+        .eq("onboarding_completed", true)
         .order("created_at", { ascending: false })
         .limit(40);
       if (user) {
@@ -435,33 +441,15 @@ export const UnifiedHome = () => {
           <CarouselContent className="-ml-3">
             {featuredCreators.slice(0, 10).map((c: any) => (
               <CarouselItem key={c.user_id} className="pl-3 basis-auto">
-                <Link
-                  to={`/profile/${c.user_id}`}
-                  className="shrink-0 w-44 flex flex-col rounded-2xl overflow-hidden border border-border bg-card group transition-all hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden shrink-0">
-                    <div
-                      className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-background transition-transform duration-500 group-hover:scale-105"
-                      style={c.avatar_url ? { backgroundImage: `url(${c.avatar_url})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                    {c.match_score && (
-                      <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm border border-border text-[9px] font-bold text-energy flex items-center gap-1">
-                        <Sparkles className="h-2.5 w-2.5" />
-                        {c.match_score}%
-                      </span>
-                    )}
-                    <div className="absolute bottom-0 inset-x-0 p-2.5">
-                      <p className="text-sm font-black leading-tight text-foreground line-clamp-1">{c.full_name}</p>
-                    </div>
-                  </div>
-                  <div className="mt-auto p-2.5 border-t border-border/60">
-                    <p className="text-[10px] text-muted-foreground line-clamp-1">{c.role || "Creator"}</p>
-                    {c.reason && (
-                      <p className="text-[10px] text-primary line-clamp-2 pt-0.5">{c.reason}</p>
-                    )}
-                  </div>
-                </Link>
+                <PassportPreviewCard
+                  userId={c.user_id}
+                  fullName={c.full_name}
+                  avatarUrl={c.avatar_url}
+                  role={c.role}
+                  subRoles={c.sub_roles}
+                  matchScore={c.match_score}
+                  reason={c.reason}
+                />
               </CarouselItem>
             ))}
           </CarouselContent>

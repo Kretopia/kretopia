@@ -23,10 +23,12 @@ export interface EditorialPageHeroProps {
   align?: "left" | "center";
   /** Keep title + accent on a single line (auto-scaled to fit). Defaults to true. */
   oneLine?: boolean;
+  /** Keep the subtitle itself on one line too (see CinematicHeaderPlate). Defaults to false. */
+  subtitleOneLine?: boolean;
 }
 
 export const EditorialPageHero = ({
-  kicker, title, accentTitle, subtitle, children, align = "center", oneLine = true,
+  kicker, title, accentTitle, subtitle, children, align = "center", oneLine = true, subtitleOneLine = false,
 }: EditorialPageHeroProps) => {
   const centered = align === "center";
 
@@ -60,6 +62,7 @@ export const EditorialPageHero = ({
         subtitle={subtitle}
         align={align}
         oneLine={oneLine}
+        subtitleOneLine={subtitleOneLine}
         footer={children && <div className={`mt-8 w-full ${centered ? "flex flex-col items-center" : ""}`}>{children}</div>}
       />
     </section>

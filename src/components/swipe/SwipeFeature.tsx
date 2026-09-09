@@ -217,14 +217,25 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
           <Heart className="h-10 w-10 text-muted-foreground" />
         </div>
         <h3 className="text-xl font-semibold mb-2">All Caught Up!</h3>
-        <p className="text-muted-foreground mb-4">
-          You've seen all available creators for now. Check back later!
+        <p className="text-muted-foreground mb-1 max-w-sm">
+          You've seen everyone available right now.
         </p>
-        {swipeHistory.length > 0 && (
-          <Button variant="outline" onClick={handleUndo} className="gap-2">
-            <RotateCcw className="h-4 w-4" /> Undo Last
+        <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+          No matches yet? Explore the full Kretopia network in the grid, or complete your Passport so better matches keep finding you.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {swipeHistory.length > 0 && (
+            <Button variant="outline" onClick={handleUndo} className="gap-2">
+              <RotateCcw className="h-4 w-4" /> Undo Last
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => navigate('/match?tab=browse')} className="gap-2">
+            <ArrowRight className="h-4 w-4" /> Browse the grid
           </Button>
-        )}
+          <Button onClick={() => navigate('/profile')} className="gap-2">
+            Complete your Passport
+          </Button>
+        </div>
       </div>
     );
   }

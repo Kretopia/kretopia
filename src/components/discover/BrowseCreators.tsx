@@ -69,6 +69,12 @@ export function BrowseCreators() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [sort, setSort] = useState<SortKey>("recommended");
   const [prioritizeSector, setPrioritizeSector] = useState(true);
+  // Bumped by the empty-state "Clear filters" action so the effect below
+  // re-runs with the just-cleared filters/query -- setTimeout(runFilterSearch)
+  // (the pattern applySaved uses elsewhere in this file) would instead
+  // call the stale pre-clear closure, since the callback reference is
+  // captured before the state update is applied.
+  const [refreshToken, setRefreshToken] = useState(0);
   const [results, setResults] = useState<CreatorRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
@@ -233,7 +239,7 @@ export function BrowseCreators() {
     if (aiMode) return;
     runFilterSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, prioritizeSector]);
+  }, [sort, prioritizeSector, refreshToken]);
 
   const saveCurrentSearch = async () => {
     if (!user || !saveName.trim()) return;
@@ -408,8 +414,21 @@ export function BrowseCreators() {
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : results.length === 0 ? (
-        <Card className="py-12 text-center text-sm text-muted-foreground">
-          No creators match. Try widening your filters.
+        <Card className="py-12 px-6 text-center space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {query || filters.role || filters.location || filters.skill
+              ? "No creators match those filters. Try widening your search."
+              : "New here? Discover creators from your sector and city — clear any filters to see the full Kretopia network."}
+          </p>
+          {(query || filters.role || filters.location || filters.skill) && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => { setQuery(""); setFilters(EMPTY_FILTERS); setRefreshToken(t => t + 1); }}
+            >
+              Clear filters
+            </Button>
+          )}
         </Card>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">

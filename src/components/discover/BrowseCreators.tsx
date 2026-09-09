@@ -124,6 +124,11 @@ export function BrowseCreators() {
         .not("avatar_url", "is", null)
         .neq("avatar_url", "")
         .limit(120);
+      // Pre-existing gap: this query never excluded the signed-in user's
+      // own profile, so the grid could show you as a match for yourself
+      // (found live while testing the new scoring — a real account showed
+      // up in its own "Recommended" results at a high score).
+      if (user?.id) q = q.neq("user_id", user.id);
 
       if (filters.role) q = q.ilike("role", `%${filters.role}%`);
       if (filters.location) q = q.ilike("location", `%${filters.location}%`);

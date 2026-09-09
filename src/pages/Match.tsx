@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Sparkles, LayoutGrid, Loader2, Users } from "lucide-react";
 import { SwipeFeature } from "@/components/swipe";
@@ -7,6 +8,9 @@ import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
 import { MATCH_TUTORIAL } from "@/components/landing/kretopia/tutorialContent";
 import { StudioSectionTabs, type StudioSectionTab } from "@/components/studio-reference/StudioSectionTabs";
+
+const TAB_IDS = ["discover", "browse", "interested"] as const;
+type MatchTabId = (typeof TAB_IDS)[number];
 
 const LikesYouGrid = lazy(() =>
   import("@/components/swipe/LikesYouGrid").then((m) => ({ default: m.LikesYouGrid }))
@@ -34,6 +38,26 @@ const loadingRow = (label: string) => (
  * pointer events, not a blind wrap. See STUDIO_REFERENCE_SURFACE_AUDIT.md.
  */
 export default function Match() {
+  // StudioSectionTabs' uncontrolled mode only reads ?tab= once, at mount
+  // (Radix's defaultValue semantics) -- a same-page navigate("/match?tab=
+  // browse"), like the deck's empty-state "Browse the grid" CTA, updated
+  // the URL but never the visible tab. Controlled mode (activeId) plus
+  // this effect keep the two in sync in both directions: a manual tab
+  // click still writes the URL (via StudioSectionTabs' own queryParam
+  // handling), and an external URL change now updates the visible tab too.
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<MatchTabId>(() => {
+    const fromQuery = searchParams.get("tab");
+    return (TAB_IDS as readonly string[]).includes(fromQuery || "") ? (fromQuery as MatchTabId) : "discover";
+  });
+
+  useEffect(() => {
+    const fromQuery = searchParams.get("tab");
+    if (fromQuery && (TAB_IDS as readonly string[]).includes(fromQuery) && fromQuery !== activeTab) {
+      setActiveTab(fromQuery as MatchTabId);
+    }
+  }, [searchParams, activeTab]);
+
   const matchTabs: StudioSectionTab[] = [
     {
       id: "discover",
@@ -93,7 +117,12 @@ export default function Match() {
 
       <StudioFeatureShell>
         <KretoTip surface="match" compact />
-        <StudioSectionTabs tabs={matchTabs} defaultTabId="discover" queryParam="tab" />
+        <StudioSectionTabs
+          tabs={matchTabs}
+          queryParam="tab"
+          activeId={activeTab}
+          onTabChange={(id) => setActiveTab(id as MatchTabId)}
+        />
       </StudioFeatureShell>
     </div>
   );

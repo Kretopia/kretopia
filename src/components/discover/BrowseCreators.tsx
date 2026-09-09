@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -20,16 +21,20 @@ import {
 import { cn } from "@/lib/utils";
 import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
+import { RoleStamp } from "@/components/passport/RoleStamp";
+import { buildMyMatchContext, computeMatchScore, extractCity, extractSkillsArray, fetchPastCollaboratorIds } from "@/lib/matchScoring";
 
 interface CreatorRow {
   user_id: string;
   full_name: string;
   avatar_url: string | null;
   role: string | null;
+  sub_roles?: string[] | null;
   location: string | null;
   verification_tier: string | null;
   average_rating: number | null;
   professional_skills: any;
+  last_active_date?: string | null;
   match_score?: number;
   match_reason?: string;
 }
@@ -50,6 +55,8 @@ interface Filters {
   minRating: number;
 }
 
+type SortKey = "recommended" | "nearest" | "most_active";
+
 const EMPTY_FILTERS: Filters = { role: "", location: "", skill: "", verifiedOnly: false, minRating: 0 };
 
 export function BrowseCreators() {
@@ -60,6 +67,8 @@ export function BrowseCreators() {
   const [query, setQuery] = useState("");
   const [aiMode, setAiMode] = useState(false);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [sort, setSort] = useState<SortKey>("recommended");
+  const [prioritizeSector, setPrioritizeSector] = useState(true);
   const [results, setResults] = useState<CreatorRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
@@ -103,7 +112,7 @@ export function BrowseCreators() {
     try {
       let q = supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, role, location, verification_tier, average_rating, professional_skills, bio, is_claimed, badge")
+        .select("user_id, full_name, avatar_url, role, sub_roles, location, verification_tier, average_rating, professional_skills, bio, is_claimed, badge, last_active_date")
         .eq("onboarding_completed", true)
         .not("full_name", "is", null)
         .not("avatar_url", "is", null)
@@ -123,28 +132,18 @@ export function BrowseCreators() {
       if (error) throw error;
       let rows = (data || []) as (CreatorRow & { bio?: string | null; is_claimed?: boolean; badge?: string | null })[];
 
-      // Completeness gate — same standard as Circle/Nearby discovery
+      // "Is there anything real to show" gate -- NOT an experience/activity
+      // gate. A brand new user with zero credits must still be
+      // discoverable (no artificial gating), so bio length and work-item
+      // count are gone from here; they used to hard-exclude any thin
+      // profile from the grid entirely.
       rows = rows.filter(r => {
         if (!r.full_name || r.full_name === "New User" || r.full_name.trim() === "") return false;
         if (!r.role || r.role === "Creator" || r.role.trim() === "") return false;
         if (!r.avatar_url) return false;
-        if (!r.bio || r.bio.length < 20) return false;
         if (r.is_claimed === false && r.badge !== "odos") return false;
         return true;
       });
-
-      // Require at least one work item (credit, portfolio, or award)
-      if (rows.length > 0) {
-        const userIds = rows.map(r => r.user_id);
-        const [creditsRes, awardsRes] = await Promise.all([
-          supabase.from("credits").select("user_id").in("user_id", userIds),
-          supabase.from("awards").select("user_id").in("user_id", userIds),
-        ]);
-        const hasWork = new Set<string>();
-        creditsRes.data?.forEach(c => hasWork.add(c.user_id));
-        awardsRes.data?.forEach(a => hasWork.add(a.user_id));
-        rows = rows.filter(r => hasWork.has(r.user_id));
-      }
 
       if (filters.skill) {
         const s = filters.skill.toLowerCase();
@@ -153,11 +152,60 @@ export function BrowseCreators() {
           return skills.some((sk: any) => String(sk).toLowerCase().includes(s));
         });
       }
+
+      // Same scoring algorithm the deck uses (src/lib/matchScoring.ts) --
+      // "Recommended" here means the same thing "top of the deck" does.
+      if (user?.id && rows.length > 0) {
+        const [{ data: meProfile }, pastCollabIds] = await Promise.all([
+          supabase.from("profiles").select("role, sub_roles, location, professional_skills, passion_skills").eq("user_id", user.id).maybeSingle(),
+          fetchPastCollaboratorIds(user.id),
+        ]);
+        const myContext = buildMyMatchContext(meProfile || {}, pastCollabIds);
+
+        rows = rows.map(r => {
+          const { score, ...signals } = computeMatchScore(myContext, {
+            userId: r.user_id,
+            role: r.role,
+            subRoles: r.sub_roles,
+            location: r.location,
+            skills: extractSkillsArray(r.professional_skills),
+          });
+          const sectorBoost = prioritizeSector && signals.sameSector ? 0 : (signals.sameSector ? -40 : 0);
+          const reason = signals.pastCollab
+            ? "You've worked together before"
+            : signals.sameSector
+            ? "Same sector as you"
+            : signals.sameCity
+            ? "Same city as you"
+            : signals.skillOverlapRatio > 0.2
+            ? "Shares your skills"
+            : undefined;
+          return { ...r, match_score: Math.round(score + sectorBoost), match_reason: reason };
+        });
+
+        if (sort === "recommended") {
+          rows = rows.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
+        } else if (sort === "nearest") {
+          const myCity = extractCity(meProfile?.location);
+          rows = rows.sort((a, b) => {
+            const aNear = myCity && extractCity(a.location) === myCity ? 1 : 0;
+            const bNear = myCity && extractCity(b.location) === myCity ? 1 : 0;
+            return bNear - aNear || (b.match_score || 0) - (a.match_score || 0);
+          });
+        } else {
+          rows = rows.sort((a, b) => {
+            const aTime = a.last_active_date ? new Date(a.last_active_date).getTime() : 0;
+            const bTime = b.last_active_date ? new Date(b.last_active_date).getTime() : 0;
+            return bTime - aTime;
+          });
+        }
+      }
+
       setResults(rows.slice(0, 60));
     } catch (e: any) {
       toast({ title: "Search failed", description: e.message, variant: "destructive" });
     } finally { setLoading(false); }
-  }, [filters, query, toast]);
+  }, [filters, query, toast, user?.id, sort, prioritizeSector]);
 
   const runAiSearch = useCallback(async () => {
     if (!query.trim() || query.trim().length < 3) {
@@ -178,8 +226,14 @@ export function BrowseCreators() {
 
   const handleSearch = () => { aiMode ? runAiSearch() : runFilterSearch(); };
 
-  // Initial load
-  useEffect(() => { runFilterSearch(); /* eslint-disable-next-line */ }, []);
+  // Initial load, and re-run whenever sort/prioritize change so those
+  // controls feel immediate (unlike the advanced filter popover, which
+  // still requires an explicit "Apply").
+  useEffect(() => {
+    if (aiMode) return;
+    runFilterSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort, prioritizeSector]);
 
   const saveCurrentSearch = async () => {
     if (!user || !saveName.trim()) return;
@@ -310,6 +364,27 @@ export function BrowseCreators() {
             <Bookmark className="h-3 w-3 mr-1" /> Save search
           </Button>
         </div>
+
+        {/* Sort + sector priority — apply immediately, unlike the advanced
+            filter popover above which still needs an explicit "Apply". */}
+        {!aiMode && (
+          <div className="flex items-center justify-between gap-2">
+            <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+              <SelectTrigger className="h-8 w-[150px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recommended" className="text-xs">Recommended</SelectItem>
+                <SelectItem value="nearest" className="text-xs">Nearest</SelectItem>
+                <SelectItem value="most_active" className="text-xs">Most active</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="prioritize-sector" className="text-xs text-muted-foreground">Prioritize my sector</Label>
+              <Switch id="prioritize-sector" checked={prioritizeSector} onCheckedChange={setPrioritizeSector} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Saved searches chips */}
@@ -344,16 +419,22 @@ export function BrowseCreators() {
               onClick={() => navigate(`/profile/${c.user_id}`)}
               className="text-left rounded-xl border bg-card p-3 hover:shadow-md hover:border-primary/30 transition-all group"
             >
-              <div className="relative mb-2">
-                <Avatar className="h-14 w-14 mx-auto border">
+              <div className="relative mb-2 w-fit mx-auto">
+                <Avatar className="h-14 w-14 border">
                   <AvatarImage src={c.avatar_url || ""} alt={c.full_name} />
                   <AvatarFallback>{c.full_name?.[0] || "?"}</AvatarFallback>
                 </Avatar>
                 {c.verification_tier && c.verification_tier !== "none" && (
-                  <div className="absolute top-0 right-1/3 h-4 w-4 rounded-full bg-primary flex items-center justify-center border-2 border-background">
+                  <div className="absolute top-0 right-0 h-4 w-4 rounded-full bg-primary flex items-center justify-center border-2 border-background">
                     <Verified className="h-2.5 w-2.5 text-primary-foreground" />
                   </div>
                 )}
+                <RoleStamp
+                  role={c.role}
+                  subRoles={c.sub_roles}
+                  size={20}
+                  className="absolute -bottom-1 -right-1 border-2 border-background"
+                />
               </div>
               <p className="text-xs font-semibold text-center truncate">{c.full_name}</p>
               <p className="text-[10px] text-muted-foreground text-center truncate">{c.role || "Creator"}</p>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quote, Trash2, GripVertical, MoveUp, MoveDown, Eye, Wand2, Wand, X } from "lucide-react";
+import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quote, Trash2, GripVertical, MoveUp, MoveDown, Eye, Wand2, Wand, X, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
@@ -59,9 +60,12 @@ const parseMarkdownToBlocks = (md: string): ContentBlock[] => {
 
 export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
   const { user } = useAuth();
+  const { isEditorOrAdmin } = useUserRole();
   const isEditing = !!articleId;
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
+  const [authorName, setAuthorName] = useState("");
+  const [authorAvatarUrl, setAuthorAvatarUrl] = useState<string | null>(null);
   const [category, setCategory] = useState("inspiration");
   const [coverUrl, setCoverUrl] = useState("");
   const [coverPosX, setCoverPosX] = useState(50);
@@ -106,10 +110,37 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       setCoverZoom(Number(data.cover_zoom) || 1);
       setIsFeatured(!!data.is_featured);
       setBlocks(parseMarkdownToBlocks(data.content || ""));
+      setAuthorName(data.author_name || "");
+      setAuthorAvatarUrl(data.author_avatar_url || null);
       setLoadingArticle(false);
     })();
     return () => { cancelled = true; };
   }, [articleId]);
+
+  // New article — prefill the byline. Admin/writer keep the institutional
+  // "Kretopia Magazine" byline every existing published piece already
+  // uses (still editable); anyone else defaults straight to their own
+  // name, since a user-submitted story with no real byline defeats the
+  // point of publishing under your own name in the first place.
+  useEffect(() => {
+    if (articleId || !user) return;
+    if (isEditorOrAdmin) {
+      setAuthorName("Kretopia Magazine");
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("full_name, avatar_url")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setAuthorName(data?.full_name || "A Kretopia creator");
+        setAuthorAvatarUrl(data?.avatar_url || null);
+      });
+    return () => { cancelled = true; };
+  }, [articleId, user, isEditorOrAdmin]);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -231,6 +262,8 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       category,
       is_featured: isFeatured,
       read_time_minutes: readTime,
+      author_name: authorName.trim() || "A Kretopia creator",
+      author_avatar_url: authorAvatarUrl,
     };
 
     const { error } = isEditing
@@ -238,7 +271,6 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       : await supabase.from("magazine_articles").insert({
           ...payload,
           author_user_id: user.id,
-          author_name: "Kretopia Magazine",
         });
 
     if (error) {
@@ -246,7 +278,9 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       setPublishing(false);
       return;
     }
-    toast.success(isEditing ? "Changes saved!" : "Article published!");
+    toast.success(
+      isEditing ? "Changes saved!" : isEditorOrAdmin ? "Article published!" : "Story submitted — we'll review it and let you know.",
+    );
     onPublished();
   };
 
@@ -303,10 +337,17 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
           </Button>
           <Button onClick={handlePublish} disabled={publishing || !title.trim()} size="sm" className="gap-1.5">
             {publishing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-            {isEditing ? "Save" : "Publish"}
+            {isEditing ? "Save" : isEditorOrAdmin ? "Publish" : "Submit for review"}
           </Button>
         </div>
       </div>
+
+      {!isEditing && !isEditorOrAdmin && (
+        <div className="flex items-start gap-2 rounded-xl border border-[hsl(var(--energy)/0.25)] bg-[hsl(var(--energy)/0.06)] p-3 text-xs text-muted-foreground">
+          <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-0.5 text-[hsl(var(--energy))]" />
+          <span>Your story goes to the Kretopia team for a quick review before it appears in the Magazine — it won't publish itself.</span>
+        </div>
+      )}
 
       {/* Cover Image */}
       <div>
@@ -353,6 +394,18 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
           onChange={e => setSubtitle(e.target.value)}
           placeholder="Subtitle (optional)..."
           className="text-sm border-0 px-0 focus-visible:ring-0 placeholder:text-muted-foreground/30 -mt-1"
+        />
+      </div>
+
+      {/* Byline — editable so a real contributor gets proper credit instead
+          of the article always reading "Kretopia Magazine". */}
+      <div>
+        <Label className="text-xs">Byline</Label>
+        <Input
+          value={authorName}
+          onChange={e => setAuthorName(e.target.value)}
+          placeholder="Your name, as it should appear on the story"
+          className="mt-1 h-8 text-sm"
         />
       </div>
 

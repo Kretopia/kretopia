@@ -2,23 +2,17 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { BookOpen, Clock, Eye, Plus, Sparkles, TrendingUp, Pencil, Search, X } from "lucide-react";
+import { BookOpen, PenSquare, Search, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MagazineArticleViewer } from "./MagazineArticleViewer";
+import { MagazineArticleModal } from "./MagazineArticleModal";
+import { MagazineArticleCard } from "./MagazineArticleCard";
 import { MagazineEditor } from "./MagazineEditor";
-import { coverImageStyle } from "./CoverImageEditor";
-import { SmartCover } from "@/components/ui/smart-cover";
-import { SmartWidget } from "@/components/ui/smart-widget";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface Article {
   id: string;
@@ -36,6 +30,8 @@ interface Article {
   is_featured: boolean;
   read_time_minutes: number;
   view_count: number;
+  like_count: number;
+  comment_count: number;
   created_at: string;
   slug: string | null;
 }
@@ -67,7 +63,6 @@ const formatCategoryLabel = (cat: string) => CATEGORY_LABELS[cat] || cat.charAt(
 type SortKey = "latest" | "most-read" | "trending";
 
 export const MagazineWall = () => {
-  const reducedMotion = useReducedMotion();
   const { user } = useAuth();
   const { isEditorOrAdmin } = useUserRole();
   const [articles, setArticles] = useState<Article[]>([]);
@@ -129,10 +124,6 @@ export const MagazineWall = () => {
     );
   }, [articles, search]);
 
-  if (selectedArticle) {
-    return <MagazineArticleViewer article={selectedArticle} onBack={() => setSelectedArticle(null)} />;
-  }
-
   if (showEditor) {
     return (
       <MagazineEditor
@@ -155,20 +146,52 @@ export const MagazineWall = () => {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-primary" />
-            Kretopia Magazine
-          </h2>
-          <p className="text-xs text-muted-foreground">Stories, insights & creative culture</p>
-        </div>
-        {user && isEditorOrAdmin && (
-          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => { setEditingId(null); setShowEditor(true); }}>
-            <Plus className="h-3.5 w-3.5" />
-            Write
+      <div>
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <BookOpen className="h-5 w-5 text-primary" />
+          Kretopia Magazine
+        </h2>
+        <p className="text-xs text-muted-foreground">Stories, insights & creative culture</p>
+      </div>
+
+      {/* Publish CTA — open to every signed-in user, not just admin/writer:
+          a non-staff submission still lands here (via the same editor) but
+          is force-unpublished server-side pending review (see the
+          2026-09-09 migration's enforce_magazine_moderation trigger), so
+          the copy sets that expectation honestly instead of implying
+          instant publication. */}
+      <div className="relative overflow-hidden rounded-2xl border border-[hsl(var(--energy)/0.3)] bg-gradient-to-br from-[hsl(var(--energy)/0.14)] via-card to-card p-4 sm:p-5">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full blur-2xl ai-ambient-breathe"
+          style={{ background: "radial-gradient(circle, hsl(var(--energy)/0.35), transparent 70%)" }}
+        />
+        <div className="relative flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[hsl(var(--energy))]">
+              <Sparkles className="h-3 w-3" />
+              Your story belongs here
+            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {isEditorOrAdmin ? "Write the next Kretopia Magazine feature." : "Got a story worth telling? Publish it."}
+            </p>
+            {!isEditorOrAdmin && (
+              <p className="mt-0.5 text-xs text-muted-foreground">Submissions are reviewed before they go live.</p>
+            )}
+          </div>
+          <Button
+            size="sm"
+            className="w-full shrink-0 gap-1.5 bg-[hsl(var(--energy))] text-white hover:bg-[hsl(var(--energy)/0.9)] sm:w-auto"
+            onClick={() => {
+              if (!user) { window.location.href = "/auth?next=/spotlight"; return; }
+              setEditingId(null);
+              setShowEditor(true);
+            }}
+          >
+            <PenSquare className="h-3.5 w-3.5" />
+            {isEditorOrAdmin ? "Write" : "Publish your story"}
           </Button>
-        )}
+        </div>
       </div>
 
       {/* Search + Sort */}
@@ -251,119 +274,38 @@ export const MagazineWall = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* Featured Article */}
+        <div className="space-y-5">
+          {/* Featured Article — the lead story, full-width Holo Card */}
           {featured && (
-            <SmartWidget className="rounded-xl" scanLine>
-            <Card
-              className="relative overflow-hidden rounded-xl cursor-pointer group border-0"
-              onClick={() => setSelectedArticle(featured)}
-            >
-              <div className="aspect-[16/9] relative">
-                <SmartCover
-                  src={featured.cover_image_url}
-                  alt={featured.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  style={coverImageStyle(featured.cover_position_x, featured.cover_position_y, featured.cover_zoom)}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                <div className="absolute top-3 left-3 flex gap-2">
-                  <Badge className="bg-primary/90 text-primary-foreground text-[10px]">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    Featured
-                  </Badge>
-                </div>
-                {isEditorOrAdmin && (
-                  <button
-                    onClick={(e) => openEdit(e, featured.id)}
-                    className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background flex items-center justify-center transition-colors"
-                    aria-label="Edit article"
-                    title="Edit article"
-                  >
-                    <Pencil className="h-3.5 w-3.5 text-foreground" />
-                  </button>
-                )}
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <Badge variant="secondary" className="mb-2 text-[10px] capitalize">
-                    {formatCategoryLabel(featured.category)}
-                  </Badge>
-                  <h3 className="text-white font-bold text-lg leading-tight mb-1">{featured.title}</h3>
-                  {featured.subtitle && (
-                    <p className="text-white/70 text-xs line-clamp-2">{featured.subtitle}</p>
-                  )}
-                  <div className="flex items-center gap-3 mt-2 text-white/60 text-[10px]">
-                    <span>{featured.author_name}</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {featured.read_time_minutes} min
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      {featured.view_count}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-            </SmartWidget>
+            <MagazineArticleCard
+              article={featured}
+              categoryLabel={formatCategoryLabel(featured.category)}
+              featured
+              canEdit={isEditorOrAdmin}
+              onOpen={() => setSelectedArticle(featured)}
+              onEdit={(e) => openEdit(e, featured.id)}
+            />
           )}
 
-          {/* Carousel — compact, swipeable rail instead of a long grid */}
-          <div className="relative">
-            <Carousel opts={{ align: "start", dragFree: true, duration: reducedMotion ? 0 : 20 }} className="w-full" aria-label="More articles">
-              <CarouselContent className="-ml-3">
-                {rest.map(article => (
-                  <CarouselItem key={article.id} className="pl-3 basis-[46%] sm:basis-[32%]">
-                    <SmartWidget className="rounded-xl h-full" scanLine={false}>
-                    <Card
-                      className="overflow-hidden rounded-xl cursor-pointer group border-border/50 hover:border-primary/30 transition-colors border-0 h-full"
-                      onClick={() => setSelectedArticle(article)}
-                    >
-                      <div className="aspect-[4/3] relative">
-                        <SmartCover
-                          src={article.cover_image_url}
-                          alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          style={coverImageStyle(article.cover_position_x, article.cover_position_y, article.cover_zoom)}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        {isEditorOrAdmin && (
-                          <button
-                            onClick={(e) => openEdit(e, article.id)}
-                            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                            aria-label="Edit article"
-                            title="Edit article"
-                          >
-                            <Pencil className="h-3 w-3 text-foreground" />
-                          </button>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                          <Badge variant="secondary" className="mb-1 text-[9px] capitalize px-1.5 py-0">
-                            {formatCategoryLabel(article.category)}
-                          </Badge>
-                          <h4 className="text-white text-xs font-semibold line-clamp-2 leading-tight">
-                            {article.title}
-                          </h4>
-                        </div>
-                      </div>
-                      <div className="p-2.5 flex items-center justify-between text-[10px] text-muted-foreground">
-                        <span className="truncate">{article.author_name}</span>
-                        <span className="flex items-center gap-1 shrink-0 ml-2">
-                          <Clock className="h-3 w-3" />
-                          {article.read_time_minutes}m
-                        </span>
-                      </div>
-                    </Card>
-                    </SmartWidget>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious variant="glass" className="hidden sm:flex -left-3" aria-label="Previous articles" />
-              <CarouselNext variant="glass" className="hidden sm:flex -right-3" aria-label="Next articles" />
-            </Carousel>
+          {/* Topics grid — a real multi-column newspaper layout instead of
+              a single swipeable rail, so more than 2-3 stories are visible
+              at once and the page reads as a magazine front, not a feed. */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {rest.map(article => (
+              <MagazineArticleCard
+                key={article.id}
+                article={article}
+                categoryLabel={formatCategoryLabel(article.category)}
+                canEdit={isEditorOrAdmin}
+                onOpen={() => setSelectedArticle(article)}
+                onEdit={(e) => openEdit(e, article.id)}
+              />
+            ))}
           </div>
         </div>
       )}
+
+      <MagazineArticleModal article={selectedArticle} onOpenChange={(open) => !open && setSelectedArticle(null)} />
     </div>
   );
 };

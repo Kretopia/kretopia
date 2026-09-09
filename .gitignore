@@ -31,3 +31,6 @@ docs/
 .env
 .env.*
 !.env.example
+
+# Supabase CLI local cache (project-link metadata, not shared config)
+supabase/.temp/

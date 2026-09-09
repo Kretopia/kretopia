@@ -70,7 +70,10 @@ export function CinematicHeaderPlate({
           </p>
           <h1
             className={`landing-h1 landing-glow ${oneLine ? "whitespace-nowrap max-w-none" : "text-balance max-w-4xl"}`}
-            style={oneLine ? { fontSize: "clamp(1.05rem, 4.2vw, 3rem)" } : undefined}
+            style={{
+              color: "hsl(var(--foreground))",
+              ...(oneLine ? { fontSize: "clamp(1.05rem, 4.2vw, 3rem)" } : {}),
+            }}
           >
             <motion.span
               initial="hidden"
@@ -89,7 +92,10 @@ export function CinematicHeaderPlate({
           {subtitle && (
             <p
               className={`landing-sub mt-5 ${subtitleOneLine ? "whitespace-nowrap" : "max-w-xl"} ${centered ? "mx-auto" : ""}`}
-              style={subtitleOneLine ? { fontSize: "clamp(0.6875rem, 3.1vw, 1.0625rem)" } : undefined}
+              style={{
+                color: "hsl(var(--muted-foreground))",
+                ...(subtitleOneLine ? { fontSize: "clamp(0.6875rem, 3.1vw, 1.0625rem)" } : {}),
+              }}
             >
               {subtitle}
             </p>

@@ -50,6 +50,16 @@ All colors MUST be HSL.
     --accent: 36 22% 92%;
     --accent-foreground: 240 11% 8%;
 
+    /* .btn-glass system (index.css further down) -- the frosted-glass
+       button family used by every Button variant. Its neutral tint and
+       text used to hardcode white unconditionally (rgb(255,255,255) +
+       `color: #fff !important`), which read fine as a light-glass-on-dark
+       effect but left every button nearly invisible once Light mode
+       existed for real: white text on a white-tinted translucent surface
+       sitting on a cream backdrop. Light mode's glass tints dark instead. */
+    --btn-glass-text: 15, 15, 18;
+    --btn-glass-neutral-tint: 15, 15, 18;
+
     /* Energy = Kretopia Magenta (primary highlight/CTA signal). */
     --energy: 327 100% 59%;
     --energy-foreground: 0 0% 100%;
@@ -175,6 +185,11 @@ All colors MUST be HSL.
 
     --accent: 222 22% 13%;
     --accent-foreground: 0 0% 100%;
+
+    /* .btn-glass system -- see the light-mode definition of these two for
+       the full explanation. Dark mode keeps the original white glass. */
+    --btn-glass-text: 255, 255, 255;
+    --btn-glass-neutral-tint: 255, 255, 255;
 
     --cream: 38 35% 92%;
     --cream-foreground: 225 44% 4%;
@@ -584,8 +599,8 @@ All colors MUST be HSL.
      never used alone. */
   .bg-grid-quadrille {
     background-image:
-      linear-gradient(to right, hsl(0 0% 100% / 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(0 0% 100% / 0.05) 1px, transparent 1px);
+      linear-gradient(to right, hsl(var(--foreground) / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.05) 1px, transparent 1px);
     background-size: 28px 28px;
     -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 25%, transparent 90%);
     mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 25%, transparent 90%);
@@ -1086,16 +1101,16 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
    ============================================================ */
 .btn-glass {
   --btn-glass-accent: 255, 45, 161;
-  --btn-glass-bg-1: rgba(255, 255, 255, 0.07);
-  --btn-glass-bg-2: rgba(255, 255, 255, 0.02);
-  --btn-glass-border: rgba(255, 255, 255, 0.14);
+  --btn-glass-bg-1: rgba(var(--btn-glass-neutral-tint), 0.07);
+  --btn-glass-bg-2: rgba(var(--btn-glass-neutral-tint), 0.02);
+  --btn-glass-border: rgba(var(--btn-glass-neutral-tint), 0.14);
   position: relative;
   isolation: isolate;
   /* Clipped so the sheen can never spill past the button's own shape --
      this is what used to produce the stray pink segment hanging off the
      corners of wide CTAs. */
   overflow: hidden;
-  color: #fff;
+  color: rgb(var(--btn-glass-text));
   background-image: linear-gradient(180deg, var(--btn-glass-bg-1), var(--btn-glass-bg-2));
   border: 1px solid var(--btn-glass-border);
   backdrop-filter: blur(14px) saturate(140%);
@@ -1104,20 +1119,23 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   transition: border-color 0.3s ease, box-shadow 0.3s ease,
               background-image 0.3s ease, transform 0.2s ease;
 }
-/* !important is deliberate here, not a shortcut: "text always white" is
-   an explicit, universal requirement, and .btn-glass is composed with
-   variant strings (e.g. the link variant's hover:text-[#FF2DA1]) that
-   would otherwise still win in some build/HMR orderings despite this
-   block sitting unlayered at the end of the file -- confirmed empirically
-   (computed style showed pink text on hover before this was added), not
-   assumed. This makes "always white" true unconditionally instead of
-   depending on cascade/layer ordering nuances. */
+/* !important is deliberate here, not a shortcut: "text always matches the
+   glass system's own ink" is an explicit, universal requirement, and
+   .btn-glass is composed with variant strings (e.g. the link variant's
+   hover:text-[#FF2DA1]) that would otherwise still win in some build/HMR
+   orderings despite this block sitting unlayered at the end of the file --
+   confirmed empirically (computed style showed pink text on hover before
+   this was added), not assumed. --btn-glass-text itself now flips between
+   white (dark mode) and near-black (light mode, see :root/.dark above) --
+   it used to be a bare #fff, unreadable once Light mode's cream backdrop
+   showed through the same translucent glass a dark backdrop used to sit
+   behind. */
 .btn-glass,
 .btn-glass:hover,
 .btn-glass:focus,
 .btn-glass:active,
 .btn-glass:disabled {
-  color: #fff !important;
+  color: rgb(var(--btn-glass-text)) !important;
   text-decoration: none;
 }
 .btn-glass > * {
@@ -1126,7 +1144,7 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 .btn-glass:hover {
   border-color: rgba(var(--btn-glass-accent), 0.6);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  background-image: linear-gradient(180deg, rgba(var(--btn-glass-neutral-tint), 0.1), rgba(var(--btn-glass-neutral-tint), 0.03));
   box-shadow: 0 0 0 1px rgba(var(--btn-glass-accent), 0.25),
               0 0 22px rgba(var(--btn-glass-accent), 0.35),
               0 16px 40px -28px rgba(var(--btn-glass-accent), 0.5);
@@ -1164,7 +1182,7 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   border-radius: inherit;
   background: linear-gradient(100deg,
     transparent 38%,
-    rgba(255, 255, 255, 0.13) 50%,
+    rgba(var(--btn-glass-neutral-tint), 0.13) 50%,
     transparent 62%);
   transform: translateX(-100%);
   opacity: 0;
@@ -1205,15 +1223,15 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
 }
 .btn-glass-neutral {
   --btn-glass-accent: 255, 45, 161; /* hover shimmer is still pink -- only the REST state is neutral */
-  --btn-glass-bg-1: rgba(255, 255, 255, 0.06);
-  --btn-glass-bg-2: rgba(255, 255, 255, 0.015);
-  --btn-glass-border: rgba(255, 255, 255, 0.13);
+  --btn-glass-bg-1: rgba(var(--btn-glass-neutral-tint), 0.06);
+  --btn-glass-bg-2: rgba(var(--btn-glass-neutral-tint), 0.015);
+  --btn-glass-border: rgba(var(--btn-glass-neutral-tint), 0.13);
 }
 .btn-glass-outline {
   --btn-glass-accent: 255, 45, 161;
-  --btn-glass-bg-1: rgba(255, 255, 255, 0.02);
-  --btn-glass-bg-2: rgba(255, 255, 255, 0.00);
-  --btn-glass-border: rgba(255, 255, 255, 0.16);
+  --btn-glass-bg-1: rgba(var(--btn-glass-neutral-tint), 0.02);
+  --btn-glass-bg-2: rgba(var(--btn-glass-neutral-tint), 0.00);
+  --btn-glass-border: rgba(var(--btn-glass-neutral-tint), 0.16);
   box-shadow: none;
 }
 .btn-glass-ghost {
@@ -1226,7 +1244,7 @@ body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   box-shadow: none;
 }
 .btn-glass-ghost:hover {
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  background-image: linear-gradient(180deg, rgba(var(--btn-glass-neutral-tint), 0.07), rgba(var(--btn-glass-neutral-tint), 0.02));
 }
 .btn-glass-danger {
   --btn-glass-accent: 244, 63, 94; /* rose-500 -- destructive only, deliberately not pink */

@@ -81,9 +81,13 @@ export function VibeThemeSync() {
   return null;
 }
 
-/** Persist a vibe to the user's profile + apply locally. */
-export async function saveVibe(vibe: Vibe) {
-  applyVibe(vibe);
+/** Persist a vibe to the user's profile + apply locally. Pass next-themes'
+ *  setTheme (from useTheme()) so the .dark class actually flips immediately
+ *  -- without it, applyVibe only sets data-vibe/localStorage and the visible
+ *  theme wouldn't change until the next full page load re-ran VibeThemeSync's
+ *  own mount effect (which does pass setTheme). */
+export async function saveVibe(vibe: Vibe, setNextTheme?: (t: string) => void) {
+  applyVibe(vibe, setNextTheme);
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;

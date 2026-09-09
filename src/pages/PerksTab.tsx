@@ -49,7 +49,7 @@ export default function PerksTab() {
   const allTiers = getAllTiers();
 
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#05070D] text-white">
+    <div className="min-h-[calc(100vh-56px)] bg-background text-foreground">
       <div className="mx-auto max-w-4xl px-4 py-10 space-y-8">
         <div className="relative overflow-hidden -mx-4 px-4 pt-4 pb-2">
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid-quadrille" />
@@ -61,13 +61,13 @@ export default function PerksTab() {
             <div ref={titleWrapperRef} className="w-full max-w-3xl">
               <h1
                 ref={titleRef}
-                className="font-black tracking-[-0.03em] text-white leading-[1.05]"
+                className="font-black tracking-[-0.03em] text-foreground leading-[1.05]"
                 style={{ fontSize: "3rem" }}
               >
                 Perks. <span className="pink-glow-breathe" style={{ color: "hsl(var(--energy))" }}>Earned, not bought.</span>
               </h1>
             </div>
-            <p className="mt-3 text-sm sm:text-base text-white/60 max-w-xl mx-auto">
+            <p className="mt-3 text-sm sm:text-base text-foreground/60 max-w-xl mx-auto">
               What each ThriveStatus tier unlocks. Perks stack as your verified credits and
               reputation grow.
             </p>
@@ -79,7 +79,7 @@ export default function PerksTab() {
         <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
         {loading ? (
-          <div className="flex items-center gap-2 text-white/40 text-sm py-6">
+          <div className="flex items-center gap-2 text-foreground/40 text-sm py-6">
             <Loader2 className="h-4 w-4 animate-spin" /> Checking your status…
           </div>
         ) : (
@@ -92,11 +92,11 @@ export default function PerksTab() {
                 <div
                   key={tier.tier}
                   className={`flex flex-col min-h-[216px] rounded-xl border p-4 ${
-                    isCurrentTier ? "border-[hsl(var(--energy)/0.5)] bg-[hsl(var(--energy)/0.05)]" : "border-white/10 bg-white/[0.03]"
+                    isCurrentTier ? "border-[hsl(var(--energy)/0.5)] bg-[hsl(var(--energy)/0.05)]" : "border-border bg-foreground/[0.03]"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 mb-1">
-                    <Icon className={`h-4 w-4 shrink-0 ${isUnlocked ? "text-[hsl(var(--energy))]" : "text-white/30"}`} aria-hidden />
+                    <Icon className={`h-4 w-4 shrink-0 ${isUnlocked ? "text-[hsl(var(--energy))]" : "text-foreground/30"}`} aria-hidden />
                     <h3 className="text-sm font-bold truncate">{tier.label}</h3>
                     {isCurrentTier && (
                       <span className="ml-auto shrink-0 inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-[hsl(var(--energy))] border border-[hsl(var(--energy)/0.35)] bg-[hsl(var(--energy)/0.1)] backdrop-blur-sm px-1.5 py-0.5 rounded-full">
@@ -109,14 +109,14 @@ export default function PerksTab() {
                   <div className="space-y-1.5 mt-3">
                     {tier.perks.map((perk, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs">
-                        <Check className={`h-3 w-3 mt-0.5 shrink-0 ${isUnlocked ? "text-[hsl(var(--energy))]" : "text-white/25"}`} aria-hidden />
-                        <span className={`line-clamp-1 ${isUnlocked ? "text-white/80" : "text-white/35"}`}>{perk}</span>
+                        <Check className={`h-3 w-3 mt-0.5 shrink-0 ${isUnlocked ? "text-[hsl(var(--energy))]" : "text-foreground/25"}`} aria-hidden />
+                        <span className={`line-clamp-1 ${isUnlocked ? "text-foreground/80" : "text-foreground/35"}`}>{perk}</span>
                       </div>
                     ))}
                   </div>
 
                   {!isUnlocked && (
-                    <div className="flex items-center gap-1.5 text-[11px] text-white/35 mt-auto pt-3 border-t border-white/10">
+                    <div className="flex items-center gap-1.5 text-[11px] text-foreground/35 mt-auto pt-3 border-t border-border">
                       <Lock className="h-3 w-3 shrink-0" aria-hidden />
                       Build your reputation to unlock
                     </div>
@@ -127,7 +127,7 @@ export default function PerksTab() {
           </div>
         )}
 
-        <p className="text-xs text-white/35">
+        <p className="text-xs text-foreground/35">
           Partner discounts and Founding Circle rewards land here as they go live — nothing listed
           above is a placeholder.
         </p>

@@ -110,7 +110,7 @@ export default function KretoTab() {
   }, [user]);
 
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#05070D] text-white">
+    <div className="min-h-[calc(100vh-56px)] bg-background text-foreground">
       <FeaturePageHeader
         eyebrow="Executive Producer"
         title={`${BRAND.agentName}.`}
@@ -141,7 +141,7 @@ export default function KretoTab() {
 
             {/* Quick actions — secondary shortcuts, visually quieter than the primary CTA above */}
             <div>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2.5">Or start with</p>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-foreground/40 font-semibold mb-2.5">Or start with</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {QUICK_ACTIONS.map(({ icon: Icon, label, prompt }) => (
                   <button
@@ -150,7 +150,7 @@ export default function KretoTab() {
                     onClick={() => ask(prompt)}
                     className="btn-glass btn-glass-outline flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium"
                   >
-                    <Icon className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+                    <Icon className="h-4 w-4 text-foreground/50 shrink-0" aria-hidden />
                     {label}
                   </button>
                 ))}
@@ -161,7 +161,7 @@ export default function KretoTab() {
 
         {/* Live context: Passport, Scout, recent actions */}
         {loadingContext ? (
-          <div className="flex items-center gap-2 text-white/40 text-sm py-6">
+          <div className="flex items-center gap-2 text-foreground/40 text-sm py-6">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading your context…
           </div>
         ) : (
@@ -169,11 +169,11 @@ export default function KretoTab() {
             {passport && (
               <Link
                 to="/profile"
-                className="rounded-xl border border-white/10 bg-white/[0.03] p-4 hover:border-white/25 transition-colors"
+                className="rounded-xl border border-border bg-foreground/[0.03] p-4 hover:border-foreground/25 transition-colors"
               >
-                <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2">Passport</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-foreground/40 font-semibold mb-2">Passport</p>
                 <div className="flex items-center gap-2.5">
-                  <div className="h-9 w-9 rounded-full bg-white/10 overflow-hidden shrink-0 flex items-center justify-center text-xs font-semibold">
+                  <div className="h-9 w-9 rounded-full bg-foreground/10 overflow-hidden shrink-0 flex items-center justify-center text-xs font-semibold">
                     {passport.avatar_url ? (
                       <img src={passport.avatar_url} alt="" className="h-full w-full object-cover" />
                     ) : (
@@ -182,9 +182,9 @@ export default function KretoTab() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{passport.full_name || "Your profile"}</p>
-                    <p className="text-xs text-white/50 truncate">{passport.role || "Open your Passport"}</p>
+                    <p className="text-xs text-foreground/50 truncate">{passport.role || "Open your Passport"}</p>
                   </div>
-                  <ArrowUpRight className="h-3.5 w-3.5 text-white/30 ml-auto shrink-0" />
+                  <ArrowUpRight className="h-3.5 w-3.5 text-foreground/30 ml-auto shrink-0" />
                 </div>
               </Link>
             )}
@@ -195,25 +195,25 @@ export default function KretoTab() {
                 onClick={() => ask(`Help me think through this opportunity: "${gig.title}"${gig.company ? ` at ${gig.company}` : ""}.`)}
                 className="btn-glass btn-glass-outline text-left rounded-xl p-4"
               >
-                <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2">Top Scout match</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-foreground/40 font-semibold mb-2">Top Scout match</p>
                 <p className="text-sm font-medium truncate">{gig.title}</p>
-                <p className="text-xs text-white/50 truncate">
+                <p className="text-xs text-foreground/50 truncate">
                   {gig.company || "Opportunity"} · {gig.fit_score}% fit
                 </p>
               </button>
             )}
 
             {actions.length > 0 && (
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:col-span-2">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mb-2.5">Recent proposed actions</p>
+              <div className="rounded-xl border border-border bg-foreground/[0.03] p-4 sm:col-span-2">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-foreground/40 font-semibold mb-2.5">Recent proposed actions</p>
                 <div className="space-y-2">
                   {actions.map((a) => {
                     const Icon = a.status === "completed" ? CheckCircle2 : a.status === "pending" ? ShieldQuestion : Clock;
                     return (
                       <div key={a.id} className="flex items-center gap-2.5 text-sm">
-                        <Icon className="h-3.5 w-3.5 text-white/40 shrink-0" aria-hidden />
+                        <Icon className="h-3.5 w-3.5 text-foreground/40 shrink-0" aria-hidden />
                         <span className="truncate flex-1">{a.title}</span>
-                        <span className="text-[10px] uppercase tracking-wider text-white/40 shrink-0">{a.status}</span>
+                        <span className="text-[10px] uppercase tracking-wider text-foreground/40 shrink-0">{a.status}</span>
                       </div>
                     );
                   })}
@@ -223,7 +223,7 @@ export default function KretoTab() {
           </div>
         )}
 
-        <p className="text-xs text-white/35 leading-relaxed">
+        <p className="text-xs text-foreground/35 leading-relaxed">
           {BRAND.agentName} opens automatically above. Anything that could affect other people, spend
           money, or send something on your behalf waits for your approval first — {BRAND.agentName}
           only acts on its own for safe, reversible steps.

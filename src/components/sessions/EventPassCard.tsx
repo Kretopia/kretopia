@@ -108,8 +108,8 @@ export const EventPassCard = ({
   return (
     <HoloCard className={className}>
       <div className="relative overflow-hidden rounded-2xl border border-border bg-card">
-        {/* Header — dark Kretopia plate, same signature as the landing hero / feature headers */}
-        <div className="relative overflow-hidden px-5 pt-5 pb-6 text-center" style={{ backgroundColor: "#05070D" }}>
+        {/* Header — same cinematic plate signature as the landing hero / feature headers, theme-aware */}
+        <div className="relative overflow-hidden px-5 pt-5 pb-6 text-center" style={{ backgroundColor: "hsl(var(--background))" }}>
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 ai-ambient-breathe"
@@ -123,8 +123,8 @@ export const EventPassCard = ({
             >
               <Ticket className="h-3 w-3" /> Your pass
             </div>
-            <h2 className="text-xl font-bold mt-2 leading-tight text-white">{eventTitle}</h2>
-            {guestName && <p className="text-sm text-white/60 mt-0.5">{guestName}</p>}
+            <h2 className="text-xl font-bold mt-2 leading-tight text-foreground">{eventTitle}</h2>
+            {guestName && <p className="text-sm text-foreground/60 mt-0.5">{guestName}</p>}
           </div>
         </div>
 

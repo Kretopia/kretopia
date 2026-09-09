@@ -1,25 +1,21 @@
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { saveVibe, getStoredVibe, type Vibe } from "@/components/VibeThemeSync";
+import { useTheme } from "next-themes";
+import { saveVibe, getStoredVibe, isVibe, type Vibe } from "@/components/VibeThemeSync";
 
-/**
- * Top-nav toggle: flips between Daylight (light) and Midnight (dark, teal accent).
- * Neon (lime) is opt-in via the Vibe Picker in onboarding/settings only.
- * If the user is currently on Neon, this toggle still flips them to Daylight.
- */
+/** Top-nav toggle: flips between Daylight (light) and Midnight (dark). */
 export function ThemeToggle() {
   const [vibe, setVibe] = useState<Vibe>("daylight");
   const [mounted, setMounted] = useState(false);
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
     setVibe(getStoredVibe());
     const onChange = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (detail === "daylight" || detail === "midnight" || detail === "neon") {
-        setVibe(detail);
-      }
+      if (isVibe(detail)) setVibe(detail);
     };
     window.addEventListener("ui-vibe:change", onChange);
     return () => window.removeEventListener("ui-vibe:change", onChange);
@@ -42,7 +38,7 @@ export function ThemeToggle() {
       onClick={() => {
         const next: Vibe = isDark ? "daylight" : "midnight";
         setVibe(next);
-        saveVibe(next);
+        saveVibe(next, setTheme);
       }}
       className="h-9 w-9 transition-smooth"
       aria-label={`Switch to ${isDark ? "Daylight" : "Midnight"} vibe`}

@@ -52,16 +52,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
   const isLandingPage = location.pathname === "/" && !user;
-  // Spotlight/Verified Credits/About all force a #05070D background on their
-  // own hero content (EditorialPageHero) regardless of theme or auth state --
-  // previously only the true landing page forced the navbar to match, so
-  // these three routes fell through to glass-surface-elevated's theme-
-  // dependent token (an off-white bar in light mode, a slightly different
-  // dark shade even in dark mode) sitting directly above a solid-black hero.
-  // isDarkChromeRoute controls ONLY that visual treatment; isLandingPage is
-  // left untouched for the behavioral differences (search bar, nav item set)
-  // that are specific to the marketing landing page, not these feature pages.
-  const isDarkChromeRoute = isLandingPage || ["/spotlight", "/credits", "/about"].includes(location.pathname);
+  // Spotlight/Verified Credits/About used to force a #05070D background on
+  // their own hero (EditorialPageHero) regardless of theme, so the navbar
+  // had to force-match dark chrome on those three routes too or the two
+  // wouldn't line up. EditorialPageHero/FeaturePageHeader now resolve
+  // --background like everything else, so that workaround is gone -- only
+  // the true guest landing page (a separate, still-intentionally-dark
+  // hero) still forces dark chrome here.
+  const isDarkChromeRoute = isLandingPage;
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
   const { unreadCount } = useNotifications();

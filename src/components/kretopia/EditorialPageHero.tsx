@@ -1,10 +1,14 @@
 /**
  * EditorialPageHero — the landing page's cinematic chapter opening, reused
- * verbatim as the top of a standalone page (Verified Credits, Spotlight,
- * About). Same surface (#05070D), same magenta aurora, same grain, same
- * typographic scale (.landing-eyebrow / .landing-h1 / .landing-sub) and the
- * same restrained reveal motion as the landing chapters — so every page
- * reads as one continuous film rather than separate product screens.
+ * as the top of a standalone page (Verified Credits, Spotlight, About).
+ * Same magenta aurora, same grain, same typographic scale (.landing-eyebrow
+ * / .landing-h1 / .landing-sub) and the same restrained reveal motion as the
+ * landing chapters — so every page reads as one continuous film rather than
+ * separate product screens. Unlike the landing page's own hero (a separate
+ * component, permanently dark by design), this one follows the user's
+ * Dark/Light choice: the plate color and title/subtitle text both resolve
+ * from --background/--foreground/--muted-foreground rather than a
+ * hardcoded #05070D + white, so it reads correctly in Daylight too.
  */
 import type { ReactNode } from "react";
 import { CinematicHeaderPlate } from "@/components/features/CinematicHeaderPlate";
@@ -35,7 +39,7 @@ export const EditorialPageHero = ({
   return (
     <section
       className="relative overflow-hidden"
-      style={{ backgroundColor: "#05070D" }}
+      style={{ backgroundColor: "hsl(var(--background))" }}
     >
       {/* aurora */}
       <div

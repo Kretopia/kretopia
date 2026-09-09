@@ -12,7 +12,7 @@ const Opportunities = () => {
   const [tab, setTab] = useState<Tab>("scouted");
 
   return (
-    <div className="dark min-h-screen pb-20 bg-background">
+    <div className="min-h-screen pb-20 bg-background">
       <SEO
         title="Gigs — Find Creative Work | Kretopia"
         description="Browse and apply for creative gigs — paid jobs, collaborations, and barter opportunities across film, music, fashion, events and more."
@@ -25,12 +25,12 @@ const Opportunities = () => {
         subtitle="Real gigs scouted from across the web, plus the Kretopia marketplace — one feed."
       >
         {/* Segmented toggle */}
-        <div className="inline-flex items-center gap-1 p-1 rounded-full border border-white/[0.08] bg-white/[0.05] backdrop-blur-sm">
+        <div className="inline-flex items-center gap-1 p-1 rounded-full border border-foreground/[0.08] bg-foreground/[0.05] backdrop-blur-sm">
           <button
             onClick={() => setTab("scouted")}
             className={cn(
               "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
-              tab === "scouted" ? "text-white bg-[hsl(var(--energy))]" : "text-white/55 hover:text-white",
+              tab === "scouted" ? "text-white bg-[hsl(var(--energy))]" : "text-foreground/55 hover:text-foreground",
             )}
           >
             <Radar className="h-3.5 w-3.5" />
@@ -40,7 +40,7 @@ const Opportunities = () => {
             onClick={() => setTab("marketplace")}
             className={cn(
               "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
-              tab === "marketplace" ? "bg-white/10 text-white" : "text-white/55 hover:text-white",
+              tab === "marketplace" ? "bg-foreground/10 text-foreground" : "text-foreground/55 hover:text-foreground",
             )}
           >
             <Store className="h-3.5 w-3.5" />

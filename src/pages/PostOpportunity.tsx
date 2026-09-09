@@ -323,7 +323,7 @@ const PostOpportunity = () => {
 
   if (step === "sent") {
     return (
-      <div className="dark min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Helmet>
           <title>Check Your Email | Kretopia</title>
         </Helmet>
@@ -340,7 +340,7 @@ const PostOpportunity = () => {
           <CardContent>
             <p className="text-sm text-muted-foreground">
               Didn't get it? Check your spam folder or{" "}
-              <button onClick={() => setStep("form")} className="text-white underline hover:text-[hsl(var(--energy))] transition-colors">
+              <button onClick={() => setStep("form")} className="text-foreground underline hover:text-[hsl(var(--energy))] transition-colors">
                 try again
               </button>
               .
@@ -353,7 +353,7 @@ const PostOpportunity = () => {
 
   return (
     <PageTransition>
-    <div className="dark min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>Hire Talent — Post an Opportunity | Kretopia</title>
         <meta name="description" content="Post a job, collaboration, or gig opportunity on Kretopia and connect with thousands of creative professionals. No account needed." />
@@ -375,16 +375,16 @@ const PostOpportunity = () => {
       <EditorialChapter index="I" kicker="The brief" title="Tell us who you need." accentWord="Kreto writes the rest.">
         <form onSubmit={handleSubmit} className="w-full">
           <Reveal>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+            <div className="rounded-2xl border border-border bg-foreground/[0.02] overflow-hidden">
               {/* AI-powered brief writer — anchored at the top as the primary action */}
-              <div className="p-5 sm:p-8 border-b border-white/10 bg-gradient-to-r from-[hsl(var(--energy)/0.08)] via-transparent to-transparent">
+              <div className="p-5 sm:p-8 border-b border-border bg-gradient-to-r from-[hsl(var(--energy)/0.08)] via-transparent to-transparent">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--energy)/0.12)]">
                     <Sparkles className="h-4 w-4" style={{ color: ACCENT }} />
                   </span>
                   <div>
-                    <p className="text-white font-semibold text-sm">Start with Kreto</p>
-                    <p className="text-white/50 text-xs">Describe the gig in plain language. Kreto drafts the rest.</p>
+                    <p className="text-foreground font-semibold text-sm">Start with Kreto</p>
+                    <p className="text-foreground/50 text-xs">Describe the gig in plain language. Kreto drafts the rest.</p>
                   </div>
                 </div>
                 <AIJobDescriptionGenerator
@@ -444,7 +444,7 @@ const PostOpportunity = () => {
                         className="hidden"
                       />
                       {logoPreview || formData.logo_url ? (
-                        <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-white/10 group">
+                        <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-border group">
                           <img
                             src={logoPreview || formData.logo_url}
                             alt="Logo preview"
@@ -473,7 +473,7 @@ const PostOpportunity = () => {
                         <button
                           type="button"
                           onClick={() => logoFileInputRef.current?.click()}
-                          className="w-full h-10 border-2 border-dashed border-white/15 rounded-lg flex items-center justify-center gap-1.5 text-white/50 hover:border-[hsl(var(--energy)/0.5)] hover:text-white transition-colors text-xs font-medium"
+                          className="w-full h-10 border-2 border-dashed border-border rounded-lg flex items-center justify-center gap-1.5 text-foreground/50 hover:border-[hsl(var(--energy)/0.5)] hover:text-foreground transition-colors text-xs font-medium"
                         >
                           <Upload className="h-3.5 w-3.5" />
                           Upload
@@ -483,7 +483,7 @@ const PostOpportunity = () => {
                   </div>
                 </section>
 
-                <div className="h-px bg-white/10" />
+                <div className="h-px bg-border" />
 
                 {/* Section: Opportunity */}
                 <section className="space-y-5">
@@ -603,7 +603,7 @@ const PostOpportunity = () => {
                   </div>
                 </section>
 
-                <div className="h-px bg-white/10" />
+                <div className="h-px bg-border" />
 
                 {/* Section: Skills */}
                 <section className="space-y-5">
@@ -639,7 +639,7 @@ const PostOpportunity = () => {
                 {/* Casting-specific fields */}
                 {formData.type === "casting" && (
                   <>
-                    <div className="h-px bg-white/10" />
+                    <div className="h-px bg-border" />
                     <section className="space-y-5">
                       <SectionHeading as="h3" icon={<Users className="h-4 w-4" style={{ color: ACCENT }} />}>
                         Casting Details
@@ -649,7 +649,7 @@ const PostOpportunity = () => {
                   </>
                 )}
 
-                <div className="h-px bg-white/10" />
+                <div className="h-px bg-border" />
 
                 {/* Section: Cover Image */}
                 <section className="space-y-5">
@@ -664,7 +664,7 @@ const PostOpportunity = () => {
                     className="hidden"
                   />
                   {imagePreview || formData.image_url ? (
-                    <div className="relative w-full h-56 sm:h-72 rounded-xl overflow-hidden border border-white/10">
+                    <div className="relative w-full h-56 sm:h-72 rounded-xl overflow-hidden border border-border">
                       <img
                         src={imagePreview || formData.image_url}
                         alt="Cover preview"
@@ -709,14 +709,14 @@ const PostOpportunity = () => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full h-40 sm:h-52 border-2 border-dashed border-white/15 rounded-xl flex flex-col items-center justify-center gap-2 text-white/50 hover:border-[hsl(var(--energy)/0.5)] hover:text-white transition-colors"
+                      className="w-full h-40 sm:h-52 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 text-foreground/50 hover:border-[hsl(var(--energy)/0.5)] hover:text-foreground transition-colors"
                     >
                       <Upload className="h-7 w-7" />
                       <span className="text-sm font-medium">Click to upload an image</span>
                       <span className="text-xs">PNG, JPG up to 5MB</span>
                     </button>
                   )}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-white/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-foreground/50">
                     <span>Or paste a URL:</span>
                     <Input
                       value={formData.image_url}
@@ -734,7 +734,7 @@ const PostOpportunity = () => {
               </div>
 
               {/* Sticky submit footer */}
-              <div className="sticky bottom-0 z-10 p-5 sm:p-8 border-t border-white/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+              <div className="sticky bottom-0 z-10 p-5 sm:p-8 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                   <Button type="submit" size="lg" className="flex-1 gap-2 h-12 text-base" disabled={posting}>
                     {posting ? (
@@ -743,7 +743,7 @@ const PostOpportunity = () => {
                       <><CheckCircle2 className="h-5 w-5" /> {user ? "Post Opportunity" : "Post Opportunity (Free)"}</>
                     )}
                   </Button>
-                  <p className="text-xs text-white/45 max-w-sm text-center sm:text-left">
+                  <p className="text-xs text-foreground/45 max-w-sm text-center sm:text-left">
                     {user
                       ? "Your listing goes live immediately — no email verification needed, you're already signed in."
                       : "We'll send a verification email. Your listing goes live once you confirm. No account needed."}
@@ -760,20 +760,20 @@ const PostOpportunity = () => {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {NOTES.map((n, i) => (
             <Reveal key={n.title} delayIndex={i}>
-              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[hsl(var(--energy)/0.35)]">
+              <div className="h-full rounded-2xl border border-border bg-foreground/[0.02] p-5 transition-colors hover:border-[hsl(var(--energy)/0.35)]">
                 <span
                   className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--energy)/0.1)]"
                 >
                   <n.icon className="h-4 w-4" style={{ color: ACCENT }} />
                 </span>
-                <p className="text-white font-semibold text-sm mb-1.5">{n.title}</p>
-                <p className="text-sm leading-relaxed text-white/55">{n.body}</p>
+                <p className="text-foreground font-semibold text-sm mb-1.5">{n.title}</p>
+                <p className="text-sm leading-relaxed text-foreground/55">{n.body}</p>
               </div>
             </Reveal>
           ))}
         </div>
         <Reveal delayIndex={2}>
-          <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-white/80">
+          <p className="mt-10 max-w-2xl font-serif italic text-lg leading-relaxed text-foreground/80">
             "A CV tells you what someone claims. A credit tells you what they actually shipped — and who signed for it."
           </p>
         </Reveal>

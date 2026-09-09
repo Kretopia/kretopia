@@ -239,12 +239,15 @@ export function BrowseCreators() {
 
   // Initial load, and re-run whenever sort/prioritize change so those
   // controls feel immediate (unlike the advanced filter popover, which
-  // still requires an explicit "Apply").
+  // still requires an explicit "Apply"). user?.id is included so the
+  // self-exclusion filter actually re-applies once auth resolves --
+  // without it, a search fired before `user` loads would run once with
+  // no self-exclusion and never automatically retry.
   useEffect(() => {
     if (aiMode) return;
     runFilterSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, prioritizeSector, refreshToken]);
+  }, [sort, prioritizeSector, refreshToken, user?.id]);
 
   const saveCurrentSearch = async () => {
     if (!user || !saveName.trim()) return;

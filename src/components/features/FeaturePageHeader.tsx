@@ -20,14 +20,20 @@ interface FeaturePageHeaderProps {
 }
 
 /**
- * Shared cinematic page header. Same plate, scale and reveal motion as the
- * landing hero: one white line, one magenta line — never more than two.
+ * Shared cinematic page header, used by ~17 feature pages (Match, Scout,
+ * Studio, Passport, Circle, ThrivePay, Admin...). Used to force the literal
+ * `dark` class on itself -- every one of those headers rendered dark no
+ * matter what the user picked in Settings, which is the "my headers are
+ * still dark" bug: `dark` isn't just a hardcoded background, it overrides
+ * every --background/--foreground/etc. token for this whole subtree
+ * regardless of the real theme. Now resolves --background itself instead,
+ * so it follows Dark/Light like everything else.
  */
 export function FeaturePageHeader({ eyebrow, title, accentTitle, subtitle, tabs, tutorial, oneLine = true }: FeaturePageHeaderProps) {
   return (
     <div
-      className="dark relative overflow-hidden pt-[env(safe-area-inset-top)]"
-      style={{ backgroundColor: "#05070D" }}
+      className="relative overflow-hidden pt-[env(safe-area-inset-top)]"
+      style={{ backgroundColor: "hsl(var(--background))" }}
     >
       {/* aurora — same plate as the landing chapters / EditorialPageHero */}
       <div

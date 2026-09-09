@@ -68,7 +68,7 @@ const Spotlight = () => {
         </script>
       </Helmet>
 
-      <div className="dark min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <EditorialPageHero
           kicker="The Spotlight"
           oneLine

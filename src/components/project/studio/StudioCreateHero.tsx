@@ -30,7 +30,7 @@ const PROMPTS = [
 
 /**
  * Studio home hero — the New Room is the feature, not a button. Same
- * cinematic plate as every other Kretopia surface (midnight base,
+ * cinematic plate as every other Kretopia surface (theme-aware base,
  * breathing aurora, quadrille grid, grain) with Kreto present and a
  * live prompt line. Copy stays inside what is actually shipped: Kreto
  * drafts a structure, the user reviews and confirms before anything is
@@ -49,7 +49,7 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
   return (
     <section
       aria-labelledby="studio-hero-title"
-      className="dark relative isolate overflow-hidden rounded-3xl border border-white/10"
+      className="relative isolate overflow-hidden rounded-3xl border border-border"
       style={{ backgroundColor: "hsl(var(--background))" }}
     >
       {/* aurora — same plate as FeaturePageHeader / landing chapters */}
@@ -87,13 +87,13 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
             </span>
             <h2
               id="studio-hero-title"
-              className="mt-3 text-3xl sm:text-4xl font-black tracking-[-0.03em] text-white leading-[1.05]"
+              className="mt-3 text-3xl sm:text-4xl font-black tracking-[-0.03em] text-foreground leading-[1.05]"
             >
               Say what you're making.
               <br />
               <span style={{ color: "hsl(var(--energy))" }}>Kreto builds the room.</span>
             </h2>
-            <p className="mt-3 max-w-xl text-sm sm:text-base text-white/55">
+            <p className="mt-3 max-w-xl text-sm sm:text-base text-foreground/55">
               By voice or text. Kreto shapes a brief and a starting structure, you review and
               edit it, and nothing is created until you confirm.
             </p>
@@ -106,7 +106,7 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
           onClick={onCreate}
           aria-label="Open the New Room"
           className="group mt-6 flex w-full items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors hover:border-[hsl(var(--energy)/0.45)]"
-          style={{ borderColor: "hsl(var(--energy) / 0.22)", backgroundColor: "rgba(255,255,255,0.03)" }}
+          style={{ borderColor: "hsl(var(--energy) / 0.22)", backgroundColor: "hsl(var(--foreground) / 0.03)" }}
         >
           <span
             aria-hidden
@@ -123,14 +123,14 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
                 animate={{ opacity: 1, y: 0 }}
                 exit={reducedMotion ? undefined : { opacity: 0, y: -6 }}
                 transition={{ duration: 0.32, ease: [0.2, 0.65, 0.3, 0.95] }}
-                className="block truncate text-sm text-white/70"
+                className="block truncate text-sm text-foreground/70"
               >
                 “{PROMPTS[promptIndex]}”
               </motion.span>
             </AnimatePresence>
           </span>
           <ArrowRight
-            className="h-4 w-4 shrink-0 text-white/40 transition-transform group-hover:translate-x-1"
+            className="h-4 w-4 shrink-0 text-foreground/40 transition-transform group-hover:translate-x-1"
             aria-hidden
           />
         </button>
@@ -144,7 +144,7 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
             variant="outline"
             size="lg"
             onClick={onVoice}
-            className="w-full sm:w-auto gap-2 bg-transparent hover:bg-white/10 border-white/15 text-white"
+            className="w-full sm:w-auto gap-2"
           >
             <Mic className="h-4 w-4" aria-hidden />
             Describe it out loud
@@ -165,13 +165,13 @@ export const StudioCreateHero = ({ onCreate, onVoice, projectCount, activeCount 
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.6 }}
               transition={{ duration: 0.45, delay: i * 0.08, ease: [0.2, 0.65, 0.3, 0.95] }}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+              className="rounded-2xl border border-border bg-foreground/[0.03] p-4"
             >
               <div className="flex items-center gap-2">
                 <Icon className="h-4 w-4" style={{ color: "hsl(var(--energy))" }} aria-hidden />
-                <span className="text-xs font-bold uppercase tracking-wider text-white">{label}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-foreground">{label}</span>
               </div>
-              <p className="mt-1.5 text-xs text-white/50">{copy}</p>
+              <p className="mt-1.5 text-xs text-foreground/50">{copy}</p>
             </motion.li>
           ))}
         </ul>

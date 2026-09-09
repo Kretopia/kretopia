@@ -460,7 +460,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="dark flex min-h-screen" style={{ backgroundColor: "#05070D" }}>
+    <div className="flex min-h-screen" style={{ backgroundColor: "hsl(var(--background))" }}>
       <AuthBrandingPanel />
 
       {/* Right column stays fixed in the viewport — only the form scrolls internally,
@@ -489,28 +489,28 @@ const Auth = () => {
             </div>
             <h1
               className="landing-h2 landing-glow whitespace-nowrap"
-              style={{ fontSize: "clamp(1.375rem, 5.5vw, 1.875rem)" }}
+              style={{ color: "hsl(var(--foreground))", fontSize: "clamp(1.375rem, 5.5vw, 1.875rem)" }}
             >
               {isPasswordReset ? "Reset Your Password" : (
                 <>Welcome to <span className="italic pink-glow-breathe" style={{ color: "#FF2DA1" }}>Kretopia</span></>
               )}
             </h1>
-            <p className="landing-sub mt-3">
+            <p className="landing-sub mt-3" style={{ color: "hsl(var(--muted-foreground))" }}>
               {isPasswordReset ? "Enter your new password below" : "Where creators find work — and get paid"}
             </p>
           </div>
 
           {/* Editorial form shell — same language as the Hire Talent brief form */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+          <div className="rounded-2xl border border-border bg-foreground/[0.02] overflow-hidden">
             {!isPasswordReset && activeTab === "signup" && (
-              <div className="p-4 sm:p-5 border-b border-white/10 bg-gradient-to-r from-[rgba(255,45,161,0.08)] via-transparent to-transparent">
+              <div className="p-4 sm:p-5 border-b border-border bg-gradient-to-r from-[rgba(255,45,161,0.08)] via-transparent to-transparent">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[rgba(255,45,161,0.12)]">
                     <Sparkles className="h-4 w-4" style={{ color: "#FF2DA1" }} />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-white font-semibold text-sm">Start with Kreto</p>
-                    <p className="text-white/50 text-xs">Search your name — we'll pull the credits and build your Passport.</p>
+                    <p className="text-foreground font-semibold text-sm">Start with Kreto</p>
+                    <p className="text-foreground/50 text-xs">Search your name — we'll pull the credits and build your Passport.</p>
                   </div>
                 </div>
                 <FunnelStepper current="signup" />
@@ -544,7 +544,7 @@ const Auth = () => {
                     toast({ title: "Could not resend", description: err?.message || "Try again in a moment.", variant: "destructive" });
                   }
                 }}
-                className="text-sm text-white font-semibold hover:text-[#FF2DA1] hover:underline transition-colors"
+                className="text-sm text-foreground font-semibold hover:text-[#FF2DA1] hover:underline transition-colors"
               >
                 Resend verification email
               </button>
@@ -552,7 +552,7 @@ const Auth = () => {
                 <button
                   type="button"
                   onClick={() => { setPendingVerificationEmail(null); setActiveTab("signin"); }}
-                  className="text-xs text-white/60 hover:text-[#FF2DA1] underline-offset-4 hover:underline transition-colors"
+                  className="text-xs text-foreground/60 hover:text-[#FF2DA1] underline-offset-4 hover:underline transition-colors"
                 >
                   Use a different email
                 </button>
@@ -645,7 +645,7 @@ const Auth = () => {
                       <button
                         type="button"
                         onClick={() => setSignupMode("classic")}
-                        className="text-xs text-white/60 hover:text-[#FF2DA1] underline-offset-4 hover:underline transition-colors"
+                        className="text-xs text-foreground/60 hover:text-[#FF2DA1] underline-offset-4 hover:underline transition-colors"
                       >
                         Use email & password instead
                       </button>
@@ -667,7 +667,7 @@ const Auth = () => {
                       <button
                         type="button"
                         onClick={() => setSignupMode("claim")}
-                        className="text-xs text-white hover:text-[#FF2DA1] hover:underline font-semibold transition-colors"
+                        className="text-xs text-foreground hover:text-[#FF2DA1] hover:underline font-semibold transition-colors"
                       >
                         ← Back to one-tap claim
                       </button>

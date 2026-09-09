@@ -1,6 +1,8 @@
 /**
  * EditorialChapter — full-bleed chapter plate using the landing/About language:
- * #05070D surface, grain overlay, numbered kicker, serif title + magenta accent word.
+ * theme-aware surface, grain overlay, numbered kicker, serif title + magenta
+ * accent word. Used on feature pages (PostOpportunity), so it follows the
+ * user's Dark/Light choice rather than a permanent #05070D plate.
  */
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -31,7 +33,7 @@ export const EditorialChapter = ({ index, kicker, title, accentWord, children, a
   const reducedMotion = useReducedMotion();
   const centered = align === "center";
   return (
-    <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
+    <section className="relative overflow-hidden" style={{ backgroundColor: "hsl(var(--background))" }}>
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.13]"
@@ -50,15 +52,16 @@ export const EditorialChapter = ({ index, kicker, title, accentWord, children, a
         >
           <div className={cn("flex items-center gap-3 mb-4", centered && "justify-center")}>
             <span className="font-serif italic text-2xl pink-glow-breathe" style={{ color: ACCENT }}>{index}.</span>
-            {/* Inline override, not a text-white/55 utility class: both that
-                utility and .landing-eyebrow's own default now live in the
-                same Tailwind layer, so an inline style is the only way to
-                guarantee this numbered kicker stays neutral instead of
-                inheriting the class's pink default. */}
-            <span className="landing-eyebrow" style={{ color: "rgba(255,255,255,0.55)" }}>{kicker}</span>
+            {/* Inline override, not a Tailwind utility class: both a text
+                utility and .landing-eyebrow's own default live in the same
+                Tailwind layer, so an inline style is the only way to
+                guarantee this numbered kicker stays neutral (and
+                theme-aware) instead of inheriting the class's pink
+                default. */}
+            <span className="landing-eyebrow" style={{ color: "hsl(var(--muted-foreground))" }}>{kicker}</span>
           </div>
           <h2
-            className={cn("font-serif font-normal text-white leading-[1.0] tracking-[-0.02em] max-w-3xl", centered && "mx-auto")}
+            className={cn("font-serif font-normal text-foreground leading-[1.0] tracking-[-0.02em] max-w-3xl", centered && "mx-auto")}
             style={{ fontSize: "clamp(1.9rem, 4.4vw, 3.4rem)" }}
           >
             {title}{" "}

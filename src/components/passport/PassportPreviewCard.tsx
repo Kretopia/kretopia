@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Sparkles } from "lucide-react";
-import { RoleStamp } from "./RoleStamp";
 
 interface PassportPreviewCardProps {
   userId: string;
@@ -47,8 +46,6 @@ export function PassportPreviewCard({
           style={avatarUrl ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-
-        <RoleStamp role={role} subRoles={subRoles} size={26} className="absolute top-2 left-2" />
 
         {matchScore && (
           <span className="absolute top-2 right-2 flex items-center gap-1 rounded-full border border-border bg-background/80 px-2 py-0.5 text-[9px] font-bold text-energy backdrop-blur-sm">

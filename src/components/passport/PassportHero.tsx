@@ -8,7 +8,6 @@ import {
   Camera, PencilLine, MapPin, ShieldCheck, Share2, QrCode, FileDown, ArrowRight, Star, Gauge, Fingerprint,
 } from "lucide-react";
 import { HoloCard } from "./HoloCard";
-import { RoleStamp } from "./RoleStamp";
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { SocialStatsInline } from "@/components/profile/SocialStatsInline";
@@ -184,7 +183,6 @@ export function PassportHero({
                 )}
               </Button>
             </div>
-            <RoleStamp role={profile.role} subRoles={profile.sub_roles} size={36} className="shrink-0" />
           </div>
 
           {/* Name + roles + location */}

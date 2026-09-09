@@ -106,12 +106,6 @@ const KretopiaBottomNav = memo(() => {
               <span className={cn("text-[10px] leading-tight", active ? "font-semibold" : "font-medium")}>
                 {item.label}
               </span>
-              {active && (
-                <span
-                  className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full"
-                  style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
-                />
-              )}
             </Link>
           );
         })}

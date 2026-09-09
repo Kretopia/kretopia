@@ -234,11 +234,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     active && (isDarkChromeRoute ? "text-white bg-white/10" : "text-foreground bg-accent/30"),
                   )}
                 >
-                  <Icon
-                    className="h-4 w-4 shrink-0"
-                    style={active ? { color: "#FF2DA1" } : undefined}
-                    aria-hidden
-                  />
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden />
                   {label}
                 </Link>
               );
@@ -284,13 +280,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
                   {label}
-                  {isActive && (
-                    <span
-                      aria-hidden
-                      className="absolute bottom-0 left-3.5 right-3.5 h-0.5 rounded-full"
-                      style={{ background: "var(--kretopia-sunset, hsl(327 100% 59%))" }}
-                    />
-                  )}
                 </Link>
               );
             })}

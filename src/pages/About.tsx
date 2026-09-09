@@ -1,6 +1,10 @@
 /**
  * About — same cinematic language as the landing page: #05070D plate,
- * magenta aurora, grain, serif chapter titles, scroll reveals. Kept short:
+ * magenta aurora, grain, scroll reveals. Chapter titles use the exact same
+ * .landing-h2/.landing-glow treatment as the hero's own .landing-h1 (brand
+ * Satoshi, weight 600, same tracking/line-height/glow) -- chapters used to
+ * be set in a separate serif face, which read as a different, older page
+ * bolted onto the hero rather than one continuous surface. Kept short:
  * what Kretopia is, the loop it runs, the three people building it, and one
  * invitation. No ThriveIN copy — Kretopia only.
  */
@@ -10,6 +14,7 @@ import { ChevronRight, Fingerprint, ShieldCheck, Compass, LayoutGrid, Sparkles, 
 import { SEO } from "@/components/SEO";
 import { EditorialPageHero } from "@/components/kretopia/EditorialPageHero";
 import { Reveal } from "@/components/kretopia/Reveal";
+import { KretoCharacter, type KretoCharacterVariant } from "@/components/brand/KretoCharacter";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -29,24 +34,29 @@ const PILLARS = [
 
 const LOOP_STEPS = ["Search", "Passport", "Trust", "Opportunity", "Studio", "Payment", "Stronger Passport"];
 
-const FOUNDERS = [
+const FOUNDERS: {
+  name: string;
+  role: string;
+  kretoVariant: KretoCharacterVariant;
+  body: string;
+}[] = [
   {
     name: "Ethan Auguste",
     role: "CEO",
-    initials: "EA",
-    body: "Built the community first — a decade of rooms, showcases and introductions across Dubai, Los Angeles, Trinidad, Geneva and Bali. He knows who the creatives are because he has been in the room with them.",
+    kretoVariant: "scout",
+    body: "Spent a decade building the room before building the product — showcases, listening sessions and introductions across Dubai, Los Angeles, Trinidad, Geneva and Bali. He didn't guess what creatives needed; he was already in the room when they said it out loud.",
   },
   {
     name: "Jefferson Lenox Gordon",
     role: "CDO",
-    initials: "JG",
-    body: "Design and creative direction. He makes the product feel like the culture it serves — sharp, editorial, and unmistakably built by creatives rather than for them.",
+    kretoVariant: "connector",
+    body: "Design and creative direction — really, the culture's own taste made legible in a product. Every screen answers one question: would this feel out of place next to the work it represents? Sharp, editorial, unmistakably built by creatives, not for them.",
   },
   {
     name: "Noé Plantier",
     role: "CTO",
-    initials: "NP",
-    body: "Engineering and AI. Verification, Scout and Kreto — the machinery that turns a scattered creative history into something searchable, provable and instantly useful.",
+    kretoVariant: "producer",
+    body: "Engineering and AI — the unglamorous machinery underneath the whole promise. Verification, Scout, Kreto: turning a scattered, screenshot-and-DM creative history into something that's actually searchable, provable, and useful the moment someone needs it.",
   },
 ];
 
@@ -57,8 +67,9 @@ const Chapter = ({
   index: string; kicker: string; title: string; accentWord: string; children: React.ReactNode;
 }) => {
   const reducedMotion = useReducedMotion();
+  const titleId = `about-chapter-${index.toLowerCase()}-title`;
   return (
-    <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }}>
+    <section className="relative overflow-hidden" style={{ backgroundColor: "#05070D" }} aria-labelledby={titleId}>
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.13]"
@@ -75,10 +86,11 @@ const Chapter = ({
             <span className="font-serif italic text-2xl pink-glow-breathe" style={{ color: ACCENT }}>{index}.</span>
             <span className="landing-eyebrow" style={{ color: "rgba(255,255,255,0.55)" }}>{kicker}</span>
           </div>
-          <h2
-            className="font-serif font-normal text-white leading-[1.0] tracking-[-0.02em] max-w-3xl"
-            style={{ fontSize: "clamp(1.9rem, 4.4vw, 3.4rem)" }}
-          >
+          {/* Same landing-h2/landing-glow treatment as the hero's own
+              landing-h1 -- brand Satoshi, weight 600, same tracking/
+              line-height/glow, just the next size down. Used to be a
+              separate serif face here, reading as a different page. */}
+          <h2 id={titleId} className="landing-h2 landing-glow max-w-3xl">
             {title}{" "}
             <span className="landing-accent">{accentWord}</span>
           </h2>
@@ -102,9 +114,10 @@ const About = () => {
       <EditorialPageHero
         kicker="About Kretopia"
         oneLine
+        subtitleOneLine
         title="Built for"
         accentTitle="creatives, everywhere."
-        subtitle="Talent is everywhere. Opportunity is not. Kretopia turns creative history into trusted opportunity — and connects the people making the work, wherever they are."
+        subtitle="Talent is everywhere. Opportunity isn't. We close the gap."
       />
 
       {/* I — What Kretopia is */}
@@ -162,14 +175,8 @@ const About = () => {
         <div className="grid gap-4 md:grid-cols-3">
           {FOUNDERS.map((f, i) => (
             <Reveal key={f.name} delayIndex={i}>
-              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                <div
-                  className="mb-5 flex h-12 w-12 items-center justify-center rounded-full font-serif text-lg text-white"
-                  style={{ background: "linear-gradient(135deg, rgba(255,45,161,0.55), rgba(255,45,161,0.12))" }}
-                  aria-hidden
-                >
-                  {f.initials}
-                </div>
+              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition-colors hover:border-[rgba(255,45,161,0.35)]">
+                <KretoCharacter variant={f.kretoVariant} size={56} floatAmplitude={0} className="mb-5" />
                 <p className="text-white font-semibold">{f.name}</p>
                 <p className="landing-eyebrow mb-3" style={{ color: ACCENT }}>{f.role}</p>
                 <p className="text-sm leading-relaxed text-white/55">{f.body}</p>

@@ -34,6 +34,11 @@ export interface CinematicHeaderPlateProps {
    *  feature-page title stays on one line; only the landing page's own hero (which
    *  doesn't use this component) keeps the multi-line word-stagger treatment. */
   oneLine?: boolean;
+  /** Keep the subtitle itself on one line (auto-scaled to fit, same idea as
+   *  `oneLine` for the title). Default false — most callers write a subtitle
+   *  long enough that it reads better wrapped at `max-w-xl`; opt in only
+   *  when the copy was written short and punchy on purpose (see About). */
+  subtitleOneLine?: boolean;
   /** Absolutely-positioned extra (eg. a tutorial trigger) anchored to this plate's own container. */
   cornerSlot?: ReactNode;
   /** Content below the subtitle (tabs, search bar, CTA row) -- renders outside the title's own fade-up so it's immediately interactive. */
@@ -41,7 +46,7 @@ export interface CinematicHeaderPlateProps {
 }
 
 export function CinematicHeaderPlate({
-  eyebrow, title, accentTitle, subtitle, align = "center", oneLine = true, cornerSlot, footer,
+  eyebrow, title, accentTitle, subtitle, align = "center", oneLine = true, subtitleOneLine = false, cornerSlot, footer,
 }: CinematicHeaderPlateProps) {
   const reducedMotion = useReducedMotion();
   const centered = align === "center";
@@ -82,7 +87,12 @@ export function CinematicHeaderPlate({
             </motion.span>
           </h1>
           {subtitle && (
-            <p className={`landing-sub mt-5 max-w-xl ${centered ? "mx-auto" : ""}`}>{subtitle}</p>
+            <p
+              className={`landing-sub mt-5 ${subtitleOneLine ? "whitespace-nowrap" : "max-w-xl"} ${centered ? "mx-auto" : ""}`}
+              style={subtitleOneLine ? { fontSize: "clamp(0.6875rem, 3.1vw, 1.0625rem)" } : undefined}
+            >
+              {subtitle}
+            </p>
           )}
         </div>
       </motion.div>

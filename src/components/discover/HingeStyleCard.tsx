@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { SwipeProfile } from '@/hooks/useSwipeProfiles';
 import { useSwipeGestures } from '@/hooks/useSwipeGestures';
-import { RoleStamp } from '@/components/passport/RoleStamp';
 
 interface HingeStyleCardProps {
   profile: SwipeProfile;
@@ -155,14 +154,6 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
             </Badge>
           )}
         </div>
-
-        {/* Role stamp — same gold metallic seal as the Passport */}
-        <RoleStamp
-          role={profile.role}
-          subRoles={profile.sub_roles}
-          size={40}
-          className="absolute top-3 right-3"
-        />
 
         {/* Name overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4">

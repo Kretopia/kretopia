@@ -21,7 +21,6 @@ import {
 import { cn } from "@/lib/utils";
 import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
-import { RoleStamp } from "@/components/passport/RoleStamp";
 import { buildMyMatchContext, computeMatchScore, extractCity, extractSkillsArray, fetchPastCollaboratorIds } from "@/lib/matchScoring";
 
 interface CreatorRow {
@@ -456,12 +455,6 @@ export function BrowseCreators() {
                     <Verified className="h-2.5 w-2.5 text-primary-foreground" />
                   </div>
                 )}
-                <RoleStamp
-                  role={c.role}
-                  subRoles={c.sub_roles}
-                  size={20}
-                  className="absolute -bottom-1 -right-1 border-2 border-background"
-                />
               </div>
               <p className="text-xs font-semibold text-center truncate">{c.full_name}</p>
               <p className="text-[10px] text-muted-foreground text-center truncate">{c.role || "Creator"}</p>

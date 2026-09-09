@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { saveVibe, getStoredVibe, type Vibe } from "@/components/VibeThemeSync";
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 
 interface Tile {
   id: Vibe;
@@ -37,6 +38,7 @@ interface VibePickerProps {
 
 export function VibePicker({ onPick, compact = false }: VibePickerProps) {
   const [selected, setSelected] = useState<Vibe>("daylight");
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     setSelected(getStoredVibe());
@@ -44,7 +46,7 @@ export function VibePicker({ onPick, compact = false }: VibePickerProps) {
 
   const handlePick = async (v: Vibe) => {
     setSelected(v);
-    await saveVibe(v);
+    await saveVibe(v, setTheme);
     onPick?.(v);
   };
 

@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { badgeLabel } from '@/lib/badgeLabel';
-import { Card, CardContent } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { SwipeCard } from '@/components/ui/swipe-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  Heart, X, MapPin, Briefcase, Sparkles, Star, 
-  ChevronDown, Eye
+import {
+  Heart, X, MapPin, Briefcase, Sparkles, Star,
+  ChevronDown, Eye, Handshake, Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { SwipeProfile } from '@/hooks/useSwipeProfiles';
+import { useSwipeGestures } from '@/hooks/useSwipeGestures';
+import { RoleStamp } from '@/components/passport/RoleStamp';
 
 interface HingeStyleCardProps {
   profile: SwipeProfile;
@@ -24,16 +26,18 @@ interface CreditItem {
   id: string;
   project_name: string;
   role: string;
+  project_type: string | null;
   verification_status: string | null;
   primary_media_url: string | null;
   thumbnail_url: string | null;
 }
 
+const formatProjectType = (t: string) =>
+  t.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
 export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessage }: HingeStyleCardProps) {
   const [credits, setCredits] = useState<CreditItem[]>([]);
   const [expanded, setExpanded] = useState(false);
-
-  const initials = profile.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?';
 
   const skills = (() => {
     if (!profile.professional_skills) return [];
@@ -48,7 +52,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
     const fetchCredits = async () => {
       const { data } = await supabase
         .from('credits')
-        .select('id, project_name, role, verification_status, primary_media_url, thumbnail_url')
+        .select('id, project_name, role, project_type, verification_status, primary_media_url, thumbnail_url')
         .eq('user_id', profile.user_id)
         .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
@@ -58,19 +62,83 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
     fetchCredits();
   }, [profile.user_id]);
 
-  const isIndustryVerified = 
-    (profile.credits_count || 0) >= 3 || 
-    (profile.awards_count || 0) >= 2 || 
+  const isIndustryVerified =
+    (profile.credits_count || 0) >= 3 ||
+    (profile.awards_count || 0) >= 2 ||
     profile.verification_tier === 'industry';
 
+  // Real drag-to-swipe, same hook + presentational shell ForYouFeed
+  // already uses -- a completed drag fires the parent action directly
+  // (the drag motion itself is the confirmation); a button click has no
+  // such motion, so it plays the equivalent slide-off animation first.
+  const { dragOffset, swipeDirection, isDragging, cardRef, handleDragStart, handleDragMove, handleDragEnd, animateSwipe } =
+    useSwipeGestures({
+      onSwipeLeft: () => onPass(profile),
+      onSwipeRight: () => onLike(profile, { type: 'profile', label: 'their profile' }),
+      swipeThreshold: 120,
+      dragThreshold: 60,
+    });
+
+  const handlePassClick = useCallback(async () => {
+    await animateSwipe('left');
+    onPass(profile);
+  }, [animateSwipe, onPass, profile]);
+
+  const handleConnectClick = useCallback(async () => {
+    await animateSwipe('right');
+    onLike(profile, { type: 'profile', label: 'their profile' });
+  }, [animateSwipe, onLike, profile]);
+
+  // Keyboard nav for the top card: Left = Pass, Right = Connect, Enter =
+  // View Passport. Skipped while focus is in a text field so it never
+  // hijacks typing elsewhere on the page.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
+      if (e.key === 'ArrowLeft') { e.preventDefault(); handlePassClick(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); handleConnectClick(); }
+      else if (e.key === 'Enter') { e.preventDefault(); onViewProfile(profile); }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handlePassClick, handleConnectClick, onViewProfile, profile]);
+
+  const projectTypes = Array.from(new Set(credits.map(c => c.project_type).filter(Boolean) as string[])).slice(0, 2);
+  const projectsSummary = credits.length > 0
+    ? `${credits.length} project${credits.length === 1 ? '' : 's'}${projectTypes.length > 0 ? ` · ${projectTypes.map(formatProjectType).join(' x ')}` : ''}`
+    : null;
+
+  const signals = profile._matchSignals;
+  const commonGround = [
+    signals?.sameSector && { icon: Briefcase, label: 'Same sector' },
+    signals?.sameCity && { icon: MapPin, label: 'Same city' },
+    signals?.pastCollab && { icon: Handshake, label: 'Worked together before' },
+    !signals?.pastCollab && (signals?.skillOverlapRatio || 0) > 0.3 && { icon: Sparkles, label: 'Similar skills' },
+  ].filter(Boolean) as { icon: typeof Briefcase; label: string }[];
+
   return (
-    <Card className="w-full max-w-[360px] sm:max-w-sm mx-auto overflow-hidden rounded-2xl border border-border/50 shadow-xl bg-card">
+    <SwipeCard
+      ref={cardRef}
+      dragOffset={dragOffset}
+      isDragging={isDragging}
+      swipeDirection={swipeDirection}
+      onMouseDown={handleDragStart}
+      onMouseMove={handleDragMove}
+      onMouseUp={handleDragEnd}
+      onMouseLeave={handleDragEnd}
+      onTouchStart={handleDragStart}
+      onTouchMove={handleDragMove}
+      onTouchEnd={handleDragEnd}
+      className="w-full max-w-[360px] sm:max-w-sm mx-auto rounded-2xl border-border/50 bg-card"
+    >
       {/* Hero Section — Photo + Name */}
       <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={profile.avatar_url || ''}
           alt={profile.full_name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover pointer-events-none"
+          draggable={false}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -88,6 +156,14 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
           )}
         </div>
 
+        {/* Role stamp — same gold metallic seal as the Passport */}
+        <RoleStamp
+          role={profile.role}
+          subRoles={profile.sub_roles}
+          size={40}
+          className="absolute top-3 right-3"
+        />
+
         {/* Name overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <h2 className="text-xl font-bold text-white drop-shadow-lg">{profile.full_name}</h2>
@@ -99,6 +175,12 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
             <div className="flex items-center gap-1.5 mt-0.5">
               <MapPin className="h-3 w-3 text-white/60" />
               <span className="text-white/70 text-xs">{profile.location}</span>
+            </div>
+          )}
+          {projectsSummary && (
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <Building2 className="h-3 w-3 text-white/60" />
+              <span className="text-white/70 text-xs">{projectsSummary}</span>
             </div>
           )}
         </div>
@@ -116,6 +198,20 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
 
       {/* Engageable Content Sections */}
       <CardContent className="p-4 space-y-4">
+        {/* Common ground — why this profile ranked where it did */}
+        {commonGround.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {commonGround.map(({ icon: Icon, label }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[hsl(var(--energy)/0.1)] text-[hsl(var(--energy))] text-[10px] font-medium"
+              >
+                <Icon className="h-2.5 w-2.5" /> {label}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Bio */}
         {profile.bio && (
           <div className="relative group">
@@ -183,8 +279,8 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
                 </button>
               ))}
               {credits.length > 2 && (
-                <button 
-                  onClick={() => setExpanded(!expanded)} 
+                <button
+                  onClick={() => setExpanded(!expanded)}
                   className="flex items-center gap-1 text-[10px] text-primary hover:underline mx-auto"
                 >
                   {expanded ? 'Show less' : `+${credits.length - 2} more`}
@@ -218,7 +314,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
             variant="outline"
             size="icon"
             className="h-10 w-10 rounded-full shrink-0 border-destructive/30 hover:bg-destructive/10 hover:border-destructive"
-            onClick={() => onPass(profile)}
+            onClick={handlePassClick}
             aria-label={`Pass on ${profile.full_name}`}
           >
             <X className="h-4 w-4 text-destructive" />
@@ -235,12 +331,12 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
           <Button
             size="lg"
             className="h-12 flex-1 rounded-full bg-green-500 hover:bg-green-600 text-white gap-2"
-            onClick={() => onLike(profile, { type: 'profile', label: 'their profile' })}
+            onClick={handleConnectClick}
           >
             <Heart className="h-5 w-5" /> Connect
           </Button>
         </div>
       </CardContent>
-    </Card>
+    </SwipeCard>
   );
 }

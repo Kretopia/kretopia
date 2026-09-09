@@ -2,12 +2,14 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from '@/components/circle/SwipeFilters';
 import { locationMatchesFilter } from '@/lib/locationGroups';
+import { buildMyMatchContext, computeMatchScore, extractSkillsArray, fetchPastCollaboratorIds, type MatchSignals } from '@/lib/matchScoring';
 
 export interface SwipeProfile {
   id: string;
   user_id: string;
   full_name: string;
   role: string;
+  sub_roles?: string[] | null;
   bio: string | null;
   avatar_url: string | null;
   location: string | null;
@@ -30,6 +32,9 @@ export interface SwipeProfile {
   imported_from_url?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  /** Why this profile ranked where it did — same-sector/city/past-collab/
+   *  skill-overlap, computed once here so cards don't need to re-derive it. */
+  _matchSignals?: MatchSignals;
 }
 
 export function useSwipeProfiles(currentUserId: string | undefined, filters: SwipeFiltersState = DEFAULT_SWIPE_FILTERS) {
@@ -96,7 +101,7 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       const { data: fetchedProfiles, error: profileError } = await supabase
         .from('profiles')
         .select(`
-          id, user_id, full_name, role, bio, avatar_url, location, level,
+          id, user_id, full_name, role, sub_roles, bio, avatar_url, location, level,
           professional_skills, passion_skills, badge, collab_intent,
           onboarding_completed, verification_tier,
           instagram_followers, youtube_subscribers, tiktok_followers,
@@ -111,12 +116,17 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
 
       if (profileError) throw profileError;
 
-      // Step 4: Filter out swiped, connected, blocked
+      // Step 4: Filter out swiped, connected, blocked. Deliberately NOT
+      // filtering on bio length, portfolio/credits/awards count anymore --
+      // "no artificial gating" is a hard product requirement (a brand new
+      // user with zero credits must still be discoverable), those signals
+      // now only affect ranking (see the tie-break score below), never
+      // eligibility. What's left here is "is there anything real to show",
+      // not "have they done enough to deserve visibility".
       let filtered = (fetchedProfiles || []).filter(p => {
         if (swipedIds.has(p.user_id)) return false;
         if (connectedIds.has(p.user_id)) return false;
         if (blockedIds.has(p.user_id)) return false;
-        if (!p.bio || p.bio.length < 20) return false;
         // Hide non-ODOS unclaimed profiles from discovery
         if (p.is_claimed === false && p.badge !== 'odos') return false;
         // Hide incomplete profiles
@@ -125,7 +135,8 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         return true;
       });
 
-      // Step 5: Portfolio/credits/awards counts
+      // Step 5: Portfolio/credits/awards counts — kept as a ranking
+      // tie-break signal only (see scoreProfile below), not a filter.
       if (filtered.length > 0) {
         const userIds = filtered.map(p => p.user_id);
         const [portfolioResult, creditsResult, awardsResult] = await Promise.all([
@@ -147,81 +158,59 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
           awardsCounts.set(item.user_id, (awardsCounts.get(item.user_id) || 0) + 1);
         });
 
-        filtered = filtered
-          .map(p => ({
-            ...p,
-            portfolio_count: portfolioCounts.get(p.user_id) || 0,
-            credits_count: creditsCounts.get(p.user_id) || 0,
-            awards_count: awardsCounts.get(p.user_id) || 0
-          }))
-          .filter(p => (p.portfolio_count >= 1) || (p.credits_count >= 1) || (p.awards_count >= 1));
+        filtered = filtered.map(p => ({
+          ...p,
+          portfolio_count: portfolioCounts.get(p.user_id) || 0,
+          credits_count: creditsCounts.get(p.user_id) || 0,
+          awards_count: awardsCounts.get(p.user_id) || 0
+        }));
       }
 
-      // Smart Match scoring — rank by skill/role/location overlap with current user.
-      // Falls back to random for new users with thin profiles.
-      const { data: meProfile } = await supabase
-        .from('profiles')
-        .select('role, location, professional_skills, passion_skills')
-        .eq('user_id', currentUserId)
-        .maybeSingle();
-
-      const extractSkills = (raw: any): string[] => {
-        if (!raw) return [];
-        const arr = Array.isArray(raw) ? raw : Object.values(raw);
-        return arr
-          .map((s: any) => (typeof s === 'string' ? s : s?.skill || s?.name || ''))
-          .filter(Boolean)
-          .map((s: string) => s.toLowerCase());
-      };
-
-      const mySkills = new Set([
-        ...extractSkills(meProfile?.professional_skills),
-        ...extractSkills(meProfile?.passion_skills),
+      // Match scoring — sector > city > past collaboration > shared skills,
+      // plus a random-noise term so the deck is never a flat, static
+      // ranking. Same algorithm the grid (BrowseCreators) uses, via
+      // src/lib/matchScoring.ts, so "who ranks where" agrees everywhere.
+      const [{ data: meProfile }, pastCollabIds] = await Promise.all([
+        supabase.from('profiles').select('role, sub_roles, location, professional_skills, passion_skills').eq('user_id', currentUserId).maybeSingle(),
+        fetchPastCollaboratorIds(currentUserId),
       ]);
-      const myRole = (meProfile?.role || '').toLowerCase();
-      const myLocation = (meProfile?.location || '').toLowerCase();
-      const myCity = myLocation.split(',')[0]?.trim();
 
-      const scoreProfile = (p: typeof filtered[number]): number => {
-        let score = 0;
-        const theirSkills = extractSkills(p.professional_skills);
-        const skillOverlap = theirSkills.filter(s => mySkills.has(s)).length;
-        score += Math.min(skillOverlap, 5) * 20; // up to 100
-        if (myRole && p.role && p.role.toLowerCase() === myRole) score += 30;
-        if (p.location && myLocation && p.location.toLowerCase().includes(myCity || '___')) score += 25;
-        // Tie-break: a bit of social proof
-        score += Math.min(((p as any).credits_count || 0) + ((p as any).portfolio_count || 0), 10);
-        // Small jitter so identical scores don't always render same order
-        score += Math.random() * 0.5;
-        return score;
+      const myContext = buildMyMatchContext(meProfile || {}, pastCollabIds);
+
+      const scoreProfile = (p: typeof filtered[number]): { score: number; _matchSignals: MatchSignals } => {
+        const { score, ...signals } = computeMatchScore(myContext, {
+          userId: p.user_id,
+          role: p.role,
+          subRoles: p.sub_roles,
+          location: p.location,
+          skills: extractSkillsArray(p.professional_skills),
+        });
+        // Tie-break: a touch of social proof, capped so it never outranks
+        // a real sector/city/collab/skills signal on its own.
+        const socialProof = Math.min(((p as any).credits_count || 0) + ((p as any).portfolio_count || 0), 10);
+        return { score: score + socialProof, _matchSignals: signals };
       };
 
-      const hasSignal = mySkills.size > 0 || !!myRole || !!myLocation;
+      const scored = filtered.map(p => ({ ...p, ...scoreProfile(p) }));
+
       const cacheKey = `swipe_order_${currentUserId}`;
       const cachedOrder = sessionStorage.getItem(cacheKey);
-      let ordered: typeof filtered;
+      let ordered: typeof scored;
 
       if (cachedOrder) {
         try {
           const orderIds: string[] = JSON.parse(cachedOrder);
-          const idSet = new Set(filtered.map(p => p.user_id));
+          const idSet = new Set(scored.map(p => p.user_id));
           const orderedFromCache = orderIds
             .filter(id => idSet.has(id))
-            .map(id => filtered.find(p => p.user_id === id)!);
-          const newProfiles = filtered.filter(p => !orderIds.includes(p.user_id));
-          const newOrdered = hasSignal
-            ? newProfiles.sort((a, b) => scoreProfile(b) - scoreProfile(a))
-            : newProfiles.sort(() => Math.random() - 0.5);
-          ordered = [...orderedFromCache, ...newOrdered];
+            .map(id => scored.find(p => p.user_id === id)!);
+          const newProfiles = scored.filter(p => !orderIds.includes(p.user_id));
+          ordered = [...orderedFromCache, ...newProfiles.sort((a, b) => b.score - a.score)];
         } catch {
-          ordered = hasSignal
-            ? filtered.sort((a, b) => scoreProfile(b) - scoreProfile(a))
-            : filtered.sort(() => Math.random() - 0.5);
+          ordered = scored.sort((a, b) => b.score - a.score);
         }
       } else {
-        ordered = hasSignal
-          ? filtered.sort((a, b) => scoreProfile(b) - scoreProfile(a))
-          : filtered.sort(() => Math.random() - 0.5);
+        ordered = scored.sort((a, b) => b.score - a.score);
       }
 
       // Cache the order

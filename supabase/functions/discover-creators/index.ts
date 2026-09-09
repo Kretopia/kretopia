@@ -17,6 +17,17 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Same gap the plain-filter grid search had until this pass: with no
+    // caller identity, this had no way to exclude "yourself" from your own
+    // search results. Best-effort -- an anonymous/expired token just means
+    // no self-exclusion, not a failed request.
+    let callerUserId: string | null = null;
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+      const { data } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+      callerUserId = data.user?.id ?? null;
+    }
+
     const { query } = await req.json();
     if (!query || typeof query !== 'string' || query.length < 3) {
       return new Response(JSON.stringify({ error: 'Query must be at least 3 characters' }), {
@@ -58,12 +69,24 @@ serve(async (req) => {
       });
     }
 
-    // Step 2: Fetch profiles for these users
-    const userIds = Array.from(userMap.keys());
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, avatar_url, role, location, verification_tier, average_rating, bio')
-      .in('user_id', userIds);
+    // Step 2: Fetch profiles for these users (excluding the caller themselves)
+    interface ProfileRow {
+      user_id: string;
+      full_name: string | null;
+      avatar_url: string | null;
+      role: string | null;
+      location: string | null;
+      verification_tier: string | null;
+      average_rating: number | null;
+      bio: string | null;
+    }
+    const userIds = Array.from(userMap.keys()).filter(id => id !== callerUserId);
+    const { data: profiles }: { data: ProfileRow[] | null } = userIds.length > 0
+      ? await supabase
+          .from('profiles')
+          .select('user_id, full_name, avatar_url, role, location, verification_tier, average_rating, bio')
+          .in('user_id', userIds)
+      : { data: [] };
 
     // Step 3: Use AI to rank and match
     let results: any[] = [];

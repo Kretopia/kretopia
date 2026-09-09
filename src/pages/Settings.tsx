@@ -449,7 +449,7 @@ const Settings = ({ embedded = false }: SettingsProps = {}) => {
                 Appearance
               </CardTitle>
               <CardDescription>
-                Pick your vibe — Daylight, Midnight, or Neon. Switches the whole app instantly.
+                Pick your vibe — Daylight or Midnight. Switches the whole app instantly.
               </CardDescription>
             </CardHeader>
             <CardContent>

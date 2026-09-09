@@ -2,16 +2,23 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import {
   Camera, PencilLine, MapPin, ShieldCheck, Share2, QrCode, FileDown, ArrowRight, Star, Gauge, Fingerprint,
 } from "lucide-react";
 import { HoloCard } from "./HoloCard";
+import { RoleStamp } from "./RoleStamp";
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { SocialStatsInline } from "@/components/profile/SocialStatsInline";
 import type { Standing } from "@/lib/passport/standing";
 import { cn } from "@/lib/utils";
+
+/** Shared gray -> Kretopia pink treatment for the Passport's one banner and
+ *  one progress bar (see RoleStamp/PassportHero redesign) -- everywhere
+ *  else on the card keeps the single accent token unchanged. */
+const GRAY_PINK_GRADIENT = "linear-gradient(90deg, #6B7280 0%, #FF2DA1 100%)";
 
 interface HeroCredit {
   project_name: string;
@@ -121,17 +128,26 @@ export function PassportHero({
               Add a cover image to make your Passport pop
             </div>
           )}
-          <Button
-            size="sm"
-            variant="secondary"
-            className="absolute top-2 right-2 h-7 text-xs gap-1 shadow-md opacity-90 hover:opacity-100"
-            onClick={onEdit}
-            aria-label="Edit Passport"
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="absolute top-2 right-2 h-9 w-9 rounded-full shadow-md opacity-90 hover:opacity-100 focus-visible:opacity-100"
+                onClick={onEdit}
+                aria-label="Edit profile"
+              >
+                <PencilLine className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p className="text-sm">Edit profile</p>
+            </TooltipContent>
+          </Tooltip>
+          <div
+            className="absolute top-2 left-2 px-2.5 py-1 text-white text-[10px] font-bold uppercase tracking-[0.15em] rounded-full"
+            style={{ background: GRAY_PINK_GRADIENT }}
           >
-            <PencilLine className="h-3 w-3" />
-            Edit Passport
-          </Button>
-          <div className="absolute top-2 left-2 px-2.5 py-1 bg-[hsl(var(--signal-teal))] text-black text-[10px] font-bold uppercase tracking-[0.15em] rounded-full">
             Creative Passport
           </div>
         </div>
@@ -168,17 +184,7 @@ export function PassportHero({
                 )}
               </Button>
             </div>
-            <Badge
-              variant="outline"
-              className={
-                isVerifiedPro
-                  ? "bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40 shrink-0"
-                  : "bg-muted text-muted-foreground border-border shrink-0"
-              }
-            >
-              <ShieldCheck className="h-3 w-3 mr-1" />
-              {isVerifiedPro ? `L${standing.level} ${standing.title}` : `L${standing.level}`}
-            </Badge>
+            <RoleStamp role={profile.role} subRoles={profile.sub_roles} size={36} className="shrink-0" />
           </div>
 
           {/* Name + roles + location */}
@@ -300,8 +306,8 @@ export function PassportHero({
             </div>
             <div className="h-1.5 rounded-full bg-muted overflow-hidden">
               <div
-                className="h-full rounded-full bg-[hsl(var(--signal-teal))] transition-all"
-                style={{ width: `${Math.min(strength, 100)}%` }}
+                className="h-full rounded-full transition-all"
+                style={{ width: `${Math.min(strength, 100)}%`, background: GRAY_PINK_GRADIENT }}
               />
             </div>
           </div>

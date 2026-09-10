@@ -328,7 +328,6 @@ Deno.serve(async (req) => {
           ? `Draft a quote with ${(Array.isArray(body?.line_items) ? body.line_items.length : 0)} line items`
           : body?.title ?? body?.what ?? body?.description ?? requestedTool ?? "")
     ).trim();
-    const is_pro = body?.is_pro ?? false;
     const confirm_token = body?.confirm_token;
 
     // ── Special case: create_project doesn't need an existing project_id.
@@ -418,20 +417,33 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Daily limit
+    // Daily limit -- tier looked up server-side, never trusted from the
+    // client (previously a client-supplied `is_pro` body flag bypassed this
+    // entirely), and checked+incremented atomically via the same
+    // consume_copilot_message RPC thrive-ai-chat/desk-ai already use on
+    // this same desk_ai_usage table.
     const today = new Date().toISOString().slice(0, 10);
-    const { data: usage } = await admin
-      .from("desk_ai_usage")
-      .select("message_count")
-      .eq("user_id", user.id)
-      .eq("usage_date", today)
-      .maybeSingle();
-    const used = usage?.message_count ?? 0;
-    if (!is_pro && used >= FREE_DAILY_LIMIT) {
+    const { data: profile } = await admin.from("profiles")
+      .select("subscription_tier").eq("user_id", user.id).maybeSingle();
+    const is_pro = ((profile?.subscription_tier as string) || "free") !== "free";
+    const dailyCap = is_pro ? -1 : FREE_DAILY_LIMIT;
+
+    const { data: capCheck, error: capErr } = await admin.rpc("consume_copilot_message", {
+      _user_id: user.id, _daily_cap: dailyCap,
+    }).single();
+    if (capErr) {
+      console.error("consume_copilot_message failed", capErr);
+      return new Response(
+        JSON.stringify({ error: "Could not verify usage limit. Try again shortly." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (!capCheck?.allowed) {
       return new Response(
         JSON.stringify({
           error: "daily_limit",
           message: `You've used ${FREE_DAILY_LIMIT} agent actions today. Upgrade for unlimited.`,
+          used: capCheck?.used ?? 0,
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -864,19 +876,13 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
       },
     ]);
 
-    // Bump usage
-    await admin
-      .from("desk_ai_usage")
-      .upsert(
-        { user_id: user.id, usage_date: today, message_count: used + 1 },
-        { onConflict: "user_id,usage_date" },
-      );
+    // Usage was already atomically incremented by consume_copilot_message above.
 
     return new Response(
       JSON.stringify({
         reply: finalReply,
         actions,
-        used: used + 1,
+        used: capCheck.used,
         limit: is_pro ? null : FREE_DAILY_LIMIT,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },

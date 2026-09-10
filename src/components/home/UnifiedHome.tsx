@@ -205,7 +205,7 @@ export const UnifiedHome = () => {
       // read, and onboarding actually finished -- not a half-abandoned signup.
       let creatorsQuery = supabase
         .from("public_profiles_safe")
-        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills")
+        .select("user_id, full_name, avatar_url, cover_image_url, role, verification_tier, location, professional_skills")
 
         .not("avatar_url", "is", null)
         .not("full_name", "is", null)
@@ -445,6 +445,7 @@ export const UnifiedHome = () => {
                   userId={c.user_id}
                   fullName={c.full_name}
                   avatarUrl={c.avatar_url}
+                  coverImageUrl={c.cover_image_url}
                   role={c.role}
                   subRoles={c.sub_roles}
                   matchScore={c.match_score}

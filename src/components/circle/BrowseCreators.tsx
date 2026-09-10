@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, MapPin, Heart, Loader2, Users, Eye, UserPlus, Lock, SlidersHorizontal, X, Crown, Briefcase, HandshakeIcon, RefreshCw, MessageCircle } from "lucide-react";
@@ -34,6 +33,7 @@ interface BrowseCreator {
   role: string;
   bio: string;
   avatar_url: string;
+  cover_image_url?: string | null;
   location: string;
   collab_intent: string;
   subscription_tier?: string;
@@ -143,7 +143,7 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
     try {
       const { data } = await supabase
         .from('public_profiles_discovery')
-        .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, level, verification_score')
+        .select('user_id, full_name, role, bio, avatar_url, cover_image_url, location, collab_intent, level, verification_score')
         .neq('user_id', user!.id)
         .order('created_at', { ascending: false })
         .limit(100);
@@ -568,15 +568,31 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
                 className="p-4 hover:shadow-md transition-all"
               >
                 <div className="flex gap-3">
-                  <Avatar 
-                    className="h-14 w-14 cursor-pointer"
+                  <button
+                    type="button"
+                    className="relative h-14 w-14 shrink-0 rounded-xl overflow-hidden cursor-pointer bg-cover bg-center"
+                    style={{
+                      backgroundImage: !creator.cover_image_url && !creator.avatar_url
+                        ? "linear-gradient(150deg, hsl(var(--energy)/0.45), hsl(var(--primary)/0.35))"
+                        : undefined,
+                    }}
                     onClick={() => setPreviewUserId(creator.user_id)}
                   >
-                    <AvatarImage src={creator.avatar_url} />
-                    <AvatarFallback>
-                      {(creator.full_name || 'U').split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
+                    {(creator.cover_image_url || creator.avatar_url) && (
+                      <img
+                        src={creator.cover_image_url || creator.avatar_url}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    )}
+                    {creator.cover_image_url && creator.avatar_url && (
+                      <img
+                        src={creator.avatar_url}
+                        alt=""
+                        className="absolute bottom-0.5 right-0.5 h-5 w-5 rounded-full border border-background object-cover"
+                      />
+                    )}
+                  </button>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">

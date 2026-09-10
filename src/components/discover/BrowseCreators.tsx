@@ -27,6 +27,7 @@ interface CreatorRow {
   user_id: string;
   full_name: string;
   avatar_url: string | null;
+  cover_image_url: string | null;
   role: string | null;
   sub_roles?: string[] | null;
   location: string | null;
@@ -117,7 +118,7 @@ export function BrowseCreators() {
     try {
       let q = supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, role, sub_roles, location, verification_tier, average_rating, professional_skills, bio, is_claimed, badge, last_active_date")
+        .select("user_id, full_name, avatar_url, cover_image_url, role, sub_roles, location, verification_tier, average_rating, professional_skills, bio, is_claimed, badge, last_active_date")
         .eq("onboarding_completed", true)
         .not("full_name", "is", null)
         .not("avatar_url", "is", null)
@@ -443,41 +444,60 @@ export function BrowseCreators() {
             <button
               key={c.user_id}
               onClick={() => navigate(`/profile/${c.user_id}`)}
-              className="text-left rounded-xl border bg-card p-3 hover:shadow-md hover:border-primary/30 transition-all group"
+              className="text-left rounded-xl border bg-card overflow-hidden hover:shadow-md hover:border-primary/30 transition-all group"
             >
-              <div className="relative mb-2 w-fit mx-auto">
-                <Avatar className="h-14 w-14 border">
-                  <AvatarImage src={c.avatar_url || ""} alt={c.full_name} />
-                  <AvatarFallback>{c.full_name?.[0] || "?"}</AvatarFallback>
-                </Avatar>
+              {/* Cover artwork leads the card; avatar is a small identity badge,
+                  same treatment as the swipe deck -- a real photo of the work
+                  reads far better in a grid than a row of small round avatars. */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
+                {c.cover_image_url || c.avatar_url ? (
+                  <img
+                    src={c.cover_image_url || c.avatar_url || ""}
+                    alt={c.full_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full"
+                    style={{ background: "linear-gradient(150deg, hsl(var(--energy)/0.45), hsl(var(--primary)/0.35))" }}
+                  />
+                )}
+                {c.cover_image_url && c.avatar_url && (
+                  <Avatar className="absolute bottom-1.5 left-1.5 h-7 w-7 border-2 border-background">
+                    <AvatarImage src={c.avatar_url} alt="" />
+                    <AvatarFallback className="text-[10px]">{c.full_name?.[0] || "?"}</AvatarFallback>
+                  </Avatar>
+                )}
                 {c.verification_tier && c.verification_tier !== "none" && (
-                  <div className="absolute top-0 right-0 h-4 w-4 rounded-full bg-primary flex items-center justify-center border-2 border-background">
+                  <div className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center border-2 border-background">
                     <Verified className="h-2.5 w-2.5 text-primary-foreground" />
                   </div>
                 )}
               </div>
-              <p className="text-xs font-semibold text-center truncate">{c.full_name}</p>
-              <p className="text-[10px] text-muted-foreground text-center truncate">{c.role || "Creator"}</p>
-              {c.location && (
-                <p className="text-[10px] text-muted-foreground text-center truncate flex items-center justify-center gap-0.5 mt-0.5">
-                  <MapPin className="h-2.5 w-2.5" />{c.location}
-                </p>
-              )}
-              <div className="flex items-center justify-center gap-1 mt-1.5">
-                {c.average_rating ? (
-                  <Badge variant="secondary" className="text-[9px] px-1.5 py-0 gap-0.5">
-                    <Star className="h-2.5 w-2.5 fill-current" />{Number(c.average_rating).toFixed(1)}
-                  </Badge>
-                ) : null}
-                {typeof c.match_score === "number" && (
-                  <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary">
-                    {c.match_score}% match
-                  </Badge>
+              <div className="p-2.5">
+                <p className="text-xs font-semibold truncate">{c.full_name}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{c.role || "Creator"}</p>
+                {c.location && (
+                  <p className="text-[10px] text-muted-foreground truncate flex items-center gap-0.5 mt-0.5">
+                    <MapPin className="h-2.5 w-2.5 shrink-0" />{c.location}
+                  </p>
+                )}
+                <div className="flex items-center gap-1 mt-1.5">
+                  {c.average_rating ? (
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 gap-0.5">
+                      <Star className="h-2.5 w-2.5 fill-current" />{Number(c.average_rating).toFixed(1)}
+                    </Badge>
+                  ) : null}
+                  {typeof c.match_score === "number" && (
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary">
+                      {c.match_score}% match
+                    </Badge>
+                  )}
+                </div>
+                {c.match_reason && (
+                  <p className="text-[9px] text-muted-foreground line-clamp-2 mt-1 italic">{c.match_reason}</p>
                 )}
               </div>
-              {c.match_reason && (
-                <p className="text-[9px] text-muted-foreground line-clamp-2 mt-1 text-center italic">{c.match_reason}</p>
-              )}
             </button>
           ))}
         </div>

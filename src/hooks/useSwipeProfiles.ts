@@ -12,6 +12,7 @@ export interface SwipeProfile {
   sub_roles?: string[] | null;
   bio: string | null;
   avatar_url: string | null;
+  cover_image_url: string | null;
   location: string | null;
   level: number;
   professional_skills: any;
@@ -101,7 +102,7 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       const { data: fetchedProfiles, error: profileError } = await supabase
         .from('profiles')
         .select(`
-          id, user_id, full_name, role, sub_roles, bio, avatar_url, location, level,
+          id, user_id, full_name, role, sub_roles, bio, avatar_url, cover_image_url, location, level,
           professional_skills, passion_skills, badge, collab_intent,
           onboarding_completed, verification_tier,
           instagram_followers, youtube_subscribers, tiktok_followers,

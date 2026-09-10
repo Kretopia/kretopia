@@ -5,6 +5,10 @@ interface PassportPreviewCardProps {
   userId: string;
   fullName: string | null;
   avatarUrl: string | null;
+  /** Real cover artwork, when the profile has one -- takes over the banner
+   *  from the stretched-avatar fallback below, which crops portrait photos
+   *  awkwardly into a 16:10 frame. */
+  coverImageUrl?: string | null;
   role: string | null;
   subRoles?: string[] | null;
   matchScore?: number | null;
@@ -25,11 +29,13 @@ export function PassportPreviewCard({
   userId,
   fullName,
   avatarUrl,
+  coverImageUrl,
   role,
   subRoles,
   matchScore,
   reason,
 }: PassportPreviewCardProps) {
+  const banner = coverImageUrl || avatarUrl;
   return (
     <Link
       to={`/profile/${userId}`}
@@ -43,9 +49,15 @@ export function PassportPreviewCard({
       <div className="relative aspect-[16/10] shrink-0 overflow-hidden">
         <div
           className="h-full w-full bg-gradient-to-br from-primary/20 via-accent/10 to-background transition-transform duration-500 group-hover:scale-105"
-          style={avatarUrl ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+          style={banner ? { backgroundImage: `url(${banner})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+
+        {coverImageUrl && avatarUrl && (
+          <div className="absolute top-2 left-2 h-7 w-7 rounded-full overflow-hidden ring-2 ring-background">
+            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+          </div>
+        )}
 
         {matchScore && (
           <span className="absolute top-2 right-2 flex items-center gap-1 rounded-full border border-border bg-background/80 px-2 py-0.5 text-[9px] font-bold text-energy backdrop-blur-sm">

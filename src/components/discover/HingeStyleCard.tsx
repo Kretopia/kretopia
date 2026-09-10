@@ -131,15 +131,33 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
       onTouchEnd={handleDragEnd}
       className="w-full max-w-[360px] sm:max-w-sm mx-auto rounded-2xl border-border/50 bg-card"
     >
-      {/* Hero Section — Photo + Name */}
+      {/* Hero Section — cover artwork leads, avatar is a small identity badge */}
       <div className="relative aspect-[4/5] overflow-hidden">
-        <img
-          src={profile.avatar_url || ''}
-          alt={profile.full_name}
-          className="w-full h-full object-cover pointer-events-none"
-          draggable={false}
-        />
+        {profile.cover_image_url || profile.avatar_url ? (
+          <img
+            src={profile.cover_image_url || profile.avatar_url || ''}
+            alt={profile.full_name}
+            className="w-full h-full object-cover pointer-events-none"
+            draggable={false}
+          />
+        ) : (
+          <div
+            className="w-full h-full"
+            style={{ background: "linear-gradient(150deg, hsl(var(--energy)/0.45), hsl(var(--primary)/0.35))" }}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+        {profile.cover_image_url && profile.avatar_url && (
+          <div className="absolute top-3 right-3 h-11 w-11 rounded-full overflow-hidden ring-2 ring-white/70 shadow-lg">
+            <img
+              src={profile.avatar_url}
+              alt=""
+              className="w-full h-full object-cover pointer-events-none"
+              draggable={false}
+            />
+          </div>
+        )}
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-1.5">

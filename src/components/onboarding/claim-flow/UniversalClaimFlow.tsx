@@ -97,10 +97,16 @@ export const UniversalClaimFlow = ({
   const [faceMatchScore, setFaceMatchScore] = useState<number | null>(null);
   const [faceVerificationToken, setFaceVerificationToken] = useState<string | null>(null);
 
+  // The double-check (preview) step used to funnel into an optional face
+  // verification, then a separate "here's your profile" reveal card, before
+  // ever asking for an email -- three extra screens between "this is me" and
+  // actually saving anything. That's exactly the kind of gap people drop off
+  // in. Go straight to email/magic-link now; face verification stays
+  // available as a component but isn't in the default path.
   const handleConfirmProfile = (p: DraftProfile, credits: ClaimedCredit[]) => {
     setDraft(p);
     setSelected(credits);
-    setStep("face");
+    setStep("email");
   };
 
   const finalRedirect =
@@ -109,7 +115,7 @@ export const UniversalClaimFlow = ({
       ? `/gig/${contextId}?claimed=true`
       : source === "event" && contextId
       ? `/event/${contextId}?claimed=true`
-      : "/circle?welcome=match");
+      : "/profile?claimed=true");
 
   return (
     <div className="w-full max-w-md mx-auto px-4 py-6">

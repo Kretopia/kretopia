@@ -117,6 +117,12 @@ Deno.serve(async (req) => {
     const cleanRedirect = redirect_to || `${SUPABASE_URL}/profile?claimed=true`;
     const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect, !!skip_magic_link, faceVerified);
 
+    console.log(
+      `[claim] done for ${email}: user=${result.user_id} new_user=${result.is_new_user} ` +
+      `profile_saved=${result.profile_saved} credits_saved=${result.credits_saved}/${credits?.length ?? 0} ` +
+      `magic_link_sent=${!skip_magic_link}`,
+    );
+
     return json({ success: true, ...result });
   } catch (err) {
     console.error("[claim-and-create-profile] error:", err);
@@ -132,7 +138,13 @@ async function checkAndProvisionUser(
   redirectTo: string,
   skipMagicLink: boolean,
   faceVerified: boolean,
-): Promise<{ is_new_user: boolean; conflicts?: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> }> {
+): Promise<{
+  user_id: string;
+  is_new_user: boolean;
+  profile_saved: boolean;
+  credits_saved: number;
+  conflicts?: Array<{ url: string; role: string; title: string; existing_owner_id?: string }>;
+}> {
   // 1. Check if user already exists
   const { data: existing } = await admin.auth.admin.listUsers();
   const found = existing?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
@@ -140,15 +152,19 @@ async function checkAndProvisionUser(
   let userId: string;
   let isNewUser = false;
   const conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> = [];
+  let profileSaved = true; // stays true when the write was legitimately skipped (already-onboarded user)
+  let creditsSaved = 0;
 
   if (found) {
     // Existing user — attach claim to their profile if they don't have one yet, then maybe send magic link.
     userId = found.id;
-    console.log(`[claim] existing user ${userId}`);
+    console.log(`[claim] matched existing auth user ${userId} for ${email}`);
 
     // If skipMagicLink (Google flow), upsert profile + credits so the claim isn't lost
     if (skipMagicLink) {
-      await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceVerified);
+      const outcome = await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceVerified);
+      profileSaved = outcome.profileSaved;
+      creditsSaved = outcome.creditsSaved;
     }
   } else {
     // 2. Create new auth user (unconfirmed, magic link will confirm)
@@ -160,9 +176,20 @@ async function checkAndProvisionUser(
     if (createErr || !created.user) throw new Error(createErr?.message || "Failed to create user");
     userId = created.user.id;
     isNewUser = true;
-    console.log(`[claim] created new user ${userId}`);
+    console.log(`[claim] created new auth user ${userId} for ${email}`);
 
-    await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceVerified);
+    const outcome = await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceVerified);
+    profileSaved = outcome.profileSaved;
+    creditsSaved = outcome.creditsSaved;
+
+    // The whole point of this flow is "search yourself, confirm, land on a real
+    // Passport". If the profile row failed to write, the user would still get
+    // a "check your email" success toast and a magic link to an essentially
+    // empty account -- exactly the silent drop-off the CEO flagged. Fail loud
+    // instead of sending the link for a profile that doesn't actually exist.
+    if (!profileSaved) {
+      throw new Error("Couldn't save your profile details. Please try again.");
+    }
   }
 
   // 5. Send magic link unless explicitly skipped (Google flow already authenticated)
@@ -173,12 +200,19 @@ async function checkAndProvisionUser(
       options: { redirectTo },
     });
     if (linkErr) {
-      console.error("[claim] magic link error:", linkErr);
+      console.error(`[claim] magic link error for ${email}:`, linkErr);
       throw new Error("Couldn't send magic link");
     }
+    console.log(`[claim] magic link generated for ${email} -> ${redirectTo}`);
   }
 
-  return { is_new_user: isNewUser, conflicts: conflicts.length ? conflicts : undefined };
+  return {
+    user_id: userId,
+    is_new_user: isNewUser,
+    profile_saved: profileSaved,
+    credits_saved: creditsSaved,
+    conflicts: conflicts.length ? conflicts : undefined,
+  };
 }
 
 async function upsertProfileAndCredits(
@@ -188,7 +222,7 @@ async function upsertProfileAndCredits(
   credits: ClaimedCredit[],
   conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }>,
   faceVerified: boolean,
-) {
+): Promise<{ profileSaved: boolean; creditsSaved: number }> {
   // Only upsert profile fields for brand-new profiles. Never overwrite a real, onboarded profile
   // with caller-supplied data — that would let any unauth caller silently rewrite a stranger's bio.
   const { data: existingProfile } = await admin
@@ -199,6 +233,7 @@ async function upsertProfileAndCredits(
 
   const safeToWriteProfile = !existingProfile || existingProfile.onboarding_completed === false;
   const verified = faceVerified;
+  let profileSaved = true;
 
   if (safeToWriteProfile) {
     const { error: profileErr } = await admin.from("profiles").upsert(
@@ -217,11 +252,20 @@ async function upsertProfileAndCredits(
       },
       { onConflict: "user_id" },
     );
-    if (profileErr) console.error("[claim] profile upsert error:", profileErr);
+    if (profileErr) {
+      // This used to be a console.error-and-continue -- the caller would
+      // still get success:true and a magic link for a profile that was
+      // never actually written. Surface the failure to the caller instead.
+      console.error(`[claim] profile upsert FAILED for ${userId}:`, profileErr);
+      profileSaved = false;
+    } else {
+      console.log(`[claim] profile saved for ${userId} (${profile.full_name})`);
+    }
   } else {
-    console.log(`[claim] skipping profile overwrite for onboarded user ${userId}`);
+    console.log(`[claim] skipping profile overwrite for already-onboarded user ${userId}`);
   }
 
+  let creditsSaved = 0;
   if (credits?.length) {
     for (const c of credits.slice(0, 50)) {
       const role = c.role_suggestion?.slice(0, 100) || profile.role || "Creator";
@@ -259,11 +303,16 @@ async function upsertProfileAndCredits(
             existing_owner_id: existing?.user_id as string | undefined,
           });
         } else {
-          console.error("[claim] credit insert error:", insErr);
+          console.error(`[claim] credit insert error for ${userId} (${c.title}):`, insErr);
         }
+      } else {
+        creditsSaved++;
       }
     }
+    console.log(`[claim] credits saved for ${userId}: ${creditsSaved}/${credits.length}`);
   }
+
+  return { profileSaved, creditsSaved };
 }
 
 function json(body: unknown, status = 200) {

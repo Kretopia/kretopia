@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import jsPDF from 'jspdf';
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
 import { PageTransition } from "@/components/PageTransition";
@@ -29,6 +29,7 @@ import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { PassportCreditsCta } from "@/components/passport/PassportCreditsCta";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
+import { ScoutDiscoveryBanner } from "@/components/profile/ScoutDiscoveryBanner";
 import { DiscoveriesInbox } from "@/components/profile/DiscoveriesInbox";
 import { ClaimedProfileGlow } from "@/components/onboarding/claim-flow/ClaimedProfileGlow";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
@@ -93,6 +94,11 @@ const ProfileContent = () => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [builderCredits, setBuilderCredits] = useState<{ project_name: string; role: string; year?: number | null }[] | null>(null);
   const [justRevealed, setJustRevealed] = useState<{ bioDrafted: boolean } | null>(null);
+  // Read once on mount: ClaimedProfileGlow also reads ?claimed=true and strips
+  // it shortly after, but every component reading the un-stripped param on its
+  // own first render still sees "true" regardless of strip order.
+  const [searchParams] = useSearchParams();
+  const [justClaimed] = useState(() => searchParams.get("claimed") === "true");
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
   const [isCreatorCardOpen, setIsCreatorCardOpen] = useState(false);
   const [isEPKEditorOpen, setIsEPKEditorOpen] = useState(false);
@@ -462,8 +468,12 @@ const ProfileContent = () => {
         {/* Kreto entry point — Passport-native, not the generic whisper card */}
         <PassportKretoEntry className="mb-4" />
 
-        {/* Post-claim "we found X credits" nudge — was built, never mounted. */}
-        <ClaimContinueBanner onRefresh={fetchData} />
+        {/* Post-claim "we found X credits" nudge — was built, never mounted.
+            Also now the "Your Passport is ready" prompt for the magic-link
+            return trip (?claimed=true), since sessionStorage's claimInfo
+            doesn't survive the link being opened on another device/tab. */}
+        <ClaimContinueBanner onRefresh={fetchData} justClaimed={justClaimed} />
+        <ScoutDiscoveryBanner show={justClaimed} />
 
         {/* Discovered credit candidates — the real Phase 3 confirm screen.
             Was built but never mounted; this is the actual entry point. */}

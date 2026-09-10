@@ -241,6 +241,8 @@ function buildSearchQueries(name: string, isCreator: boolean) {
       `${exact} credits production album film project`,
       `${exact} creative portfolio event`,
       `${exact} review press interview`,
+      `${exact} official website`,
+      `${exact} agency represented by`,
     ];
   }
 
@@ -254,6 +256,18 @@ function buildSearchQueries(name: string, isCreator: boolean) {
     `(${allExacts}) site:behance.net`,
     `(${allExacts}) site:dribbble.com`,
     `(${allExacts}) site:muso.ai`,
+    // Broader coverage -- these platforms were already scored on if they
+    // happened to surface from a generic query, but were never actually
+    // searched for directly, so real matches living only on them were
+    // routinely missed.
+    `(${allExacts}) site:tiktok.com`,
+    `(${allExacts}) site:vimeo.com`,
+    `(${allExacts}) site:artstation.com`,
+    `(${allExacts}) site:x.com OR site:twitter.com`,
+    `(${allExacts}) site:genius.com/artists`,
+    `(${allExacts}) site:discogs.com artist`,
+    `(${allExacts}) site:letterboxd.com`,
+    `(${allExacts}) site:models.com`,
     `(${allExacts}) producer artist creator official`,
     `${exact} worked with artist producer`,
     `${exact} portfolio bio credits interview`,

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, Suspense, lazy } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Verified, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
+import { Search, Verified, MapPin, ArrowRight, TrendingUp, Users, PlusCircle, CalendarDays, ChevronRight, Zap, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -42,14 +42,12 @@ import { InviteCircleCard } from "@/components/InviteCircleCard";
 // Prune: NewMemberStarterCard, FoundingMemberCard, MagicHomeHero, OpportunityIntelCard,
 // WeeklyIntentCard, ThriveFundFeedRow, EventsNearYouSection moved off Home → live on their own surfaces.
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
-import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
-import { TodayFocus } from "@/components/home/TodayFocus";
-import { MoreFromToday } from "@/components/home/MoreFromToday";
-import { Momentum } from "@/components/home/Momentum";
+import { TodayHeader } from "@/components/home/TodayHeader";
+import { TodayDashboard } from "@/components/home/TodayDashboard";
+import { TodayWhatsNext } from "@/components/home/TodayWhatsNext";
 // SpotlightFeedRow removed from Home — lives at /spotlight only.
-import { ChevronDown } from "lucide-react";
 // LiveGigsStrip removed — see Smart Gig Scout
 // ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
 import GigCard from "@/components/opportunity/GigCard";
@@ -58,20 +56,10 @@ import { intentBoostForCreator, intentBoostForGig, intentBoostForEvent } from "@
 import { normalizeIntents } from "@/lib/intents";
 import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 import { PROFILE_SELECT } from "@/lib/profile/profileColumns";
-import { FeaturePageHeader } from "@/components/features/FeaturePageHeader";
 import { StudioFeatureShell } from "@/components/studio-reference/StudioFeatureShell";
-import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
-import { ListChecks as ListChecksIcon } from "lucide-react";
-import { TodayCommandCenter } from "@/components/home/TodayCommandCenter";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, type CarouselApi } from "@/components/ui/carousel";
 import { CarouselPositionDots } from "@/components/ui/glass/CarouselPositionDots";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-
-const TODAY_TUTORIAL: TutorialStep[] = [
-  { icon: Sparkles, title: "Tell Kreto what's next", body: "Type or speak what you're working on — Kreto routes it to a new workspace, a people search, a gig search, or a straight answer." },
-  { icon: ListChecksIcon, title: "Today Focus", body: "The one thing that matters most right now — an overdue task, a pending approval, or a fresh opportunity — with real actions right there." },
-  { icon: ChevronDown, title: "More from Today + Momentum", body: "Filterable approvals, deadlines and discovery, plus what's actually moving — completed work and projects in progress." },
-];
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -205,7 +193,7 @@ export const UnifiedHome = () => {
       // read, and onboarding actually finished -- not a half-abandoned signup.
       let creatorsQuery = supabase
         .from("public_profiles_safe")
-        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills")
+        .select("user_id, full_name, avatar_url, cover_image_url, role, verification_tier, location, professional_skills")
 
         .not("avatar_url", "is", null)
         .not("full_name", "is", null)
@@ -445,6 +433,7 @@ export const UnifiedHome = () => {
                   userId={c.user_id}
                   fullName={c.full_name}
                   avatarUrl={c.avatar_url}
+                  coverImageUrl={c.cover_image_url}
                   role={c.role}
                   subRoles={c.sub_roles}
                   matchScore={c.match_score}
@@ -484,43 +473,23 @@ export const UnifiedHome = () => {
 
       {/* ═══════════ AUTH HUB ═══════════
           Render as soon as we know there's a user — don't wait for the profile fetch.
-          ThrivePromptHero + TodayFocus load their own data and skeletons, so
-          gating the whole hub on `profile` left mobile blank for ~500ms+ on slow nets. */}
+          Three components, one job each: TodayHeader (title + Kreto + fast
+          actions), TodayDashboard (highest-priority stuff, first under the
+          fold), TodayWhatsNext (the composer + filterable action blocks).
+          They load their own data and skeletons, so gating the whole hub on
+          `profile` left mobile blank for ~500ms+ on slow nets. */}
       {user && (
         <>
-          <FeaturePageHeader
-            eyebrow="Today"
-            title={`${firstName},`}
-            accentTitle="here's what moves you forward today."
-            subtitle="Your highest-impact actions, latest movement and next decisions in one place."
-            tutorial={{ featureKey: "today", label: "How Today works", steps: TODAY_TUTORIAL }}
-          />
+          <TodayHeader firstName={firstName} />
           <StudioFeatureShell>
-              <ThrivePromptHero firstName={firstName} />
-
-              <motion.div
-                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={reducedMotion ? { duration: 0 } : { duration: 0.4, ease: [0.2, 0.65, 0.3, 0.95] }}
-              >
-                <TodayFocus />
-              </motion.div>
-
-              <motion.div
-                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={reducedMotion ? { duration: 0 } : { duration: 0.4, delay: 0.08, ease: [0.2, 0.65, 0.3, 0.95] }}
-              >
-                <MoreFromToday peopleForYou={peopleForYouNode} profile={profile} profileFull={profileFull} myCredits={myCredits} />
-              </motion.div>
-
-              <motion.div
-                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={reducedMotion ? { duration: 0 } : { duration: 0.4, delay: 0.16, ease: [0.2, 0.65, 0.3, 0.95] }}
-              >
-                <Momentum />
-              </motion.div>
+            <TodayDashboard />
+            <TodayWhatsNext
+              firstName={firstName}
+              peopleForYou={peopleForYouNode}
+              profile={profile}
+              profileFull={profileFull}
+              myCredits={myCredits}
+            />
           </StudioFeatureShell>
         </>
       )}

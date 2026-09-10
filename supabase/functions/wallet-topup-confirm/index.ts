@@ -58,20 +58,43 @@ serve(async (req) => {
       });
     }
 
-    // Verify payment with Stripe
-    if (topup.payment_gateway === "stripe" && topup.gateway_session_id) {
-      const stripe = new Stripe(resolveStripeSecretKey(), {
-        apiVersion: "2025-08-27.basil",
-      });
-
-      const session = await stripe.checkout.sessions.retrieve(topup.gateway_session_id);
-
-      if (session.payment_status !== "paid") {
-        throw new Error("Payment not completed");
-      }
-
-      logStep("Payment verified", { sessionId: session.id, status: session.payment_status });
+    // Verify payment with Stripe -- REQUIRED unconditionally before crediting.
+    // Previously this block only ran when payment_gateway === "stripe" AND a
+    // gateway_session_id was present, so any topup row with a different
+    // gateway (e.g. "wipay", which wallet-topup/index.ts inserts as a
+    // pending row before returning its "coming soon" error -- there is no
+    // real non-Stripe payment path today) skipped verification entirely and
+    // went straight to crediting wallet_credit with the row's own amount: a
+    // zero-cost, unlimited (up to the $10,000 per-topup cap in
+    // wallet-topup/index.ts) wallet-balance mint, reachable with no RLS
+    // bypass at all. Also cross-checks the session's own metadata/amount
+    // instead of trusting topup.amount, closing a second hole: reusing any
+    // other unrelated *paid* Stripe session (same Stripe account, any
+    // product) would otherwise have passed the payment_status check too.
+    if (topup.payment_gateway !== "stripe" || !topup.gateway_session_id) {
+      throw new Error("Payment could not be verified");
     }
+
+    const stripe = new Stripe(resolveStripeSecretKey(), {
+      apiVersion: "2025-08-27.basil",
+    });
+
+    const session = await stripe.checkout.sessions.retrieve(topup.gateway_session_id);
+
+    if (session.payment_status !== "paid") {
+      throw new Error("Payment not completed");
+    }
+    if (session.metadata?.type !== "wallet_topup" ||
+        session.metadata?.topup_id !== topupId ||
+        session.metadata?.user_id !== user.id) {
+      throw new Error("Payment session does not match this top-up");
+    }
+    const expectedCents = Math.round(Number(topup.amount) * 100);
+    if (session.amount_total !== expectedCents) {
+      throw new Error("Payment amount does not match this top-up");
+    }
+
+    logStep("Payment verified", { sessionId: session.id, status: session.payment_status });
 
     // Update topup status — conditional so only ONE concurrent request wins
     const { data: claimed, error: claimError } = await supabaseAdmin

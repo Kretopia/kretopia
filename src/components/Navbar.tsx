@@ -334,10 +334,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <Menu className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-[hsl(var(--k-midnight))] text-white border-l border-white/10">
+              <SheetContent side="right" className="w-[85vw] sm:w-[400px] bg-background text-foreground border-l border-border">
                 <SheetHeader className="pr-8 text-left">
                   <BrandLogo size="sm" showBeta />
-                  <SheetTitle className="font-serif text-2xl font-normal text-white mt-1">Menu</SheetTitle>
+                  <SheetTitle className="font-serif text-2xl font-normal mt-1">Menu</SheetTitle>
                 </SheetHeader>
 
                 {/* [&>*]:shrink-0 is load-bearing, not decorative: every row
@@ -587,7 +587,7 @@ function MenuGridTile({ icon: Icon, label, onClick, badge, path }: { icon: Compo
       aria-current={isActive ? "page" : undefined}
       aria-label={label}
       className={cn(
-        "relative flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] px-2 py-3.5 min-h-[76px] text-center transition-colors hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-energy",
+        "relative flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-border bg-foreground/[0.03] px-2 py-3.5 min-h-[76px] text-center transition-colors hover:bg-foreground/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-energy",
         isActive && "border-energy/30 bg-energy/10 text-energy",
       )}
     >

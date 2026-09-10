@@ -173,7 +173,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-white/10 bg-[hsl(var(--k-midnight))]/95 text-white",
+        "relative overflow-hidden rounded-2xl border border-border bg-card text-card-foreground",
         compact ? "p-3" : "p-4 sm:p-5",
         className,
       )}
@@ -189,7 +189,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss tip"
-        className="absolute top-2.5 right-2.5 h-7 w-7 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+        className="absolute top-2.5 right-2.5 h-7 w-7 rounded-full flex items-center justify-center text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-colors"
       >
         <X className="h-3.5 w-3.5" />
       </button>
@@ -205,7 +205,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[hsl(var(--energy))] mb-1">
             Kreto · {tip.eyebrow}
           </p>
-          <p className={cn("text-white/90 leading-snug", compact ? "text-sm" : "text-sm sm:text-[15px]")}>
+          <p className={cn("text-card-foreground/90 leading-snug", compact ? "text-sm" : "text-sm sm:text-[15px]")}>
             {tip.line}
           </p>
 
@@ -213,7 +213,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
             <button
               type="button"
               onClick={() => openKreto(tip.prompt)}
-              className="group inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold text-white bg-white/10 border border-white/15 hover:bg-white/15 transition-colors"
+              className="group inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold text-card-foreground bg-card-foreground/10 border border-card-foreground/15 hover:bg-card-foreground/15 transition-colors"
             >
               {tip.cta}
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
@@ -221,7 +221,7 @@ export const KretoTip = ({ surface, className, compact }: KretoTipProps) => {
             <button
               type="button"
               onClick={() => openKreto()}
-              className="text-[11px] font-semibold text-white/60 hover:text-white px-2 py-1 transition-colors"
+              className="text-[11px] font-semibold text-card-foreground/60 hover:text-card-foreground px-2 py-1 transition-colors"
             >
               Or just chat
             </button>

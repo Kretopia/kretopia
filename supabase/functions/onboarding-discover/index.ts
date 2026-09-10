@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { requireUser } from "../_shared/require-user.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,6 +26,9 @@ serve(async (req) => {
   }
 
   try {
+    const guard = await requireUser(req);
+    if (!guard.ok) return guard.response;
+
     const { name, platformUrl } = await req.json();
     console.log("=== ONBOARDING DISCOVERY ===");
     console.log("Name:", name);

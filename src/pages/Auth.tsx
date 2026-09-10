@@ -621,25 +621,37 @@ const Auth = () => {
                       </button>
                     </div>
 
-                    <UniversalClaimFlow
-                      source={eventId ? "event" : "auth"}
-                      contextId={eventId || undefined}
-                      redirectAfter={eventId ? `/event/${eventId}` : undefined}
-                      initialQuery={searchParams.get("q") || undefined}
-                    />
-                    <div className="my-5 flex items-center gap-2">
-                      <div className="flex-1 h-px bg-border" />
-                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
-                        Or sign up in one tap
-                      </span>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
+                    {/* Google/Apple lead now, not the search -- sign-in
+                        attempts massively outnumber people who complete a
+                        multi-step name search, so the fastest path into the
+                        app goes first. Search stays one scroll away for
+                        anyone who wants Kreto to pull in their existing
+                        credits instead of starting blank. */}
+                    <p className="text-center text-sm font-semibold text-foreground mb-0.5">
+                      Get in fast with Google or Apple
+                    </p>
+                    <p className="text-center text-xs text-muted-foreground mb-4">
+                      Create your Kretopia Passport in seconds.
+                    </p>
                     <OAuthQuickButtons
                       onGoogle={() => handleOAuthSignIn("google")}
                       onApple={() => handleOAuthSignIn("apple")}
                       googleLoading={googleLoading}
                       appleLoading={appleLoading}
                       label=""
+                    />
+                    <div className="my-5 flex items-center gap-2">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
+                        Or search for yourself
+                      </span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+                    <UniversalClaimFlow
+                      source={eventId ? "event" : "auth"}
+                      contextId={eventId || undefined}
+                      redirectAfter={eventId ? `/event/${eventId}` : undefined}
+                      initialQuery={searchParams.get("q") || undefined}
                     />
                     <div className="mt-4 text-center">
                       <button

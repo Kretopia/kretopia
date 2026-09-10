@@ -70,6 +70,12 @@ UPDATE public.project_collaborators
   SET role = 'guest'
   WHERE role IS NULL OR role NOT IN ('member', 'client', 'creative', 'guest');
 
+-- Idempotent: a prior partial apply of this file already created this
+-- constraint once (that's the exact error a re-run hits without the
+-- guard: 42710 duplicate_object). Drop-then-add makes re-running this
+-- file safe regardless of how far a previous attempt got.
+ALTER TABLE public.project_collaborators
+  DROP CONSTRAINT IF EXISTS project_collaborators_role_check;
 ALTER TABLE public.project_collaborators
   ADD CONSTRAINT project_collaborators_role_check
   CHECK (role IN ('member', 'client', 'creative', 'guest'));

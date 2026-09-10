@@ -8,21 +8,31 @@
 --     ON public.projects FROM authenticated, anon;
 --
 -- Confirmed live in production (2026-09-10), after that migration had
--- already been applied: a direct REST SELECT of
--- milestones.amount/escrow_status/paid_to with an ordinary authenticated
--- session succeeded and returned real values -- the REVOKE had no effect.
+-- already been applied:
+--   - milestones: a direct REST SELECT of amount/escrow_status/paid_to
+--     with an ordinary authenticated session SUCCEEDED and returned real
+--     values -- the REVOKE had no effect. Live gap, confirmed.
+--   - projects: the equivalent SELECT of client_price/creative_payout/
+--     margin_type/margin_value correctly returned 403 42501 permission
+--     denied -- this table is NOT leaking. Included below anyway, purely
+--     for consistency with the pattern and as a no-op safety net (REVOKE/
+--     GRANT are idempotent); it is not fixing a confirmed issue there.
 --
--- Root cause: a column-level REVOKE does not remove a pre-existing
--- TABLE-level SELECT grant (Supabase's project-level default
--- GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated, anon,
--- which predates every tracked migration and still covers every column,
--- financial ones included). This is exactly the "column-level REVOKE
--- alone is not reliable if a coexisting table-level GRANT exists" trap
--- that migration's own comment (lines 22-30) documents for OTHER tables
--- (wallets, milestones.status) -- but its own SQL for milestones' and
--- projects' money columns didn't use the table-level pattern it describes.
+-- Most likely explanation for the milestones-only gap: a column-level
+-- REVOKE does not remove a pre-existing TABLE-level SELECT grant, and
+-- unlike projects (which had its anon table-level SELECT already fully
+-- revoked by 20260825110000_close_public_recap_rls_gap.sql, suggesting
+-- its grants were already narrower going in), milestones had never had
+-- a table-level SELECT REVOKE applied before this file -- only UPDATE was
+-- previously locked down at table level, in
+-- 20260824100000_milestones_privilege_hardening.sql. So a leftover
+-- blanket table-level SELECT grant for authenticated most likely still
+-- covers milestones' financial columns regardless of the column-level
+-- REVOKE. Not independently confirmed via information_schema (the
+-- verification session couldn't query it directly), but the fix below
+-- is correct and safe regardless of the exact mechanism.
 --
--- Fix: REVOKE SELECT at the TABLE level (removing the blanket grant
+-- Fix: REVOKE SELECT at the TABLE level (removing any blanket grant
 -- entirely), then re-GRANT only the non-financial columns -- the same
 -- pattern already proven live in this same verification round (direct
 -- wallets.balance write returns 42501 permission denied).

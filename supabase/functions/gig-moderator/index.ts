@@ -5,6 +5,7 @@
 //   3. Flags spam/scam with AI moderation (logged for admin review)
 // Runs on a daily cron and is also callable manually.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireAdminOrCron } from "../_shared/admin-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -94,6 +95,9 @@ Description: ${g.description.slice(0, 1500)}`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const guard = await requireAdminOrCron(req);
+  if (!guard.ok) return guard.response;
 
   const supa = createClient(SUPABASE_URL, SERVICE_KEY);
   const startedAt = Date.now();

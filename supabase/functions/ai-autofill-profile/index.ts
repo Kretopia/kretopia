@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { requireAdminOrCron } from "../_shared/admin-guard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,8 +46,32 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const _guard = await requireAdminOrCron(req);
-    if (!_guard.ok) return _guard.response;
+    // Requires any signed-in user (this is an onboarding/profile-edit
+    // feature called by regular users, not an admin tool). Was
+    // incorrectly guarded with requireAdminOrCron (admin-role or cron
+    // secret only) since 2026-05-11 (commit 2ebb9171), which silently
+    // 401/403'd every real onboarding caller for 4 months -- fixed here
+    // alongside the unrelated cost-DoS finding for this same function
+    // (it burns FIRECRAWL_API_KEY/LOVABLE_API_KEY budget) since both
+    // are solved by the same real auth check.
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    const authedClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user }, error: authError } = await authedClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
     const lovableKey = Deno.env.get('LOVABLE_API_KEY');
 

@@ -23,6 +23,12 @@ verify_jwt = false
 [functions.stripe-wallet-webhook]
 verify_jwt = false
 
+[functions.stripe-marketplace-webhook]
+verify_jwt = false
+
+[functions.guest-wallet-webhook]
+verify_jwt = false
+
 [functions.payment-link-info]
 verify_jwt = false
 

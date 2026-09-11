@@ -5,6 +5,7 @@
 //   3. Flags spam/scam with AI moderation (logged for admin review)
 // Runs on a daily cron and is also callable manually.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireAdminOrCron } from "../_shared/admin-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -94,6 +95,15 @@ Description: ${g.description.slice(0, 1500)}`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // Was fully unauthenticated -- comment claimed "runs on a daily cron and
+  // is also callable manually" but had no x-cron-secret or admin check at
+  // all, so any anon-key holder could repeatedly trigger it: unauthorized
+  // bulk `status: "closed"` writes across every user's active opportunities,
+  // plus AI-gateway cost per gig scanned. Same requireAdminOrCron guard
+  // already used by money-agent-watch and 9+ other cron/admin functions.
+  const guard = await requireAdminOrCron(req);
+  if (!guard.ok) return guard.response;
 
   const supa = createClient(SUPABASE_URL, SERVICE_KEY);
   const startedAt = Date.now();

@@ -1,16 +1,26 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STEPS = [
+const ONBOARDING_STEPS = [
   { key: "signup", label: "Sign up" },
   { key: "discover", label: "First Stamp" },
   { key: "review", label: "Launch Passport" },
 ] as const;
 
-type StepKey = (typeof STEPS)[number]["key"];
+type StepKey = (typeof ONBOARDING_STEPS)[number]["key"];
+
+export interface FunnelStep {
+  key: string;
+  label: string;
+}
 
 interface FunnelStepperProps {
-  current: StepKey;
+  current: string;
+  /** Defaults to the onboarding funnel's own 3 steps for backward
+   *  compatibility -- pass a different array to reuse this same stepper
+   *  (identical grid math, connector line, done/active/upcoming states)
+   *  for another multi-step flow (e.g. New Room's Describe/Review/Create). */
+  steps?: readonly FunnelStep[];
   className?: string;
 }
 
@@ -36,19 +46,22 @@ interface FunnelStepperProps {
  * `left-[16.667%] right-[16.667%]` inset points to — no per-label
  * measurement needed for the two to agree.
  */
-export function FunnelStepper({ current, className }: FunnelStepperProps) {
-  const currentIdx = STEPS.findIndex((s) => s.key === current);
+export function FunnelStepper({ current, steps = ONBOARDING_STEPS, className }: FunnelStepperProps) {
+  const currentIdx = steps.findIndex((s) => s.key === current);
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="relative grid grid-cols-3">
-        <div className="pointer-events-none absolute left-[16.667%] right-[16.667%] top-4 h-0.5 -translate-y-1/2 rounded-full bg-muted overflow-hidden">
+      <div className="relative grid" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+        <div
+          className="pointer-events-none absolute top-4 h-0.5 -translate-y-1/2 rounded-full bg-muted overflow-hidden"
+          style={{ left: `${50 / steps.length}%`, right: `${50 / steps.length}%` }}
+        >
           <div
             className="h-full bg-[hsl(var(--signal-teal))] transition-all duration-500"
-            style={{ width: `${(currentIdx / (STEPS.length - 1)) * 100}%` }}
+            style={{ width: `${(currentIdx / (steps.length - 1)) * 100}%` }}
           />
         </div>
-        {STEPS.map((step, i) => {
+        {steps.map((step, i) => {
           const done = i < currentIdx;
           const active = i === currentIdx;
           return (

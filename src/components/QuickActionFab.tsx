@@ -405,6 +405,7 @@ const QuickActionFab = () => {
             open={showCreateProject}
             onOpenChange={setShowCreateProject}
             onCreated={() => setShowCreateProject(false)}
+            onExpand={() => { setShowCreateProject(false); navigate("/desk/new-room"); }}
           />
         </Suspense>
       )}

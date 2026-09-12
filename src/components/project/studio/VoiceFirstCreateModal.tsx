@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mic, Square, Loader2, X, ArrowRight, Sparkles,
+  Mic, Square, Loader2, X, ArrowRight, Sparkles, Maximize2,
   MessageSquareText, FileEdit, Rocket, Upload, Link2, ShieldCheck,
   Wand2, FolderPlus, CheckCircle2,
 } from "lucide-react";
@@ -11,6 +11,11 @@ import { CtaButton } from "@/components/ui/cta-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { KretoCharacter, type KretoCharacterState } from "@/components/brand/KretoCharacter";
+import { HoloCard } from "@/components/passport/HoloCard";
+import { FunnelStepper, type FunnelStep } from "@/components/onboarding/FunnelStepper";
+import { FeatureAITutorial } from "@/components/features/FeatureAITutorial";
+import type { TutorialStep } from "@/components/landing/kretopia/FeatureTutorial";
+import { NewRoomLaunchScreen } from "@/components/project/studio/NewRoomLaunchScreen";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,32 +45,28 @@ const EXAMPLE_PROMPTS: Record<WorkspaceType, string> = {
   general: "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday.",
 };
 
-type StepKind = "automatic" | "suggested" | "confirmed";
+/** New Room's own "How this works" tour -- now rendered through the same
+ * shared FeatureAITutorial/FeatureTutorial engine every other overhauled
+ * feature page uses (Studio, Perks, Manage Opportunities, Creative Circle),
+ * instead of the bespoke <details> disclosure this modal used to build by
+ * hand. */
+const TUTORIAL_STEPS: TutorialStep[] = [
+  { icon: MessageSquareText, title: "Tell Kreto what you're making", body: "Speak, type, upload a brief or paste a sheet." },
+  { icon: Wand2, title: "Kreto identifies the type", body: "Photo shoot, campaign, music, event — inferred from what you said." },
+  { icon: Sparkles, title: "Kreto drafts the brief & tasks", body: "A title, summary and starter tasks, structured for the room type." },
+  { icon: FileEdit, title: "You review and edit", body: "Every field stays editable — title, tasks, type, dates, budget." },
+  { icon: CheckCircle2, title: "You confirm the Project", body: "Nothing is written to your Studio until you tap Create." },
+  { icon: Rocket, title: "Your room opens", body: "With one clear next action, ready to work in." },
+  { icon: FolderPlus, title: "Work becomes Project memory", body: "Files and decisions you add later feed the Studio Brain." },
+  { icon: ShieldCheck, title: "Credits & invoice at wrap", body: "Drafted for review when supported — never sent automatically." },
+];
 
-const STEP_KIND_LABEL: Record<StepKind, string> = {
-  automatic: "Automatic",
-  suggested: "Suggested",
-  confirmed: "You confirm",
-};
-
-const STEP_KIND_TONE: Record<StepKind, string> = {
-  automatic: "bg-muted text-muted-foreground",
-  suggested: "bg-primary/10 text-primary",
-  confirmed: "text-white",
-};
-
-/** The full 8-beat sequence, each tagged with how much control Kreto has
- * over it — shown expanded on request so "what happens after I click?"
- * has a real, honest answer instead of a 4-card guess. */
-const HOW_IT_WORKS: Array<{ icon: typeof MessageSquareText; label: string; body: string; kind: StepKind }> = [
-  { icon: MessageSquareText, label: "Tell Kreto what you're making", body: "Speak, type, upload a brief or paste a sheet.", kind: "confirmed" },
-  { icon: Wand2, label: "Kreto identifies the type", body: "Photo shoot, campaign, music, event — inferred from what you said.", kind: "suggested" },
-  { icon: Sparkles, label: "Kreto drafts the brief & tasks", body: "A title, summary and starter tasks, structured for the room type.", kind: "automatic" },
-  { icon: FileEdit, label: "You review and edit", body: "Every field stays editable — title, tasks, type, dates, budget.", kind: "confirmed" },
-  { icon: CheckCircle2, label: "You confirm the Project", body: "Nothing is written to your Studio until you tap Create.", kind: "confirmed" },
-  { icon: Rocket, label: "Your room opens", body: "With one clear next action, ready to work in.", kind: "automatic" },
-  { icon: FolderPlus, label: "Work becomes Project memory", body: "Files and decisions you add later feed the Studio Brain.", kind: "automatic" },
-  { icon: ShieldCheck, label: "Credits & invoice at wrap", body: "Drafted for review when supported — never sent automatically.", kind: "suggested" },
+/** New Room's own funnel steps -- same FunnelStepper component and visual
+ * treatment as Onboarding's Sign up / First Stamp / Launch Passport. */
+const NEW_ROOM_STEPS: FunnelStep[] = [
+  { key: "describe", label: "Describe" },
+  { key: "review", label: "Review" },
+  { key: "create", label: "Create" },
 ];
 
 /** Contextual copy cycled through while Kreto drafts the brief — real
@@ -79,23 +80,17 @@ const THINKING_STEPS = [
   "Almost ready",
 ];
 
-/** Curated example categories shown as tappable inspiration chips on the
- * prompt screen — replaces the old upfront "choose a type" tab step.
- * Tapping one seeds the prompt with a real example; Kreto still infers
- * (and the review step still lets the room type be corrected). */
-const INSPIRATION_TYPES: WorkspaceType[] = [
-  "photo_shoot",
-  "brand_collab",
-  "music_project",
-  "event_production",
-  "video_shoot",
-  "content_series",
-];
-
 interface VoiceFirstCreateModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
+  /** When provided, shows a "expand to full page" affordance in the top bar
+   *  that calls this instead of navigating internally -- lets a caller
+   *  route to New Room's own full-page URL (see NewRoomPage.tsx) while
+   *  preserving the in-progress draft via the existing sessionStorage
+   *  hydration. Omitted entirely (no button shown) when already rendered
+   *  as the full page itself. */
+  onExpand?: () => void;
 }
 
 type Mode = "prompt" | "recording" | "thinking" | "review" | "error";
@@ -114,6 +109,7 @@ export const VoiceFirstCreateModal = ({
   open,
   onOpenChange,
   onCreated,
+  onExpand,
 }: VoiceFirstCreateModalProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -156,6 +152,11 @@ export const VoiceFirstCreateModal = ({
   const [errorInfo, setErrorInfo] = useState<{ message: string; retryTo: "prompt" | "link" } | null>(null);
   const [creationError, setCreationError] = useState<string | null>(null);
   const [draftDegraded, setDraftDegraded] = useState(false);
+  // The "your room is live" celebration (NewRoomLaunchScreen) -- set only
+  // once createProject()'s real insert has succeeded, mirroring
+  // Onboarding's ProfileLaunchScreen pattern instead of the previous
+  // silent setTimeout(navigate) close.
+  const [createdProject, setCreatedProject] = useState<{ id: string; title: string; taskCount: number } | null>(null);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -197,6 +198,7 @@ export const VoiceFirstCreateModal = ({
       setErrorInfo(null);
       setCreationError(null);
       setDraftDegraded(false);
+      setCreatedProject(null);
       hydratedRef.current = false;
       return;
     }
@@ -592,14 +594,14 @@ export const VoiceFirstCreateModal = ({
 
       toast({ title: "Studio room ready" });
       clearDraft();
-      onCreated();
-      onOpenChange(false);
-      // Real route state, not a query param -- it never reaches the URL, so
-      // it can't be bookmarked, shared or hand-typed to spoof the
-      // acknowledgement on an unrelated visit (KRETO_NEW_ROOM_INTEGRATION_REPORT.md's
-      // approved design). Only ever set here, right after this real insert
-      // succeeded.
-      setTimeout(() => navigate(`/desk/${project.id}`, { state: { kretoJustCreated: true } }), 80);
+      // Show the celebration (NewRoomLaunchScreen) instead of navigating
+      // away immediately -- onCreated()/onOpenChange(false)/navigate() now
+      // fire from handleLaunchRoom() once the user is done there, mirroring
+      // Onboarding's ProfileLaunchScreen pattern. Deliberately does NOT
+      // close this modal yet: several callers' onCreated also flips their
+      // own `open` state, which would otherwise unmount this component
+      // (and the celebration with it) the instant the insert succeeds.
+      setCreatedProject({ id: project.id, title: brief.project.title, taskCount: picked.length });
     } catch (err: any) {
       console.error(err);
       analytics.newRoomCreationFailed('project_insert');
@@ -615,6 +617,22 @@ export const VoiceFirstCreateModal = ({
     }
   };
 
+  /** The only exit from the celebration screen -- clicking "Open the room",
+   * dismissing the dialog (Escape/overlay click), all funnel to the same
+   * real navigation, since the project already exists at this point either way. */
+  const handleLaunchRoom = () => {
+    if (!createdProject) return;
+    const id = createdProject.id;
+    onCreated();
+    onOpenChange(false);
+    // Real route state, not a query param -- it never reaches the URL, so
+    // it can't be bookmarked, shared or hand-typed to spoof the
+    // acknowledgement on an unrelated visit (KRETO_NEW_ROOM_INTEGRATION_REPORT.md's
+    // approved design). Only ever set here, right after a real insert
+    // succeeded.
+    navigate(`/desk/${id}`, { state: { kretoJustCreated: true } });
+  };
+
   // This is a full-screen custom overlay, not a Radix Dialog, so Escape
   // handling, a focus trap and focus return -- all free with Dialog --
   // have to be built by hand here.
@@ -624,6 +642,11 @@ export const VoiceFirstCreateModal = ({
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
+      // While the celebration Dialog is up, let its own Escape handling
+      // (wired to handleLaunchRoom via onOpenChange below) own this key --
+      // this listener closing the outer overlay directly would skip the
+      // navigate-to-room step and leave the user on a dead blank screen.
+      if (createdProject) return;
       if (e.key === "Escape") {
         onOpenChange(false);
         return;
@@ -648,7 +671,7 @@ export const VoiceFirstCreateModal = ({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onOpenChange]);
+  }, [open, onOpenChange, createdProject]);
 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -662,7 +685,7 @@ export const VoiceFirstCreateModal = ({
     }
   }, [open]);
 
-  if (!open) return null;
+  if (!open && !createdProject) return null;
 
   const fmtSec = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -676,42 +699,28 @@ export const VoiceFirstCreateModal = ({
   const reviewNeedsCaution = otherCautionReasons.length > 0 || noDeliverables;
   const reviewState: KretoCharacterState = creationError ? "error" : reviewNeedsCaution ? "caution" : "proposal_ready";
 
+  // Same 3-step language as Onboarding's FunnelStepper: describe -> review
+  // -> create. "create" only lights up during the actual creating request
+  // (or once the celebration is showing) -- everything else, including a
+  // mid-flight extraction error, is still "describe" until a brief exists.
+  const currentStep = creating || createdProject
+    ? "create"
+    : mode === "review"
+      ? "review"
+      : "describe";
+
   return (
     <div
       ref={modalRef}
-      className="fixed inset-0 z-[60] flex flex-col bg-background"
+      className="fixed inset-0 z-[60] overflow-y-auto bg-background/95 backdrop-blur-sm flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="new-room-title"
     >
-      {/* Ambient glow — same futuristic backdrop language as the Studio room */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(65% 50% at 50% 0%, hsl(var(--energy) / 0.12), transparent 62%)",
-        }}
-      />
-
-      {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between gap-3 px-4 h-16 shrink-0 border-b border-border/40">
-        <span
-          id="new-room-title"
-          className="text-xs font-bold tracking-[0.22em] uppercase text-[hsl(var(--energy))]"
-        >
-          New Room
-        </span>
-        <Button
-          ref={closeButtonRef}
-          variant="ghost"
-          size="icon"
-          onClick={() => onOpenChange(false)}
-          aria-label="Close"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
+      {/* Ambient accents — same recipe as Onboarding's centered HoloCard shell */}
+      <div className="absolute top-0 left-0 right-0 h-72 bg-gradient-to-b from-primary/8 via-primary/3 to-transparent pointer-events-none" />
+      <div className="absolute top-20 -left-32 w-64 h-64 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+      <div className="absolute top-40 -right-32 w-64 h-64 rounded-full bg-[hsl(var(--energy)/0.05)] blur-3xl pointer-events-none" />
 
       <input
         ref={fileInputRef}
@@ -721,11 +730,46 @@ export const VoiceFirstCreateModal = ({
         onChange={handleFilePick}
       />
 
-      {/* Body */}
-      <div className={cn(
-        "relative z-10 flex-1 flex flex-col items-center px-6 text-center overflow-y-auto overscroll-contain",
-        mode === "review" ? "justify-start py-6 pb-32" : "justify-center"
-      )}>
+      <HoloCard className="w-full max-w-lg relative z-10 my-8">
+        <div className="relative flex flex-col max-h-[85vh] overflow-hidden rounded-2xl border border-primary/10 bg-card shadow-xl shadow-primary/5">
+          {/* Top bar */}
+          <div className="relative z-10 flex items-center gap-3 px-4 h-16 shrink-0 border-b border-border/40">
+            <span
+              id="new-room-title"
+              className="text-xs font-bold tracking-[0.22em] uppercase text-[hsl(var(--energy))] shrink-0"
+            >
+              New Room
+            </span>
+            <FunnelStepper current={currentStep} steps={NEW_ROOM_STEPS} className="max-w-[220px] mx-auto hidden sm:block" />
+            <div className="flex items-center gap-1 shrink-0 ml-auto">
+              {onExpand && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onExpand}
+                  aria-label="Expand to full page"
+                  title="Expand to full page"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
+              )}
+              <Button
+                ref={closeButtonRef}
+                variant="ghost"
+                size="icon"
+                onClick={() => onOpenChange(false)}
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className={cn(
+            "relative z-10 flex-1 flex flex-col items-center px-6 text-center overflow-y-auto overscroll-contain",
+            mode === "review" ? "justify-start py-6 pb-32" : "justify-center py-10"
+          )}>
 
 
         {mode === "prompt" && (
@@ -735,71 +779,34 @@ export const VoiceFirstCreateModal = ({
               className="mb-4"
               state={isOffline ? "offline" : composerFocused || showLinkInput ? "attentive" : "idle"}
             />
-            <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.03em] mb-3 leading-[1.05]">
-              What are you making?
+            <h1 className="landing-h1 landing-glow text-3xl sm:text-4xl mb-3 leading-[1.05]">
+              What are you <span className="landing-accent">making?</span>
             </h1>
             {isOffline && (
               <p role="status" className="text-xs font-semibold text-muted-foreground mb-3">
                 You're offline — reconnect before Kreto can read a brief.
               </p>
             )}
-            <p className="text-sm text-muted-foreground max-w-sm mb-3">
+            <p className="landing-sub max-w-sm mb-3 text-sm">
               Share what you're working on — voice, text, a file or a link. Kreto drafts the
               brief, starter tasks and room type for you to review.
             </p>
 
             {/* Trust copy — required up front, not buried in a tooltip */}
-            <p className="text-[11px] text-muted-foreground/80 max-w-md mb-5 leading-relaxed">
+            <p className="text-[11px] text-muted-foreground/80 max-w-md mb-4 leading-relaxed">
               Nothing becomes a Project until you confirm the draft. Kreto will not invite
               collaborators, send messages or emails, or trigger payments without your approval.
             </p>
 
-            {/* How it works — the full sequence, tagged by how much control Kreto has */}
-            <details className="w-full max-w-lg mb-7 group">
-              <summary className="cursor-pointer list-none inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors mb-3">
-                <span>How this works</span>
-                <ArrowRight className="h-3 w-3 transition-transform group-open:rotate-90" />
-              </summary>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {HOW_IT_WORKS.map((step, i) => {
-                  const StepIcon = step.icon;
-                  return (
-                    <motion.div
-                      key={step.label}
-                      initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: i * 0.04 }}
-                      className="rounded-xl border border-border/60 bg-muted/20 px-2.5 py-2.5 text-left"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
-                            style={{ backgroundColor: "hsl(var(--energy) / 0.14)", color: "hsl(var(--energy))" }}
-                          >
-                            {i + 1}
-                          </span>
-                          <StepIcon className="h-3 w-3 text-muted-foreground shrink-0" />
-                        </div>
-                        <span
-                          className={cn(
-                            "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
-                            STEP_KIND_TONE[step.kind]
-                          )}
-                          style={step.kind === "confirmed" ? { backgroundColor: "hsl(var(--energy))" } : undefined}
-                        >
-                          {STEP_KIND_LABEL[step.kind]}
-                        </span>
-                      </div>
-                      <p className="text-[11px] font-semibold leading-tight">{step.label}</p>
-                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5 hidden sm:block">
-                        {step.body}
-                      </p>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </details>
+            {/* How this works — same shared AI-tutorial engine every other
+                overhauled feature page uses (Studio, Perks, Manage
+                Opportunities, Creative Circle), not a bespoke disclosure. */}
+            <FeatureAITutorial
+              featureKey="new-room"
+              label="How New Room works"
+              steps={TUTORIAL_STEPS}
+              className="mb-6"
+            />
 
             {showLinkInput ? (
               <div className="w-full max-w-md space-y-3">
@@ -888,34 +895,6 @@ export const VoiceFirstCreateModal = ({
                   >
                     <ArrowRight className="h-4 w-4" />
                   </button>
-                </div>
-
-                {/* Inspiration chips — real examples, tap to fill the bar above */}
-                <div className="mt-8 w-full">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
-                    Examples to get you started
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {INSPIRATION_TYPES.map((t) => {
-                      const cfg = WORKSPACE_CONFIGS[t];
-                      const Icon = cfg.icon;
-                      return (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => {
-                            analytics.featureUsed('new_room_starter_intent', { workspace_type: t });
-                            setWorkspaceType(t);
-                            setTextInput(EXAMPLE_PROMPTS[t]);
-                          }}
-                          className="glass-surface inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                          {cfg.label}
-                        </button>
-                      );
-                    })}
-                  </div>
                 </div>
 
                 {/* More ways to start — real, distinct capabilities, not
@@ -1319,6 +1298,20 @@ export const VoiceFirstCreateModal = ({
             </CtaButton>
           </div>
         </div>
+      )}
+        </div>
+      </HoloCard>
+
+      {createdProject && (
+        <NewRoomLaunchScreen
+          open
+          onOpenChange={(o) => { if (!o) handleLaunchRoom(); }}
+          projectId={createdProject.id}
+          projectTitle={createdProject.title}
+          workspaceType={workspaceType}
+          taskCount={createdProject.taskCount}
+          onOpenRoom={handleLaunchRoom}
+        />
       )}
     </div>
   );

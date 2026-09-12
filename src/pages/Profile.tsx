@@ -275,20 +275,27 @@ const ProfileContent = () => {
 
     if (isCompany && galleryFiles.length > 0) {
       const existingImages = (profile?.company_images as string[]) || [];
-      const newImageUrls: string[] = [];
 
-      for (const file of galleryFiles) {
-        try {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${user.id}-gallery-${Date.now()}-${Math.random()}.${fileExt}`;
-          const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file);
-          if (uploadError) continue;
-          const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
-          newImageUrls.push(publicUrl);
-        } catch (err) {
-          console.error('Error uploading gallery image:', err);
-        }
-      }
+      // Was a sequential for...of, each file awaited one at a time --
+      // uploads are independent storage round trips, no reason not to run
+      // them concurrently. Same continue-on-error behavior preserved: a
+      // failed upload is dropped (null), never blocks the others.
+      const uploadResults = await Promise.all(
+        galleryFiles.map(async (file) => {
+          try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${user.id}-gallery-${Date.now()}-${Math.random()}.${fileExt}`;
+            const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file);
+            if (uploadError) return null;
+            const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+            return publicUrl;
+          } catch (err) {
+            console.error('Error uploading gallery image:', err);
+            return null;
+          }
+        })
+      );
+      const newImageUrls = uploadResults.filter((url): url is string => url !== null);
 
       updateData = { ...updateData, company_images: [...existingImages, ...newImageUrls] as any } as any;
     }

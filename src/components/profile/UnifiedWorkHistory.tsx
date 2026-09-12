@@ -490,6 +490,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                           <img
                             src={credit.thumbnailUrl}
                             alt={credit.title}
+                            loading="lazy"
                             className="w-14 h-14 rounded-lg object-cover"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }}
                           />

@@ -210,7 +210,7 @@ export const WorkWithMeSection = ({ userId, isOwner, creatorName }: WorkWithMeSe
                 )}
                 {product.preview_urls?.[0] && (
                   <div className="aspect-square bg-muted overflow-hidden">
-                    <img src={product.preview_urls[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <img src={product.preview_urls[0]} alt={product.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   </div>
                 )}
                 <div className="p-2.5">
@@ -319,7 +319,7 @@ function ServiceCard({
       {/* Hero image */}
       {service.cover_image_url && (
         <div className="aspect-[2.5/1] bg-muted overflow-hidden relative">
-          <img src={service.cover_image_url} alt={service.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform" />
+          <img src={service.cover_image_url} alt={service.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform" />
           {service.service_format && (
             <Badge variant="secondary" className="absolute top-2 left-2 text-[10px] bg-background/80 backdrop-blur-sm">
               {service.service_format === 'virtual' ? '🌐 Virtual' : service.service_format === 'in_person' ? '📍 In Person' : '🌐📍 Both'}

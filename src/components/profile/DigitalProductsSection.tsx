@@ -151,9 +151,10 @@ export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSecti
               >
                 {product.preview_urls?.[0] && (
                   <div className="aspect-video bg-muted relative overflow-hidden">
-                    <img 
-                      src={product.preview_urls[0]} 
+                    <img
+                      src={product.preview_urls[0]}
                       alt={product.title}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                   </div>

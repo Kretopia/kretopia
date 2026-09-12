@@ -1,4 +1,6 @@
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { checkAiFeatureRateLimit } from "../_shared/aiRateLimit.ts";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
@@ -16,6 +18,37 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Was fully unauthenticated -- no getUser/getClaims anywhere in this
+    // file -- an open relay to a paid LLM gateway including image
+    // generation (the most expensive call type), reachable by anyone
+    // holding the public anon key. The one real caller (FundNew.tsx)
+    // already sits behind an authenticated app surface and already sends
+    // the user's session JWT via supabase.functions.invoke.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+    const authedClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: claimsData, error: claimsErr } = await authedClient.auth.getClaims(
+      authHeader.replace("Bearer ", ""),
+    );
+    const userId = claimsData?.claims?.sub as string | undefined;
+    if (claimsErr || !userId) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { autoRefreshToken: false, persistSession: false } },
+    );
+    const rateLimit = await checkAiFeatureRateLimit(admin, userId, "thrivefund-ai-assist");
+    if (!rateLimit.allowed) return rateLimit.response;
+
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
     const body = (await req.json()) as AssistBody;
     const { action, title = "", category = "", tagline = "", story = "", goal = 0 } = body;

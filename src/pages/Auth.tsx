@@ -215,15 +215,17 @@ const Auth = () => {
         supabase.from('profiles').select('full_name, avatar_url, role').eq('user_id', user.id).single()
       ]);
 
-      const { error: connectionError } = await supabase
-        .from('connections')
-        .insert([
-          { user_id: user.id, connected_user_id: targetUserId, status: 'accepted' },
-          { user_id: targetUserId, connected_user_id: user.id, status: 'accepted' }
-        ]);
+      // Both of these were raw table inserts that a prior session's RLS
+      // hardening (20260904090000 for connections; 20260912120000 for
+      // matches) now correctly rejects -- neither insert carries the
+      // swipe evidence those policies require. Routed through the same
+      // RPCs Onboarding.tsx's equivalent QR-connect flow already uses.
+      const { error: connectionError } = await supabase.rpc('create_bidirectional_connection', {
+        user1_uuid: user.id, user2_uuid: targetUserId, connection_status: 'accepted',
+      });
       if (connectionError) throw connectionError;
 
-      await supabase.from('matches').insert({ user1_id: user.id, user2_id: targetUserId, match_type: 'creator', status: 'active' });
+      await supabase.rpc('create_direct_match' as any, { _other_user_id: targetUserId });
 
       await supabase.from('notifications').insert([
         { user_id: user.id, type: 'connection', title: `Connected with ${targetProfile?.full_name || 'a creator'}!`, message: `You're now connected via QR code. Start collaborating!`, link: `/profile/${targetUserId}?from=match`, action_url: `/messages?user=${targetUserId}`, action_text: 'Send Message', image_url: targetProfile?.avatar_url },

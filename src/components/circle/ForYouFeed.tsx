@@ -253,20 +253,16 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         }
       }
 
-      // Update swipe count
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('daily_swipes')
-        .eq('user_id', user!.id)
-        .single();
-      
-      const newSwipeCount = (profileData?.daily_swipes || 0) + 1;
-      await supabase
-        .from('profiles')
-        .update({ daily_swipes: newSwipeCount })
-        .eq('user_id', user!.id);
-      
-      setDailySwipesLeft(prev => Math.max(0, prev - 1));
+      // Atomic, server-enforced swipe-count increment -- daily_swipes/
+      // last_swipe_reset are no longer directly client-writable (see
+      // 20260912110000_enforce_daily_swipe_limit_server_side.sql); a plain
+      // read-then-PATCH here would silently no-op against the RLS grant.
+      const { data: swipeCapData } = await supabase.rpc('consume_daily_swipe' as any, {
+        _user_id: user!.id,
+        _daily_cap: maxSwipes,
+      }).single();
+      const swipeCap = swipeCapData as { allowed: boolean; used: number; cap: number } | null;
+      setDailySwipesLeft(swipeCap?.cap === -1 ? 999 : Math.max(0, (swipeCap?.cap ?? maxSwipes) - (swipeCap?.used ?? 0)));
 
       setLastSwiped(currentCreator);
       setCurrentIndex(prev => prev + 1);
@@ -327,10 +323,10 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         : null;
       
       if (lastReset !== today) {
-        await supabase
-          .from('profiles')
-          .update({ daily_swipes: 0, last_swipe_reset: new Date().toISOString() })
-          .eq('user_id', user.id);
+        // Display-only: the actual rollover now happens atomically inside
+        // consume_daily_swipe() on the next real swipe (daily_swipes/
+        // last_swipe_reset are no longer directly client-writable, see
+        // 20260912110000_enforce_daily_swipe_limit_server_side.sql).
         setDailySwipesLeft(TIER_LIMITS[tier].swipesPerDay === -1 ? 999 : TIER_LIMITS[tier].swipesPerDay);
       } else {
         const swipesUsed = currentProfile?.daily_swipes || 0;

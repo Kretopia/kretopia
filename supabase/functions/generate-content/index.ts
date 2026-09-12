@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { checkAiFeatureRateLimit } from "../_shared/aiRateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +13,45 @@ serve(async (req) => {
   }
 
   try {
+    // Was previously fully unauthenticated (no config.toml entry, so the
+    // platform default verify_jwt=true was trivially satisfied by the
+    // public anon key, and no in-body check ran either) -- an open relay
+    // to a paid LLM gateway for both text and image generation. All 16
+    // frontend callers already run behind an authenticated app surface and
+    // already send the user's real session JWT via supabase.functions.invoke,
+    // so requiring and validating it here changes nothing for them.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const authedClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: claimsData, error: claimsErr } = await authedClient.auth.getClaims(
+      authHeader.replace("Bearer ", ""),
+    );
+    const userId = claimsData?.claims?.sub as string | undefined;
+    if (claimsErr || !userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { autoRefreshToken: false, persistSession: false } },
+    );
+    const rateLimit = await checkAiFeatureRateLimit(admin, userId, "generate-content");
+    if (!rateLimit.allowed) return rateLimit.response;
+
     const body = await req.json();
     const { type, messages: rawMessages, prompt } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

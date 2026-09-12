@@ -155,6 +155,7 @@ const CreditsDashboard = lazy(() => import("./pages/CreditsDashboard"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
+const NewRoomPage = lazy(() => import("./pages/NewRoomPage"));
 const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const Ambassadors = lazy(() => import("./pages/Ambassadors"));
 const Ambassador = lazy(() => import("./pages/Ambassador"));
@@ -363,6 +364,7 @@ const AppContent = () => {
             
             {/* ThriveDesk - Lightweight Project Workspace */}
             <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
+            <Route path="/desk/new-room" element={<ProtectedRoute><NewRoomPage /></ProtectedRoute>} />
             <Route path="/desk/projects" element={<Navigate to="/desk" replace />} />
             <Route path="/studio/import" element={<ProtectedRoute><StudioImport /></ProtectedRoute>} />
             <Route path="/shortlists" element={<ProtectedRoute><Shortlists /></ProtectedRoute>} />

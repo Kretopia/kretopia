@@ -350,6 +350,7 @@ const BrandWorkHome = () => {
         open={showCreateProject}
         onOpenChange={setShowCreateProject}
         onCreated={() => setShowCreateProject(false)}
+        onExpand={() => { setShowCreateProject(false); navigate("/desk/new-room"); }}
       />
       <DeskCommandPalette
         open={paletteOpen}
@@ -743,6 +744,7 @@ const CreatorWorkHome = () => {
       <VoiceFirstCreateModal
         open={showCreateProject}
         onOpenChange={setShowCreateProject}
+        onExpand={() => { setShowCreateProject(false); navigate("/desk/new-room"); }}
         onCreated={() => {
           setShowCreateProject(false);
           fetchProjects();

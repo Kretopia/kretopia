@@ -346,6 +346,7 @@ const ProjectsList = () => {
         open={showVoiceCreate}
         onOpenChange={setShowVoiceCreate}
         onCreated={fetchProjects}
+        onExpand={() => { setShowVoiceCreate(false); navigate("/desk/new-room"); }}
       />
     </div>
   );

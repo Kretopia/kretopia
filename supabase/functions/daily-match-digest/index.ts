@@ -2,6 +2,8 @@
 // Triggered via cron (08:00 UTC). Also callable per-user with { user_id } for on-demand.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { requireAdminOrCron } from "../_shared/admin-guard.ts";
+import { checkAiFeatureRateLimit } from "../_shared/aiRateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -111,13 +113,51 @@ serve(async (req) => {
     let body: any = {};
     try { body = await req.json(); } catch {}
 
-    // On-demand single user
+    // On-demand single user. Was a real IDOR + unmetered-AI-cost gap: no
+    // getUser()/getClaims() check anywhere, running on the service_role
+    // client, so any anon-key holder could pass an arbitrary victim's
+    // user_id and get that victim's profile read, an AI ranking call
+    // burned against LOVABLE_API_KEY, and a row inserted into
+    // opportunity_intel_digests attributed to them. Both real frontend
+    // callers (OpportunityIntelCard.tsx, Intel.tsx) already pass their
+    // own id and already send their session JWT via
+    // supabase.functions.invoke, so requiring it here changes nothing
+    // for them. Also gated by the shared per-user AI rate limit --
+    // count-only today (see 20260910160000's own TODO on real values).
     if (body?.user_id) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const authedClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } },
+      );
+      const { data: claimsData, error: claimsErr } = await authedClient.auth.getClaims(
+        authHeader.replace("Bearer ", ""),
+      );
+      const callerId = claimsData?.claims?.sub as string | undefined;
+      if (claimsErr || !callerId || callerId !== body.user_id) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const rateLimit = await checkAiFeatureRateLimit(supabase, callerId, "daily-match-digest");
+      if (!rateLimit.allowed) return rateLimit.response;
+
       const payload = await generateForUser(supabase, body.user_id);
       return new Response(JSON.stringify({ ok: true, payload }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Cron/admin-only batch path.
+    const guard = await requireAdminOrCron(req);
+    if (!guard.ok) return guard.response;
 
     // Cron: process active users (last login in 30d)
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();

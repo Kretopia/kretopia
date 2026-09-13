@@ -124,64 +124,53 @@ const BrandWorkHome = () => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const { data: opps } = await supabase
-        .from("opportunities")
-        .select(OPPORTUNITY_PUBLIC_COLUMNS)
-        .eq("created_by", user.id)
-        .order("created_at", { ascending: false })
-        .limit(10);
+      // These 5 queries only ever depended on user.id -- none of them
+      // depend on each other's *results* -- but were previously awaited
+      // one after another, turning what should be ~2 round trips into 6+
+      // sequential ones. Only `apps` (needs opps' ids) and the accepted-
+      // applications count (needs userOpps' ids) genuinely depend on a
+      // prior result, so those run as a second parallel batch below.
+      const [oppsRes, totalPostedRes, activeCountRes, userOppsRes, reviewDataRes] = await Promise.all([
+        supabase
+          .from("opportunities")
+          .select(OPPORTUNITY_PUBLIC_COLUMNS)
+          .eq("created_by", user.id)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("created_by", user.id),
+        supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("created_by", user.id).eq("status", "active"),
+        supabase.from("opportunities").select("id").eq("created_by", user.id),
+        supabase.from("company_reviews").select("rating").eq("company_id", user.id),
+      ]);
+
+      const opps = oppsRes.data;
       setOpportunities(opps || []);
+      const userOpps = userOppsRes.data;
 
-      if (opps && opps.length > 0) {
-        const oppIds = opps.map(o => o.id);
-        const { data: apps } = await supabase
-          .from("applications")
-          .select("opportunity_id")
-          .in("opportunity_id", oppIds);
-        const counts: Record<string, number> = {};
-        (apps || []).forEach(a => {
-          counts[a.opportunity_id] = (counts[a.opportunity_id] || 0) + 1;
-        });
-        setApplicantCounts(counts);
-      }
+      const [appsRes, hiredCountRes] = await Promise.all([
+        opps && opps.length > 0
+          ? supabase.from("applications").select("opportunity_id").in("opportunity_id", opps.map(o => o.id))
+          : Promise.resolve({ data: null as { opportunity_id: string }[] | null }),
+        userOpps && userOpps.length > 0
+          ? supabase.from("applications").select("*", { count: "exact", head: true }).in("opportunity_id", userOpps.map(o => o.id)).eq("status", "accepted")
+          : Promise.resolve({ count: 0 }),
+      ]);
 
-      const { count: totalPosted } = await supabase
-        .from("opportunities")
-        .select("id", { count: "exact", head: true })
-        .eq("created_by", user.id);
-      const { count: activeCount } = await supabase
-        .from("opportunities")
-        .select("id", { count: "exact", head: true })
-        .eq("created_by", user.id)
-        .eq("status", "active");
+      const counts: Record<string, number> = {};
+      (appsRes.data || []).forEach(a => {
+        counts[a.opportunity_id] = (counts[a.opportunity_id] || 0) + 1;
+      });
+      setApplicantCounts(counts);
 
-      const { data: userOpps } = await supabase
-        .from("opportunities")
-        .select("id")
-        .eq("created_by", user.id);
-      let hiredCount = 0;
-      if (userOpps && userOpps.length > 0) {
-        const ids = userOpps.map(o => o.id);
-        const { count } = await supabase
-          .from("applications")
-          .select("*", { count: "exact", head: true })
-          .in("opportunity_id", ids)
-          .eq("status", "accepted");
-        hiredCount = count || 0;
-      }
-
-      const { data: reviewData } = await supabase
-        .from("company_reviews")
-        .select("rating")
-        .eq("company_id", user.id);
+      const reviewData = reviewDataRes.data;
       const avgRating = reviewData && reviewData.length > 0
         ? reviewData.reduce((sum, r) => sum + r.rating, 0) / reviewData.length
         : 0;
 
       setStats({
-        posted: totalPosted || 0,
-        active: activeCount || 0,
-        hired: hiredCount,
+        posted: totalPostedRes.count || 0,
+        active: activeCountRes.count || 0,
+        hired: hiredCountRes.count || 0,
         avgRating,
       });
 
@@ -413,10 +402,15 @@ const CreatorWorkHome = () => {
     if (!user) return;
     setLoading(true);
     try {
+      // Unbounded select on the Studio dashboard's own primary list --
+      // every project, every column, on every load. Capped generously (a
+      // payload-size backstop, not real-world pagination) rather than
+      // left unbounded.
       const { data: projectsData } = await supabase
         .from("projects")
         .select("*")
-        .order("updated_at", { ascending: false });
+        .order("updated_at", { ascending: false })
+        .limit(200);
       const list = projectsData || [];
       setProjects(list);
 

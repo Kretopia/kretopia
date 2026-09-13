@@ -208,6 +208,7 @@ function CreditCard({ credit, isOwnProfile, onDelete, isDeleting }: {
           <img
             src={thumbnailUrl}
             alt={credit.title}
+            loading="lazy"
             className="w-full h-[220px] object-cover"
           />
         ) : (

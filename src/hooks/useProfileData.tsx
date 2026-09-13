@@ -140,7 +140,12 @@ export const useProfileData = () => {
       const backgroundPromises = [
         supabase.from('reviews').select('id, profile_id, reviewer_id, reviewer_name, reviewer_role, reviewer_company, reviewer_avatar_url, rating, review_text, project_name, collaboration_type, is_endorsed, is_verified, status, created_at, updated_at').eq('profile_id', currentUserId).order('created_at', { ascending: false }).limit(10),
         supabase.from('industry_stats').select('*').eq('user_id', currentUserId).order('display_order', { ascending: true }).limit(20),
-        supabase.from('credits').select('*').eq('user_id', currentUserId).order('year', { ascending: false }),
+        // Unbounded select on a table that legitimately grows with a
+        // prolific creator's career -- capped generously (well above any
+        // real user's credit count) rather than pagination-tight, purely
+        // as a payload-size backstop, matching the .limit() every sibling
+        // query in this same array already has.
+        supabase.from('credits').select('*').eq('user_id', currentUserId).order('year', { ascending: false }).limit(500),
         supabase.from('awards').select('*').eq('user_id', currentUserId).order('year', { ascending: false }).limit(10),
         supabase.from('press_links').select('*').eq('user_id', currentUserId).order('published_date', { ascending: false }).limit(10)
       ];
@@ -245,7 +250,11 @@ export const useProfileData = () => {
       .channel('profile-changes')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'credits' },
+        // Was unfiltered -- every open profile tab across the whole app
+        // refetched on ANY user's credit insert, anywhere, not just the
+        // viewer's own. Scoped to this user's own rows, same pattern
+        // NotificationBell.tsx's channel already uses correctly.
+        { event: 'INSERT', schema: 'public', table: 'credits', filter: `user_id=eq.${user.id}` },
         () => {
           clearTimeout(updateTimeout);
           updateTimeout = setTimeout(() => fetchData(), 2000);

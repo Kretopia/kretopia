@@ -386,6 +386,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                               <img
                                 src={previewData.thumbnailUrl}
                                 alt="Preview"
+                                loading="lazy"
                                 className="w-20 h-20 object-cover rounded flex-shrink-0"
                               />
                             )}
@@ -634,9 +635,10 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                   className="aspect-video bg-muted relative cursor-pointer"
                   onClick={() => hasInAppPreview ? setSelectedItem(item) : window.open(item.media_url, '_blank')}
                 >
-                  <img 
-                    src={thumbnail} 
-                    alt={item.title} 
+                  <img
+                    src={thumbnail}
+                    alt={item.title}
+                    loading="lazy"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.currentTarget.src = 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=400&h=300&fit=crop';

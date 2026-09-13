@@ -123,9 +123,10 @@ export const ExperienceTimeline = ({ credits, awards = [] }: ExperienceTimelineP
                 {/* Thumbnail for credits */}
                 {isCredit && exp.thumbnail_url && (
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-                    <img 
-                      src={exp.thumbnail_url} 
+                    <img
+                      src={exp.thumbnail_url}
                       alt={exp.project_name}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   </div>

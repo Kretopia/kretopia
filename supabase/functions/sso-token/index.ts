@@ -43,26 +43,23 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Verify client credentials
-    const { data: app, error: appError } = await supabaseAdmin
-      .from("oauth_apps")
-      .select("id, name, client_secret, is_active")
-      .eq("client_id", client_id)
+    // Verify client credentials via the server-side hash comparison RPC --
+    // this function never sees or compares the stored secret directly, and
+    // transparently accepts a still-in-grace-window previous secret after
+    // a rotation (see rotate_oauth_app_secret / verify_oauth_app_secret,
+    // 20260910150000_oauth_client_secret_rotation.sql).
+    const { data: verified, error: verifyError } = await supabaseAdmin
+      .rpc("verify_oauth_app_secret", { _client_id: client_id, _secret: client_secret })
       .single();
 
-    if (appError || !app || !app.is_active) {
+    if (verifyError || !verified?.app_id) {
       return new Response(
         JSON.stringify({ error: "invalid_client", message: "Invalid client credentials" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (app.client_secret !== client_secret) {
-      return new Response(
-        JSON.stringify({ error: "invalid_client", message: "Invalid client secret" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const app = { id: verified.app_id, name: verified.app_name };
 
     // Look up and validate the authorization code
     const { data: authCode, error: codeError } = await supabaseAdmin

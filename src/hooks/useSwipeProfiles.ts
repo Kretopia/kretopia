@@ -132,7 +132,16 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         if (p.is_claimed === false && p.badge !== 'odos') return false;
         // Hide incomplete profiles
         if (!p.full_name || p.full_name === 'New User' || p.full_name === '') return false;
-        if (!p.role || p.role === 'Creator' || p.role === '') return false;
+        // Was also excluding role === 'Creator' -- but that's the exact
+        // default Onboarding.tsx silently assigns when a user leaves role
+        // blank during manual setup (a deliberate friction-reducing
+        // default, not a placeholder meaning "never really set up").
+        // Directly contradicted this file's own "no artificial gating"
+        // stance above: the one friction-reduction meant to get someone
+        // through onboarding faster was also the one thing making them
+        // invisible to everyone else's deck. Only a genuinely empty role
+        // is excluded now.
+        if (!p.role || p.role === '') return false;
         return true;
       });
 

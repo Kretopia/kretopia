@@ -297,6 +297,7 @@ export const CompanyProfileView = ({
                       <img
                         src={url}
                         alt={`${displayName} ${i + 1}`}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         onClick={() => window.open(url, '_blank')}
                       />

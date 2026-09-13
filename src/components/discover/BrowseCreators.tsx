@@ -150,7 +150,12 @@ export function BrowseCreators() {
       // profile from the grid entirely.
       rows = rows.filter(r => {
         if (!r.full_name || r.full_name === "New User" || r.full_name.trim() === "") return false;
-        if (!r.role || r.role === "Creator" || r.role.trim() === "") return false;
+        // role === "Creator" removed from this exclusion -- it's the exact
+        // default Onboarding.tsx assigns when role is left blank, not a
+        // "never set up" placeholder. Excluding it directly contradicted
+        // this filter's own "no artificial gating" stance (see
+        // src/hooks/useSwipeProfiles.ts's matching fix for the full story).
+        if (!r.role || r.role.trim() === "") return false;
         if (!r.avatar_url) return false;
         if (r.is_claimed === false && r.badge !== "odos") return false;
         return true;

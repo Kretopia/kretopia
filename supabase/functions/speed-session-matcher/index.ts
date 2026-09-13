@@ -30,15 +30,60 @@ serve(async (req) => {
     const { session_id } = await req.json().catch(() => ({}));
     if (!session_id) throw new Error("session_id required");
 
+    // Was fully unauthenticated -- no getUser/getClaims anywhere in this
+    // file -- despite the doc comment's own claim of "invoked by the
+    // client (host)". Any caller who learns a live session_id (every
+    // participant does, it's in the route) could force early-close of
+    // in-progress pairings and mint new Daily rooms on repeat, griefing
+    // someone else's live session and burning DAILY_API_KEY quota with
+    // no relationship to that session required at all. All 5 real
+    // frontend call sites (SpeedSession.tsx) are either host/admin-gated
+    // (`canControl`) or fire right after the caller upserts their own
+    // speed_session_rsvps row for this exact session -- so requiring
+    // "authenticated, and either the host or a real RSVP'd participant"
+    // covers every legitimate caller.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const authedClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: claimsData, error: claimsErr } = await authedClient.auth.getClaims(
+      authHeader.replace("Bearer ", ""),
+    );
+    const callerId = claimsData?.claims?.sub as string | undefined;
+    if (claimsErr || !callerId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: session } = await admin
       .from("speed_sessions")
-      .select("id, mode, slot_seconds, status")
+      .select("id, mode, slot_seconds, status, host_user_id")
       .eq("id", session_id)
       .maybeSingle();
     if (!session || session.status !== "live") {
       return new Response(JSON.stringify({ ok: false, reason: "session-not-live" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
+    }
+
+    if (session.host_user_id !== callerId) {
+      const [{ data: rsvp }, { data: isAdmin }] = await Promise.all([
+        admin.from("speed_session_rsvps").select("user_id").eq("session_id", session_id).eq("user_id", callerId).maybeSingle(),
+        admin.rpc("has_role", { _user_id: callerId, _role: "admin" }),
+      ]);
+      if (!rsvp && !isAdmin) {
+        return new Response(JSON.stringify({ error: "Not part of this session" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Close any pairings older than slot_seconds

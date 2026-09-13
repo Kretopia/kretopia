@@ -39,9 +39,27 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     functions: { invoke: mocks.invoke },
-    from: (table: string) => ({
-      insert: table === "projects" ? mocks.projectsInsert : vi.fn(() => Promise.resolve({ data: null, error: null })),
-    }),
+    from: (table: string) => {
+      if (table === "projects") return { insert: mocks.projectsInsert };
+      if (table === "profiles") {
+        // FeatureAITutorial's useFirstTimeUser() queries this -- an
+        // established, non-new profile keeps the tutorial's auto-open
+        // behavior out of these tests' way (they only assert the trigger
+        // renders, not the auto-open-for-new-users path) and avoids a
+        // swallowed-but-noisy console error from an incomplete mock chain.
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({
+                data: { created_at: "2020-01-01T00:00:00Z", xp: 999 },
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      return { insert: vi.fn(() => Promise.resolve({ data: null, error: null })) };
+    },
     // analytics.ts's trackEvent() calls this when no explicit userId is
     // passed -- without it, every event fired during these tests (e.g. the
     // real new_room_opened call on mount) logs a swallowed-but-noisy error.
@@ -156,13 +174,19 @@ describe("VoiceFirstCreateModal", () => {
     expect(screen.queryByText("What are you making?")).not.toBeInTheDocument();
   });
 
-  it("renders the prompt-mode heading, trust line and starter intents when open", () => {
+  it("renders the prompt-mode heading, trust line and how-it-works tutorial trigger when open", () => {
     renderModal();
-    expect(screen.getByText("What are you making?")).toBeInTheDocument();
+    // The accent word ("making?") is its own <span>, so the heading's text
+    // is split across nodes -- match on the heading element's combined
+    // textContent instead of a single exact string.
+    expect(screen.getByRole("heading", { name: "What are you making?" })).toBeInTheDocument();
     expect(screen.getByText(/Nothing becomes a Project until you confirm the draft/)).toBeInTheDocument();
-    expect(screen.getByText("Examples to get you started")).toBeInTheDocument();
-    // A real, mapped WorkspaceType label from workspaceConfigs.ts, not a stub string.
-    expect(screen.getByText("Photo Shoot")).toBeInTheDocument();
+    // The bespoke <details> "How this works" was replaced by the same
+    // shared FeatureAITutorial trigger every other overhauled feature page
+    // uses -- "Examples to get you started" starter chips were removed
+    // outright, not replaced.
+    expect(screen.getByText("How this works")).toBeInTheDocument();
+    expect(screen.queryByText("Examples to get you started")).not.toBeInTheDocument();
   });
 
   it("exposes a real dialog role labelled by the visible New Room title, not a duplicated static string", () => {
@@ -193,14 +217,6 @@ describe("VoiceFirstCreateModal", () => {
     expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();
   });
 
-  it("selecting a starter intent fills the always-visible composer with the matching example", () => {
-    renderModal();
-    fireEvent.click(screen.getByText("Photo Shoot"));
-    const input = screen.getByLabelText("Describe your project to Kreto") as HTMLInputElement;
-    expect(input.value.length).toBeGreaterThan(0);
-    expect(input.value).toMatch(/Editorial shoot/i);
-  });
-
   it("the Kreto composer is the primary entry point, always visible with no mode toggle needed", () => {
     renderModal();
     // Text entry is not hidden behind a "type it instead" click, and voice
@@ -212,7 +228,6 @@ describe("VoiceFirstCreateModal", () => {
 
   it("creates exactly one project even if Create is double-clicked", async () => {
     renderModal();
-    fireEvent.click(screen.getByText("Photo Shoot"));
     const input = screen.getByLabelText("Describe your project to Kreto");
     fireEvent.change(input, { target: { value: "A real editorial shoot brief for testing." } });
     fireEvent.click(screen.getByLabelText("Send to Kreto"));
@@ -242,7 +257,9 @@ describe("VoiceFirstCreateModal", () => {
     // StudioCreateHero's "Open a New Room" uses) so it actually reads as
     // the primary action next to "Start over"/"Create N selected".
     renderModal();
-    fireEvent.click(screen.getByText("Photo Shoot"));
+    fireEvent.change(screen.getByLabelText("Describe your project to Kreto"), {
+      target: { value: "A real editorial shoot brief for testing." },
+    });
     fireEvent.click(screen.getByLabelText("Send to Kreto"));
     await screen.findByText("Kreto structured your project — review and edit");
     fireEvent.click(screen.getByText("No — personal/passion"));
@@ -300,7 +317,9 @@ describe("VoiceFirstCreateModal", () => {
 
     it("is proposal_ready with no caution banner for a clean, confidently-typed draft", async () => {
       renderModal();
-      fireEvent.click(screen.getByText("Photo Shoot"));
+      fireEvent.change(screen.getByLabelText("Describe your project to Kreto"), {
+        target: { value: "A real editorial shoot brief for testing." },
+      });
       fireEvent.click(screen.getByLabelText("Send to Kreto"));
       await screen.findByText("Kreto structured your project — review and edit");
       expect(screen.getByTestId("kreto-presence")).toHaveAttribute("data-state", "proposal_ready");
@@ -349,13 +368,21 @@ describe("VoiceFirstCreateModal", () => {
       );
     });
 
-    it("navigates to the new Studio with a real, non-spoofable success flag in route state, not a query param", async () => {
+    it("shows the room-ready celebration, then navigates to the new Studio with a real, non-spoofable success flag in route state, not a query param", async () => {
       renderModal();
-      fireEvent.click(screen.getByText("Photo Shoot"));
+      fireEvent.change(screen.getByLabelText("Describe your project to Kreto"), {
+        target: { value: "A real editorial shoot brief for testing." },
+      });
       fireEvent.click(screen.getByLabelText("Send to Kreto"));
       await screen.findByText("Kreto structured your project — review and edit");
       fireEvent.click(screen.getByText("No — personal/passion"));
       fireEvent.click(screen.getByText("Create all & open"));
+
+      // NewRoomLaunchScreen (the "your room is live" celebration) shows
+      // first -- navigation only fires once the user actually leaves it.
+      const openRoomButton = await screen.findByText("Open the room");
+      expect(mocks.navigate).not.toHaveBeenCalled();
+      fireEvent.click(openRoomButton);
 
       await waitFor(() => expect(mocks.navigate).toHaveBeenCalled(), { timeout: 1000 });
       const [to, opts] = mocks.navigate.mock.calls[0];

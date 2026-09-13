@@ -1,10 +1,15 @@
 -- Fix for SECURITY_RELEASE_GATE.md finding #1 (2026-08-17 scan):
 -- "credit_claim_disputes — challenger can self-resolve".
 --
--- NOT YET APPLIED TO THE LIVE DATABASE. Written per the project's standing
--- rule to never apply RLS/migration changes without explicit review —
--- someone with production access needs to run this (e.g. via the Lovable
--- migration flow), the same way 20260812071205 was reviewed before landing.
+-- APPLIED TO PRODUCTION 2026-08-18, reviewed and run by the user via the
+-- Lovable Cloud SQL editor, and independently verified the same day with a
+-- direct read-only query against the live database (pg_get_constraintdef
+-- for the CHECK constraint, pg_get_expr(polwithcheck, polrelid) for this
+-- policy's WITH CHECK) -- both matched this file's SQL exactly. See
+-- SECURITY_RELEASE_GATE.md §F. This header previously said "NOT YET
+-- APPLIED" and was never updated after that verification -- corrected
+-- 2026-09-13 after a fresh audit flagged the stale comment as a live risk.
+-- No migration has touched credit_claim_disputes since this one.
 --
 -- ---------------------------------------------------------------------------
 -- What the audit flagged, and what's actually true

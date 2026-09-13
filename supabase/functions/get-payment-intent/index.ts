@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { resolveStripeSecretKey } from "../_shared/stripeEnv.ts";
 
 const corsHeaders = {
@@ -25,6 +26,35 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // No frontend caller found anywhere in src/ or other edge functions
+    // (zero grep hits for "get-payment-intent") -- this was a fully
+    // unauthenticated open endpoint that let any anon-key holder resolve
+    // an arbitrary guessed/enumerated Stripe checkout session id to its
+    // payment_intent id and payment_status. Requiring a real session here
+    // closes that exposure; if this turns out to be genuinely dead code,
+    // deleting it outright (matching the create-connect-payment /
+    // create-payment precedent) is a reasonable P1 follow-up, but wasn't
+    // done in this pass.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const authedClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: claimsData, error: claimsErr } = await authedClient.auth.getClaims(
+      authHeader.replace("Bearer ", ""),
+    );
+    if (claimsErr || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const rawData = await req.json();
     

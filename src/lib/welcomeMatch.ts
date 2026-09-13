@@ -57,13 +57,11 @@ async function createBidirectionalConnection(userId1: string, userId2: string) {
     throw connectionError;
   }
 
-  // Create a match record with correct enum value
-  await supabase.from('matches').insert({
-    user1_id: userId1,
-    user2_id: userId2,
-    match_type: 'creator',
-    status: 'active'
-  });
+  // Create a match record via the RPC -- the raw table policy now only
+  // allows swipe-verified matches (see
+  // 20260912120000_gate_matches_direct_insert.sql), so a direct insert
+  // here would be rejected.
+  await supabase.rpc('create_direct_match' as any, { _other_user_id: userId2 });
 
   // Send welcome notification to new user with proper action links
   const { data: founderProfile } = await supabase

@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { project_id, message, mode = "chat", is_pro = false } = body || {};
+    const { project_id, message, mode = "chat" } = body || {};
     if (!project_id || (!message && mode === "chat")) {
       return new Response(JSON.stringify({ error: "project_id and message required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -55,16 +55,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Daily limit check (free tier)
-    const today = new Date().toISOString().slice(0, 10);
-    const { data: usage } = await admin.from("desk_ai_usage")
-      .select("message_count").eq("user_id", user.id).eq("usage_date", today).maybeSingle();
-    const used = usage?.message_count ?? 0;
-    if (!is_pro && used >= FREE_DAILY_LIMIT) {
+    // Daily limit check (free tier) -- tier is looked up server-side from
+    // profiles.subscription_tier, never trusted from the client. Previously
+    // this read a client-supplied `is_pro` body field directly with no
+    // server-side check at all, so any authenticated caller could send
+    // {"is_pro": true} and get unlimited free DeskAI usage. The
+    // check-and-increment is also now atomic via the same
+    // consume_copilot_message RPC thrive-ai-chat already uses on this same
+    // desk_ai_usage table (the prior select-then-upsert-at-the-end was a
+    // separate non-atomic race under concurrent requests).
+    const { data: profile } = await admin.from("profiles")
+      .select("subscription_tier").eq("user_id", user.id).maybeSingle();
+    const isPro = ((profile?.subscription_tier as string) || "free") !== "free";
+    const dailyCap = isPro ? -1 : FREE_DAILY_LIMIT;
+
+    const { data: capCheck, error: capErr } = await admin.rpc("consume_copilot_message", {
+      _user_id: user.id, _daily_cap: dailyCap,
+    }).single();
+    if (capErr) {
+      console.error("consume_copilot_message failed", capErr);
+      return new Response(JSON.stringify({ error: "Could not verify usage limit. Try again shortly." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!capCheck?.allowed) {
       return new Response(JSON.stringify({
         error: "daily_limit",
         message: `You've used ${FREE_DAILY_LIMIT} DeskAI messages today. Upgrade to Pro for unlimited.`,
-        used, limit: FREE_DAILY_LIMIT,
+        used: capCheck?.used ?? 0, limit: FREE_DAILY_LIMIT,
       }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -135,7 +153,7 @@ Be concise, specific, and actionable. Use short paragraphs and bullet lists. Ref
 CURRENT PROJECT CONTEXT:
 ${contextBlock}
 
-Today's date: ${today}. Keep replies under 250 words unless drafting a document.`;
+Today's date: ${new Date().toISOString().slice(0, 10)}. Keep replies under 250 words unless drafting a document.`;
 
     // Mode: "suggest" returns proactive suggestions; "chat" is conversational
     let userMessages: any[] = [];
@@ -180,13 +198,10 @@ Today's date: ${today}. Keep replies under 250 words unless drafting a document.
       ]);
     }
 
-    await admin.from("desk_ai_usage").upsert(
-      { user_id: user.id, usage_date: today, message_count: used + 1 },
-      { onConflict: "user_id,usage_date" }
-    );
+    // Usage was already atomically incremented by consume_copilot_message above.
 
     return new Response(JSON.stringify({
-      reply, role, used: used + 1, limit: is_pro ? null : FREE_DAILY_LIMIT,
+      reply, role, used: capCheck.used, limit: isPro ? null : FREE_DAILY_LIMIT,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (e) {

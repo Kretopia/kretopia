@@ -180,6 +180,7 @@ export function WorkspaceSidebar({ projects, activeProjectId, onClose, onProject
       <VoiceFirstCreateModal
         open={showCreate}
         onOpenChange={setShowCreate}
+        onExpand={() => { setShowCreate(false); navigate("/desk/new-room"); }}
         onCreated={() => {
           setShowCreate(false);
           onProjectCreated?.();

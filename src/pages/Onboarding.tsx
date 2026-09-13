@@ -619,7 +619,10 @@ export default function Onboarding() {
       ]);
       const { error: connectionError } = await supabase.rpc("create_bidirectional_connection", { user1_uuid: user.id, user2_uuid: targetUserId, connection_status: "accepted" });
       if (connectionError) throw connectionError;
-      await supabase.from("matches").insert({ user1_id: user.id, user2_id: targetUserId, match_type: "creator", status: "active" });
+      // The raw matches insert here would now be rejected -- the table
+      // policy only allows swipe-verified matches, see
+      // 20260912120000_gate_matches_direct_insert.sql.
+      await supabase.rpc("create_direct_match" as any, { _other_user_id: targetUserId });
       const notifications = [
         { user_id: user.id, type: "connection", title: `Connected with ${targetProfile?.full_name || "a creator"}!`, message: "You're now connected via QR code.", link: `/profile/${targetUserId}?from=match`, action_url: `/messages?user=${targetUserId}`, action_text: "Send Message", image_url: targetProfile?.avatar_url },
         { user_id: targetUserId, type: "connection", title: `${currentProfile?.full_name || "Someone"} joined and connected!`, message: "New connection via your QR code.", link: `/profile/${user.id}?from=match`, action_url: `/messages?user=${user.id}`, action_text: "Send Message", image_url: currentProfile?.avatar_url },
